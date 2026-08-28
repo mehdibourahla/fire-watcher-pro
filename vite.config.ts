@@ -28,7 +28,11 @@ export default defineConfig(({ command }) => ({
       ? [
           nitro({
             preset: "cloudflare-module",
-            cloudflare: { nodeCompat: true, deployConfig: true },
+            cloudflare: {
+              nodeCompat: true,
+              deployConfig: true,
+              wrangler: { name: "nadhir" },
+            },
           }),
         ]
       : []),
