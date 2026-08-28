@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.limit_citizen_reports() FROM PUBLIC, anon, authenticated;

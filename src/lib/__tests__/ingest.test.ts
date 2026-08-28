@@ -1,0 +1,49 @@
+import { readFileSync } from "node:fs";
+
+import { describe, expect, it } from "vitest";
+
+const read = (p: string) => readFileSync(p, "utf8");
+const MIGRATION =
+  "supabase/migrations/20260828131723_91fbb889-0ec9-4d2f-827e-0878274cf5a0.sql";
+
+function allowed(table: string, column: string): string[] {
+  const sql = read(MIGRATION);
+  const re = new RegExp(`CREATE TABLE public\\.${table}[\\s\\S]*?\\n\\);`);
+  const block = re.exec(sql)?.[0] ?? "";
+  const check = new RegExp(
+    `${column}[^,]*?CHECK \\(${column} IN \\(([^)]*)\\)\\)`,
+  ).exec(block);
+  return (check?.[1] ?? "").split(",").map((s) => s.trim().replace(/'/g, ""));
+}
+
+describe("emitted literals satisfy the DB CHECK constraints", () => {
+  it("risk_forecasts.source", () => {
+    const emitted = /const SOURCE = "([^"]+)"/.exec(
+      read("src/lib/ingest/weather.server.ts"),
+    )?.[1];
+    expect(allowed("risk_forecasts", "source")).toContain(emitted);
+  });
+
+  it("detections.source", () => {
+    const emitted = /source: "([^"]+)"/.exec(
+      read("src/lib/ingest/firms.server.ts"),
+    )?.[1];
+    expect(allowed("detections", "source")).toContain(emitted);
+  });
+
+  it("the eumetsat worker writes no detections at all", () => {
+    // its granules are netCDF it cannot decode, so any row it wrote would be a
+    // fabricated fire at the bounding-box centroid
+    const src = read("src/lib/ingest/eumetsat.server.ts");
+    expect(src).not.toMatch(/from\("detections"\)/);
+  });
+
+  it("fire_clusters.state — every state fuseDetections can return", () => {
+    const src = read("src/lib/ingest/fusion.server.ts");
+    const body = /function stateFor\([\s\S]*?\n}/.exec(src)?.[0] ?? "";
+    const returned = [...body.matchAll(/return "([^"]+)"/g)].map((m) => m[1]);
+    expect(returned.length).toBeGreaterThan(0);
+    for (const state of returned)
+      expect(allowed("fire_clusters", "state")).toContain(state);
+  });
+});

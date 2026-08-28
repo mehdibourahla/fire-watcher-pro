@@ -1,0 +1,274 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+
+  --color-ground: var(--ground);
+  --color-background: var(--ground);
+  --color-surface: var(--surface);
+  --color-card: var(--surface);
+  --color-raised: var(--raised);
+  --color-muted: var(--raised);
+  --color-secondary: var(--raised);
+  --color-border: var(--border);
+  --color-input: var(--border);
+
+  --color-foreground: var(--ink);
+  --color-card-foreground: var(--ink);
+  --color-secondary-foreground: var(--ink);
+  --color-muted-foreground: var(--ink-soft);
+  --color-faint: var(--ink-faint);
+
+  --color-primary: var(--accent);
+  --color-primary-foreground: var(--accent-ink);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-ink);
+  --color-ring: var(--accent);
+
+  --color-emergency: var(--emergency);
+  --color-emergency-surface: var(--emergency-surface);
+  --color-destructive: var(--emergency);
+  --color-destructive-foreground: var(--surface);
+  --color-popover: var(--surface);
+  --color-popover-foreground: var(--ink);
+
+  --color-risk-1: var(--risk-1);
+  --color-risk-2: var(--risk-2);
+  --color-risk-3: var(--risk-3);
+  --color-risk-4: var(--risk-4);
+  --color-risk-5: var(--risk-5);
+
+  --font-display: "Fraunces", Georgia, serif;
+  --font-sans: "Inter", "IBM Plex Sans Arabic", system-ui, sans-serif;
+  --font-arabic: "IBM Plex Sans Arabic", "Inter", system-ui, sans-serif;
+
+  --shadow-card: 0 1px 2px rgb(11 16 14 / 0.05), 0 8px 24px -16px rgb(11 16 14 / 0.28);
+  --shadow-sheet: 0 -2px 8px rgb(11 16 14 / 0.06), 0 -18px 48px -24px rgb(11 16 14 / 0.35);
+}
+
+:root {
+  --radius: 0.625rem;
+
+  --ground: #f9fafb;
+  --surface: #ffffff;
+  --raised: #eef0f3;
+  --border: #dbdee2;
+
+  --ink: #161b20;
+  --ink-soft: #5f6469;
+  --ink-faint: #8c9094;
+
+  --accent: #2171cc;
+  --accent-ink: #ffffff;
+  --accent-tint: #e8f1fc;
+
+  --emergency: #d40924;
+  --emergency-surface: #fceced;
+
+  --risk-1: #30ad51;
+  --risk-2: #e4af00;
+  --risk-3: #f16a00;
+  --risk-4: #d40924;
+  --risk-5: #8c1220;
+
+  --risk-tint-1: #eef8f1;
+  --risk-tint-2: #fdf9eb;
+  --risk-tint-3: #fef3eb;
+  --risk-tint-4: #fcebed;
+  --risk-tint-5: #f6eced;
+
+  --risk-ink-1: #184028;
+  --risk-ink-2: #4e4010;
+  --risk-ink-3: #512c10;
+  --risk-ink-4: #490f1b;
+  --risk-ink-5: #33111a;
+
+  /* light hazard hues sit under 3:1 on a light ground; marks carry a ring instead */
+  --mark-ring: rgb(22 27 32 / 0.28);
+}
+
+.dark {
+  --ground: #0b0d10;
+  --surface: #16191c;
+  --raised: #212428;
+  --border: #2f3338;
+
+  --ink: #eceff1;
+  --ink-soft: #a1a5a9;
+  --ink-faint: #777b7f;
+
+  --accent: #63b3ff;
+  --accent-ink: #08131f;
+  --accent-tint: #13263a;
+
+  --emergency: #ee3b3b;
+  --emergency-surface: #341e20;
+
+  --risk-1: #46c865;
+  --risk-2: #f7ce21;
+  --risk-3: #ff8a2b;
+  --risk-4: #ee3b3b;
+  --risk-5: #9c1f35;
+
+  --risk-tint-1: #1d3226;
+  --risk-tint-2: #36321d;
+  --risk-tint-3: #37291e;
+  --risk-tint-4: #341e20;
+  --risk-tint-5: #291a20;
+
+  --risk-ink-1: #beecc9;
+  --risk-ink-2: #fceeb1;
+  --risk-ink-3: #ffd6b5;
+  --risk-ink-4: #f9baba;
+  --risk-ink-5: #dcb1b8;
+
+  --mark-ring: rgb(236 239 241 / 0.35);
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  body {
+    background-color: var(--ground);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  html[lang="ar"] body,
+  html[lang="ar"] h1,
+  html[lang="ar"] h2,
+  html[lang="ar"] h3 {
+    font-family: var(--font-arabic);
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.014em;
+    text-wrap: balance;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  table {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+@utility card {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+@utility card-raised {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+@utility hairline {
+  border-block-end: 1px solid var(--border);
+}
+
+.danger-track {
+  background: linear-gradient(
+    to right,
+    var(--risk-1),
+    var(--risk-2),
+    var(--risk-3),
+    var(--risk-4),
+    var(--risk-5)
+  );
+}
+
+[dir="rtl"] .danger-track {
+  background: linear-gradient(
+    to left,
+    var(--risk-1),
+    var(--risk-2),
+    var(--risk-3),
+    var(--risk-4),
+    var(--risk-5)
+  );
+}
+
+@keyframes mark-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.75;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+@keyframes sheet-in {
+  from {
+    transform: translateY(12px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.sheet-in {
+  animation: sheet-in 220ms cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+
+.mark-pulse::after {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border-radius: 999px;
+  background: var(--risk-4);
+  animation: mark-pulse 2s ease-out infinite;
+  z-index: -1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mark-pulse::after {
+    animation: none;
+    opacity: 0.18;
+  }
+
+  .sheet-in {
+    animation: none;
+  }
+}
+
+.maplibregl-ctrl-attrib {
+  font-size: 10px;
+  background: var(--surface) !important;
+  color: var(--ink-soft);
+}
+
+.maplibregl-ctrl-attrib a {
+  color: var(--ink-soft);
+}

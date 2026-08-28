@@ -1,0 +1,356 @@
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { fetchAllPages } from "@/lib/paginate";
+
+import {
+  FWI_START,
+  computeFwi,
+  dangerFromFwi,
+  nextDc,
+  nextDmc,
+  nextFfmc,
+} from "./fwi";
+
+const HORIZON_DAYS = 6;
+const SPINUP_DAYS = 92;
+const SOURCE = "local_fwi";
+const BATCH = 25;
+const RETRY_LIMIT = 5;
+const RETRY_BASE_MS = 2000;
+const INTER_BATCH_MS = 1200;
+const STALE_STATE_DAYS = 60;
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+export type DailyBlock = {
+  time: string[];
+  temperature_2m_max: number[];
+  relative_humidity_2m_min: number[];
+  wind_speed_10m_max: number[];
+  wind_direction_10m_dominant: number[];
+  precipitation_sum: number[];
+};
+
+type OpenMeteoResponse = { daily?: DailyBlock } | Array<{ daily?: DailyBlock }>;
+
+export type RiskRun = {
+  communes: number;
+  rows: number;
+  requests?: number;
+  error?: string;
+};
+
+async function fetchDaily(
+  lats: number[],
+  lons: number[],
+  pastDays: number,
+): Promise<(DailyBlock | null)[]> {
+  const url = new URL("https://api.open-meteo.com/v1/forecast");
+  url.searchParams.set("latitude", lats.join(","));
+  url.searchParams.set("longitude", lons.join(","));
+  url.searchParams.set(
+    "daily",
+    "temperature_2m_max,relative_humidity_2m_min,wind_speed_10m_max,wind_direction_10m_dominant,precipitation_sum",
+  );
+  // DC has a ~52-day time constant, so a short spin-up leaves the drought codes
+  // far below reality; 92 days of observed weather converges them each run.
+  url.searchParams.set("past_days", String(pastDays));
+  url.searchParams.set("forecast_days", String(HORIZON_DAYS));
+  url.searchParams.set("timezone", "Africa/Algiers");
+
+  // Open-Meteo weights a call by locations x days, so 1500+ communes trip the
+  // free-tier limit long before the request count looks high.
+  let lastStatus = 0;
+  for (let attempt = 0; attempt < RETRY_LIMIT; attempt += 1) {
+    const res = await fetch(url);
+    if (res.ok) {
+      const json = (await res.json()) as OpenMeteoResponse;
+      const list = Array.isArray(json) ? json : [json];
+      return lats.map((_, i) => list[i]?.daily ?? null);
+    }
+    lastStatus = res.status;
+    if (res.status !== 429 && res.status < 500) break;
+    const retryAfter = Number(res.headers.get("retry-after"));
+    const backoff =
+      Number.isFinite(retryAfter) && retryAfter > 0
+        ? retryAfter * 1000
+        : RETRY_BASE_MS * 2 ** attempt;
+    await sleep(backoff + Math.random() * 500);
+  }
+  throw new Error(`open-meteo ${lastStatus}`);
+}
+
+export type StoredState = {
+  date: string;
+  ffmc: number;
+  dmc: number;
+  dc: number;
+};
+
+/**
+ * Advance the FWI codes across every returned day, then project the horizon.
+ * `initial` is yesterday's stored state; without one the caller must request a
+ * long enough window for the codes to converge from the standard defaults.
+ */
+export function seriesFwi(
+  daily: DailyBlock,
+  forestFraction: number,
+  initial?: { ffmc: number; dmc: number; dc: number },
+) {
+  let state = { ...(initial ?? FWI_START) };
+  let carried: StoredState | null = null;
+  const out: {
+    date: string;
+    fwi: number;
+    level: number;
+    components: Record<string, number>;
+  }[] = [];
+  const total = daily.time.length;
+  const spinUp = Math.max(0, total - HORIZON_DAYS);
+
+  for (let i = 0; i < total; i += 1) {
+    const date = daily.time[i]!;
+    const temp = daily.temperature_2m_max[i] ?? 25;
+    const rh = Math.min(
+      100,
+      Math.max(1, daily.relative_humidity_2m_min[i] ?? 40),
+    );
+    const wind = Math.max(0, daily.wind_speed_10m_max[i] ?? 10);
+    const rain = Math.max(0, daily.precipitation_sum[i] ?? 0);
+    const month = Number(date.slice(5, 7));
+
+    state = {
+      ffmc: nextFfmc(state.ffmc, temp, rh, wind, rain),
+      dmc: nextDmc(state.dmc, temp, rh, rain, month),
+      dc: nextDc(state.dc, temp, rain, month),
+    };
+    if (i === spinUp - 1) {
+      carried = {
+        date,
+        ffmc: state.ffmc,
+        dmc: state.dmc,
+        dc: state.dc,
+      };
+    }
+    if (i < spinUp) continue;
+
+    const { isi, bui, fwi } = computeFwi(state.ffmc, state.dmc, state.dc, wind);
+    // spec 9.3: report FWI as computed, then bump one level for wind-driven
+    // risk in forested terrain. The previous multiplicative damping had no basis
+    // in the spec and understated every commune whose forest fraction is unknown.
+    const windDriven = forestFraction > 0.4 && wind > 30;
+    const level = Math.min(5, dangerFromFwi(fwi) + (windDriven ? 1 : 0));
+    out.push({
+      date,
+      fwi: Math.round(fwi * 10) / 10,
+      level,
+      components: {
+        ffmc: Math.round(state.ffmc * 10) / 10,
+        dmc: Math.round(state.dmc * 10) / 10,
+        dc: Math.round(state.dc * 10) / 10,
+        isi: Math.round(isi * 10) / 10,
+        bui: Math.round(bui * 10) / 10,
+        temp_c: Math.round(temp * 10) / 10,
+        rh_pct: Math.round(rh),
+        wind_kmh: Math.round(wind),
+        wind_driven: windDriven ? 1 : 0,
+        wind_dir_deg: Math.round(daily.wind_direction_10m_dominant[i] ?? 0),
+        rain_mm: Math.round(rain * 10) / 10,
+      },
+    });
+  }
+  return { days: out, carried };
+}
+
+export async function refreshRiskForecasts(): Promise<RiskRun> {
+  const communes = await fetchAllPages<{
+    id: string;
+    lat: number;
+    lon: number;
+    forest_fraction: number | null;
+  }>((from, to) =>
+    supabaseAdmin
+      .from("admin_units")
+      .select("id, lat, lon, forest_fraction")
+      .eq("level", "commune")
+      .range(from, to),
+  );
+  if (!communes.length) return { communes: 0, rows: 0 };
+
+  const stored = new Map<string, StoredState>();
+  for (const row of await fetchAllPages<StoredState & { commune_id: string }>(
+    (from, to) =>
+      supabaseAdmin
+        .from("fwi_state")
+        .select("commune_id, date, ffmc, dmc, dc")
+        .order("date", { ascending: false })
+        .range(from, to),
+  )) {
+    if (!stored.has(row.commune_id)) stored.set(row.commune_id, row);
+  }
+
+  const todayMs = Date.parse(new Date().toISOString().slice(0, 10));
+  const daysSince = (date: string) =>
+    Math.round((todayMs - Date.parse(date)) / 86400000);
+
+  // a commune resumes from its stored codes; one that is missing or stale needs
+  // the full spin-up for DC to converge
+  const windowFor = (id: string) => {
+    const st = stored.get(id);
+    if (!st) return SPINUP_DAYS;
+    const gap = daysSince(st.date);
+    if (gap < 1 || gap > STALE_STATE_DAYS) return SPINUP_DAYS;
+    return gap;
+  };
+
+  const groups = new Map<number, typeof communes>();
+  for (const c of communes) {
+    const w = windowFor(c.id);
+    const bucket = groups.get(w);
+    if (bucket) bucket.push(c);
+    else groups.set(w, [c]);
+  }
+
+  type Row = {
+    commune_id: string;
+    forecast_date: string;
+    horizon_days: number;
+    source: string;
+    fwi: number;
+    danger_level: number;
+    components: Record<string, number>;
+  };
+
+  const flush = async (
+    rows: Row[],
+    states: (StoredState & { commune_id: string })[],
+  ) => {
+    for (let i = 0; i < rows.length; i += 500) {
+      const { error } = await supabaseAdmin
+        .from("risk_forecasts")
+        .upsert(rows.slice(i, i + 500), {
+          onConflict: "commune_id,forecast_date,horizon_days,source",
+        });
+      if (error)
+        throw new Error(`risk_forecasts upsert failed: ${error.message}`);
+    }
+    for (let i = 0; i < states.length; i += 500) {
+      const { error } = await supabaseAdmin
+        .from("fwi_state")
+        .upsert(states.slice(i, i + 500), { onConflict: "commune_id,date" });
+      if (error) throw new Error(`fwi_state upsert failed: ${error.message}`);
+    }
+  };
+
+  let written = 0;
+  let requests = 0;
+
+  for (const [pastDays, members] of groups) {
+    for (let i = 0; i < members.length; i += BATCH) {
+      if (requests > 0) await sleep(INTER_BATCH_MS);
+      const batch = members.slice(i, i + BATCH);
+      let dailies: (DailyBlock | null)[];
+      try {
+        dailies = await fetchDaily(
+          batch.map((c) => c.lat),
+          batch.map((c) => c.lon),
+          pastDays,
+        );
+        requests += 1;
+      } catch (e) {
+        // whatever already flushed stays committed, so the next run resumes
+        // from stored state instead of restarting the whole bootstrap
+        return {
+          communes: communes.length,
+          rows: written,
+          requests,
+          error: e instanceof Error ? e.message : "fetch failed",
+        };
+      }
+      const rows: Row[] = [];
+      const nextState: (StoredState & { commune_id: string })[] = [];
+      batch.forEach((commune, idx) => {
+        const daily = dailies[idx];
+        if (!daily) return;
+        const prev = stored.get(commune.id);
+        const resume =
+          prev && windowFor(commune.id) !== SPINUP_DAYS
+            ? { ffmc: prev.ffmc, dmc: prev.dmc, dc: prev.dc }
+            : undefined;
+        const { days, carried } = seriesFwi(
+          daily,
+          commune.forest_fraction ?? 0,
+          resume,
+        );
+        if (carried) nextState.push({ commune_id: commune.id, ...carried });
+        days.forEach((day, horizon) => {
+          rows.push({
+            commune_id: commune.id,
+            forecast_date: day.date,
+            horizon_days: horizon,
+            source: SOURCE,
+            fwi: day.fwi,
+            danger_level: day.level,
+            components: day.components,
+          });
+        });
+      });
+      await flush(rows, nextState);
+      written += rows.length;
+    }
+  }
+
+  return { communes: communes.length, rows: written, requests };
+}
+
+/** Attach current wind to live clusters so the spread arrow is real. */
+export async function enrichClusterWinds(): Promise<number> {
+  const { data: clusters } = await supabaseAdmin
+    .from("fire_clusters")
+    .select("id, lat, lon")
+    .in("state", ["active", "unconfirmed", "contained_guess"])
+    .gte("last_detected_at", new Date(Date.now() - 24 * 3600_000).toISOString())
+    .order("last_detected_at", { ascending: false })
+    .limit(100);
+  if (!clusters?.length) return 0;
+
+  const url = new URL("https://api.open-meteo.com/v1/forecast");
+  url.searchParams.set("latitude", clusters.map((c) => c.lat).join(","));
+  url.searchParams.set("longitude", clusters.map((c) => c.lon).join(","));
+  url.searchParams.set("current", "wind_speed_10m,wind_direction_10m");
+  const res = await fetch(url);
+  // returning 0 here made a failed fetch indistinguishable from "no live fires"
+  if (!res.ok) throw new Error(`open-meteo wind ${res.status}`);
+  const json = (await res.json()) as
+    | { current?: { wind_speed_10m: number; wind_direction_10m: number } }
+    | Array<{
+        current?: { wind_speed_10m: number; wind_direction_10m: number };
+      }>;
+  const list = Array.isArray(json) ? json : [json];
+
+  const updates = clusters
+    .map((cluster, i) => ({ cluster, current: list[i]?.current }))
+    .filter(
+      (
+        u,
+      ): u is {
+        cluster: (typeof clusters)[number];
+        current: { wind_speed_10m: number; wind_direction_10m: number };
+      } => !!u.current,
+    );
+
+  for (let i = 0; i < updates.length; i += 10) {
+    await Promise.all(
+      updates.slice(i, i + 10).map(({ cluster, current }) =>
+        supabaseAdmin
+          .from("fire_clusters")
+          .update({
+            wind_speed_kmh: current.wind_speed_10m,
+            wind_dir_deg: current.wind_direction_10m,
+            spread_bearing_deg: (current.wind_direction_10m + 180) % 360,
+          })
+          .eq("id", cluster.id),
+      ),
+    );
+  }
+  return updates.length;
+}

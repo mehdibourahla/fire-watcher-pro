@@ -1,0 +1,13 @@
+node_modules
+.output
+.nitro
+.wrangler
+.vercel
+dist
+.DS_Store
+
+# secrets — this repo syncs to Lovable/GitHub, so never commit credentials
+.env
+.env.*
+!.env.example
+*.pem

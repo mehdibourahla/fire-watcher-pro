@@ -1,0 +1,1 @@
+alter function private.in_algeria_north(double precision, double precision) set search_path = pg_catalog, public;
