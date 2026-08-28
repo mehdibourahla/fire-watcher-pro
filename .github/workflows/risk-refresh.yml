@@ -32,5 +32,14 @@ jobs:
           set -euo pipefail
           out=$(bun -e 'const {runRiskPipeline}=await import("./src/lib/ingest/pipeline.server.ts");console.log(JSON.stringify(await runRiskPipeline()))' | tail -1)
           echo "$out"
-          # a quota or upsert failure must not pass silently as a green run
-          if echo "$out" | grep -q '"error"'; then exit 1; fi
+          err=$(echo "$out" | grep -oE '"error":"[^"]*"' || true)
+          rows=$(echo "$out" | grep -oE '"rows":[0-9]+' | grep -oE '[0-9]+' || echo 0)
+          if [ -n "$err" ]; then
+            # the free quota stops a run partway; that is only a failure if nothing landed
+            if [ "$rows" -gt 0 ] && echo "$err" | grep -q 429; then
+              echo "::warning::partial refresh — Open-Meteo quota reached after $rows rows"
+            else
+              echo "::error::$err"
+              exit 1
+            fi
+          fi
