@@ -92,8 +92,9 @@ Scheduling is `pg_cron` calling back into the deployed app over HTTP. The target
 vault secret `nadhir_app_url`; the cron function raises if it is unset, so the jobs fail
 loudly rather than silently doing nothing when the app is not deployed.
 
-A public read API is exposed at `/api/public/v1/fires` and `/api/public/v1/risk`. The risk
-endpoint takes `?commune=<code>` — the `admin_units.code` value, not a place name.
+A public read API is exposed at `/api/public/v1/fires`, `/api/public/v1/risk` and
+`/api/public/v1/stats`. The risk endpoint takes `?commune=<code>` — the `admin_units.code`
+value, not a place name. Fires also serve GeoJSON with `?format=geojson`.
 
 ## Deployment
 

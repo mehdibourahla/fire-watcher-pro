@@ -8,23 +8,44 @@ export const Route = createFileRoute("/api/public/v1/fires")({
         return preflight();
       },
       GET: async ({ request }) => {
-        const { publicSupabase, json, clampInt, enforceRateLimit } =
-          await import("@/lib/public-api.server");
+        const {
+          publicSupabase,
+          json,
+          clampInt,
+          enforceRateLimit,
+          fireFeatureCollection,
+        } = await import("@/lib/public-api.server");
         const limited = await enforceRateLimit(request);
         if (limited) return limited;
 
         const url = new URL(request.url);
+        const format = url.searchParams.get("format");
+        if (format && format !== "geojson" && format !== "json") {
+          return json(
+            { error: "invalid format", allowed: ["json", "geojson"] },
+            400,
+          );
+        }
         const limit = clampInt(url.searchParams.get("limit"), 100, 1, 500);
         const offset = clampInt(url.searchParams.get("offset"), 0, 0, 100000);
         const state = url.searchParams.get("state");
         const since = url.searchParams.get("since");
 
-        const allowedStates = ["unconfirmed", "active", "contained_guess", "extinguished", "false_positive"];
+        const allowedStates = [
+          "unconfirmed",
+          "active",
+          "contained_guess",
+          "extinguished",
+          "false_positive",
+        ];
         if (state && !allowedStates.includes(state)) {
           return json({ error: "invalid state", allowed: allowedStates }, 400);
         }
         if (since && Number.isNaN(Date.parse(since))) {
-          return json({ error: "invalid since — expected an ISO 8601 timestamp" }, 400);
+          return json(
+            { error: "invalid since — expected an ISO 8601 timestamp" },
+            400,
+          );
         }
 
         let query = publicSupabase()
@@ -35,14 +56,30 @@ export const Route = createFileRoute("/api/public/v1/fires")({
           .order("last_detected_at", { ascending: false })
           .range(offset, offset + limit - 1);
         if (state) query = query.eq("state", state);
-        if (since) query = query.gte("last_detected_at", new Date(since).toISOString());
+        if (since)
+          query = query.gte("last_detected_at", new Date(since).toISOString());
 
         const { data, error } = await query;
         if (error) return json({ error: error.message }, 502);
 
+        const licence = "CC-BY 4.0 — Nadhir, derived from NASA FIRMS";
+        const generated_at = new Date().toISOString();
+
+        if (format === "geojson") {
+          return json(
+            {
+              ...fireFeatureCollection(data ?? []),
+              licence,
+              generated_at,
+            },
+            200,
+            "application/geo+json",
+          );
+        }
+
         return json({
-          licence: "CC-BY 4.0 — Nadhir, derived from NASA FIRMS",
-          generated_at: new Date().toISOString(),
+          licence,
+          generated_at,
           limit,
           offset,
           count: data?.length ?? 0,

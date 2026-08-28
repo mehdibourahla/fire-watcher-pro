@@ -33,6 +33,7 @@ import { Route as ApiPublicCronRiskRouteImport } from './routes/api/public/cron/
 import { Route as ApiPublicV1IndexRouteImport } from './routes/api/public/v1/index'
 import { Route as ApiPublicV1FiresRouteImport } from './routes/api/public/v1/fires'
 import { Route as ApiPublicV1RiskRouteImport } from './routes/api/public/v1/risk'
+import { Route as ApiPublicV1StatsRouteImport } from './routes/api/public/v1/stats'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -153,6 +154,11 @@ const ApiPublicV1RiskRoute = ApiPublicV1RiskRouteImport.update({
   path: '/api/public/v1/risk',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicV1StatsRoute = ApiPublicV1StatsRouteImport.update({
+  id: '/api/public/v1/stats',
+  path: '/api/public/v1/stats',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -177,6 +183,7 @@ export interface FileRoutesByFullPath {
   '/api/public/cron/risk': typeof ApiPublicCronRiskRoute
   '/api/public/v1/fires': typeof ApiPublicV1FiresRoute
   '/api/public/v1/risk': typeof ApiPublicV1RiskRoute
+  '/api/public/v1/stats': typeof ApiPublicV1StatsRoute
   '/api/public/v1/': typeof ApiPublicV1IndexRoute
 }
 export interface FileRoutesByTo {
@@ -202,6 +209,7 @@ export interface FileRoutesByTo {
   '/api/public/cron/risk': typeof ApiPublicCronRiskRoute
   '/api/public/v1/fires': typeof ApiPublicV1FiresRoute
   '/api/public/v1/risk': typeof ApiPublicV1RiskRoute
+  '/api/public/v1/stats': typeof ApiPublicV1StatsRoute
   '/api/public/v1': typeof ApiPublicV1IndexRoute
 }
 export interface FileRoutesById {
@@ -229,6 +237,7 @@ export interface FileRoutesById {
   '/api/public/cron/risk': typeof ApiPublicCronRiskRoute
   '/api/public/v1/fires': typeof ApiPublicV1FiresRoute
   '/api/public/v1/risk': typeof ApiPublicV1RiskRoute
+  '/api/public/v1/stats': typeof ApiPublicV1StatsRoute
   '/api/public/v1/': typeof ApiPublicV1IndexRoute
 }
 export interface FileRouteTypes {
@@ -256,6 +265,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/risk'
     | '/api/public/v1/fires'
     | '/api/public/v1/risk'
+    | '/api/public/v1/stats'
     | '/api/public/v1/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -281,6 +291,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/risk'
     | '/api/public/v1/fires'
     | '/api/public/v1/risk'
+    | '/api/public/v1/stats'
     | '/api/public/v1'
   id:
     | '__root__'
@@ -307,6 +318,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/risk'
     | '/api/public/v1/fires'
     | '/api/public/v1/risk'
+    | '/api/public/v1/stats'
     | '/api/public/v1/'
   fileRoutesById: FileRoutesById
 }
@@ -327,6 +339,7 @@ export interface RootRouteChildren {
   ApiPublicCronRiskRoute: typeof ApiPublicCronRiskRoute
   ApiPublicV1FiresRoute: typeof ApiPublicV1FiresRoute
   ApiPublicV1RiskRoute: typeof ApiPublicV1RiskRoute
+  ApiPublicV1StatsRoute: typeof ApiPublicV1StatsRoute
   ApiPublicV1IndexRoute: typeof ApiPublicV1IndexRoute
 }
 
@@ -500,6 +513,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicV1RiskRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/v1/stats': {
+      id: '/api/public/v1/stats'
+      path: '/api/public/v1/stats'
+      fullPath: '/api/public/v1/stats'
+      preLoaderRoute: typeof ApiPublicV1StatsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -543,6 +563,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCronRiskRoute: ApiPublicCronRiskRoute,
   ApiPublicV1FiresRoute: ApiPublicV1FiresRoute,
   ApiPublicV1RiskRoute: ApiPublicV1RiskRoute,
+  ApiPublicV1StatsRoute: ApiPublicV1StatsRoute,
   ApiPublicV1IndexRoute: ApiPublicV1IndexRoute,
 }
 export const routeTree = rootRouteImport

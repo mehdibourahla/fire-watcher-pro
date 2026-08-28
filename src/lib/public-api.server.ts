@@ -13,10 +13,14 @@ export function preflight() {
   return new Response(null, { status: 204, headers: CORS_HEADERS });
 }
 
-export function json(body: unknown, status = 200) {
+export function json(
+  body: unknown,
+  status = 200,
+  contentType = "application/json",
+) {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+    headers: { ...CORS_HEADERS, "Content-Type": contentType },
   });
 }
 
@@ -87,4 +91,52 @@ export function clampInt(
   const n = Number.parseInt(value ?? "", 10);
   if (!Number.isFinite(n)) return fallback;
   return Math.min(Math.max(n, min), max);
+}
+
+type FireFeature = {
+  type: "Feature";
+  geometry: { type: "Point"; coordinates: [number, number] };
+  properties: Record<string, unknown>;
+};
+
+export function fireFeatureCollection(
+  fires: ({ lat: number; lon: number } & Record<string, unknown>)[],
+): { type: "FeatureCollection"; features: FireFeature[] } {
+  return {
+    type: "FeatureCollection",
+    features: fires.map(({ lat, lon, ...properties }) => ({
+      type: "Feature",
+      geometry: { type: "Point", coordinates: [lon, lat] },
+      properties,
+    })),
+  };
+}
+
+const LIVE_STATES = ["active", "unconfirmed", "contained_guess"];
+
+export function summariseFires(
+  rows: {
+    state: string;
+    wilaya_id: string | null;
+    last_detected_at: string;
+  }[],
+  now: number,
+) {
+  const by_state: Record<string, number> = {};
+  const wilayas = new Set<string>();
+  let detected_last_24h = 0;
+
+  for (const row of rows) {
+    by_state[row.state] = (by_state[row.state] ?? 0) + 1;
+    if (now - Date.parse(row.last_detected_at) <= 24 * 3600_000)
+      detected_last_24h += 1;
+    if (LIVE_STATES.includes(row.state) && row.wilaya_id)
+      wilayas.add(row.wilaya_id);
+  }
+
+  return {
+    by_state,
+    detected_last_24h,
+    wilayas_with_live_fires: wilayas.size,
+  };
 }

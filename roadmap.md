@@ -61,7 +61,7 @@ Seed and ops credentials live in `~/.config/nadhir/`, never in this repo.
   implemented but never fires until this is populated.
 - Citizen reports: no EXIF stripping, captcha, or AV scan.
 - Admin console: no cluster resolve (US-6), broadcast, or audit log.
-- Public API: no GeoJSON, `/stats`, WebSocket, or tiles.
+- Public API: no WebSocket or tiles.
 
 ## Operations
 

@@ -402,6 +402,7 @@ export const fr: Translation = {
     firesDesc: "Foyers fusionnés, du plus récent au plus ancien.",
     riskDesc:
       "Indice météo de feu et niveau de danger par commune, pour une échéance donnée.",
+    statsDesc: "Nombre d'incendies par état sur les sept derniers jours.",
     indexDesc: "Index lisible par machine de l'API.",
     rateLimit:
       "Les réponses sont mises en cache 60 secondes. Restez sous 60 requêtes par minute et mettez en cache de votre côté.",

@@ -387,6 +387,7 @@ export const kab: Translation = {
     endpoints: "Tansiwin",
     firesDesc: "Times yeddukklen, tamaynut d tamezwarut.",
     riskDesc: "Amatar n tignewt n tmessi d uswir n uɣilif i yal taɣiwant.",
+    statsDesc: "Amḍan n timessi s waddad deg sebɛa n wussan ineggura.",
     indexDesc: "Amatar n API i imawlan.",
     rateLimit: "Tiririt tettwaḥrez 60 tesdatin. Qim ddaw 60 isuturen i tesdat.",
     webhooks: "Iwebhooks n yilɣa",

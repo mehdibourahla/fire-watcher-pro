@@ -389,6 +389,7 @@ export const en = {
     firesDesc: "Fused fire clusters, newest first.",
     riskDesc:
       "Fire Weather Index and danger level per commune, for a given horizon.",
+    statsDesc: "Fire counts by state over the last seven days.",
     indexDesc: "Machine-readable index of the API.",
     rateLimit:
       "Responses are cached for 60 seconds. Please stay under 60 requests per minute and cache on your side.",
