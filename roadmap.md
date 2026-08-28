@@ -59,7 +59,11 @@ Seed and ops credentials live in `~/.config/nadhir/`, never in this repo.
 ## Operations
 
 - Deployed to Cloudflare Workers as `nadhir` — <https://nadhir.mehdibrhl4.workers.dev>.
-  Ship with `bun run build && bunx wrangler deploy`.
+  Ship with `bun run build && bunx wrangler deploy`. Requires the Workers **Paid** plan: React
+  SSR exceeds the free plan's 10ms CPU budget, so pages 503 while the JSON API still answers.
+- Daily FWI refresh runs in GitHub Actions (`.github/workflows/risk-refresh.yml`), not
+  `pg_cron` — it is minutes of CPU-bound work. The `nadhir-risk` cron job is unscheduled;
+  `nadhir-ingest` and `nadhir-alerts` still run in the database.
 - `bun run seed:geo --prune` — reseed geography from `data/geo/` (monthly, idempotent).
 - Scheduler URL is a vault secret `nadhir_app_url`; the cron function raises if unset.
 - Secrets needed by the deployed app: `FIRMS_MAP_KEY`, `EUMETSAT_CONSUMER_KEY/SECRET`,

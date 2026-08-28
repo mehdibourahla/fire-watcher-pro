@@ -108,6 +108,11 @@ bunx wrangler deploy
 
 Live at <https://nadhir.mehdibrhl4.workers.dev>.
 
+**This needs the Workers Paid plan.** React SSR costs more than the free plan's 10ms CPU
+budget, so on the free plan roughly 70% of page loads return 503 `exceededCpu` while the JSON
+API and static assets — which never render React — keep returning 200. That asymmetry is the
+signature of the CPU limit rather than a broken deploy.
+
 `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` are baked into the client bundle at
 build time. Everything else is a runtime secret set with `wrangler secret put <NAME>`:
 `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `FIRMS_MAP_KEY`,
@@ -117,6 +122,12 @@ After deploying, point the scheduler at the new host by setting the vault secret
 `nadhir_app_url` to the deployment URL; until then every `pg_cron` job fails by design.
 `NADHIR_CRON_SECRET` authenticates external callers of `/api/public/cron/*`; `pg_cron` itself
 authenticates with the separate token in `public.internal_cron_token`.
+
+`pg_cron` drives ingest and alerts. The daily FWI refresh does **not** run there — it is a
+CPU-bound batch over 1536 communes that takes minutes, so it lives in
+`.github/workflows/risk-refresh.yml` and the `nadhir-risk` job is unscheduled. Each Actions
+run also gets a fresh IP, which matters because Open-Meteo's free quota is per-IP; dispatching
+that workflow is the fastest way to fill `fwi_state` for a new commune set.
 
 ## Known limitations
 
