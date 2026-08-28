@@ -58,7 +58,7 @@ export function SiteHeader() {
     <header className="sticky top-0 z-20 border-b border-border bg-surface/95 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-[1600px] items-center gap-4 px-4">
         <Link to="/" className="flex items-center gap-2">
-          <BrandMark className="h-6 w-6 shrink-0" />
+          <BrandMark className="h-7 w-7 shrink-0 rounded-[7px]" />
           <span className="font-display text-lg font-semibold">
             {t("common.appName")}
           </span>

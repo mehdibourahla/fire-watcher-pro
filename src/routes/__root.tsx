@@ -106,9 +106,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           rel: "stylesheet",
           href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap",
         },
-        // .ico first for browsers that ignore SVG icons entirely
         { rel: "icon", href: "/favicon.ico", sizes: "48x48" },
-        { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+        {
+          rel: "icon",
+          href: "/icon-192.png",
+          type: "image/png",
+          sizes: "192x192",
+        },
         { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
         { rel: "manifest", href: "/site.webmanifest" },
       ],
