@@ -298,7 +298,7 @@ export const ar: Translation = {
     photoRemove: "إزالة الصورة",
     photoFailed: "فشل رفع الصورة. حاول مرة أخرى.",
     photoTooLarge: "حجم الصورة يتجاوز 8 ميغابايت.",
-    photoBadType: "يمكن إرفاق ملفات الصور فقط.",
+    photoBadType: "يمكن إرفاق صور JPEG أو PNG فقط.",
     photoUnavailable: "الصورة غير متاحة.",
     photoAlt: "صورة مرفقة ببلاغ حريق من مواطن",
     submit: "إرسال البلاغ",

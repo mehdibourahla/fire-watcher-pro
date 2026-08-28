@@ -304,7 +304,7 @@ export const en = {
     photoRemove: "Remove photo",
     photoFailed: "Photo upload failed. Try again.",
     photoTooLarge: "Photo is larger than 8 MB.",
-    photoBadType: "Only image files can be attached.",
+    photoBadType: "Only JPEG or PNG photos can be attached.",
     photoUnavailable: "Photo unavailable.",
     photoAlt: "Photo attached to a citizen fire report",
     submit: "Send report",

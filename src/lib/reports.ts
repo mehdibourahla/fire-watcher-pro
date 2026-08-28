@@ -1,5 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 
+import { stripImageMetadata } from "@/lib/image-metadata";
 import { supabase } from "@/integrations/supabase/client";
 
 export type ReportStatus = "pending" | "approved" | "rejected";
@@ -140,16 +141,19 @@ export const REPORT_PHOTO_BUCKET = "report-photos";
 export async function uploadReportPhoto(file: File): Promise<string> {
   const { data: auth } = await supabase.auth.getUser();
   if (!auth.user) throw new Error("Not signed in");
-  if (!file.type.startsWith("image/")) throw new Error("unsupported_type");
   if (file.size > 8 * 1024 * 1024) throw new Error("too_large");
-  const ext =
-    (file.name.split(".").pop() ?? "jpg")
-      .toLowerCase()
-      .replace(/[^a-z0-9]/g, "") || "jpg";
+  const clean = stripImageMetadata(
+    new Uint8Array(await file.arrayBuffer()),
+    file.type,
+  );
+  const ext = file.type === "image/png" ? "png" : "jpg";
   const path = `${auth.user.id}/${crypto.randomUUID()}.${ext}`;
   const { error } = await supabase.storage
     .from(REPORT_PHOTO_BUCKET)
-    .upload(path, file, { contentType: file.type, upsert: false });
+    .upload(path, new Blob([clean], { type: file.type }), {
+      contentType: file.type,
+      upsert: false,
+    });
   if (error) throw new Error(error.message);
   return path;
 }
