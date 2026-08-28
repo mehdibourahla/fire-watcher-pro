@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Bell, Flame, MapPin, Settings, TriangleAlert } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
+import { BrandMark } from "@/components/BrandMark";
 import { RISK_LEVELS, riskSolid } from "@/components/nadhir/risk-visuals";
 import { LOCALES, LOCALE_LABELS, applyLocale } from "@/i18n";
 import { dangerLevelKey } from "@/lib/nadhir";
@@ -56,7 +57,8 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-20 border-b border-border bg-surface/95 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-[1600px] items-center gap-4 px-4">
-        <Link to="/" className="flex items-baseline gap-2">
+        <Link to="/" className="flex items-center gap-2">
+          <BrandMark className="h-6 w-6 shrink-0" />
           <span className="font-display text-lg font-semibold">
             {t("common.appName")}
           </span>

@@ -1,0 +1,16 @@
+{
+  "name": "نذير · Nadhir",
+  "short_name": "Nadhir",
+  "lang": "ar",
+  "dir": "rtl",
+  "description": "Wildfire early warning for Algeria — satellite detections, fire-weather risk and zone alerts.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#14181d",
+  "theme_color": "#14181d",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
