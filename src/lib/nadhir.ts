@@ -1,5 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 
+import { isInAlgeriaNorth } from "@/lib/ingest/geo";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchAllPages } from "@/lib/paginate";
 import type { Locale } from "@/i18n";
@@ -145,6 +146,8 @@ export function placeLabel(
   settlements: Settlement[],
   locale: Locale,
 ): { name: string; approximate: boolean } {
+  if (!isInAlgeriaNorth(cluster.lat, cluster.lon))
+    return { name: coordLabel(cluster.lat, cluster.lon), approximate: false };
   if (cluster.commune_id) {
     const commune = units.find((u) => u.id === cluster.commune_id);
     if (commune) return { name: unitName(commune, locale), approximate: false };

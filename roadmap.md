@@ -35,6 +35,8 @@ Seed and ops credentials live in `~/.config/nadhir/`, never in this repo.
 - [x] UI/UX rebuild — see `docs/superpowers/specs/2026-08-28-nadhir-ui-redesign-design.md`
 - [x] Real geography — 69 wilayas, 1536 communes, 10257 settlements from OSM
 - [x] FWI state persistence (`fwi_state`) so runs advance instead of re-fetching history
+- [x] Cross-border watch strips into Morocco and Tunisia; fires outside Algeria keep their
+      coordinates instead of borrowing the nearest Algerian commune name
 
 ## Known gaps
 
@@ -57,12 +59,6 @@ Seed and ops credentials live in `~/.config/nadhir/`, never in this repo.
   Object model only — signing, approval chains and Cell Broadcast are institutional work.
 - `forest_fraction` is 0 everywhere — needs ESA WorldCover. The §9.3 wind bump is
   implemented but never fires until this is populated.
-- Cross-border awareness. Nothing clips to Algeria: the FIRMS box (`-3,33.2,9,37.6`,
-  `firms.server.ts:6`) reaches 70–130 km into Morocco but only ~35 km past the Tunisian
-  border at its northern end, where the Kroumirie–El Kala forest belt runs continuous —
-  widen the east edge to ~10.5. Fusion then attributes any cluster within 60 km of a
-  commune centroid to that commune (`fusion.server.ts:352`), so a Tunisian fire is shown
-  as a definite Algerian commune (`placeLabel` returns `approximate: false`), not as foreign.
 - Citizen reports: no EXIF stripping, captcha, or AV scan.
 - Admin console: no cluster resolve (US-6), broadcast, or audit log.
 - Public API: no GeoJSON, `/stats`, WebSocket, or tiles.
