@@ -38,40 +38,10 @@ Seed and ops credentials live in `~/.config/nadhir/`, never in this repo.
 
 ## Known gaps
 
-**Blocking a real warning service**
-
-- Danger-scale calibration. CFFDRS is faithful to Van Wagner (±0.01, tested) but
-  in Algeria's arid regime most communes read "Extreme". Needs recalibrated §9.1
-  thresholds, a northern-only scale, or EFFIS as the authority.
-- FCI fast path. Decoding netCDF is not possible in the edge runtime; the §1.4
-  sub-5-minute detection target depends on it.
-- Registration cannot complete. Login, RLS and lazy profile creation are verified working,
-  but signup needs a confirmation email and the project has no custom SMTP, so it falls back
-  to Supabase's built-in sender at 2 emails/hour project-wide (not for production). Fixed
-  2026-08-28: `site_url` was `http://localhost:3000` and `uri_allow_list` was empty, so every
-  confirmation link pointed at localhost and the app's `emailRedirectTo` was ignored. Still
-  needs an SMTP provider before anyone can actually register. `auth.users` is 0.
-
-**Not started**
-
-- Alert rules R2 (growth) and R5 (all-clear); R5 needs the `alerts.kind` CHECK widened.
-- Push/SMS/Telegram/email delivery. A Firebase service account exists but is unwired.
-  Decided: model the alert as a CAP object first (`event`, `severity`, `urgency`,
-  `certainty`, `effective`/`expires`, area, `instruction`, language) and make each channel a
-  renderer over it. While zero channels exist that is one table and a serializer; after
-  four channels ship it is four rewrites plus a backfill of everything already sent.
-  Object model only — signing, approval chains and Cell Broadcast are institutional work.
-- `forest_fraction` is 0 everywhere — needs ESA WorldCover. The §9.3 wind bump is
-  implemented but never fires until this is populated.
-- Cross-border awareness. Nothing clips to Algeria: the FIRMS box (`-3,33.2,9,37.6`,
-  `firms.server.ts:6`) reaches 70–130 km into Morocco but only ~35 km past the Tunisian
-  border at its northern end, where the Kroumirie–El Kala forest belt runs continuous —
-  widen the east edge to ~10.5. Fusion then attributes any cluster within 60 km of a
-  commune centroid to that commune (`fusion.server.ts:352`), so a Tunisian fire is shown
-  as a definite Algerian commune (`placeLabel` returns `approximate: false`), not as foreign.
-- Citizen reports: no EXIF stripping, captcha, or AV scan.
-- Admin console: no cluster resolve (US-6), broadcast, or audit log.
-- Public API: no GeoJSON, `/stats`, WebSocket, or tiles.
+The full, evidence-checked list lives in [GAPS.md](GAPS.md) — kept there rather than duplicated
+here so the two cannot drift. Headline blockers: the danger scale reads Extreme for 68.8% of
+communes and Low for none, registration cannot complete without SMTP, no alert reaches a human,
+and fires across the Moroccan and Tunisian borders are labelled as Algerian communes.
 
 ## Operations
 
