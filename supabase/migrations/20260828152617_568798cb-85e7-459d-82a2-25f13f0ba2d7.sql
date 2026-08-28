@@ -18,7 +18,7 @@ declare s text;
 begin
   select decrypted_secret into s from vault.decrypted_secrets where name = 'nadhir_cron_token';
   perform net.http_post(
-    url := 'https://project--c0eef65a-a6c2-41c6-b6b5-ecce44af480d-dev.lovable.app' || _path,
+    url := rtrim(coalesce((select decrypted_secret from vault.decrypted_secrets where name = 'nadhir_app_url'), ''), '/') || _path,
     headers := jsonb_build_object('Content-Type', 'application/json', 'Authorization', 'Bearer ' || s),
     body := '{}'::jsonb,
     timeout_milliseconds := 120000

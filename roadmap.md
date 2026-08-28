@@ -59,4 +59,4 @@ Seed and ops credentials live in `~/.config/nadhir/`, never in this repo.
 - `bun run seed:geo --prune` — reseed geography from `data/geo/` (monthly, idempotent).
 - Scheduler URL is a vault secret `nadhir_app_url`; the cron function raises if unset.
 - Secrets needed by the deployed app: `FIRMS_MAP_KEY`, `EUMETSAT_CONSUMER_KEY/SECRET`,
-  `LOVABLE_CRON_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`.
+  `NADHIR_CRON_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`.

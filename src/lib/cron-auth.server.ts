@@ -1,7 +1,7 @@
 import { authenticateCronRequest } from "@/integrations/supabase/cron-auth";
 
 /**
- * Accepts either the platform cron secret (LOVABLE_CRON_SECRET) or the
+ * Accepts either the platform cron secret (NADHIR_CRON_SECRET) or the
  * internal token used by the database scheduler (pg_cron -> pg_net), which is
  * stored in the service-role-only table public.internal_cron_token.
  */

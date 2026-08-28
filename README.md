@@ -41,8 +41,8 @@ cp .env.example .env.local   # then fill in the Supabase values
 bun run dev                  # http://localhost:8080
 ```
 
-The dev server listens on **8080**, not vite's usual 5173; the port comes from
-`@lovable.dev/vite-tanstack-config`, so `vite.config.ts` is deliberately thin.
+The dev server listens on **8080**, not vite's usual 5173; the port is set explicitly in
+`vite.config.ts`.
 
 Only the Supabase URL and publishable key are needed to boot the UI. The service-role key
 and ingestion credentials (`FIRMS_MAP_KEY`, `EUMETSAT_CONSUMER_KEY/SECRET`) are server-side
@@ -115,9 +115,3 @@ The application declares its code AGPL-3.0 and its derived data CC-BY 4.0, with 
 to "Nadhir — NASA FIRMS, Open-Meteo". Source data stays under the licences of NASA FIRMS,
 EUMETSAT, Copernicus, Open-Meteo and OpenStreetMap. No `LICENSE` file has been added to the
 repository yet, so that declaration currently lives only in the app's own terms pages.
-
-## Lovable
-
-This project syncs to [Lovable](https://lovable.dev), which owns `vite.config.ts` through
-`@lovable.dev/vite-tanstack-config`. Credentials must never be committed — `.gitignore`
-excludes `.env*` for that reason.

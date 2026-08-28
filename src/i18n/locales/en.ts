@@ -217,8 +217,6 @@ export const en = {
     zoneFires: "{{count}} active fire(s) nearby — closest {{km}} km",
     authTitle: "Sign in to Nadhir",
     authSubtitle: "Save the places you care about and get warned early.",
-    google: "Continue with Google",
-    or: "or",
     email: "Email",
     password: "Password",
     signIn: "Sign in",

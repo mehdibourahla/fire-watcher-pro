@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -73,35 +72,12 @@ function AuthPage() {
     }
   }
 
-  async function google() {
-    setError(null);
-    try {
-      await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
-    }
-  }
-
   return (
     <div className="mx-auto max-w-[440px] px-4 py-10">
       <h1 className="text-2xl">{t("account.authTitle")}</h1>
       <p className="mt-1 text-sm text-muted-foreground">{t("account.authSubtitle")}</p>
 
       <div className="panel mt-5 p-5">
-        <button
-          type="button"
-          onClick={google}
-          className="w-full rounded-md border border-border bg-background px-4 py-2 text-sm font-medium hover:bg-secondary"
-        >
-          {t("account.google")}
-        </button>
-
-        <div className="my-4 flex items-center gap-3 text-xs text-muted-foreground">
-          <span className="h-px flex-1 bg-border" />
-          {t("account.or")}
-          <span className="h-px flex-1 bg-border" />
-        </div>
-
         <form onSubmit={submit} className="space-y-3">
           <label className="block text-sm">
             <span className="mb-1 block text-muted-foreground">{t("account.email")}</span>

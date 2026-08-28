@@ -227,8 +227,6 @@ export const fr: Translation = {
       "{{count}} incendie(s) actif(s) à proximité — le plus proche à {{km}} km",
     authTitle: "Se connecter à Nadhir",
     authSubtitle: "Enregistrez les lieux qui comptent et soyez alerté tôt.",
-    google: "Continuer avec Google",
-    or: "ou",
     email: "E-mail",
     password: "Mot de passe",
     signIn: "Se connecter",

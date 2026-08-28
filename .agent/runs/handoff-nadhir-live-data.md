@@ -104,5 +104,5 @@ low and converges over subsequent daily runs. That is a scientific trade, not a 
 - Product spec: `ORIGINAL-SPEC.md` (stale on wilaya count; otherwise authoritative)
 - Dashboard: https://supabase.com/dashboard/project/kuukthyenirwgdfkltlm
 - Credentials: `~/.config/nadhir/` — db password, API secrets, old-project env backup.
-  Never in the repo; it syncs to Lovable. FIRMS/EUMETSAT/Firebase keys were pasted in chat
+  Never in the repo. FIRMS/EUMETSAT/Firebase keys were pasted in chat
   and should be rotated.

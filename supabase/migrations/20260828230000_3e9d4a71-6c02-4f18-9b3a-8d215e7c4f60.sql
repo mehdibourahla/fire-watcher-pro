@@ -1,4 +1,4 @@
--- The scheduler URL was hardcoded to one Lovable preview host, so every restored
+-- The scheduler URL was hardcoded to one preview host, so every restored
 -- or forked project kept calling the original deployment. Read it from vault
 -- instead and fail loudly when it is unset rather than posting into the void.
 do $$

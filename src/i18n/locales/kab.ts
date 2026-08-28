@@ -219,8 +219,6 @@ export const kab: Translation = {
     zoneFires: "{{count}} n times yeddren ɣer tama — amezwaru ɣef {{km}} km",
     authTitle: "Kcem ɣer Nadhir",
     authSubtitle: "Sekles imukan i k-yecqan, tesɛuḍ alɣu zik.",
-    google: "Kemmel s Google",
-    or: "neɣ",
     email: "Imayl",
     password: "Awal uffir",
     signIn: "Kcem",

@@ -6,7 +6,7 @@ node_modules
 dist
 .DS_Store
 
-# secrets — this repo syncs to Lovable/GitHub, so never commit credentials
+# secrets — never commit credentials
 .env
 .env.*
 !.env.example
