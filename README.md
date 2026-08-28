@@ -106,9 +106,14 @@ bun run build
 bunx wrangler deploy
 ```
 
-Live at <https://nadhir.app> (the `nadhir.mehdibrhl4.workers.dev` origin still answers).
-The custom domains are declared as `routes` in `vite.config.ts`, so Cloudflare re-attaches
-them on every deploy and issues the certificate itself — there are no DNS records to add.
+Live at <https://nadhir.app> (plus `www`). The custom domains are declared as `routes` in
+`vite.config.ts`, so Cloudflare re-attaches them on every deploy and issues the certificate
+itself — there are no DNS records to add.
+
+Declaring `routes` also flips wrangler's `workers_dev` default to false, so
+`nadhir.mehdibrhl4.workers.dev` now returns 404 (Cloudflare error 1042). That is deliberate —
+one canonical host — but it means the scheduler's `nadhir_app_url` must be updated in the same
+change, or `pg_cron` keeps calling a hostname that no longer resolves to the Worker.
 
 **This needs the Workers Paid plan.** React SSR costs more than the free plan's 10ms CPU
 budget, so on the free plan roughly 70% of page loads return 503 `exceededCpu` while the JSON

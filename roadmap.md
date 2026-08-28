@@ -69,10 +69,11 @@ Seed and ops credentials live in `~/.config/nadhir/`, never in this repo.
 
 ## Operations
 
-- Deployed to Cloudflare Workers as `nadhir` — <https://nadhir.app> (also `www`, and the
-  `nadhir.mehdibrhl4.workers.dev` origin).
-  Ship with `bun run build && bunx wrangler deploy`. Requires the Workers **Paid** plan: React
-  SSR exceeds the free plan's 10ms CPU budget, so pages 503 while the JSON API still answers.
+- Deployed to Cloudflare Workers as `nadhir` — <https://nadhir.app> and `www`. The
+  `workers.dev` hostname is off: declaring `routes` sets `workers_dev` false.
+  Ship with `bun run build && bunx wrangler deploy`. Requires the Workers **Paid** plan
+  (active): React SSR exceeds the free plan's 10ms CPU budget, so pages 503 there while the
+  JSON API still answers.
 - Daily FWI refresh runs in GitHub Actions (`.github/workflows/risk-refresh.yml`), not
   `pg_cron` — it is minutes of CPU-bound work. The `nadhir-risk` cron job is unscheduled;
   `nadhir-ingest` and `nadhir-alerts` still run in the database.
