@@ -106,7 +106,9 @@ bun run build
 bunx wrangler deploy
 ```
 
-Live at <https://nadhir.mehdibrhl4.workers.dev>.
+Live at <https://nadhir.app> (the `nadhir.mehdibrhl4.workers.dev` origin still answers).
+The custom domains are declared as `routes` in `vite.config.ts`, so Cloudflare re-attaches
+them on every deploy and issues the certificate itself — there are no DNS records to add.
 
 **This needs the Workers Paid plan.** React SSR costs more than the free plan's 10ms CPU
 budget, so on the free plan roughly 70% of page loads return 503 `exceededCpu` while the JSON

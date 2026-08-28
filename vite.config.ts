@@ -63,6 +63,10 @@ export default defineConfig(({ command }) => ({
                 // SSR makes several Supabase round-trips, so run near the database
                 placement: { mode: "smart" },
                 observability: { enabled: true, head_sampling_rate: 1 },
+                routes: [
+                  { pattern: "nadhir.app", custom_domain: true },
+                  { pattern: "www.nadhir.app", custom_domain: true },
+                ],
               },
             },
           }),

@@ -50,15 +50,27 @@ Seed and ops credentials live in `~/.config/nadhir/`, never in this repo.
 
 - Alert rules R2 (growth) and R5 (all-clear); R5 needs the `alerts.kind` CHECK widened.
 - Push/SMS/Telegram/email delivery. A Firebase service account exists but is unwired.
+  Decided: model the alert as a CAP object first (`event`, `severity`, `urgency`,
+  `certainty`, `effective`/`expires`, area, `instruction`, language) and make each channel a
+  renderer over it. While zero channels exist that is one table and a serializer; after
+  four channels ship it is four rewrites plus a backfill of everything already sent.
+  Object model only — signing, approval chains and Cell Broadcast are institutional work.
 - `forest_fraction` is 0 everywhere — needs ESA WorldCover. The §9.3 wind bump is
   implemented but never fires until this is populated.
+- Cross-border awareness. Nothing clips to Algeria: the FIRMS box (`-3,33.2,9,37.6`,
+  `firms.server.ts:6`) reaches 70–130 km into Morocco but only ~35 km past the Tunisian
+  border at its northern end, where the Kroumirie–El Kala forest belt runs continuous —
+  widen the east edge to ~10.5. Fusion then attributes any cluster within 60 km of a
+  commune centroid to that commune (`fusion.server.ts:352`), so a Tunisian fire is shown
+  as a definite Algerian commune (`placeLabel` returns `approximate: false`), not as foreign.
 - Citizen reports: no EXIF stripping, captcha, or AV scan.
 - Admin console: no cluster resolve (US-6), broadcast, or audit log.
 - Public API: no GeoJSON, `/stats`, WebSocket, or tiles.
 
 ## Operations
 
-- Deployed to Cloudflare Workers as `nadhir` — <https://nadhir.mehdibrhl4.workers.dev>.
+- Deployed to Cloudflare Workers as `nadhir` — <https://nadhir.app> (also `www`, and the
+  `nadhir.mehdibrhl4.workers.dev` origin).
   Ship with `bun run build && bunx wrangler deploy`. Requires the Workers **Paid** plan: React
   SSR exceeds the free plan's 10ms CPU budget, so pages 503 while the JSON API still answers.
 - Daily FWI refresh runs in GitHub Actions (`.github/workflows/risk-refresh.yml`), not
