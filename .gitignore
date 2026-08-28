@@ -11,3 +11,6 @@ dist
 .env.*
 !.env.example
 *.pem
+
+# agent worktrees are separate git repos, never part of this one
+.claude/worktrees/
