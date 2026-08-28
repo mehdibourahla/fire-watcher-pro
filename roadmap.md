@@ -11,13 +11,13 @@ Seed and ops credentials live in `~/.config/nadhir/`, never in this repo.
 
 ## Data sources actually connected
 
-| Source | State |
-|---|---|
-| NASA FIRMS (SNPP, NOAA-20, NOAA-21, MODIS) | connected, ingesting |
-| Open-Meteo (weather + local FWI + winds) | connected |
-| OpenStreetMap (admin boundaries, settlements) | seeded via `bun run seed:geo` |
-| EUMETSAT MTG FCI | credentials valid; **feed health only** — netCDF is not decoded, no detections written |
-| EFFIS / GWIS | **not connected**; `/status` reports it as unavailable |
+| Source                                        | State                                                                                  |
+| --------------------------------------------- | -------------------------------------------------------------------------------------- |
+| NASA FIRMS (SNPP, NOAA-20, NOAA-21, MODIS)    | connected, ingesting                                                                   |
+| Open-Meteo (weather + local FWI + winds)      | connected                                                                              |
+| OpenStreetMap (admin boundaries, settlements) | seeded via `bun run seed:geo`                                                          |
+| EUMETSAT MTG FCI                              | credentials valid; **feed health only** — netCDF is not decoded, no detections written |
+| EFFIS / GWIS                                  | **not connected**; `/status` reports it as unavailable                                 |
 
 ## Phases
 
@@ -39,6 +39,7 @@ Seed and ops credentials live in `~/.config/nadhir/`, never in this repo.
 ## Known gaps
 
 **Blocking a real warning service**
+
 - Danger-scale calibration. CFFDRS is faithful to Van Wagner (±0.01, tested) but
   in Algeria's arid regime most communes read "Extreme". Needs recalibrated §9.1
   thresholds, a northern-only scale, or EFFIS as the authority.
@@ -46,6 +47,7 @@ Seed and ops credentials live in `~/.config/nadhir/`, never in this repo.
   sub-5-minute detection target depends on it.
 
 **Not started**
+
 - Alert rules R2 (growth) and R5 (all-clear); R5 needs the `alerts.kind` CHECK widened.
 - Push/SMS/Telegram/email delivery. A Firebase service account exists but is unwired.
 - `forest_fraction` is 0 everywhere — needs ESA WorldCover. The §9.3 wind bump is
@@ -56,6 +58,8 @@ Seed and ops credentials live in `~/.config/nadhir/`, never in this repo.
 
 ## Operations
 
+- Deployed to Cloudflare Workers as `nadhir` — <https://nadhir.mehdibrhl4.workers.dev>.
+  Ship with `bun run build && bunx wrangler deploy`.
 - `bun run seed:geo --prune` — reseed geography from `data/geo/` (monthly, idempotent).
 - Scheduler URL is a vault secret `nadhir_app_url`; the cron function raises if unset.
 - Secrets needed by the deployed app: `FIRMS_MAP_KEY`, `EUMETSAT_CONSUMER_KEY/SECRET`,

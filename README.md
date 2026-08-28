@@ -92,7 +92,31 @@ Scheduling is `pg_cron` calling back into the deployed app over HTTP. The target
 vault secret `nadhir_app_url`; the cron function raises if it is unset, so the jobs fail
 loudly rather than silently doing nothing when the app is not deployed.
 
-A public read API is exposed at `/api/public/v1/fires` and `/api/public/v1/risk`.
+A public read API is exposed at `/api/public/v1/fires` and `/api/public/v1/risk`. The risk
+endpoint takes `?commune=<code>` — the `admin_units.code` value, not a place name.
+
+## Deployment
+
+Runs on Cloudflare Workers, built by nitro's `cloudflare-module` preset. The worker name is
+set in `vite.config.ts`; nitro regenerates `.output/server/wrangler.json` on every build, so
+edits there are lost.
+
+```sh
+bun run build
+bunx wrangler deploy
+```
+
+Live at <https://nadhir.mehdibrhl4.workers.dev>.
+
+`VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` are baked into the client bundle at
+build time. Everything else is a runtime secret set with `wrangler secret put <NAME>`:
+`SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `FIRMS_MAP_KEY`,
+`EUMETSAT_CONSUMER_KEY`, `EUMETSAT_CONSUMER_SECRET`, `NADHIR_CRON_SECRET`.
+
+After deploying, point the scheduler at the new host by setting the vault secret
+`nadhir_app_url` to the deployment URL; until then every `pg_cron` job fails by design.
+`NADHIR_CRON_SECRET` authenticates external callers of `/api/public/cron/*`; `pg_cron` itself
+authenticates with the separate token in `public.internal_cron_token`.
 
 ## Known limitations
 
