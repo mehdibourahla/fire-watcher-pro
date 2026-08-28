@@ -1,0 +1,36 @@
+name: Daily FWI refresh
+
+# The pipeline is CPU-bound over 1536 communes and exceeds the Cloudflare Worker
+# CPU limit, so it runs here instead of the /api/public/cron/risk endpoint.
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: risk-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - run: bun install --frozen-lockfile
+
+      - name: Refresh risk forecasts
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          set -euo pipefail
+          out=$(bun -e 'const {runRiskPipeline}=await import("./src/lib/ingest/pipeline.server.ts");console.log(JSON.stringify(await runRiskPipeline()))' | tail -1)
+          echo "$out"
+          # a quota or upsert failure must not pass silently as a green run
+          if echo "$out" | grep -q '"error"'; then exit 1; fi

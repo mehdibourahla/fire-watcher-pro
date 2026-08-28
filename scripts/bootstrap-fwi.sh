@@ -5,7 +5,9 @@
 set -euo pipefail
 : "${SUPABASE_URL:?set SUPABASE_URL}"
 : "${SUPABASE_SERVICE_ROLE_KEY:?set SUPABASE_SERVICE_ROLE_KEY}"
-GAP="${GAP_SECONDS:-900}"
+# Each pass re-fetches every commune that already has state, so a pass costs that
+# refresh whether or not quota is left for new ones; wait for the hourly reset.
+GAP="${GAP_SECONDS:-0}"
 
 count() {
   curl -s -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
@@ -20,7 +22,7 @@ for pass in $(seq 1 40); do
   n=$(count)
   echo "[pass $pass] fwi_state=$n/1536 :: $out"
   if [ "$n" -ge 1536 ] 2>/dev/null; then echo "BOOTSTRAP COMPLETE"; exit 0; fi
-  sleep "$GAP"
+  if [ "$GAP" -gt 0 ]; then sleep "$GAP"; else sleep $((3660 - $(date +%s) % 3600)); fi
 done
 echo "gave up after 40 passes; quota may need a daily reset"
 exit 1
