@@ -45,6 +45,12 @@ Seed and ops credentials live in `~/.config/nadhir/`, never in this repo.
   thresholds, a northern-only scale, or EFFIS as the authority.
 - FCI fast path. Decoding netCDF is not possible in the edge runtime; the §1.4
   sub-5-minute detection target depends on it.
+- Registration cannot complete. Login, RLS and lazy profile creation are verified working,
+  but signup needs a confirmation email and the project has no custom SMTP, so it falls back
+  to Supabase's built-in sender at 2 emails/hour project-wide (not for production). Fixed
+  2026-08-28: `site_url` was `http://localhost:3000` and `uri_allow_list` was empty, so every
+  confirmation link pointed at localhost and the app's `emailRedirectTo` was ignored. Still
+  needs an SMTP provider before anyone can actually register. `auth.users` is 0.
 
 **Not started**
 
