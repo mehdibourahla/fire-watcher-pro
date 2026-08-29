@@ -4,7 +4,10 @@ import { ingestEffis, type EffisRun } from "./effis.server";
 import { ingestEumetsat } from "./eumetsat.server";
 import { ingestFirms } from "./firms.server";
 import { fuseDetections } from "./fusion.server";
-import { screenPersistentSources } from "./persistent.server";
+import {
+  flagPersistentCandidates,
+  screenPersistentSources,
+} from "./persistent.server";
 import { enrichClusterWinds, refreshRiskForecasts } from "./weather.server";
 
 type RunOutcome = {
@@ -131,6 +134,8 @@ export async function runDetectionPipeline(): Promise<PipelineResult> {
   }
 
   let winds = 0;
+  await flagPersistentCandidates();
+
   try {
     winds = await enrichClusterWinds();
     await markSource("openmeteo", true, `Wind attached to ${winds} live fires`);

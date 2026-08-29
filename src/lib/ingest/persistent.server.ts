@@ -88,3 +88,62 @@ export async function screenPersistentSources(): Promise<{ screened: number }> {
   }
   return { screened };
 }
+
+export async function flagPersistentCandidates(): Promise<{ flagged: number }> {
+  const clusters = await fetchAllPages<{
+    id: string;
+    first_detected_at: string;
+    last_detected_at: string;
+  }>((from, to) =>
+    supabaseAdmin
+      .from("fire_clusters")
+      .select("id, first_detected_at, last_detected_at")
+      .in("state", ["active", "unconfirmed", "contained_guess"])
+      .eq("suspected_persistent_source", false)
+      .range(from, to),
+  );
+  if (!clusters.length) return { flagged: 0 };
+
+  const now = Date.now();
+  const candidates: string[] = [];
+  for (let i = 0; i < clusters.length; i += 100) {
+    const slice = clusters.slice(i, i + 100);
+    const dets = await fetchAllPages<{
+      cluster_id: string | null;
+      frp_mw: number | null;
+    }>((from, to) =>
+      supabaseAdmin
+        .from("detections")
+        .select("cluster_id, frp_mw")
+        .in(
+          "cluster_id",
+          slice.map((c) => c.id),
+        )
+        .range(from, to),
+    );
+    const byCluster = new Map<string, number[]>();
+    for (const d of dets) {
+      if (d.frp_mw === null || d.cluster_id === null) continue;
+      const bucket = byCluster.get(d.cluster_id);
+      if (bucket) bucket.push(d.frp_mw);
+      else byCluster.set(d.cluster_id, [d.frp_mw]);
+    }
+    for (const c of slice) {
+      const input = {
+        firstMs: Date.parse(c.first_detected_at),
+        lastMs: Date.parse(c.last_detected_at),
+        frps: byCluster.get(c.id) ?? [],
+      };
+      if (isPersistentCandidate(input, now)) candidates.push(c.id);
+    }
+  }
+
+  for (let i = 0; i < candidates.length; i += 200) {
+    const { error } = await supabaseAdmin
+      .from("fire_clusters")
+      .update({ suspected_persistent_source: true })
+      .in("id", candidates.slice(i, i + 200));
+    if (error) throw new Error(`candidate flag failed: ${error.message}`);
+  }
+  return { flagged: candidates.length };
+}

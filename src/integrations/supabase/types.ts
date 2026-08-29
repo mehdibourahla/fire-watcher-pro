@@ -489,6 +489,7 @@ export type Database = {
           sources: string[];
           spread_bearing_deg: number | null;
           state: string;
+          suspected_persistent_source: boolean;
           updated_at: string;
           wilaya_id: string | null;
           wind_dir_deg: number | null;
@@ -517,6 +518,7 @@ export type Database = {
           sources?: string[];
           spread_bearing_deg?: number | null;
           state?: string;
+          suspected_persistent_source?: boolean;
           updated_at?: string;
           wilaya_id?: string | null;
           wind_dir_deg?: number | null;
@@ -545,6 +547,7 @@ export type Database = {
           sources?: string[];
           spread_bearing_deg?: number | null;
           state?: string;
+          suspected_persistent_source?: boolean;
           updated_at?: string;
           wilaya_id?: string | null;
           wind_dir_deg?: number | null;
