@@ -347,16 +347,30 @@ export const dataSourcesQuery = queryOptions({
     ),
 });
 
+/* The table accumulates one 9216-row set per forecast date, so an unfiltered
+ * limit both truncates communes and mixes dates. Pin to the newest date and
+ * page through all of it. */
 export const riskForecastsQuery = queryOptions({
   queryKey: ["risk_forecasts"],
-  queryFn: async () =>
-    must<RiskForecast[]>(
-      await supabase
+  queryFn: async () => {
+    const { data: latest, error } = await supabase
+      .from("risk_forecasts")
+      .select("forecast_date")
+      .order("forecast_date", { ascending: false })
+      .limit(1);
+    if (error) throw new Error(error.message);
+    const date = (latest?.[0] as { forecast_date?: string } | undefined)
+      ?.forecast_date;
+    if (!date) return [] as RiskForecast[];
+    return fetchAllPages<RiskForecast>((from, to) =>
+      supabase
         .from("risk_forecasts")
         .select("*")
-        .order("horizon_days")
-        .limit(2000),
-    ),
+        .eq("forecast_date", date)
+        .order("id")
+        .range(from, to),
+    );
+  },
 });
 
 export function clusterDetailQuery(shortId: string) {
