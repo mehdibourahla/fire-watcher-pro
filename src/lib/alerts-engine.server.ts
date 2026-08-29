@@ -10,7 +10,8 @@ import {
   downwindOf,
   inQuietHours,
 } from "@/lib/alerts-rules";
-import { bearingBetween, haversineKm } from "@/lib/nadhir";
+import { buildFireCap, fireCapIdentifier } from "@/lib/cap";
+import { bearingBetween, coordLabel, haversineKm } from "@/lib/nadhir";
 import { fetchAllPages } from "@/lib/paginate";
 
 type Copy = {
@@ -22,6 +23,17 @@ type Copy = {
   clearBody: string;
   riskTitle: string;
   riskBody: string;
+  capEvent: string;
+  capDescription: string;
+  capInstruction: string;
+};
+
+/** RFC 3066 tags for the CAP <language> element. */
+const CAP_LANGUAGE: Record<string, string> = {
+  ar: "ar-DZ",
+  fr: "fr-DZ",
+  en: "en",
+  kab: "kab",
 };
 
 const COPY: Record<string, Copy> = {
@@ -37,6 +49,11 @@ const COPY: Record<string, Copy> = {
       "لم يعد الحريق قرب {{zone}} نشطًا. ابقَ حذرًا حتى تأكيد الإطفاء.",
     riskTitle: "خطر حرائق مرتفع في {{zone}}",
     riskBody: "مستوى الخطر اليوم {{level}}/5 في {{zone}}. تجنّب إشعال النار.",
+    capEvent: "حريق غابات",
+    capDescription:
+      "حريق مشتعل قرب {{place}}، تم رصده عبر الأقمار الاصطناعية وتجري متابعته.",
+    capInstruction:
+      "ابتعد عن الدخان، واتبع تعليمات السلطات المحلية، واتصل بالحماية المدنية على 14 إذا هدّد الحريق أشخاصًا أو منازل.",
   },
   fr: {
     fireTitle: "Incendie près de {{zone}}",
@@ -51,6 +68,11 @@ const COPY: Record<string, Copy> = {
     riskTitle: "Danger d'incendie élevé à {{zone}}",
     riskBody:
       "Niveau de danger {{level}}/5 aujourd'hui à {{zone}}. N'allumez aucun feu.",
+    capEvent: "Feu de forêt",
+    capDescription:
+      "Un incendie brûle près de {{place}}. Il a été détecté par satellite et fait l'objet d'un suivi.",
+    capInstruction:
+      "Éloignez-vous de la fumée, suivez les consignes des autorités locales et appelez la Protection Civile au 14 si le feu menace des personnes ou des habitations.",
   },
   en: {
     fireTitle: "Fire near {{zone}}",
@@ -65,6 +87,11 @@ const COPY: Record<string, Copy> = {
     riskTitle: "High fire danger at {{zone}}",
     riskBody:
       "Today's danger level is {{level}}/5 at {{zone}}. Do not light any fire.",
+    capEvent: "Wildfire",
+    capDescription:
+      "A fire is burning near {{place}}. It was detected by satellite and is being tracked.",
+    capInstruction:
+      "Stay away from the smoke, follow instructions from local authorities, and call Civil Protection on 14 if the fire threatens people or homes.",
   },
   kab: {
     fireTitle: "Times ɣer {{zone}}",
@@ -79,6 +106,11 @@ const COPY: Record<string, Copy> = {
     riskTitle: "Ayefki n times ɣer {{zone}}",
     riskBody:
       "Aswir n uɣilif ass-a d {{level}}/5 deg {{zone}}. Ur sserɣay ara times.",
+    capEvent: "Times n teẓgi",
+    capDescription:
+      "Times tettreɣ ɣer {{place}}. Tettwaf s uḍfar n igenwan yerna tettwaḍfaṛ.",
+    capInstruction:
+      "Ḥader iman-ik seg dexxan, ḍfer iwellihen n yidebbaren idiganen, tsiwleḍ i Tɣellist Tagdudant ɣef 14 ma tessexlaɛ times imdanen neɣ ixxamen.",
   },
 };
 
@@ -86,6 +118,76 @@ function fill(template: string, vars: Record<string, string | number>) {
   return template.replace(/\{\{(\w+)\}\}/g, (_, k: string) =>
     String(vars[k] ?? ""),
   );
+}
+
+type CapEvent = {
+  clusterId: string;
+  shortId: string;
+  lat: number;
+  lon: number;
+  confidence: number;
+  urgent: boolean;
+  place: string;
+};
+
+/** One CAP object per fire event, shared by every alert raised for it. */
+async function ensureCapAlerts(
+  events: CapEvent[],
+): Promise<Map<string, string>> {
+  if (!events.length) return new Map();
+  const sentAt = new Date();
+
+  const payload = events.map((event) => {
+    const cap = buildFireCap({
+      shortId: event.shortId,
+      lat: event.lat,
+      lon: event.lon,
+      radiusKm: SETTLEMENT_EMERGENCY_KM,
+      confidence: event.confidence,
+      urgent: event.urgent,
+      areaDesc: event.place,
+      sentAt,
+      texts: Object.entries(CAP_LANGUAGE).map(([locale, language]) => {
+        const copy = COPY[locale] ?? COPY["ar"]!;
+        return {
+          language,
+          event: copy.capEvent,
+          headline: fill(event.urgent ? copy.urgentTitle : copy.fireTitle, {
+            zone: event.place,
+          }),
+          description: fill(copy.capDescription, { place: event.place }),
+          instruction: copy.capInstruction,
+        };
+      }),
+    });
+
+    return {
+      identifier: cap.identifier,
+      sender: cap.sender,
+      sent: cap.sent,
+      status: cap.status,
+      msg_type: cap.msgType,
+      scope: cap.scope,
+      cluster_id: event.clusterId,
+      info: cap.info,
+    };
+  });
+
+  const { error } = await supabaseAdmin
+    .from("cap_alerts")
+    .upsert(payload, { onConflict: "identifier", ignoreDuplicates: true });
+  if (error) throw new Error(error.message);
+
+  const { data, error: readError } = await supabaseAdmin
+    .from("cap_alerts")
+    .select("id, identifier")
+    .in(
+      "identifier",
+      payload.map((p) => p.identifier),
+    );
+  if (readError) throw new Error(readError.message);
+
+  return new Map((data ?? []).map((row) => [row.identifier, row.id]));
 }
 
 export type AlertRun = {
@@ -149,6 +251,20 @@ export async function evaluateAlerts(userId?: string): Promise<AlertRun> {
     (forecasts ?? []).map((f) => [f.commune_id, f]),
   );
 
+  const placeByCluster = new Map<string, string>();
+  for (const cluster of alertable) {
+    let best: { name: string; km: number } | null = null;
+    for (const s of settlements) {
+      const km = haversineKm(cluster.lat, cluster.lon, s.lat, s.lon);
+      if (!best || km < best.km) best = { name: s.name, km };
+    }
+    placeByCluster.set(
+      cluster.id,
+      best ? best.name : coordLabel(cluster.lat, cluster.lon),
+    );
+  }
+
+  const capEvents = new Map<string, CapEvent>();
   const rows: Record<string, unknown>[] = [];
   let suppressed = 0;
 
@@ -192,7 +308,21 @@ export async function evaluateAlerts(userId?: string): Promise<AlertRun> {
           continue;
         }
 
+        const capIdentifier = fireCapIdentifier(cluster.short_id, !!urgent);
+        if (!capEvents.has(capIdentifier)) {
+          capEvents.set(capIdentifier, {
+            clusterId: cluster.id,
+            shortId: cluster.short_id,
+            lat: cluster.lat,
+            lon: cluster.lon,
+            confidence: cluster.confidence,
+            urgent: !!urgent,
+            place: placeByCluster.get(cluster.id) ?? cluster.short_id,
+          });
+        }
+
         rows.push({
+          cap_identifier: capIdentifier,
           user_id: zone.user_id,
           zone_id: zone.id,
           kind: "fire",
@@ -252,10 +382,23 @@ export async function evaluateAlerts(userId?: string): Promise<AlertRun> {
 
   if (!rows.length) return { evaluated: zones.length, created: 0, suppressed };
 
+  const capIdByIdentifier = await ensureCapAlerts([...capEvents.values()]);
+  const alertRows = rows.map((row) => {
+    const { cap_identifier: identifier, ...rest } = row as {
+      cap_identifier?: string;
+    };
+    return {
+      ...rest,
+      cap_alert_id: identifier
+        ? (capIdByIdentifier.get(identifier) ?? null)
+        : null,
+    };
+  });
+
   const { data: inserted, error } = await supabaseAdmin
     .from("alerts")
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .upsert(rows as any, {
+    .upsert(alertRows as any, {
       onConflict: "user_id,dedupe_key",
       ignoreDuplicates: true,
     })

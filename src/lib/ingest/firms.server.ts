@@ -1,9 +1,9 @@
-import { isInAlgeriaNorth } from "./geo";
+import { isInWatchArea } from "./geo";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
-/** Northern Algeria (Tell + steppe) bounding box: west,south,east,north.
+/** Northern Algeria plus the watched border strips: west,south,east,north.
  * Saharan gas flares south of this line are permanent thermal anomalies, not wildfires. */
-const AREA = "-3,33.2,9,37.6";
+const AREA = "-3.2,33.2,9.7,37.6";
 
 const FEEDS = [
   { source: "firms", sensor: "VIIRS_SNPP", api: "VIIRS_SNPP_NRT" },
@@ -64,7 +64,7 @@ export function mapFirmsRows(
     const lon = Number(row["longitude"]);
     const detected = toIso(row["acq_date"] ?? "", row["acq_time"] ?? "");
     if (!Number.isFinite(lat) || !Number.isFinite(lon) || !detected) continue;
-    if (!isInAlgeriaNorth(lat, lon)) continue;
+    if (!isInWatchArea(lat, lon)) continue;
     const frp = Number(row["frp"]);
     out.push({
       source: "firms",

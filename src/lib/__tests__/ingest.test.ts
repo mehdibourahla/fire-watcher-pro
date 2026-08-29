@@ -38,6 +38,12 @@ describe("emitted literals satisfy the DB CHECK constraints", () => {
     expect(src).not.toMatch(/from\("detections"\)/);
   });
 
+  it("fusion attaches a commune only to fires inside Algeria", () => {
+    const src = read("src/lib/ingest/fusion.server.ts");
+    const decided = /const communeId = ([^;\n]+);/.exec(src)?.[1] ?? "";
+    expect(decided).toMatch(/isInAlgeriaNorth/);
+  });
+
   it("fire_clusters.state — every state fuseDetections can return", () => {
     const src = read("src/lib/ingest/fusion.server.ts");
     const body = /function stateFor\([\s\S]*?\n}/.exec(src)?.[0] ?? "";

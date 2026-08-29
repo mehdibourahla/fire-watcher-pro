@@ -35,13 +35,18 @@ Seed and ops credentials live in `~/.config/nadhir/`, never in this repo.
 - [x] UI/UX rebuild — see `docs/superpowers/specs/2026-08-28-nadhir-ui-redesign-design.md`
 - [x] Real geography — 69 wilayas, 1536 communes, 10257 settlements from OSM
 - [x] FWI state persistence (`fwi_state`) so runs advance instead of re-fetching history
+- [x] Cross-border watch strips into Morocco and Tunisia; fires outside Algeria keep their
+      coordinates instead of borrowing the nearest Algerian commune name
+- [x] Exif stripped from citizen report photos before upload (JPEG and PNG only)
+- [x] Public API: GeoJSON on `/fires`, plus `/stats`
+- [x] CAP 1.2 alert object (`cap_alerts`) — **migration not yet applied to the live project**
 
 ## Known gaps
 
 The full, evidence-checked list lives in [GAPS.md](GAPS.md) — kept there rather than duplicated
 here so the two cannot drift. Headline blockers: the danger scale reads Extreme for 68.8% of
-communes and Low for none, registration cannot complete without SMTP, no alert reaches a human,
-and fires across the Moroccan and Tunisian borders are labelled as Algerian communes.
+communes and Low for none, registration cannot complete without SMTP, and no alert reaches a
+human.
 
 ## Operations
 

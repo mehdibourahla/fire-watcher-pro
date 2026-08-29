@@ -92,8 +92,9 @@ Scheduling is `pg_cron` calling back into the deployed app over HTTP. The target
 vault secret `nadhir_app_url`; the cron function raises if it is unset, so the jobs fail
 loudly rather than silently doing nothing when the app is not deployed.
 
-A public read API is exposed at `/api/public/v1/fires` and `/api/public/v1/risk`. The risk
-endpoint takes `?commune=<code>` — the `admin_units.code` value, not a place name.
+A public read API is exposed at `/api/public/v1/fires`, `/api/public/v1/risk` and
+`/api/public/v1/stats`. The risk endpoint takes `?commune=<code>` — the `admin_units.code`
+value, not a place name. Fires also serve GeoJSON with `?format=geojson`.
 
 ## Deployment
 
@@ -149,8 +150,9 @@ want to contribute. The blockers that matter most:
   falls back to a 2-emails/hour sender. `auth.users` is 0. Login and RLS themselves work.
 - **No alert reaches a human.** Alerts are computed and stored; push, SMS, email and Telegram
   are all unwired.
-- **Fires outside Algeria are labelled as Algerian communes.** Nothing clips detections to the
-  country, and attribution names a commune within 60 km without marking it uncertain.
+- **Cross-border fires are watched but coarsely placed.** Detections in the Moroccan and
+  Tunisian border strips are ingested and shown with coordinates rather than an Algerian
+  commune name, but nothing yet says which country they are in.
 - **No sub-5-minute detection.** The geostationary FCI feed is polled for health only — its
   netCDF granules cannot be decoded in the edge runtime, so it writes no detections.
 
@@ -159,7 +161,7 @@ want to contribute. The blockers that matter most:
 Issues and pull requests are welcome. [GAPS.md](GAPS.md) lists every known gap with the file
 to start from and a rough sense of difficulty; the "Where to start" table at the end maps
 interests to tasks. Genuinely small first contributions: add the missing `LICENSE` file, run
-`bun run format` (1651 formatting errors, zero real code errors), or add CI that runs the
+`bun run format` (1681 formatting errors, zero real code errors), or add CI that runs the
 existing test suite.
 
 Before changing anything that decides what a user is told, read `ORIGINAL-SPEC.md` for the

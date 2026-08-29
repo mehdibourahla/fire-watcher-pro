@@ -1,3 +1,4 @@
+import { isInAlgeriaNorth } from "./geo";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import type { TablesUpdate } from "@/integrations/supabase/types";
 import { fetchAllPages } from "@/lib/paginate";
@@ -337,7 +338,7 @@ export async function fuseDetections(lookbackHours = 48): Promise<FusionRun> {
 
     let nearestId: string | null = null;
     let nearestKm: number | null = null;
-    let communeId: string | null = null;
+    let nearestCommuneId: string | null = null;
     for (const s of settlements) {
       const km = haversineKm(lat, lon, s.lat, s.lon);
       if (
@@ -354,9 +355,11 @@ export async function fuseDetections(lookbackHours = 48): Promise<FusionRun> {
       const km = haversineKm(lat, lon, c.lat, c.lon);
       if (km <= nearestCommuneKm) {
         nearestCommuneKm = km;
-        communeId = c.id;
+        nearestCommuneId = c.id;
       }
     }
+    // a fire across the border is not "in" the nearest Algerian commune 60 km away
+    const communeId = isInAlgeriaNorth(lat, lon) ? nearestCommuneId : null;
     const wilayaId = communeId ? (parentOf.get(communeId) ?? null) : null;
 
     updates.push({

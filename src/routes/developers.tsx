@@ -10,10 +10,14 @@ export const Route = createFileRoute("/developers")({
         content:
           "Free read-only JSON API for live wildfire clusters and daily fire danger forecasts in Algeria, plus signed alert webhooks.",
       },
-      { property: "og:title", content: "Public API for Algeria wildfire data — Nadhir" },
+      {
+        property: "og:title",
+        content: "Public API for Algeria wildfire data — Nadhir",
+      },
       {
         property: "og:description",
-        content: "Open JSON endpoints for fire clusters and FWI danger levels across Algeria, CC-BY 4.0.",
+        content:
+          "Open JSON endpoints for fire clusters and FWI danger levels across Algeria, CC-BY 4.0.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -22,11 +26,24 @@ export const Route = createFileRoute("/developers")({
   component: DevelopersPage,
 });
 
-function Endpoint({ method, path, desc, params }: { method: string; path: string; desc: string; params: string[] }) {
+function Endpoint({
+  method,
+  path,
+  desc,
+  params,
+}: {
+  method: string;
+  path: string;
+  desc: string;
+  params: string[];
+}) {
   return (
     <div className="border-t border-border py-3">
       <p className="font-mono text-sm">
-        <span className="rounded bg-secondary px-1.5 py-0.5 text-xs">{method}</span> {path}
+        <span className="rounded bg-secondary px-1.5 py-0.5 text-xs">
+          {method}
+        </span>{" "}
+        {path}
       </p>
       <p className="mt-1 text-sm text-muted-foreground">{desc}</p>
       <ul className="mt-1 list-inside list-disc text-xs text-muted-foreground">
@@ -51,23 +68,49 @@ function DevelopersPage() {
           method="GET"
           path="/api/public/v1/fires"
           desc={t("dev.firesDesc")}
-          params={["state=active|unconfirmed|contained_guess|extinguished", "since=ISO timestamp", "limit=1..500", "offset"]}
+          params={[
+            "state=active|unconfirmed|contained_guess|extinguished",
+            "since=ISO timestamp",
+            "limit=1..500",
+            "offset",
+            "format=json|geojson",
+          ]}
         />
         <Endpoint
           method="GET"
           path="/api/public/v1/risk"
           desc={t("dev.riskDesc")}
-          params={["horizon=0..5", "commune=<commune code>", "limit=1..1000", "offset"]}
+          params={[
+            "horizon=0..5",
+            "commune=<commune code>",
+            "limit=1..1000",
+            "offset",
+          ]}
         />
-        <Endpoint method="GET" path="/api/public/v1/" desc={t("dev.indexDesc")} params={[]} />
-        <p className="mt-3 text-xs text-muted-foreground">{t("dev.rateLimit")}</p>
+        <Endpoint
+          method="GET"
+          path="/api/public/v1/stats"
+          desc={t("dev.statsDesc")}
+          params={[]}
+        />
+        <Endpoint
+          method="GET"
+          path="/api/public/v1/"
+          desc={t("dev.indexDesc")}
+          params={[]}
+        />
+        <p className="mt-3 text-xs text-muted-foreground">
+          {t("dev.rateLimit")}
+        </p>
       </section>
 
       <section className="panel mt-5 p-4">
         <h2 className="text-base">{t("dev.webhooks")}</h2>
-        <p className="mt-1 text-sm text-muted-foreground">{t("dev.webhooksDesc")}</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {t("dev.webhooksDesc")}
+        </p>
         <pre className="mt-3 overflow-x-auto rounded-md bg-secondary p-3 text-xs">
-{`POST <your endpoint>
+          {`POST <your endpoint>
 X-Nadhir-Signature: sha256=<hex hmac of the raw body>
 Content-Type: application/json
 
@@ -79,7 +122,10 @@ Content-Type: application/json
 }`}
         </pre>
         <p className="mt-3 text-sm">
-          <Link to="/webhooks" className="text-primary underline underline-offset-2">
+          <Link
+            to="/webhooks"
+            className="text-primary underline underline-offset-2"
+          >
             {t("dev.manage")}
           </Link>
         </p>
@@ -87,7 +133,9 @@ Content-Type: application/json
 
       <section className="panel mt-5 p-4">
         <h2 className="text-base">{t("dev.licence")}</h2>
-        <p className="mt-1 text-sm text-muted-foreground">{t("dev.licenceBody")}</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {t("dev.licenceBody")}
+        </p>
       </section>
     </div>
   );

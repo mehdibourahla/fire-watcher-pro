@@ -54,30 +54,22 @@ Alerts are computed and stored (`alerts` table) but nothing delivers them. Push,
 and Telegram are all unwired; a Firebase service account exists but is not connected. The
 alerts table currently holds 0 rows, which is expected given §1.2.
 
-Decided design: model the alert as a **CAP object** first (`event`, `severity`, `urgency`,
-`certainty`, `effective`/`expires`, area, `instruction`, language) and make each channel a
-renderer over it. While zero channels exist that is one table and a serializer; after four
-channels ship it is four rewrites plus a backfill of everything already sent. Object model
-only — signing, approval chains and Cell Broadcast are institutional work, not code.
+The **CAP object** every channel must render is now built (`cap_alerts`, `src/lib/cap.ts`):
+each fire alert links to one CAP 1.2 warning carrying all four languages, so a channel added
+later renders an approved object instead of inventing its own payload. It was done while zero
+channels exist because that is one table and a serializer; after four channels ship it would
+be four rewrites plus a backfill. Signing, approval chains and Cell Broadcast remain
+institutional work, not code.
 
-Start at: `src/lib/alerts-engine.server.ts`.
+What is left is the delivery itself: pick a provider per channel and render the CAP object to
+it. **The `cap_alerts` migration has not been applied to the live project yet**, and the
+engine writes to that table, so apply it before deploying.
 
-### 1.4 Fires outside Algeria are labelled as Algerian communes
+Start at: `src/lib/alerts-engine.server.ts`, `src/lib/cap.ts`.
 
-Nothing clips detections to the country. The FIRMS bounding box (`-3,33.2,9,37.6`,
-`src/lib/ingest/firms.server.ts:6`) reaches 70–130 km into Morocco and about 35 km past the
-Tunisian border at its northern end, exactly where the Kroumirie–El Kala forest belt runs
-continuous. Fusion then attributes any cluster within 60 km of a commune centroid to that
-commune (`MAX_COMMUNE_DISTANCE_KM`, `src/lib/ingest/fusion.server.ts:13`, applied at :352),
-and once a `commune_id` is set `placeLabel` returns `approximate: false`
-(`src/lib/nadhir.ts:150`) — a definite Algerian place name for a fire in another country.
+### 1.4 No sub-5-minute detection
 
-Two things to fix: widen the east edge to about 10.5 so the Tunisian forest belt is actually
-covered, and make attribution able to say "outside Algeria" instead of guessing a commune.
-
-### 1.5 No sub-5-minute detection
-
-The §1.4 target depends on the geostationary EUMETSAT MTG FCI feed. Credentials are valid and
+The spec's §1.4 target depends on the geostationary EUMETSAT MTG FCI feed. Credentials are valid and
 the feed is polled for health, but the granules are netCDF and the edge runtime cannot decode
 them, so **no FCI detection is ever written**. A test pins this behaviour in
 `src/lib/__tests__/ingest.test.ts` so it cannot regress silently.
@@ -104,13 +96,17 @@ wired at all. `/status` correctly reports it unavailable rather than pretending.
 
 - **Alert rules R2 (growth) and R5 (all-clear)** are unimplemented. R5 additionally needs the
   `alerts.kind` CHECK constraint widened before it can be inserted.
-- **Citizen reports** accept uploads with no EXIF stripping, no captcha and no antivirus scan.
-  Currently 0 reports, so this is a gap to close before promoting the feature, not a live
-  exposure.
+- **Citizen reports** strip Exif before upload (`src/lib/image-metadata.ts`), which also
+  narrows accepted photos to JPEG and PNG — anything else is refused rather than stored
+  unsanitised. The strip runs **in the browser**, so it protects a reporter from leaking their
+  own GPS but is not a control against someone who uploads to Storage without it; the bucket
+  enforces the size and mime limits server-side, nothing more. Captcha and antivirus scanning
+  are still missing. Currently 0 reports, so those are gaps to close before promoting the
+  feature, not a live exposure.
 - **Admin console** has no cluster resolve (US-6), no broadcast, and no audit log.
-- **Public API** has no GeoJSON output, no `/stats`, no WebSocket and no tiles. What exists is
-  `/api/public/v1/fires` and `/api/public/v1/risk`; the risk endpoint takes `?commune=<code>`
-  using `admin_units.code`, not a place name.
+- **Public API** has no WebSocket and no tiles. What exists is `/api/public/v1/fires`
+  (with `?format=geojson`), `/api/public/v1/risk` and `/api/public/v1/stats`; the risk
+  endpoint takes `?commune=<code>` using `admin_units.code`, not a place name.
 
 ## 4. Contributing, tooling and licence
 
@@ -132,25 +128,31 @@ Verify the target before any migration push.
 
 ### 4.3 `bun run lint` fails on a clean clone
 
-1651 errors across 77 files — and **every one of them is `prettier/prettier` formatting. There
+1681 errors across 61 files — and **every one of them is `prettier/prettier` formatting. There
 are zero real code errors.** The only other output is 7
 `react-refresh/only-export-components` warnings in shadcn/ui files, which are HMR ergonomics.
+Most of the volume is generated or vendored: `src/integrations/supabase/types.ts` alone
+accounts for 783, and the shadcn/ui components for most of the rest.
 
-`bun run format` fixes the lot. It has not been run because it touches 77 files and would
-collide with in-flight work; doing it as one isolated commit is a good first contribution.
+`bun run format` fixes the lot. It has not been run because it touches every one of those
+files and would collide with in-flight work; doing it as one isolated commit is a good first
+contribution. Leave `types.ts` out of it — it is regenerated by `supabase gen types`, which
+emits its own style, so formatting it just guarantees a conflict on the next regeneration.
 
 ### 4.4 There is no CI
 
 The only workflow is `.github/workflows/risk-refresh.yml`, which runs the daily FWI job.
 Nothing runs `bun run test`, `bunx tsc --noEmit` or `bun run lint` on a pull request, so
-nothing stops a regression landing. The test suite is fast (38 tests, well under a second).
+nothing stops a regression landing. The test suite is fast (71 tests, well under a second).
 
 ### 4.5 Test coverage is narrow
 
-38 tests across 6 files cover the FWI maths, FWI state advancement, alert rule evaluation,
-geo seeding, i18n key parity and ingest guards. There is no coverage of clustering/fusion,
-RLS policies, the public API routes, or any UI. Fusion (§1.4) is both untested and the place
-where a wrong answer is user-visible.
+71 tests across 11 files cover the FWI maths, FWI state advancement, alert rule evaluation,
+geo seeding, i18n key parity, ingest guards, the cross-border watch area, place labelling,
+Exif stripping, CAP construction and serialisation, and the public API's GeoJSON and stats
+helpers. There is still no coverage of clustering/fusion internals, RLS policies, the route
+handlers end to end, or any UI. Fusion is the weakest spot: its commune attribution is
+guarded only by an assertion over the source text, not by exercising the function.
 
 ### 4.6 Password policy is inconsistent
 
@@ -178,9 +180,9 @@ mechanical change.
 | ------------------------------ | -------------------------------------------------------------- |
 | A genuinely small first PR     | §4.1 licence, §4.3 formatting, §4.4 CI                         |
 | Data engineering               | §2.1 ESA WorldCover, §2.2 EFFIS                                |
-| Backend with real consequences | §1.3 CAP alert model, §1.4 cross-border attribution            |
+| Backend with real consequences | §1.3 wiring a delivery channel onto the CAP object             |
 | Domain science                 | §1.1 danger-scale calibration — the highest-value problem here |
-| Ops                            | §1.2 SMTP, §1.5 netCDF decoding off-Worker                     |
+| Ops                            | §1.2 SMTP, §1.4 netCDF decoding off-Worker                     |
 
 Before changing anything that decides what a user is told, read `ORIGINAL-SPEC.md` for the
 intended model and `roadmap.md` for what is already built. The spec is authoritative except on

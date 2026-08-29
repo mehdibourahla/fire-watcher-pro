@@ -304,7 +304,7 @@ export const en = {
     photoRemove: "Remove photo",
     photoFailed: "Photo upload failed. Try again.",
     photoTooLarge: "Photo is larger than 8 MB.",
-    photoBadType: "Only image files can be attached.",
+    photoBadType: "Only JPEG or PNG photos can be attached.",
     photoUnavailable: "Photo unavailable.",
     photoAlt: "Photo attached to a citizen fire report",
     submit: "Send report",
@@ -389,6 +389,7 @@ export const en = {
     firesDesc: "Fused fire clusters, newest first.",
     riskDesc:
       "Fire Weather Index and danger level per commune, for a given horizon.",
+    statsDesc: "Fire counts by state over the last seven days.",
     indexDesc: "Machine-readable index of the API.",
     rateLimit:
       "Responses are cached for 60 seconds. Please stay under 60 requests per minute and cache on your side.",
