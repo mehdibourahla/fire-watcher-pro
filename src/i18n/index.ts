@@ -6,8 +6,19 @@ import { en } from "./locales/en";
 import { fr } from "./locales/fr";
 import { kab } from "./locales/kab";
 
-export { LOCALES, RTL_LOCALES, type Locale } from "./locales-list";
-import { LOCALES, RTL_LOCALES, type Locale } from "./locales-list";
+export {
+  LOCALES,
+  UNREVIEWED_LOCALES,
+  RTL_LOCALES,
+  type Locale,
+  type AnyLocale,
+} from "./locales-list";
+import {
+  LOCALES,
+  RTL_LOCALES,
+  type Locale,
+  type AnyLocale,
+} from "./locales-list";
 import {
   LOCALE_COOKIE,
   readLocaleCookie,
@@ -16,15 +27,15 @@ import {
 
 export { LOCALE_COOKIE, readLocaleCookie, writeLocaleCookie };
 
-export const LOCALE_LABELS: Record<Locale, string> = {
+export const LOCALE_LABELS: Record<AnyLocale, string> = {
   ar: "العربية",
   fr: "Français",
   en: "English",
   kab: "Taqbaylit",
 };
 
-// four full labels overflow a 390px header, so narrow screens show codes instead
-export const LOCALE_SHORT_LABELS: Record<Locale, string> = {
+// full labels overflow a 390px header, so narrow screens show codes instead
+export const LOCALE_SHORT_LABELS: Record<AnyLocale, string> = {
   ar: "AR",
   fr: "FR",
   en: "EN",

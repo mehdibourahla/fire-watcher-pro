@@ -18,12 +18,12 @@
       "site_id": "dz-3166-606",
       "static_share": 0.9999,
       "active_days": 3449,
-      "detection_count": 21239,
+      "detection_count": 21167,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
-      "frp_p50": 4.89,
+      "frp_p50": 4.88,
       "frp_p90": 13.11,
-      "jul_aug_share": 0.1758
+      "jul_aug_share": 0.1764
     },
     {
       "lat": 29.7,
@@ -31,25 +31,25 @@
       "site_id": "dz-2970-671",
       "static_share": 1,
       "active_days": 3320,
-      "detection_count": 15304,
+      "detection_count": 15260,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
       "frp_p50": 1.85,
       "frp_p90": 4.55,
-      "jul_aug_share": 0.1676
+      "jul_aug_share": 0.1681
     },
     {
       "lat": 31.66,
       "lon": 6.05,
       "site_id": "dz-3166-606",
-      "static_share": 0.9975,
+      "static_share": 0.9976,
       "active_days": 3393,
-      "detection_count": 11901,
+      "detection_count": 11859,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
-      "frp_p50": 4.43,
-      "frp_p90": 12.19,
-      "jul_aug_share": 0.1871
+      "frp_p50": 4.42,
+      "frp_p90": 12.17,
+      "jul_aug_share": 0.1878
     },
     {
       "lat": 29.69,
@@ -57,12 +57,12 @@
       "site_id": "dz-2970-671",
       "static_share": 1,
       "active_days": 3230,
-      "detection_count": 11457,
+      "detection_count": 11424,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
       "frp_p50": 1.83,
-      "frp_p90": 4.18,
-      "jul_aug_share": 0.1587
+      "frp_p90": 4.17,
+      "jul_aug_share": 0.1591
     },
     {
       "lat": 28.08,
@@ -70,12 +70,12 @@
       "site_id": "dz-2808-979",
       "static_share": 0.9968,
       "active_days": 3249,
-      "detection_count": 10346,
+      "detection_count": 10324,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
       "frp_p50": 2.88,
-      "frp_p90": 7.71,
-      "jul_aug_share": 0.1652
+      "frp_p90": 7.72,
+      "jul_aug_share": 0.1655
     },
     {
       "lat": 28.74,
@@ -83,12 +83,12 @@
       "site_id": "dz-2874-979",
       "static_share": 0.9981,
       "active_days": 3271,
-      "detection_count": 9806,
+      "detection_count": 9785,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-27",
-      "frp_p50": 5.85,
+      "frp_p50": 5.84,
       "frp_p90": 17.7,
-      "jul_aug_share": 0.1743
+      "jul_aug_share": 0.1747
     },
     {
       "lat": 28.62,
@@ -96,12 +96,12 @@
       "site_id": "dz-2862-771",
       "static_share": 0.9971,
       "active_days": 3081,
-      "detection_count": 9454,
+      "detection_count": 9428,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-23",
       "frp_p50": 3.27,
-      "frp_p90": 6.63,
-      "jul_aug_share": 0.1805
+      "frp_p90": 6.62,
+      "jul_aug_share": 0.181
     },
     {
       "lat": 27.75,
@@ -109,12 +109,12 @@
       "site_id": "dz-2775-915",
       "static_share": 0.996,
       "active_days": 3150,
-      "detection_count": 8725,
+      "detection_count": 8699,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-29",
       "frp_p50": 2.55,
       "frp_p90": 5.07,
-      "jul_aug_share": 0.1567
+      "jul_aug_share": 0.1571
     },
     {
       "lat": 31.01,
@@ -122,38 +122,38 @@
       "site_id": "dz-3101-817",
       "static_share": 0.9976,
       "active_days": 2972,
-      "detection_count": 8658,
+      "detection_count": 8638,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-28",
       "frp_p50": 1.94,
       "frp_p90": 5.95,
-      "jul_aug_share": 0.1379
+      "jul_aug_share": 0.1382
     },
     {
       "lat": 31.59,
       "lon": 5.96,
       "site_id": "dz-3159-596",
-      "static_share": 0.7707,
+      "static_share": 0.7698,
       "active_days": 2600,
-      "detection_count": 8008,
+      "detection_count": 7976,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
-      "frp_p50": 6.89,
+      "frp_p50": 6.88,
       "frp_p90": 21.05,
-      "jul_aug_share": 0.1695
+      "jul_aug_share": 0.1701
     },
     {
       "lat": 32.51,
       "lon": 6.71,
       "site_id": "dz-3251-671",
-      "static_share": 0.8341,
+      "static_share": 0.8343,
       "active_days": 2810,
-      "detection_count": 7908,
+      "detection_count": 7894,
       "first_seen": "2016-07-09",
       "last_seen": "2025-12-30",
       "frp_p50": 4.94,
-      "frp_p90": 12.28,
-      "jul_aug_share": 0.192
+      "frp_p90": 12.29,
+      "jul_aug_share": 0.1923
     },
     {
       "lat": 31.85,
@@ -161,12 +161,12 @@
       "site_id": "dz-3185-605",
       "static_share": 0.9934,
       "active_days": 2956,
-      "detection_count": 7549,
+      "detection_count": 7533,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
       "frp_p50": 1.29,
       "frp_p90": 3.27,
-      "jul_aug_share": 0.1856
+      "jul_aug_share": 0.186
     },
     {
       "lat": 33.13,
@@ -174,12 +174,12 @@
       "site_id": "dz-3313-332",
       "static_share": 0.9944,
       "active_days": 2955,
-      "detection_count": 7513,
+      "detection_count": 7496,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
       "frp_p50": 1.27,
       "frp_p90": 2.62,
-      "jul_aug_share": 0.1808
+      "jul_aug_share": 0.1812
     },
     {
       "lat": 30.66,
@@ -187,12 +187,12 @@
       "site_id": "dz-3066-810",
       "static_share": 0.997,
       "active_days": 3093,
-      "detection_count": 7435,
+      "detection_count": 7412,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-30",
       "frp_p50": 1.94,
-      "frp_p90": 6.46,
-      "jul_aug_share": 0.1828
+      "frp_p90": 6.39,
+      "jul_aug_share": 0.1834
     },
     {
       "lat": 32.95,
@@ -200,103 +200,90 @@
       "site_id": "dz-3295-323",
       "static_share": 0.9928,
       "active_days": 2728,
-      "detection_count": 7059,
+      "detection_count": 7049,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
-      "frp_p50": 2.97,
+      "frp_p50": 2.98,
       "frp_p90": 12.82,
-      "jul_aug_share": 0.2197
+      "jul_aug_share": 0.22
     },
     {
       "lat": 31.67,
       "lon": 6.05,
       "site_id": "dz-3166-606",
-      "static_share": 0.9953,
+      "static_share": 0.9954,
       "active_days": 2919,
-      "detection_count": 6997,
+      "detection_count": 6976,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
       "frp_p50": 3.57,
-      "frp_p90": 9.88,
-      "jul_aug_share": 0.1858
+      "frp_p90": 9.9,
+      "jul_aug_share": 0.1864
     },
     {
       "lat": 28.56,
       "lon": 7.52,
       "site_id": "dz-2856-752",
-      "static_share": 0.8383,
+      "static_share": 0.8392,
       "active_days": 2996,
-      "detection_count": 6864,
+      "detection_count": 6849,
       "first_seen": "2016-01-28",
       "last_seen": "2025-12-31",
       "frp_p50": 2.86,
-      "frp_p90": 5.9,
-      "jul_aug_share": 0.1617
+      "frp_p90": 5.91,
+      "jul_aug_share": 0.1621
     },
     {
       "lat": 31.19,
       "lon": 6.79,
       "site_id": "dz-3119-679",
-      "static_share": 0.7679,
+      "static_share": 0.7685,
       "active_days": 1835,
-      "detection_count": 6776,
+      "detection_count": 6753,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
       "frp_p50": 3.56,
       "frp_p90": 7.67,
-      "jul_aug_share": 0.1882
+      "jul_aug_share": 0.1888
     },
     {
       "lat": 35.35,
       "lon": 5.76,
       "site_id": "dz-3535-576",
-      "static_share": 0.9911,
+      "static_share": 0.9913,
       "active_days": 2775,
-      "detection_count": 6731,
+      "detection_count": 6704,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
-      "frp_p50": 2.34,
-      "frp_p90": 4.25,
-      "jul_aug_share": 0.2028
+      "frp_p50": 2.33,
+      "frp_p90": 4.26,
+      "jul_aug_share": 0.2036
     },
     {
       "lat": 31.8,
       "lon": 6.06,
       "site_id": "dz-3180-606",
-      "static_share": 0.9975,
+      "static_share": 0.9974,
       "active_days": 2663,
-      "detection_count": 6696,
+      "detection_count": 6659,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
       "frp_p50": 1.91,
-      "frp_p90": 11.91,
-      "jul_aug_share": 0.1641
+      "frp_p90": 11.83,
+      "jul_aug_share": 0.165
     },
     {
       "lat": 28.56,
       "lon": 7.46,
       "site_id": "dz-2856-746",
-      "static_share": 0.7722,
+      "static_share": 0.7717,
       "active_days": 2363,
-      "detection_count": 6610,
+      "detection_count": 6598,
       "first_seen": "2018-10-25",
       "last_seen": "2025-12-30",
       "frp_p50": 2.92,
       "frp_p90": 6.16,
-      "jul_aug_share": 0.1714
-    },
-    {
-      "lat": 35.81,
-      "lon": -0.25,
-      "site_id": "dz-3581--25",
-      "static_share": 0.996,
-      "active_days": 2585,
-      "detection_count": 6480,
-      "first_seen": "2016-01-01",
-      "last_seen": "2025-12-31",
-      "frp_p50": 3.41,
-      "frp_p90": 9.65,
-      "jul_aug_share": 0.1637
+      "jul_aug_share": 0.1717
     },
     {
       "lat": 31.7,
@@ -304,12 +291,25 @@
       "site_id": "dz-3170-581",
       "static_share": 0.9938,
       "active_days": 2332,
-      "detection_count": 6476,
+      "detection_count": 6470,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
       "frp_p50": 5.01,
-      "frp_p90": 15.06,
-      "jul_aug_share": 0.2117
+      "frp_p90": 15.07,
+      "jul_aug_share": 0.2119
+    },
+    {
+      "lat": 35.81,
+      "lon": -0.25,
+      "site_id": "dz-3581--25",
+      "static_share": 0.996,
+      "active_days": 2585,
+      "detection_count": 6462,
+      "first_seen": "2016-01-01",
+      "last_seen": "2025-12-31",
+      "frp_p50": 3.41,
+      "frp_p90": 9.65,
+      "jul_aug_share": 0.1642
     },
     {
       "lat": 27.76,
@@ -317,25 +317,25 @@
       "site_id": "dz-2775-915",
       "static_share": 0.9935,
       "active_days": 3004,
-      "detection_count": 6463,
+      "detection_count": 6442,
       "first_seen": "2016-01-01",
       "last_seen": "2025-11-18",
-      "frp_p50": 3.82,
-      "frp_p90": 7.9,
-      "jul_aug_share": 0.1626
+      "frp_p50": 3.81,
+      "frp_p90": 7.89,
+      "jul_aug_share": 0.1631
     },
     {
       "lat": 28.7,
       "lon": 8.94,
       "site_id": "dz-2870-894",
-      "static_share": 0.996,
+      "static_share": 0.9959,
       "active_days": 3197,
-      "detection_count": 6173,
+      "detection_count": 6161,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
       "frp_p50": 1.84,
       "frp_p90": 3.64,
-      "jul_aug_share": 0.1816
+      "jul_aug_share": 0.182
     },
     {
       "lat": 31.63,
@@ -343,12 +343,12 @@
       "site_id": "dz-3163-598",
       "static_share": 0.9951,
       "active_days": 2429,
-      "detection_count": 6141,
+      "detection_count": 6130,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
       "frp_p50": 3.13,
-      "frp_p90": 9.36,
-      "jul_aug_share": 0.1881
+      "frp_p90": 9.37,
+      "jul_aug_share": 0.1884
     },
     {
       "lat": 27.92,
@@ -356,12 +356,12 @@
       "site_id": "dz-2792-925",
       "static_share": 0.9954,
       "active_days": 2970,
-      "detection_count": 6079,
+      "detection_count": 6064,
       "first_seen": "2016-01-02",
       "last_seen": "2025-12-31",
       "frp_p50": 3.01,
-      "frp_p90": 6.8,
-      "jul_aug_share": 0.1839
+      "frp_p90": 6.81,
+      "jul_aug_share": 0.1844
     },
     {
       "lat": 35.81,
@@ -369,12 +369,12 @@
       "site_id": "dz-3581--25",
       "static_share": 0.9983,
       "active_days": 2384,
-      "detection_count": 6017,
+      "detection_count": 5998,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
       "frp_p50": 3.3,
-      "frp_p90": 9.24,
-      "jul_aug_share": 0.1782
+      "frp_p90": 9.22,
+      "jul_aug_share": 0.1787
     },
     {
       "lat": 28.53,
@@ -382,12 +382,12 @@
       "site_id": "dz-2853-912",
       "static_share": 0.997,
       "active_days": 2882,
-      "detection_count": 5954,
+      "detection_count": 5944,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
       "frp_p50": 1.97,
       "frp_p90": 4.22,
-      "jul_aug_share": 0.1718
+      "jul_aug_share": 0.1721
     },
     {
       "lat": 36.87,
@@ -395,38 +395,38 @@
       "site_id": "dz-3687-698",
       "static_share": 1,
       "active_days": 2483,
-      "detection_count": 5777,
+      "detection_count": 5758,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
       "frp_p50": 2.13,
-      "frp_p90": 5.8,
-      "jul_aug_share": 0.2299
+      "frp_p90": 5.81,
+      "jul_aug_share": 0.2306
     },
     {
       "lat": 31.23,
       "lon": 8.56,
       "site_id": "dz-3123-856",
-      "static_share": 0.9891,
+      "static_share": 0.9898,
       "active_days": 2201,
-      "detection_count": 5591,
+      "detection_count": 5567,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
-      "frp_p50": 1.73,
-      "frp_p90": 6.82,
-      "jul_aug_share": 0.164
+      "frp_p50": 1.72,
+      "frp_p90": 6.7,
+      "jul_aug_share": 0.1647
     },
     {
       "lat": 31.75,
       "lon": 5.23,
       "site_id": "dz-3175-523",
-      "static_share": 0.9861,
+      "static_share": 0.986,
       "active_days": 2372,
-      "detection_count": 5454,
+      "detection_count": 5446,
       "first_seen": "2016-01-07",
       "last_seen": "2025-12-31",
       "frp_p50": 2.67,
       "frp_p90": 7.46,
-      "jul_aug_share": 0.1912
+      "jul_aug_share": 0.1915
     },
     {
       "lat": 28.45,
@@ -434,25 +434,25 @@
       "site_id": "dz-2845-914",
       "static_share": 0.9943,
       "active_days": 2730,
-      "detection_count": 5420,
+      "detection_count": 5407,
       "first_seen": "2016-01-02",
       "last_seen": "2025-12-31",
       "frp_p50": 2.48,
       "frp_p90": 5.04,
-      "jul_aug_share": 0.1793
+      "jul_aug_share": 0.1798
     },
     {
       "lat": 31.4,
       "lon": 6.93,
       "site_id": "dz-3140-693",
-      "static_share": 0.9957,
+      "static_share": 0.9956,
       "active_days": 2787,
-      "detection_count": 5289,
+      "detection_count": 5277,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
       "frp_p50": 2.75,
-      "frp_p90": 7.48,
-      "jul_aug_share": 0.1728
+      "frp_p90": 7.49,
+      "jul_aug_share": 0.1732
     },
     {
       "lat": 28.63,
@@ -460,25 +460,25 @@
       "site_id": "dz-2863-979",
       "static_share": 0.9922,
       "active_days": 2736,
-      "detection_count": 5231,
+      "detection_count": 5225,
       "first_seen": "2016-01-02",
       "last_seen": "2025-12-31",
       "frp_p50": 2.25,
       "frp_p90": 5.8,
-      "jul_aug_share": 0.1864
+      "jul_aug_share": 0.1866
     },
     {
       "lat": 32.13,
       "lon": 6.47,
       "site_id": "dz-3213-647",
-      "static_share": 0.8733,
+      "static_share": 0.8729,
       "active_days": 2370,
-      "detection_count": 5223,
+      "detection_count": 5207,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-30",
       "frp_p50": 4.44,
       "frp_p90": 8.91,
-      "jul_aug_share": 0.1899
+      "jul_aug_share": 0.1905
     },
     {
       "lat": 32.28,
@@ -486,25 +486,12 @@
       "site_id": "dz-3228-399",
       "static_share": 0.9939,
       "active_days": 2700,
-      "detection_count": 5091,
+      "detection_count": 5075,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
       "frp_p50": 1.74,
-      "frp_p90": 6.49,
-      "jul_aug_share": 0.2029
-    },
-    {
-      "lat": 31.01,
-      "lon": 8.16,
-      "site_id": "dz-3101-817",
-      "static_share": 0.9911,
-      "active_days": 2677,
-      "detection_count": 5066,
-      "first_seen": "2016-01-01",
-      "last_seen": "2025-12-27",
-      "frp_p50": 3.16,
-      "frp_p90": 11.54,
-      "jul_aug_share": 0.1784
+      "frp_p90": 6.47,
+      "jul_aug_share": 0.2035
     },
     {
       "lat": 32.93,
@@ -512,12 +499,25 @@
       "site_id": "dz-3295-323",
       "static_share": 0.9883,
       "active_days": 2470,
-      "detection_count": 5063,
+      "detection_count": 5048,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
       "frp_p50": 1.04,
       "frp_p90": 2.21,
-      "jul_aug_share": 0.1825
+      "jul_aug_share": 0.183
+    },
+    {
+      "lat": 31.01,
+      "lon": 8.16,
+      "site_id": "dz-3101-817",
+      "static_share": 0.9913,
+      "active_days": 2677,
+      "detection_count": 5044,
+      "first_seen": "2016-01-01",
+      "last_seen": "2025-12-27",
+      "frp_p50": 3.15,
+      "frp_p90": 11.41,
+      "jul_aug_share": 0.1792
     },
     {
       "lat": 28.68,
@@ -525,25 +525,25 @@
       "site_id": "dz-2868-719",
       "static_share": 0.9952,
       "active_days": 2685,
-      "detection_count": 4966,
+      "detection_count": 4956,
       "first_seen": "2016-01-02",
       "last_seen": "2025-12-30",
-      "frp_p50": 5.15,
-      "frp_p90": 14.28,
-      "jul_aug_share": 0.1826
+      "frp_p50": 5.16,
+      "frp_p90": 14.29,
+      "jul_aug_share": 0.183
     },
     {
       "lat": 32.14,
       "lon": 6.47,
       "site_id": "dz-3213-647",
-      "static_share": 0.7951,
+      "static_share": 0.7944,
       "active_days": 2250,
-      "detection_count": 4905,
+      "detection_count": 4889,
       "first_seen": "2016-01-02",
       "last_seen": "2025-12-31",
       "frp_p50": 4.49,
-      "frp_p90": 9.61,
-      "jul_aug_share": 0.1768
+      "frp_p90": 9.62,
+      "jul_aug_share": 0.1773
     },
     {
       "lat": 28.89,
@@ -551,25 +551,25 @@
       "site_id": "dz-2889-995",
       "static_share": 0.9961,
       "active_days": 2099,
-      "detection_count": 4871,
+      "detection_count": 4860,
       "first_seen": "2016-01-01",
       "last_seen": "2022-07-23",
       "frp_p50": 1.53,
-      "frp_p90": 3.34,
-      "jul_aug_share": 0.1985
+      "frp_p90": 3.35,
+      "jul_aug_share": 0.199
     },
     {
       "lat": 31.67,
       "lon": 6.06,
       "site_id": "dz-3166-606",
-      "static_share": 0.9949,
+      "static_share": 0.995,
       "active_days": 2510,
-      "detection_count": 4857,
+      "detection_count": 4846,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-30",
       "frp_p50": 3.69,
       "frp_p90": 13.04,
-      "jul_aug_share": 0.1828
+      "jul_aug_share": 0.1832
     },
     {
       "lat": 28.71,
@@ -577,25 +577,25 @@
       "site_id": "dz-2871-904",
       "static_share": 0.9925,
       "active_days": 2696,
-      "detection_count": 4798,
+      "detection_count": 4791,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
       "frp_p50": 1.88,
       "frp_p90": 4.08,
-      "jul_aug_share": 0.1738
+      "jul_aug_share": 0.1741
     },
     {
       "lat": 26.03,
       "lon": 11.98,
       "site_id": "dz-2603-1198",
-      "static_share": 0.842,
+      "static_share": 0.8432,
       "active_days": 2142,
-      "detection_count": 4729,
+      "detection_count": 4719,
       "first_seen": "2017-04-28",
       "last_seen": "2025-12-31",
       "frp_p50": 1.79,
       "frp_p90": 4.09,
-      "jul_aug_share": 0.1685
+      "jul_aug_share": 0.1689
     },
     {
       "lat": 28.47,
@@ -603,12 +603,12 @@
       "site_id": "dz-2847-906",
       "static_share": 0.9964,
       "active_days": 2684,
-      "detection_count": 4699,
+      "detection_count": 4685,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
       "frp_p50": 2.54,
       "frp_p90": 6.13,
-      "jul_aug_share": 0.1643
+      "jul_aug_share": 0.1648
     },
     {
       "lat": 35.81,
@@ -616,25 +616,25 @@
       "site_id": "dz-3581--25",
       "static_share": 0.9906,
       "active_days": 2183,
-      "detection_count": 4692,
+      "detection_count": 4675,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
       "frp_p50": 2.43,
       "frp_p90": 7.54,
-      "jul_aug_share": 0.1765
+      "jul_aug_share": 0.1771
     },
     {
       "lat": 27.93,
       "lon": 9.25,
       "site_id": "dz-2792-925",
-      "static_share": 0.9936,
+      "static_share": 0.9938,
       "active_days": 2555,
-      "detection_count": 4668,
+      "detection_count": 4655,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
       "frp_p50": 2.84,
-      "frp_p90": 6.63,
-      "jul_aug_share": 0.1598
+      "frp_p90": 6.62,
+      "jul_aug_share": 0.1603
     },
     {
       "lat": 31.79,
@@ -642,12 +642,12 @@
       "site_id": "dz-3180-606",
       "static_share": 0.9884,
       "active_days": 2533,
-      "detection_count": 4651,
+      "detection_count": 4636,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
       "frp_p50": 1.91,
-      "frp_p90": 4.68,
-      "jul_aug_share": 0.1582
+      "frp_p90": 4.69,
+      "jul_aug_share": 0.1588
     },
     {
       "lat": 32.93,
@@ -655,12 +655,12 @@
       "site_id": "dz-3295-323",
       "static_share": 0.9912,
       "active_days": 2212,
-      "detection_count": 4559,
+      "detection_count": 4550,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
       "frp_p50": 1.02,
-      "frp_p90": 2.45,
-      "jul_aug_share": 0.1553
+      "frp_p90": 2.46,
+      "jul_aug_share": 0.1556
     },
     {
       "lat": 32.75,
@@ -668,64 +668,64 @@
       "site_id": "dz-3275-318",
       "static_share": 0.9969,
       "active_days": 2755,
-      "detection_count": 4487,
+      "detection_count": 4468,
       "first_seen": "2016-01-02",
       "last_seen": "2025-12-31",
       "frp_p50": 1.2,
-      "frp_p90": 2.35,
-      "jul_aug_share": 0.1801
+      "frp_p90": 2.36,
+      "jul_aug_share": 0.1808
     },
     {
       "lat": 26.43,
       "lon": 11.85,
       "site_id": "dz-2643-1185",
-      "static_share": 0.8272,
+      "static_share": 0.8269,
       "active_days": 2339,
-      "detection_count": 4449,
+      "detection_count": 4442,
       "first_seen": "2017-01-29",
       "last_seen": "2025-12-30",
       "frp_p50": 1.5,
       "frp_p90": 2.65,
-      "jul_aug_share": 0.1821
+      "jul_aug_share": 0.1824
     },
     {
       "lat": 32.4,
       "lon": 4.01,
       "site_id": "dz-3240-401",
-      "static_share": 0.9836,
+      "static_share": 0.9835,
       "active_days": 2471,
-      "detection_count": 4444,
+      "detection_count": 4431,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
       "frp_p50": 2.02,
       "frp_p90": 8.35,
-      "jul_aug_share": 0.1823
+      "jul_aug_share": 0.1828
     },
     {
       "lat": 31.63,
       "lon": 6.06,
       "site_id": "dz-3166-606",
-      "static_share": 0.9792,
+      "static_share": 0.9791,
       "active_days": 1819,
-      "detection_count": 4232,
+      "detection_count": 4212,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-24",
-      "frp_p50": 4.49,
-      "frp_p90": 18.89,
-      "jul_aug_share": 0.1633
+      "frp_p50": 4.5,
+      "frp_p90": 18.94,
+      "jul_aug_share": 0.1641
     },
     {
       "lat": 31.69,
       "lon": 5.81,
       "site_id": "dz-3170-581",
-      "static_share": 0.9243,
+      "static_share": 0.924,
       "active_days": 1988,
-      "detection_count": 4213,
+      "detection_count": 4196,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-30",
-      "frp_p50": 4.63,
+      "frp_p50": 4.65,
       "frp_p90": 22.83,
-      "jul_aug_share": 0.1688
+      "jul_aug_share": 0.1694
     },
     {
       "lat": 35.88,
@@ -733,12 +733,12 @@
       "site_id": "dz-3588-445",
       "static_share": 0.9933,
       "active_days": 2511,
-      "detection_count": 4196,
+      "detection_count": 4182,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
       "frp_p50": 1.54,
-      "frp_p90": 2.72,
-      "jul_aug_share": 0.1864
+      "frp_p90": 2.71,
+      "jul_aug_share": 0.187
     },
     {
       "lat": 28.73,
@@ -746,12 +746,12 @@
       "site_id": "dz-2874-979",
       "static_share": 0.9993,
       "active_days": 2148,
-      "detection_count": 4164,
+      "detection_count": 4158,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-18",
       "frp_p50": 4.69,
-      "frp_p90": 14.75,
-      "jul_aug_share": 0.1746
+      "frp_p90": 14.74,
+      "jul_aug_share": 0.1748
     },
     {
       "lat": 33.07,
@@ -759,12 +759,12 @@
       "site_id": "dz-3307-333",
       "static_share": 0.9944,
       "active_days": 2290,
-      "detection_count": 4092,
+      "detection_count": 4080,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-22",
       "frp_p50": 1.07,
-      "frp_p90": 2.17,
-      "jul_aug_share": 0.1879
+      "frp_p90": 2.18,
+      "jul_aug_share": 0.1885
     },
     {
       "lat": 29.7,
@@ -772,12 +772,12 @@
       "site_id": "dz-2970-671",
       "static_share": 0.9985,
       "active_days": 2124,
-      "detection_count": 4075,
+      "detection_count": 4062,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
       "frp_p50": 1.62,
-      "frp_p90": 3.81,
-      "jul_aug_share": 0.1541
+      "frp_p90": 3.8,
+      "jul_aug_share": 0.1546
     },
     {
       "lat": 31.06,
@@ -785,12 +785,12 @@
       "site_id": "dz-3106-803",
       "static_share": 0.9892,
       "active_days": 2492,
-      "detection_count": 4075,
+      "detection_count": 4061,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
       "frp_p50": 3.44,
       "frp_p90": 7.21,
-      "jul_aug_share": 0.1762
+      "jul_aug_share": 0.1768
     },
     {
       "lat": 30.88,
@@ -798,38 +798,38 @@
       "site_id": "dz-3088-564",
       "static_share": 0.9838,
       "active_days": 1648,
-      "detection_count": 4009,
+      "detection_count": 4001,
       "first_seen": "2016-01-14",
       "last_seen": "2025-12-31",
       "frp_p50": 4.36,
       "frp_p90": 12.31,
-      "jul_aug_share": 0.1993
+      "jul_aug_share": 0.1997
     },
     {
       "lat": 29.27,
       "lon": 6.49,
       "site_id": "dz-2927-649",
-      "static_share": 0.9883,
+      "static_share": 0.9882,
       "active_days": 2129,
-      "detection_count": 4004,
+      "detection_count": 3998,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
       "frp_p50": 1.07,
       "frp_p90": 2.59,
-      "jul_aug_share": 0.1499
+      "jul_aug_share": 0.1501
     },
     {
       "lat": 28.58,
       "lon": 7.66,
       "site_id": "dz-2858-766",
-      "static_share": 0.9925,
+      "static_share": 0.9927,
       "active_days": 2447,
-      "detection_count": 3979,
+      "detection_count": 3966,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-28",
       "frp_p50": 2.81,
       "frp_p90": 6.2,
-      "jul_aug_share": 0.1717
+      "jul_aug_share": 0.1722
     },
     {
       "lat": 31.85,
@@ -837,38 +837,25 @@
       "site_id": "dz-3185-506",
       "static_share": 0.9987,
       "active_days": 2219,
-      "detection_count": 3912,
+      "detection_count": 3896,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-30",
-      "frp_p50": 2.66,
+      "frp_p50": 2.67,
       "frp_p90": 8.56,
-      "jul_aug_share": 0.1904
+      "jul_aug_share": 0.1912
     },
     {
       "lat": 36.13,
       "lon": 1.24,
       "site_id": "dz-3613-124",
-      "static_share": 0.9864,
+      "static_share": 0.9863,
       "active_days": 2223,
-      "detection_count": 3886,
+      "detection_count": 3881,
       "first_seen": "2016-01-02",
       "last_seen": "2025-12-31",
       "frp_p50": 1.55,
       "frp_p90": 2.8,
-      "jul_aug_share": 0.1835
-    },
-    {
-      "lat": 28.58,
-      "lon": 7.65,
-      "site_id": "dz-2858-766",
-      "static_share": 0.9922,
-      "active_days": 2276,
-      "detection_count": 3865,
-      "first_seen": "2016-01-01",
-      "last_seen": "2025-12-31",
-      "frp_p50": 2.63,
-      "frp_p90": 5.63,
-      "jul_aug_share": 0.1925
+      "jul_aug_share": 0.1837
     },
     {
       "lat": 32.84,
@@ -876,12 +863,25 @@
       "site_id": "dz-3284-324",
       "static_share": 0.9979,
       "active_days": 2079,
-      "detection_count": 3859,
+      "detection_count": 3856,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-28",
       "frp_p50": 1.01,
       "frp_p90": 2.29,
-      "jul_aug_share": 0.1767
+      "jul_aug_share": 0.1769
+    },
+    {
+      "lat": 28.58,
+      "lon": 7.65,
+      "site_id": "dz-2858-766",
+      "static_share": 0.9922,
+      "active_days": 2276,
+      "detection_count": 3854,
+      "first_seen": "2016-01-01",
+      "last_seen": "2025-12-31",
+      "frp_p50": 2.62,
+      "frp_p90": 5.63,
+      "jul_aug_share": 0.193
     },
     {
       "lat": 31.06,
@@ -889,25 +889,25 @@
       "site_id": "dz-3106-803",
       "static_share": 0.9775,
       "active_days": 2152,
-      "detection_count": 3818,
+      "detection_count": 3814,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
       "frp_p50": 3.99,
       "frp_p90": 9.68,
-      "jul_aug_share": 0.1548
+      "jul_aug_share": 0.155
     },
     {
       "lat": 27.74,
       "lon": 9.18,
       "site_id": "dz-2775-915",
-      "static_share": 0.9895,
+      "static_share": 0.9898,
       "active_days": 2441,
-      "detection_count": 3818,
+      "detection_count": 3805,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
       "frp_p50": 1.4,
       "frp_p90": 2.99,
-      "jul_aug_share": 0.1794
+      "jul_aug_share": 0.18
     },
     {
       "lat": 28.64,
@@ -915,12 +915,12 @@
       "site_id": "dz-2864-754",
       "static_share": 0.9947,
       "active_days": 2174,
-      "detection_count": 3744,
+      "detection_count": 3742,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-30",
       "frp_p50": 2.38,
       "frp_p90": 7.72,
-      "jul_aug_share": 0.2027
+      "jul_aug_share": 0.2028
     },
     {
       "lat": 31.85,
@@ -928,12 +928,12 @@
       "site_id": "dz-3185-506",
       "static_share": 0.9915,
       "active_days": 2049,
-      "detection_count": 3668,
+      "detection_count": 3656,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-29",
       "frp_p50": 2.44,
-      "frp_p90": 7.2,
-      "jul_aug_share": 0.2053
+      "frp_p90": 7.21,
+      "jul_aug_share": 0.206
     },
     {
       "lat": 36.18,
@@ -941,25 +941,25 @@
       "site_id": "dz-3618-375",
       "static_share": 0.9846,
       "active_days": 1974,
-      "detection_count": 3580,
+      "detection_count": 3571,
       "first_seen": "2016-02-11",
       "last_seen": "2025-12-31",
       "frp_p50": 1.64,
       "frp_p90": 2.77,
-      "jul_aug_share": 0.1804
+      "jul_aug_share": 0.1809
     },
     {
       "lat": 31.02,
       "lon": 8.16,
       "site_id": "dz-3101-817",
-      "static_share": 0.9871,
+      "static_share": 0.9879,
       "active_days": 2091,
-      "detection_count": 3575,
+      "detection_count": 3559,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
       "frp_p50": 3.09,
       "frp_p90": 12.03,
-      "jul_aug_share": 0.1813
+      "jul_aug_share": 0.1821
     },
     {
       "lat": 36.88,
@@ -967,12 +967,12 @@
       "site_id": "dz-3687-698",
       "static_share": 0.9838,
       "active_days": 1821,
-      "detection_count": 3527,
+      "detection_count": 3518,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-27",
       "frp_p50": 2.25,
-      "frp_p90": 12.78,
-      "jul_aug_share": 0.216
+      "frp_p90": 12.8,
+      "jul_aug_share": 0.2166
     },
     {
       "lat": 28.45,
@@ -980,12 +980,12 @@
       "site_id": "dz-2845-914",
       "static_share": 0.9883,
       "active_days": 2138,
-      "detection_count": 3519,
+      "detection_count": 3511,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-28",
-      "frp_p50": 2.13,
+      "frp_p50": 2.14,
       "frp_p90": 4.39,
-      "jul_aug_share": 0.1884
+      "jul_aug_share": 0.1888
     },
     {
       "lat": 28.19,
@@ -993,12 +993,12 @@
       "site_id": "dz-2819-980",
       "static_share": 0.99,
       "active_days": 2210,
-      "detection_count": 3517,
+      "detection_count": 3510,
       "first_seen": "2016-01-02",
       "last_seen": "2025-12-31",
       "frp_p50": 1.34,
       "frp_p90": 2.33,
-      "jul_aug_share": 0.1885
+      "jul_aug_share": 0.1889
     },
     {
       "lat": 28.85,
@@ -1006,12 +1006,12 @@
       "site_id": "dz-2889-995",
       "static_share": 0.9926,
       "active_days": 2060,
-      "detection_count": 3504,
+      "detection_count": 3496,
       "first_seen": "2016-01-01",
       "last_seen": "2023-04-09",
       "frp_p50": 1.27,
-      "frp_p90": 2.37,
-      "jul_aug_share": 0.1729
+      "frp_p90": 2.38,
+      "jul_aug_share": 0.1733
     },
     {
       "lat": 28.64,
@@ -1019,51 +1019,51 @@
       "site_id": "dz-2864-762",
       "static_share": 0.9986,
       "active_days": 1975,
-      "detection_count": 3490,
+      "detection_count": 3476,
       "first_seen": "2016-02-11",
       "last_seen": "2025-12-31",
       "frp_p50": 2.45,
-      "frp_p90": 6.37,
-      "jul_aug_share": 0.1799
+      "frp_p90": 6.36,
+      "jul_aug_share": 0.1807
     },
     {
       "lat": 31.79,
       "lon": 6.06,
       "site_id": "dz-3180-606",
-      "static_share": 0.9867,
+      "static_share": 0.9869,
       "active_days": 2126,
-      "detection_count": 3449,
+      "detection_count": 3436,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
       "frp_p50": 1.97,
-      "frp_p90": 4.59,
-      "jul_aug_share": 0.1777
+      "frp_p90": 4.58,
+      "jul_aug_share": 0.1784
     },
     {
       "lat": 36.88,
       "lon": 6.94,
       "site_id": "dz-3687-698",
-      "static_share": 0.9868,
+      "static_share": 0.9867,
       "active_days": 1978,
-      "detection_count": 3402,
+      "detection_count": 3392,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-30",
       "frp_p50": 1.73,
-      "frp_p90": 9.33,
-      "jul_aug_share": 0.1881
+      "frp_p90": 9.37,
+      "jul_aug_share": 0.1887
     },
     {
       "lat": 28.64,
       "lon": 7.61,
       "site_id": "dz-2864-762",
-      "static_share": 0.9868,
+      "static_share": 0.987,
       "active_days": 1814,
-      "detection_count": 3398,
+      "detection_count": 3386,
       "first_seen": "2016-01-18",
       "last_seen": "2025-12-31",
       "frp_p50": 1.86,
       "frp_p90": 5.06,
-      "jul_aug_share": 0.1686
+      "jul_aug_share": 0.1692
     },
     {
       "lat": 31.65,
@@ -1071,12 +1071,12 @@
       "site_id": "dz-3163-598",
       "static_share": 0.9938,
       "active_days": 1677,
-      "detection_count": 3388,
+      "detection_count": 3373,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-25",
       "frp_p50": 1.98,
-      "frp_p90": 7.25,
-      "jul_aug_share": 0.1986
+      "frp_p90": 7.24,
+      "jul_aug_share": 0.1995
     },
     {
       "lat": 32.74,
@@ -1084,38 +1084,38 @@
       "site_id": "dz-3275-318",
       "static_share": 0.9952,
       "active_days": 2044,
-      "detection_count": 3335,
+      "detection_count": 3330,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-08",
       "frp_p50": 1.01,
       "frp_p90": 2.04,
-      "jul_aug_share": 0.1949
+      "jul_aug_share": 0.1952
     },
     {
       "lat": 31.7,
       "lon": 5.96,
       "site_id": "dz-3170-596",
-      "static_share": 0.9336,
+      "static_share": 0.9335,
       "active_days": 1839,
-      "detection_count": 3254,
+      "detection_count": 3249,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-21",
       "frp_p50": 3.17,
-      "frp_p90": 10.22,
-      "jul_aug_share": 0.1915
+      "frp_p90": 10.24,
+      "jul_aug_share": 0.1918
     },
     {
       "lat": 30.25,
       "lon": 8.08,
       "site_id": "dz-3025-808",
-      "static_share": 0.9769,
+      "static_share": 0.9771,
       "active_days": 2009,
-      "detection_count": 3250,
+      "detection_count": 3237,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
       "frp_p50": 1.7,
       "frp_p90": 10.15,
-      "jul_aug_share": 0.1846
+      "jul_aug_share": 0.1854
     },
     {
       "lat": 30.61,
@@ -1123,12 +1123,12 @@
       "site_id": "dz-3061-826",
       "static_share": 0.9186,
       "active_days": 1633,
-      "detection_count": 3195,
+      "detection_count": 3183,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-24",
-      "frp_p50": 1.86,
+      "frp_p50": 1.87,
       "frp_p90": 5.08,
-      "jul_aug_share": 0.1484
+      "jul_aug_share": 0.1489
     },
     {
       "lat": 32.94,
@@ -1136,12 +1136,12 @@
       "site_id": "dz-3295-323",
       "static_share": 0.9881,
       "active_days": 1872,
-      "detection_count": 3189,
+      "detection_count": 3181,
       "first_seen": "2016-01-02",
       "last_seen": "2025-12-31",
       "frp_p50": 1.42,
       "frp_p90": 5.21,
-      "jul_aug_share": 0.1916
+      "jul_aug_share": 0.1921
     },
     {
       "lat": 28.92,
@@ -1149,12 +1149,12 @@
       "site_id": "dz-2892-975",
       "static_share": 0.983,
       "active_days": 1507,
-      "detection_count": 3126,
+      "detection_count": 3117,
       "first_seen": "2016-01-13",
       "last_seen": "2025-12-31",
-      "frp_p50": 3.5,
-      "frp_p90": 19.92,
-      "jul_aug_share": 0.2774
+      "frp_p50": 3.49,
+      "frp_p90": 20.09,
+      "jul_aug_share": 0.2782
     },
     {
       "lat": 33.12,
@@ -1162,25 +1162,25 @@
       "site_id": "dz-3313-332",
       "static_share": 0.9891,
       "active_days": 2103,
-      "detection_count": 3116,
+      "detection_count": 3112,
       "first_seen": "2016-01-02",
       "last_seen": "2025-12-28",
       "frp_p50": 1.16,
       "frp_p90": 2.49,
-      "jul_aug_share": 0.2047
+      "jul_aug_share": 0.205
     },
     {
       "lat": 27.74,
       "lon": 9.92,
       "site_id": "dz-2774-992",
-      "static_share": 0.8646,
+      "static_share": 0.8657,
       "active_days": 1464,
-      "detection_count": 3080,
+      "detection_count": 3076,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-14",
       "frp_p50": 1.87,
       "frp_p90": 4.28,
-      "jul_aug_share": 0.189
+      "jul_aug_share": 0.1892
     },
     {
       "lat": 28.69,
@@ -1188,25 +1188,25 @@
       "site_id": "dz-2868-719",
       "static_share": 0.9974,
       "active_days": 1964,
-      "detection_count": 3069,
+      "detection_count": 3066,
       "first_seen": "2016-01-02",
       "last_seen": "2025-12-31",
-      "frp_p50": 4.67,
+      "frp_p50": 4.68,
       "frp_p90": 11.87,
-      "jul_aug_share": 0.1864
+      "jul_aug_share": 0.1866
     },
     {
       "lat": 31.59,
       "lon": 5.95,
       "site_id": "dz-3159-596",
-      "static_share": 0.9028,
+      "static_share": 0.9025,
       "active_days": 1549,
-      "detection_count": 3065,
+      "detection_count": 3056,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
-      "frp_p50": 5.72,
-      "frp_p90": 15.08,
-      "jul_aug_share": 0.1964
+      "frp_p50": 5.74,
+      "frp_p90": 15.1,
+      "jul_aug_share": 0.197
     },
     {
       "lat": 28.68,
@@ -1214,25 +1214,25 @@
       "site_id": "dz-2868-719",
       "static_share": 0.993,
       "active_days": 1985,
-      "detection_count": 3003,
+      "detection_count": 2999,
       "first_seen": "2016-01-02",
       "last_seen": "2025-12-30",
-      "frp_p50": 5.08,
-      "frp_p90": 12.86,
-      "jul_aug_share": 0.1798
+      "frp_p50": 5.1,
+      "frp_p90": 12.94,
+      "jul_aug_share": 0.1801
     },
     {
       "lat": 36.43,
       "lon": 6.62,
       "site_id": "dz-3643-662",
-      "static_share": 0.9793,
+      "static_share": 0.9792,
       "active_days": 1918,
-      "detection_count": 2997,
+      "detection_count": 2986,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-27",
       "frp_p50": 1.23,
       "frp_p90": 1.88,
-      "jul_aug_share": 0.2299
+      "jul_aug_share": 0.2307
     },
     {
       "lat": 31.39,
@@ -1240,12 +1240,12 @@
       "site_id": "dz-3140-693",
       "static_share": 0.9966,
       "active_days": 1903,
-      "detection_count": 2967,
+      "detection_count": 2960,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
       "frp_p50": 1.44,
       "frp_p90": 5.76,
-      "jul_aug_share": 0.1682
+      "jul_aug_share": 0.1686
     },
     {
       "lat": 31.05,
@@ -1253,12 +1253,12 @@
       "site_id": "dz-3106-803",
       "static_share": 0.9932,
       "active_days": 1981,
-      "detection_count": 2953,
+      "detection_count": 2944,
       "first_seen": "2016-01-02",
       "last_seen": "2025-12-30",
-      "frp_p50": 3.08,
+      "frp_p50": 3.09,
       "frp_p90": 6.97,
-      "jul_aug_share": 0.1883
+      "jul_aug_share": 0.1889
     },
     {
       "lat": 28.71,
@@ -1266,12 +1266,12 @@
       "site_id": "dz-2871-904",
       "static_share": 0.9861,
       "active_days": 1821,
-      "detection_count": 2877,
+      "detection_count": 2873,
       "first_seen": "2016-01-12",
       "last_seen": "2025-12-29",
       "frp_p50": 1.65,
       "frp_p90": 3.58,
-      "jul_aug_share": 0.195
+      "jul_aug_share": 0.1953
     },
     {
       "lat": 28.73,
@@ -1279,12 +1279,12 @@
       "site_id": "dz-2873-915",
       "static_share": 0.9836,
       "active_days": 1926,
-      "detection_count": 2869,
+      "detection_count": 2868,
       "first_seen": "2016-01-06",
       "last_seen": "2025-12-14",
       "frp_p50": 1.27,
       "frp_p90": 3.23,
-      "jul_aug_share": 0.1812
+      "jul_aug_share": 0.1813
     },
     {
       "lat": 36.76,
@@ -1292,12 +1292,12 @@
       "site_id": "dz-3676-731",
       "static_share": 0.9895,
       "active_days": 2003,
-      "detection_count": 2861,
+      "detection_count": 2848,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-30",
       "frp_p50": 1.07,
       "frp_p90": 1.65,
-      "jul_aug_share": 0.1975
+      "jul_aug_share": 0.1984
     },
     {
       "lat": 31.69,
@@ -1305,12 +1305,12 @@
       "site_id": "dz-3169-619",
       "static_share": 0.984,
       "active_days": 1582,
-      "detection_count": 2818,
+      "detection_count": 2814,
       "first_seen": "2016-01-05",
       "last_seen": "2025-11-13",
       "frp_p50": 2.49,
       "frp_p90": 19.26,
-      "jul_aug_share": 0.1356
+      "jul_aug_share": 0.1357
     },
     {
       "lat": 27.7,
@@ -1318,12 +1318,12 @@
       "site_id": "dz-2775-915",
       "static_share": 0.9964,
       "active_days": 2086,
-      "detection_count": 2811,
+      "detection_count": 2805,
       "first_seen": "2016-01-31",
       "last_seen": "2025-12-31",
       "frp_p50": 1.12,
       "frp_p90": 2.45,
-      "jul_aug_share": 0.1725
+      "jul_aug_share": 0.1729
     },
     {
       "lat": 28.91,
@@ -1331,25 +1331,25 @@
       "site_id": "dz-2892-975",
       "static_share": 0.977,
       "active_days": 1471,
-      "detection_count": 2782,
+      "detection_count": 2777,
       "first_seen": "2016-02-04",
       "last_seen": "2025-12-29",
       "frp_p50": 5.21,
-      "frp_p90": 19.56,
-      "jul_aug_share": 0.2948
+      "frp_p90": 19.57,
+      "jul_aug_share": 0.2953
     },
     {
       "lat": 31.86,
       "lon": 6.17,
       "site_id": "dz-3186-617",
-      "static_share": 0.9329,
+      "static_share": 0.9326,
       "active_days": 1075,
-      "detection_count": 2759,
+      "detection_count": 2745,
       "first_seen": "2016-01-01",
       "last_seen": "2025-07-25",
-      "frp_p50": 11.71,
-      "frp_p90": 29.46,
-      "jul_aug_share": 0.1925
+      "frp_p50": 11.67,
+      "frp_p90": 29.44,
+      "jul_aug_share": 0.1934
     },
     {
       "lat": 31.96,
@@ -1357,12 +1357,12 @@
       "site_id": "dz-3196-522",
       "static_share": 0.98,
       "active_days": 1611,
-      "detection_count": 2700,
+      "detection_count": 2695,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
       "frp_p50": 1.45,
       "frp_p90": 6.63,
-      "jul_aug_share": 0.2011
+      "jul_aug_share": 0.2015
     },
     {
       "lat": 28.63,
@@ -1370,25 +1370,25 @@
       "site_id": "dz-2863-979",
       "static_share": 0.9814,
       "active_days": 1854,
-      "detection_count": 2692,
+      "detection_count": 2687,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-29",
       "frp_p50": 2.14,
       "frp_p90": 5.75,
-      "jul_aug_share": 0.2054
+      "jul_aug_share": 0.2058
     },
     {
       "lat": 32.4,
       "lon": 4,
       "site_id": "dz-3240-401",
-      "static_share": 0.973,
+      "static_share": 0.9729,
       "active_days": 1701,
-      "detection_count": 2666,
+      "detection_count": 2654,
       "first_seen": "2016-01-04",
       "last_seen": "2025-12-27",
       "frp_p50": 2.01,
       "frp_p90": 7.95,
-      "jul_aug_share": 0.2183
+      "jul_aug_share": 0.2193
     },
     {
       "lat": 32.55,
@@ -1396,38 +1396,38 @@
       "site_id": "dz-3255-317",
       "static_share": 0.9903,
       "active_days": 1653,
-      "detection_count": 2582,
+      "detection_count": 2578,
       "first_seen": "2016-05-26",
       "last_seen": "2025-12-30",
       "frp_p50": 2,
       "frp_p90": 5.05,
-      "jul_aug_share": 0.1964
-    },
-    {
-      "lat": 32.56,
-      "lon": 3.17,
-      "site_id": "dz-3255-317",
-      "static_share": 0.9877,
-      "active_days": 1564,
-      "detection_count": 2513,
-      "first_seen": "2016-04-27",
-      "last_seen": "2025-12-31",
-      "frp_p50": 2.09,
-      "frp_p90": 5.02,
-      "jul_aug_share": 0.1846
+      "jul_aug_share": 0.1967
     },
     {
       "lat": 27.77,
       "lon": 9.19,
       "site_id": "dz-2775-915",
-      "static_share": 0.9936,
+      "static_share": 0.994,
       "active_days": 1648,
-      "detection_count": 2507,
+      "detection_count": 2502,
       "first_seen": "2016-01-02",
       "last_seen": "2025-02-16",
       "frp_p50": 3.02,
-      "frp_p90": 6.17,
-      "jul_aug_share": 0.1671
+      "frp_p90": 6.16,
+      "jul_aug_share": 0.1675
+    },
+    {
+      "lat": 32.56,
+      "lon": 3.17,
+      "site_id": "dz-3255-317",
+      "static_share": 0.9876,
+      "active_days": 1564,
+      "detection_count": 2502,
+      "first_seen": "2016-04-27",
+      "last_seen": "2025-12-31",
+      "frp_p50": 2.09,
+      "frp_p90": 5.04,
+      "jul_aug_share": 0.1855
     },
     {
       "lat": 28.64,
@@ -1435,12 +1435,12 @@
       "site_id": "dz-2863-979",
       "static_share": 0.9832,
       "active_days": 1707,
-      "detection_count": 2504,
+      "detection_count": 2501,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
-      "frp_p50": 1.58,
+      "frp_p50": 1.59,
       "frp_p90": 3.93,
-      "jul_aug_share": 0.2009
+      "jul_aug_share": 0.2011
     },
     {
       "lat": 28.14,
@@ -1459,14 +1459,14 @@
       "lat": 31.65,
       "lon": 9.17,
       "site_id": "dz-3165-917",
-      "static_share": 0.762,
+      "static_share": 0.7616,
       "active_days": 1236,
-      "detection_count": 2466,
+      "detection_count": 2462,
       "first_seen": "2018-09-27",
       "last_seen": "2025-09-12",
       "frp_p50": 1.41,
       "frp_p90": 4.02,
-      "jul_aug_share": 0.1626
+      "jul_aug_share": 0.1629
     },
     {
       "lat": 29.03,
@@ -1485,14 +1485,14 @@
       "lat": 31.87,
       "lon": 6.17,
       "site_id": "dz-3186-617",
-      "static_share": 0.9466,
+      "static_share": 0.9464,
       "active_days": 991,
-      "detection_count": 2436,
+      "detection_count": 2427,
       "first_seen": "2016-01-01",
       "last_seen": "2025-07-24",
       "frp_p50": 12.05,
-      "frp_p90": 29.46,
-      "jul_aug_share": 0.2007
+      "frp_p90": 29.43,
+      "jul_aug_share": 0.2015
     },
     {
       "lat": 27.72,
@@ -1500,12 +1500,12 @@
       "site_id": "dz-2774-992",
       "static_share": 0.9743,
       "active_days": 1619,
-      "detection_count": 2413,
+      "detection_count": 2410,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-30",
-      "frp_p50": 1.55,
+      "frp_p50": 1.56,
       "frp_p90": 4.99,
-      "jul_aug_share": 0.2014
+      "jul_aug_share": 0.2017
     },
     {
       "lat": 32.95,
@@ -1513,38 +1513,38 @@
       "site_id": "dz-3295-323",
       "static_share": 0.9805,
       "active_days": 1494,
-      "detection_count": 2411,
+      "detection_count": 2408,
       "first_seen": "2016-02-06",
       "last_seen": "2025-12-26",
-      "frp_p50": 2.06,
+      "frp_p50": 2.07,
       "frp_p90": 14.17,
-      "jul_aug_share": 0.2074
+      "jul_aug_share": 0.2076
     },
     {
       "lat": 28.46,
       "lon": 9.06,
       "site_id": "dz-2847-906",
-      "static_share": 0.9934,
+      "static_share": 0.9933,
       "active_days": 1615,
-      "detection_count": 2409,
+      "detection_count": 2403,
       "first_seen": "2016-01-10",
       "last_seen": "2025-12-31",
       "frp_p50": 2.84,
-      "frp_p90": 6.38,
-      "jul_aug_share": 0.1665
+      "frp_p90": 6.37,
+      "jul_aug_share": 0.1669
     },
     {
       "lat": 31.82,
       "lon": 6.22,
       "site_id": "dz-3182-622",
-      "static_share": 0.725,
+      "static_share": 0.7268,
       "active_days": 1287,
-      "detection_count": 2349,
+      "detection_count": 2343,
       "first_seen": "2016-04-24",
       "last_seen": "2023-03-05",
       "frp_p50": 7.26,
       "frp_p90": 17.27,
-      "jul_aug_share": 0.1984
+      "jul_aug_share": 0.1989
     },
     {
       "lat": 35.81,
@@ -1552,12 +1552,12 @@
       "site_id": "dz-3581--25",
       "static_share": 1,
       "active_days": 1506,
-      "detection_count": 2321,
+      "detection_count": 2318,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
       "frp_p50": 2.07,
       "frp_p90": 9.59,
-      "jul_aug_share": 0.1603
+      "jul_aug_share": 0.1605
     },
     {
       "lat": 31.05,
@@ -1565,25 +1565,25 @@
       "site_id": "dz-3106-803",
       "static_share": 0.9874,
       "active_days": 1696,
-      "detection_count": 2299,
+      "detection_count": 2296,
       "first_seen": "2016-01-03",
       "last_seen": "2025-12-31",
       "frp_p50": 3.13,
       "frp_p90": 7.67,
-      "jul_aug_share": 0.1731
+      "jul_aug_share": 0.1733
     },
     {
       "lat": 27.41,
       "lon": 8.84,
       "site_id": "dz-2741-884",
-      "static_share": 0.9237,
+      "static_share": 0.9235,
       "active_days": 1192,
-      "detection_count": 2293,
+      "detection_count": 2288,
       "first_seen": "2019-10-09",
       "last_seen": "2025-12-27",
       "frp_p50": 1.61,
       "frp_p90": 3.81,
-      "jul_aug_share": 0.147
+      "jul_aug_share": 0.1473
     },
     {
       "lat": 27.93,
@@ -1591,12 +1591,12 @@
       "site_id": "dz-2793-911",
       "static_share": 0.9978,
       "active_days": 1668,
-      "detection_count": 2289,
+      "detection_count": 2281,
       "first_seen": "2016-01-02",
       "last_seen": "2025-12-04",
       "frp_p50": 1.38,
-      "frp_p90": 3.1,
-      "jul_aug_share": 0.1608
+      "frp_p90": 3.09,
+      "jul_aug_share": 0.1613
     },
     {
       "lat": 35.82,
@@ -1604,38 +1604,25 @@
       "site_id": "dz-3581--25",
       "static_share": 1,
       "active_days": 1456,
-      "detection_count": 2282,
+      "detection_count": 2273,
       "first_seen": "2016-01-02",
       "last_seen": "2025-12-26",
       "frp_p50": 2.4,
       "frp_p90": 7.56,
-      "jul_aug_share": 0.1674
-    },
-    {
-      "lat": 31.83,
-      "lon": 5.97,
-      "site_id": "dz-3183-597",
-      "static_share": 0.6504,
-      "active_days": 734,
-      "detection_count": 2280,
-      "first_seen": "2016-01-01",
-      "last_seen": "2025-09-29",
-      "frp_p50": 11.63,
-      "frp_p90": 26.18,
-      "jul_aug_share": 0.1952
+      "jul_aug_share": 0.1681
     },
     {
       "lat": 28.15,
       "lon": 8.97,
       "site_id": "dz-2815-897",
-      "static_share": 0.9859,
+      "static_share": 0.9858,
       "active_days": 1734,
-      "detection_count": 2268,
+      "detection_count": 2261,
       "first_seen": "2016-01-03",
       "last_seen": "2025-12-31",
       "frp_p50": 0.98,
       "frp_p90": 2.5,
-      "jul_aug_share": 0.1512
+      "jul_aug_share": 0.1517
     },
     {
       "lat": 32.94,
@@ -1643,12 +1630,12 @@
       "site_id": "dz-3295-323",
       "static_share": 0.984,
       "active_days": 1671,
-      "detection_count": 2256,
+      "detection_count": 2252,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-16",
       "frp_p50": 1.28,
       "frp_p90": 2.99,
-      "jul_aug_share": 0.1618
+      "jul_aug_share": 0.1621
     },
     {
       "lat": 30.25,
@@ -1656,12 +1643,12 @@
       "site_id": "dz-3025-808",
       "static_share": 0.9699,
       "active_days": 1527,
-      "detection_count": 2229,
+      "detection_count": 2225,
       "first_seen": "2016-01-04",
       "last_seen": "2025-12-27",
       "frp_p50": 1.78,
-      "frp_p90": 11.25,
-      "jul_aug_share": 0.1907
+      "frp_p90": 11.23,
+      "jul_aug_share": 0.191
     },
     {
       "lat": 36.63,
@@ -1669,12 +1656,12 @@
       "site_id": "dz-3663-323",
       "static_share": 0.9791,
       "active_days": 1601,
-      "detection_count": 2200,
+      "detection_count": 2197,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
       "frp_p50": 0.98,
       "frp_p90": 1.42,
-      "jul_aug_share": 0.1845
+      "jul_aug_share": 0.1848
     },
     {
       "lat": 35.23,
@@ -1682,12 +1669,12 @@
       "site_id": "dz-3523-817",
       "static_share": 0.9845,
       "active_days": 1760,
-      "detection_count": 2197,
+      "detection_count": 2193,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
       "frp_p50": 1.21,
       "frp_p90": 1.92,
-      "jul_aug_share": 0.2403
+      "jul_aug_share": 0.2408
     },
     {
       "lat": 28.19,
@@ -1695,51 +1682,51 @@
       "site_id": "dz-2819-980",
       "static_share": 0.9977,
       "active_days": 1645,
-      "detection_count": 2185,
+      "detection_count": 2184,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-29",
       "frp_p50": 1.31,
       "frp_p90": 2.53,
-      "jul_aug_share": 0.1501
+      "jul_aug_share": 0.1502
     },
     {
       "lat": 27.64,
       "lon": 9.87,
       "site_id": "dz-2774-992",
-      "static_share": 0.7467,
+      "static_share": 0.7477,
       "active_days": 1180,
-      "detection_count": 2183,
+      "detection_count": 2180,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-13",
       "frp_p50": 1.5,
-      "frp_p90": 3.44,
-      "jul_aug_share": 0.1695
+      "frp_p90": 3.46,
+      "jul_aug_share": 0.1697
     },
     {
       "lat": 36.75,
       "lon": 3.08,
       "site_id": "dz-3675-308",
-      "static_share": 0.9881,
+      "static_share": 0.988,
       "active_days": 1770,
-      "detection_count": 2179,
+      "detection_count": 2172,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-30",
       "frp_p50": 1.07,
       "frp_p90": 1.78,
-      "jul_aug_share": 0.1978
+      "jul_aug_share": 0.1984
     },
     {
       "lat": 28.46,
       "lon": 7.52,
       "site_id": "dz-2846-752",
-      "static_share": 0.8397,
+      "static_share": 0.8396,
       "active_days": 1344,
-      "detection_count": 2165,
+      "detection_count": 2164,
       "first_seen": "2016-03-14",
       "last_seen": "2025-12-31",
       "frp_p50": 1.2,
       "frp_p90": 2.47,
-      "jul_aug_share": 0.1321
+      "jul_aug_share": 0.1322
     },
     {
       "lat": 28.64,
@@ -1747,25 +1734,25 @@
       "site_id": "dz-2863-979",
       "static_share": 0.9903,
       "active_days": 1588,
-      "detection_count": 2163,
+      "detection_count": 2157,
       "first_seen": "2016-01-02",
       "last_seen": "2025-12-31",
       "frp_p50": 1.67,
       "frp_p90": 4.32,
-      "jul_aug_share": 0.1798
+      "jul_aug_share": 0.1803
     },
     {
       "lat": 28.12,
       "lon": 0.31,
       "site_id": "dz-2812-31",
-      "static_share": 0.7085,
+      "static_share": 0.7079,
       "active_days": 1044,
-      "detection_count": 2161,
+      "detection_count": 2157,
       "first_seen": "2019-02-21",
       "last_seen": "2025-12-24",
-      "frp_p50": 2.97,
+      "frp_p50": 2.98,
       "frp_p90": 17.88,
-      "jul_aug_share": 0.1638
+      "jul_aug_share": 0.1641
     },
     {
       "lat": 27.73,
@@ -1773,25 +1760,12 @@
       "site_id": "dz-2775-915",
       "static_share": 0.9706,
       "active_days": 1579,
-      "detection_count": 2143,
+      "detection_count": 2142,
       "first_seen": "2016-01-02",
       "last_seen": "2025-12-31",
       "frp_p50": 1.3,
       "frp_p90": 3,
-      "jul_aug_share": 0.1927
-    },
-    {
-      "lat": 31.4,
-      "lon": 6.94,
-      "site_id": "dz-3140-693",
-      "static_share": 0.9902,
-      "active_days": 1461,
-      "detection_count": 2136,
-      "first_seen": "2016-01-01",
-      "last_seen": "2025-12-30",
-      "frp_p50": 2.75,
-      "frp_p90": 9.25,
-      "jul_aug_share": 0.147
+      "jul_aug_share": 0.1928
     },
     {
       "lat": 27.73,
@@ -1799,38 +1773,51 @@
       "site_id": "dz-2774-992",
       "static_share": 0.9686,
       "active_days": 1301,
-      "detection_count": 2134,
+      "detection_count": 2133,
       "first_seen": "2016-06-14",
       "last_seen": "2025-12-31",
-      "frp_p50": 2.26,
+      "frp_p50": 2.25,
       "frp_p90": 7.83,
-      "jul_aug_share": 0.2085
+      "jul_aug_share": 0.2086
+    },
+    {
+      "lat": 31.4,
+      "lon": 6.94,
+      "site_id": "dz-3140-693",
+      "static_share": 0.9901,
+      "active_days": 1461,
+      "detection_count": 2129,
+      "first_seen": "2016-01-01",
+      "last_seen": "2025-12-30",
+      "frp_p50": 2.75,
+      "frp_p90": 9.26,
+      "jul_aug_share": 0.1475
     },
     {
       "lat": 28.56,
       "lon": 7.51,
       "site_id": "dz-2856-752",
-      "static_share": 0.8329,
+      "static_share": 0.8344,
       "active_days": 1350,
-      "detection_count": 2112,
+      "detection_count": 2107,
       "first_seen": "2016-01-29",
       "last_seen": "2025-12-28",
       "frp_p50": 2.61,
       "frp_p90": 5.3,
-      "jul_aug_share": 0.1776
+      "jul_aug_share": 0.178
     },
     {
       "lat": 34.98,
       "lon": 5.72,
       "site_id": "dz-3498-572",
-      "static_share": 0.9458,
+      "static_share": 0.9457,
       "active_days": 1511,
-      "detection_count": 2105,
+      "detection_count": 2098,
       "first_seen": "2016-05-21",
       "last_seen": "2025-12-31",
       "frp_p50": 1.47,
       "frp_p90": 2.97,
-      "jul_aug_share": 0.1197
+      "jul_aug_share": 0.1201
     },
     {
       "lat": 36.79,
@@ -1849,40 +1836,14 @@
       "lat": 28.43,
       "lon": 7.51,
       "site_id": "dz-2846-752",
-      "static_share": 0.7845,
+      "static_share": 0.7841,
       "active_days": 1404,
-      "detection_count": 2019,
+      "detection_count": 2015,
       "first_seen": "2016-01-30",
       "last_seen": "2025-12-31",
       "frp_p50": 1.04,
       "frp_p90": 2.04,
-      "jul_aug_share": 0.1397
-    },
-    {
-      "lat": 36.33,
-      "lon": 5.48,
-      "site_id": "dz-3633-548",
-      "static_share": 0.9787,
-      "active_days": 1645,
-      "detection_count": 2015,
-      "first_seen": "2016-01-13",
-      "last_seen": "2025-12-28",
-      "frp_p50": 1.18,
-      "frp_p90": 2.02,
-      "jul_aug_share": 0.2362
-    },
-    {
-      "lat": 28.69,
-      "lon": 7.2,
-      "site_id": "dz-2868-719",
-      "static_share": 0.9821,
-      "active_days": 1453,
-      "detection_count": 2013,
-      "first_seen": "2016-01-01",
-      "last_seen": "2025-12-29",
-      "frp_p50": 4.63,
-      "frp_p90": 12.38,
-      "jul_aug_share": 0.1833
+      "jul_aug_share": 0.14
     },
     {
       "lat": 31.85,
@@ -1898,17 +1859,43 @@
       "jul_aug_share": 0.15
     },
     {
+      "lat": 36.33,
+      "lon": 5.48,
+      "site_id": "dz-3633-548",
+      "static_share": 0.9786,
+      "active_days": 1645,
+      "detection_count": 2011,
+      "first_seen": "2016-01-13",
+      "last_seen": "2025-12-28",
+      "frp_p50": 1.19,
+      "frp_p90": 2.02,
+      "jul_aug_share": 0.2367
+    },
+    {
+      "lat": 28.69,
+      "lon": 7.2,
+      "site_id": "dz-2868-719",
+      "static_share": 0.9821,
+      "active_days": 1453,
+      "detection_count": 2009,
+      "first_seen": "2016-01-01",
+      "last_seen": "2025-12-29",
+      "frp_p50": 4.63,
+      "frp_p90": 12.38,
+      "jul_aug_share": 0.1837
+    },
+    {
       "lat": 31.46,
       "lon": 5.94,
       "site_id": "dz-3146-594",
-      "static_share": 0.9274,
+      "static_share": 0.9273,
       "active_days": 1292,
-      "detection_count": 2011,
+      "detection_count": 2007,
       "first_seen": "2016-01-01",
       "last_seen": "2022-12-27",
       "frp_p50": 1.37,
-      "frp_p90": 3.48,
-      "jul_aug_share": 0.1586
+      "frp_p90": 3.5,
+      "jul_aug_share": 0.1589
     },
     {
       "lat": 29.69,
@@ -1916,25 +1903,25 @@
       "site_id": "dz-2970-671",
       "static_share": 0.9925,
       "active_days": 1512,
-      "detection_count": 1999,
+      "detection_count": 1997,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
       "frp_p50": 1.66,
       "frp_p90": 3.83,
-      "jul_aug_share": 0.1451
+      "jul_aug_share": 0.1452
     },
     {
       "lat": 31.68,
       "lon": 6.05,
       "site_id": "dz-3166-606",
-      "static_share": 0.9841,
+      "static_share": 0.984,
       "active_days": 1537,
-      "detection_count": 1946,
+      "detection_count": 1939,
       "first_seen": "2016-01-04",
       "last_seen": "2025-12-26",
-      "frp_p50": 0.94,
+      "frp_p50": 0.95,
       "frp_p90": 2.11,
-      "jul_aug_share": 0.1408
+      "jul_aug_share": 0.1413
     },
     {
       "lat": 30.98,
@@ -1942,25 +1929,25 @@
       "site_id": "dz-3098-576",
       "static_share": 0.9768,
       "active_days": 1020,
-      "detection_count": 1894,
+      "detection_count": 1893,
       "first_seen": "2016-01-14",
       "last_seen": "2025-12-24",
       "frp_p50": 1.76,
       "frp_p90": 3.94,
-      "jul_aug_share": 0.1431
+      "jul_aug_share": 0.1432
     },
     {
       "lat": 28.47,
       "lon": 7.51,
       "site_id": "dz-2846-752",
-      "static_share": 0.943,
+      "static_share": 0.9428,
       "active_days": 1216,
-      "detection_count": 1860,
+      "detection_count": 1854,
       "first_seen": "2016-01-12",
       "last_seen": "2025-12-31",
       "frp_p50": 1,
       "frp_p90": 2.34,
-      "jul_aug_share": 0.1005
+      "jul_aug_share": 0.1009
     },
     {
       "lat": 31.7,
@@ -1968,25 +1955,25 @@
       "site_id": "dz-3170-596",
       "static_share": 0.98,
       "active_days": 1256,
-      "detection_count": 1849,
+      "detection_count": 1846,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-13",
       "frp_p50": 3.34,
       "frp_p90": 10.03,
-      "jul_aug_share": 0.1904
+      "jul_aug_share": 0.1907
     },
     {
       "lat": 29.26,
       "lon": 6.49,
       "site_id": "dz-2927-649",
-      "static_share": 0.9788,
+      "static_share": 0.9793,
       "active_days": 1213,
-      "detection_count": 1840,
+      "detection_count": 1832,
       "first_seen": "2016-01-02",
       "last_seen": "2025-12-31",
       "frp_p50": 1.04,
       "frp_p90": 2.38,
-      "jul_aug_share": 0.1375
+      "jul_aug_share": 0.1381
     },
     {
       "lat": 28.72,
@@ -1994,25 +1981,25 @@
       "site_id": "dz-2872-752",
       "static_share": 0.953,
       "active_days": 1116,
-      "detection_count": 1789,
+      "detection_count": 1786,
       "first_seen": "2016-01-27",
       "last_seen": "2025-06-18",
       "frp_p50": 1.02,
       "frp_p90": 2.32,
-      "jul_aug_share": 0.1263
+      "jul_aug_share": 0.1265
     },
     {
       "lat": 31.81,
       "lon": 6.22,
       "site_id": "dz-3182-622",
-      "static_share": 0.73,
+      "static_share": 0.7313,
       "active_days": 1049,
-      "detection_count": 1726,
+      "detection_count": 1723,
       "first_seen": "2016-04-25",
       "last_seen": "2023-09-12",
       "frp_p50": 5.95,
       "frp_p90": 13.53,
-      "jul_aug_share": 0.2121
+      "jul_aug_share": 0.2124
     },
     {
       "lat": 35.53,
@@ -2020,12 +2007,12 @@
       "site_id": "dz-3553--28",
       "static_share": 0.9901,
       "active_days": 1267,
-      "detection_count": 1720,
+      "detection_count": 1713,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-21",
       "frp_p50": 0.88,
       "frp_p90": 1.33,
-      "jul_aug_share": 0.1512
+      "jul_aug_share": 0.1518
     },
     {
       "lat": 27.67,
@@ -2041,43 +2028,43 @@
       "jul_aug_share": 0.1882
     },
     {
-      "lat": 31.71,
-      "lon": 5.96,
-      "site_id": "dz-3170-596",
-      "static_share": 0.7652,
-      "active_days": 914,
-      "detection_count": 1699,
-      "first_seen": "2016-07-04",
-      "last_seen": "2025-10-25",
-      "frp_p50": 2.95,
-      "frp_p90": 18.14,
-      "jul_aug_share": 0.1277
-    },
-    {
       "lat": 36.75,
       "lon": 6.26,
       "site_id": "dz-3675-626",
-      "static_share": 0.8222,
+      "static_share": 0.8219,
       "active_days": 1006,
-      "detection_count": 1699,
+      "detection_count": 1696,
       "first_seen": "2019-06-10",
       "last_seen": "2025-12-28",
       "frp_p50": 3.92,
       "frp_p90": 9.57,
-      "jul_aug_share": 0.2066
+      "jul_aug_share": 0.207
+    },
+    {
+      "lat": 31.71,
+      "lon": 5.96,
+      "site_id": "dz-3170-596",
+      "static_share": 0.7635,
+      "active_days": 914,
+      "detection_count": 1687,
+      "first_seen": "2016-07-04",
+      "last_seen": "2025-10-25",
+      "frp_p50": 2.93,
+      "frp_p90": 18.14,
+      "jul_aug_share": 0.1286
     },
     {
       "lat": 31.39,
       "lon": 6.93,
       "site_id": "dz-3140-693",
-      "static_share": 0.9804,
+      "static_share": 0.9803,
       "active_days": 1230,
-      "detection_count": 1680,
+      "detection_count": 1675,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-29",
       "frp_p50": 2.3,
       "frp_p90": 6.2,
-      "jul_aug_share": 0.1702
+      "jul_aug_share": 0.1707
     },
     {
       "lat": 28.52,
@@ -2085,25 +2072,25 @@
       "site_id": "dz-2853-912",
       "static_share": 0.9988,
       "active_days": 1151,
-      "detection_count": 1648,
+      "detection_count": 1645,
       "first_seen": "2016-01-02",
       "last_seen": "2025-12-23",
       "frp_p50": 1.71,
       "frp_p90": 4.2,
-      "jul_aug_share": 0.1917
+      "jul_aug_share": 0.1921
     },
     {
       "lat": 36.6,
       "lon": 2.88,
       "site_id": "dz-3660-288",
-      "static_share": 0.8538,
+      "static_share": 0.8542,
       "active_days": 1315,
-      "detection_count": 1621,
+      "detection_count": 1619,
       "first_seen": "2016-04-03",
       "last_seen": "2025-12-31",
       "frp_p50": 0.91,
-      "frp_p90": 1.97,
-      "jul_aug_share": 0.3035
+      "frp_p90": 1.98,
+      "jul_aug_share": 0.3039
     },
     {
       "lat": 33.14,
@@ -2111,12 +2098,12 @@
       "site_id": "dz-3314-337",
       "static_share": 0.9196,
       "active_days": 1387,
-      "detection_count": 1605,
+      "detection_count": 1604,
       "first_seen": "2016-01-24",
       "last_seen": "2025-12-30",
       "frp_p50": 1.04,
       "frp_p90": 1.92,
-      "jul_aug_share": 0.2866
+      "jul_aug_share": 0.2868
     },
     {
       "lat": 28.65,
@@ -2137,12 +2124,12 @@
       "site_id": "dz-2864-754",
       "static_share": 0.988,
       "active_days": 1171,
-      "detection_count": 1581,
+      "detection_count": 1580,
       "first_seen": "2016-01-02",
       "last_seen": "2025-11-19",
       "frp_p50": 2.36,
-      "frp_p90": 7.13,
-      "jul_aug_share": 0.2492
+      "frp_p90": 7.14,
+      "jul_aug_share": 0.2494
     },
     {
       "lat": 30.83,
@@ -2150,51 +2137,51 @@
       "site_id": "dz-3083-803",
       "static_share": 0.9841,
       "active_days": 944,
-      "detection_count": 1574,
+      "detection_count": 1569,
       "first_seen": "2016-01-02",
       "last_seen": "2025-11-02",
       "frp_p50": 1.79,
-      "frp_p90": 5.5,
-      "jul_aug_share": 0.1722
+      "frp_p90": 5.53,
+      "jul_aug_share": 0.1727
     },
     {
       "lat": 34.6,
       "lon": -2.35,
       "site_id": "dz-3460--235",
-      "static_share": 0.9911,
+      "static_share": 0.991,
       "active_days": 1359,
-      "detection_count": 1565,
+      "detection_count": 1560,
       "first_seen": "2016-01-06",
       "last_seen": "2025-11-16",
       "frp_p50": 1.24,
       "frp_p90": 2.12,
-      "jul_aug_share": 0.1796
+      "jul_aug_share": 0.1801
     },
     {
       "lat": 28.71,
       "lon": 8.95,
       "site_id": "dz-2870-894",
-      "static_share": 0.982,
+      "static_share": 0.9819,
       "active_days": 1246,
-      "detection_count": 1556,
+      "detection_count": 1550,
       "first_seen": "2016-01-11",
       "last_seen": "2025-12-25",
       "frp_p50": 0.95,
-      "frp_p90": 1.72,
-      "jul_aug_share": 0.1581
+      "frp_p90": 1.73,
+      "jul_aug_share": 0.1587
     },
     {
       "lat": 30.18,
       "lon": 7.69,
       "site_id": "dz-3018-769",
-      "static_share": 0.9579,
+      "static_share": 0.9577,
       "active_days": 1086,
-      "detection_count": 1544,
+      "detection_count": 1537,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
       "frp_p50": 0.95,
-      "frp_p90": 2.72,
-      "jul_aug_share": 0.1619
+      "frp_p90": 2.7,
+      "jul_aug_share": 0.1627
     },
     {
       "lat": 36.14,
@@ -2202,77 +2189,77 @@
       "site_id": "dz-3614-293",
       "static_share": 0.9883,
       "active_days": 1304,
-      "detection_count": 1537,
+      "detection_count": 1536,
       "first_seen": "2016-01-08",
       "last_seen": "2025-12-29",
       "frp_p50": 0.7,
       "frp_p90": 1.36,
-      "jul_aug_share": 0.3058
+      "jul_aug_share": 0.306
     },
     {
       "lat": 27.53,
       "lon": 9.62,
       "site_id": "dz-2753-962",
-      "static_share": 0.6873,
+      "static_share": 0.6885,
       "active_days": 1268,
-      "detection_count": 1532,
+      "detection_count": 1528,
       "first_seen": "2016-02-12",
       "last_seen": "2025-12-31",
       "frp_p50": 0.87,
       "frp_p90": 1.45,
-      "jul_aug_share": 0.1697
+      "jul_aug_share": 0.1702
     },
     {
       "lat": 31.49,
       "lon": 5.85,
       "site_id": "dz-3149-585",
-      "static_share": 0.672,
+      "static_share": 0.6717,
       "active_days": 1089,
-      "detection_count": 1512,
+      "detection_count": 1511,
       "first_seen": "2017-07-06",
       "last_seen": "2024-03-02",
       "frp_p50": 2.83,
       "frp_p90": 7.32,
-      "jul_aug_share": 0.2302
+      "jul_aug_share": 0.2303
     },
     {
       "lat": 31.5,
       "lon": 5.85,
       "site_id": "dz-3149-585",
-      "static_share": 0.6577,
+      "static_share": 0.6575,
       "active_days": 1068,
-      "detection_count": 1490,
+      "detection_count": 1489,
       "first_seen": "2017-07-05",
       "last_seen": "2024-03-23",
       "frp_p50": 3.02,
-      "frp_p90": 7.62,
-      "jul_aug_share": 0.2181
+      "frp_p90": 7.6,
+      "jul_aug_share": 0.2183
     },
     {
       "lat": 28.12,
       "lon": 0.3,
       "site_id": "dz-2812-31",
-      "static_share": 0.6573,
+      "static_share": 0.6569,
       "active_days": 893,
-      "detection_count": 1465,
+      "detection_count": 1463,
       "first_seen": "2019-02-20",
       "last_seen": "2025-12-29",
-      "frp_p50": 2.83,
+      "frp_p50": 2.84,
       "frp_p90": 15.49,
-      "jul_aug_share": 0.1768
+      "jul_aug_share": 0.177
     },
     {
       "lat": 31.64,
       "lon": 5.99,
       "site_id": "dz-3163-598",
-      "static_share": 0.9487,
+      "static_share": 0.9486,
       "active_days": 922,
-      "detection_count": 1461,
+      "detection_count": 1458,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-06",
-      "frp_p50": 2.44,
+      "frp_p50": 2.43,
       "frp_p90": 7.74,
-      "jul_aug_share": 0.2183
+      "jul_aug_share": 0.2188
     },
     {
       "lat": 30.82,
@@ -2280,51 +2267,51 @@
       "site_id": "dz-3083-803",
       "static_share": 0.9937,
       "active_days": 1281,
-      "detection_count": 1426,
+      "detection_count": 1424,
       "first_seen": "2016-01-14",
       "last_seen": "2025-12-25",
       "frp_p50": 1.07,
       "frp_p90": 2.79,
-      "jul_aug_share": 0.1809
+      "jul_aug_share": 0.1812
     },
     {
       "lat": 36.87,
       "lon": 6.99,
       "site_id": "dz-3687-698",
-      "static_share": 0.9768,
+      "static_share": 0.9767,
       "active_days": 1052,
-      "detection_count": 1423,
+      "detection_count": 1418,
       "first_seen": "2016-01-11",
       "last_seen": "2025-12-31",
       "frp_p50": 2.12,
-      "frp_p90": 6.08,
-      "jul_aug_share": 0.2207
+      "frp_p90": 6.13,
+      "jul_aug_share": 0.2214
     },
     {
       "lat": 35.31,
       "lon": -1.34,
       "site_id": "dz-3531--134",
-      "static_share": 0.9816,
+      "static_share": 0.9815,
       "active_days": 1141,
-      "detection_count": 1410,
+      "detection_count": 1405,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
       "frp_p50": 0.87,
       "frp_p90": 1.29,
-      "jul_aug_share": 0.117
+      "jul_aug_share": 0.1174
     },
     {
       "lat": 35.46,
       "lon": -0.4,
       "site_id": "dz-3546--40",
-      "static_share": 0.9771,
+      "static_share": 0.9785,
       "active_days": 1130,
-      "detection_count": 1400,
+      "detection_count": 1394,
       "first_seen": "2016-01-02",
       "last_seen": "2025-12-27",
       "frp_p50": 1.14,
       "frp_p90": 1.88,
-      "jul_aug_share": 0.1586
+      "jul_aug_share": 0.1593
     },
     {
       "lat": 28.71,
@@ -2332,51 +2319,38 @@
       "site_id": "dz-2870-894",
       "static_share": 0.9921,
       "active_days": 1069,
-      "detection_count": 1394,
+      "detection_count": 1390,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-28",
-      "frp_p50": 1.45,
+      "frp_p50": 1.46,
       "frp_p90": 3.01,
-      "jul_aug_share": 0.1793
+      "jul_aug_share": 0.1799
     },
     {
       "lat": 31.68,
       "lon": 6.19,
       "site_id": "dz-3169-619",
-      "static_share": 0.9833,
+      "static_share": 0.9832,
       "active_days": 802,
-      "detection_count": 1375,
+      "detection_count": 1373,
       "first_seen": "2016-01-10",
       "last_seen": "2025-11-09",
       "frp_p50": 3.51,
       "frp_p90": 15.15,
-      "jul_aug_share": 0.1455
+      "jul_aug_share": 0.1457
     },
     {
       "lat": 31.23,
       "lon": 8.57,
       "site_id": "dz-3123-856",
-      "static_share": 0.973,
+      "static_share": 0.9743,
       "active_days": 958,
-      "detection_count": 1371,
+      "detection_count": 1364,
       "first_seen": "2016-01-02",
       "last_seen": "2025-12-06",
       "frp_p50": 1.65,
-      "frp_p90": 6.7,
-      "jul_aug_share": 0.1583
-    },
-    {
-      "lat": 28.87,
-      "lon": 9.94,
-      "site_id": "dz-2889-995",
-      "static_share": 0.6997,
-      "active_days": 1215,
-      "detection_count": 1362,
-      "first_seen": "2016-01-22",
-      "last_seen": "2025-12-29",
-      "frp_p50": 0.77,
-      "frp_p90": 1.17,
-      "jul_aug_share": 0.1769
+      "frp_p90": 6.66,
+      "jul_aug_share": 0.1591
     },
     {
       "lat": 28.65,
@@ -2392,17 +2366,30 @@
       "jul_aug_share": 0.2191
     },
     {
+      "lat": 28.87,
+      "lon": 9.94,
+      "site_id": "dz-2889-995",
+      "static_share": 0.7007,
+      "active_days": 1215,
+      "detection_count": 1360,
+      "first_seen": "2016-01-22",
+      "last_seen": "2025-12-29",
+      "frp_p50": 0.77,
+      "frp_p90": 1.17,
+      "jul_aug_share": 0.1772
+    },
+    {
       "lat": 29.7,
       "lon": 6.72,
       "site_id": "dz-2970-671",
       "static_share": 0.9926,
       "active_days": 1057,
-      "detection_count": 1359,
+      "detection_count": 1357,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-29",
       "frp_p50": 1.72,
       "frp_p90": 4.82,
-      "jul_aug_share": 0.1273
+      "jul_aug_share": 0.1275
     },
     {
       "lat": 36.75,
@@ -2410,25 +2397,25 @@
       "site_id": "dz-3675-626",
       "static_share": 0.8231,
       "active_days": 837,
-      "detection_count": 1357,
+      "detection_count": 1351,
       "first_seen": "2018-06-28",
       "last_seen": "2025-12-27",
       "frp_p50": 3.02,
-      "frp_p90": 7.6,
-      "jul_aug_share": 0.2233
+      "frp_p90": 7.56,
+      "jul_aug_share": 0.2243
     },
     {
       "lat": 30.76,
       "lon": 5.45,
       "site_id": "dz-3076-545",
-      "static_share": 0.7744,
+      "static_share": 0.7814,
       "active_days": 584,
-      "detection_count": 1343,
+      "detection_count": 1331,
       "first_seen": "2016-01-15",
       "last_seen": "2025-09-13",
       "frp_p50": 2.5,
       "frp_p90": 6.4,
-      "jul_aug_share": 0.2375
+      "jul_aug_share": 0.2397
     },
     {
       "lat": 28.74,
@@ -2436,142 +2423,142 @@
       "site_id": "dz-2873-915",
       "static_share": 0.9631,
       "active_days": 1037,
-      "detection_count": 1329,
+      "detection_count": 1328,
       "first_seen": "2016-01-02",
       "last_seen": "2025-10-15",
-      "frp_p50": 1.08,
+      "frp_p50": 1.09,
       "frp_p90": 2.9,
-      "jul_aug_share": 0.1926
+      "jul_aug_share": 0.1928
     },
     {
       "lat": 31.96,
       "lon": 11.14,
       "site_id": "dz-3196-1114",
-      "static_share": 0.994,
+      "static_share": 0.9939,
       "active_days": 1199,
-      "detection_count": 1324,
+      "detection_count": 1320,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
       "frp_p50": 1.25,
       "frp_p90": 2.4,
-      "jul_aug_share": 0.2455
+      "jul_aug_share": 0.2462
     },
     {
       "lat": 31.82,
       "lon": 6.23,
       "site_id": "dz-3182-622",
-      "static_share": 0.7115,
+      "static_share": 0.7147,
       "active_days": 893,
-      "detection_count": 1317,
+      "detection_count": 1311,
       "first_seen": "2016-04-25",
       "last_seen": "2023-09-12",
-      "frp_p50": 6.19,
+      "frp_p50": 6.21,
       "frp_p90": 16.32,
-      "jul_aug_share": 0.2058
+      "jul_aug_share": 0.2067
     },
     {
       "lat": 31.4,
       "lon": 10.02,
       "site_id": "dz-3140-1002",
-      "static_share": 0.9716,
+      "static_share": 0.9723,
       "active_days": 848,
-      "detection_count": 1305,
+      "detection_count": 1300,
       "first_seen": "2016-01-01",
       "last_seen": "2025-10-10",
       "frp_p50": 1.13,
-      "frp_p90": 5.04,
-      "jul_aug_share": 0.2245
+      "frp_p90": 5.11,
+      "jul_aug_share": 0.2254
     },
     {
       "lat": 28.47,
       "lon": 9.05,
       "site_id": "dz-2847-906",
-      "static_share": 0.9907,
+      "static_share": 0.9906,
       "active_days": 1008,
-      "detection_count": 1284,
+      "detection_count": 1280,
       "first_seen": "2016-01-04",
       "last_seen": "2025-12-27",
       "frp_p50": 2.1,
-      "frp_p90": 4.79,
-      "jul_aug_share": 0.2064
-    },
-    {
-      "lat": 35.81,
-      "lon": -0.34,
-      "site_id": "dz-3581--25",
-      "static_share": 0.9649,
-      "active_days": 922,
-      "detection_count": 1282,
-      "first_seen": "2016-01-01",
-      "last_seen": "2025-12-31",
-      "frp_p50": 1.15,
-      "frp_p90": 3.9,
-      "jul_aug_share": 0.1365
+      "frp_p90": 4.8,
+      "jul_aug_share": 0.207
     },
     {
       "lat": 34.8,
       "lon": 0.33,
       "site_id": "dz-3480-33",
-      "static_share": 0.9688,
+      "static_share": 0.9687,
       "active_days": 1042,
-      "detection_count": 1280,
+      "detection_count": 1279,
       "first_seen": "2016-01-02",
       "last_seen": "2025-12-17",
       "frp_p50": 0.9,
       "frp_p90": 1.45,
-      "jul_aug_share": 0.2406
+      "jul_aug_share": 0.2408
+    },
+    {
+      "lat": 35.81,
+      "lon": -0.34,
+      "site_id": "dz-3581--25",
+      "static_share": 0.9654,
+      "active_days": 922,
+      "detection_count": 1271,
+      "first_seen": "2016-01-01",
+      "last_seen": "2025-12-31",
+      "frp_p50": 1.14,
+      "frp_p90": 3.9,
+      "jul_aug_share": 0.1377
     },
     {
       "lat": 28.94,
       "lon": 10.02,
       "site_id": "dz-2894-1002",
-      "static_share": 0.7113,
+      "static_share": 0.7106,
       "active_days": 1126,
-      "detection_count": 1271,
+      "detection_count": 1268,
       "first_seen": "2016-01-23",
       "last_seen": "2025-12-26",
       "frp_p50": 0.78,
       "frp_p90": 1.31,
-      "jul_aug_share": 0.1912
+      "jul_aug_share": 0.1916
     },
     {
       "lat": 32.93,
       "lon": 3.25,
       "site_id": "dz-3295-323",
-      "static_share": 0.9819,
+      "static_share": 0.9818,
       "active_days": 1051,
-      "detection_count": 1270,
+      "detection_count": 1267,
       "first_seen": "2016-01-02",
       "last_seen": "2025-12-07",
       "frp_p50": 0.83,
       "frp_p90": 1.66,
-      "jul_aug_share": 0.1441
+      "jul_aug_share": 0.1444
     },
     {
       "lat": 28.49,
       "lon": 7.51,
       "site_id": "dz-2846-752",
-      "static_share": 0.7587,
+      "static_share": 0.7577,
       "active_days": 751,
-      "detection_count": 1268,
+      "detection_count": 1263,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-06",
       "frp_p50": 2.16,
       "frp_p90": 4.98,
-      "jul_aug_share": 0.1877
+      "jul_aug_share": 0.1884
     },
     {
       "lat": 30.67,
       "lon": 8.1,
       "site_id": "dz-3066-810",
-      "static_share": 0.9937,
+      "static_share": 0.9936,
       "active_days": 996,
-      "detection_count": 1260,
+      "detection_count": 1259,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-31",
       "frp_p50": 1.36,
-      "frp_p90": 2.48,
-      "jul_aug_share": 0.1905
+      "frp_p90": 2.47,
+      "jul_aug_share": 0.1906
     },
     {
       "lat": 27.76,
@@ -2579,38 +2566,25 @@
       "site_id": "dz-2775-915",
       "static_share": 0.9698,
       "active_days": 1017,
-      "detection_count": 1259,
+      "detection_count": 1257,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-30",
       "frp_p50": 3.31,
-      "frp_p90": 6.74,
-      "jul_aug_share": 0.1501
+      "frp_p90": 6.73,
+      "jul_aug_share": 0.1504
     },
     {
       "lat": 32.52,
       "lon": 6.71,
       "site_id": "dz-3251-671",
-      "static_share": 0.8694,
+      "static_share": 0.8699,
       "active_days": 854,
-      "detection_count": 1256,
+      "detection_count": 1253,
       "first_seen": "2016-07-11",
       "last_seen": "2025-12-31",
       "frp_p50": 3.51,
       "frp_p90": 7.73,
-      "jul_aug_share": 0.1959
-    },
-    {
-      "lat": 30.39,
-      "lon": 7.91,
-      "site_id": "dz-3039-791",
-      "static_share": 0.9656,
-      "active_days": 951,
-      "detection_count": 1250,
-      "first_seen": "2016-02-24",
-      "last_seen": "2025-12-31",
-      "frp_p50": 0.89,
-      "frp_p90": 3.99,
-      "jul_aug_share": 0.1144
+      "jul_aug_share": 0.1963
     },
     {
       "lat": 28.08,
@@ -2618,116 +2592,129 @@
       "site_id": "dz-2808-979",
       "static_share": 0.9759,
       "active_days": 872,
-      "detection_count": 1247,
+      "detection_count": 1245,
       "first_seen": "2016-01-02",
       "last_seen": "2025-12-29",
       "frp_p50": 2.66,
       "frp_p90": 6.57,
-      "jul_aug_share": 0.2069
+      "jul_aug_share": 0.2072
+    },
+    {
+      "lat": 30.39,
+      "lon": 7.91,
+      "site_id": "dz-3039-791",
+      "static_share": 0.9662,
+      "active_days": 951,
+      "detection_count": 1241,
+      "first_seen": "2016-02-24",
+      "last_seen": "2025-12-31",
+      "frp_p50": 0.88,
+      "frp_p90": 3.91,
+      "jul_aug_share": 0.1152
     },
     {
       "lat": 31.19,
       "lon": 6.78,
       "site_id": "dz-3119-679",
-      "static_share": 0.7127,
+      "static_share": 0.7143,
       "active_days": 785,
-      "detection_count": 1239,
+      "detection_count": 1232,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-17",
       "frp_p50": 3.46,
       "frp_p90": 6.31,
-      "jul_aug_share": 0.2107
+      "jul_aug_share": 0.2119
     },
     {
       "lat": 31.84,
       "lon": 5.97,
-      "site_id": "dz-3183-597",
-      "static_share": 0.6586,
+      "site_id": "dz-3184-597",
+      "static_share": 0.6569,
       "active_days": 553,
-      "detection_count": 1201,
+      "detection_count": 1195,
       "first_seen": "2016-01-01",
       "last_seen": "2025-09-29",
-      "frp_p50": 9.59,
-      "frp_p90": 22.11,
-      "jul_aug_share": 0.1807
+      "frp_p50": 9.6,
+      "frp_p90": 22.12,
+      "jul_aug_share": 0.1816
     },
     {
       "lat": 28.49,
       "lon": 7.5,
       "site_id": "dz-2846-752",
-      "static_share": 0.763,
+      "static_share": 0.7626,
       "active_days": 691,
-      "detection_count": 1190,
+      "detection_count": 1188,
       "first_seen": "2016-01-02",
       "last_seen": "2025-12-06",
-      "frp_p50": 2.11,
+      "frp_p50": 2.12,
       "frp_p90": 4.49,
-      "jul_aug_share": 0.1916
+      "jul_aug_share": 0.1919
     },
     {
       "lat": 35.8,
       "lon": -0.18,
       "site_id": "dz-3581--25",
-      "static_share": 0.79,
+      "static_share": 0.7896,
       "active_days": 774,
-      "detection_count": 1181,
+      "detection_count": 1174,
       "first_seen": "2016-01-02",
       "last_seen": "2025-12-31",
       "frp_p50": 1.42,
-      "frp_p90": 3.21,
-      "jul_aug_share": 0.0728
-    },
-    {
-      "lat": 28.92,
-      "lon": 9.74,
-      "site_id": "dz-2892-975",
-      "static_share": 0.8128,
-      "active_days": 622,
-      "detection_count": 1175,
-      "first_seen": "2016-04-24",
-      "last_seen": "2025-12-22",
-      "frp_p50": 7.13,
-      "frp_p90": 21.7,
-      "jul_aug_share": 0.337
-    },
-    {
-      "lat": 33.13,
-      "lon": 3.31,
-      "site_id": "dz-3313-332",
-      "static_share": 0.9625,
-      "active_days": 901,
-      "detection_count": 1174,
-      "first_seen": "2016-01-04",
-      "last_seen": "2025-12-11",
-      "frp_p50": 1.02,
-      "frp_p90": 2.06,
-      "jul_aug_share": 0.178
+      "frp_p90": 3.23,
+      "jul_aug_share": 0.0733
     },
     {
       "lat": 33.87,
       "lon": 9.99,
       "site_id": "dz-3387-999",
-      "static_share": 0.977,
+      "static_share": 0.9769,
       "active_days": 1080,
-      "detection_count": 1173,
+      "detection_count": 1171,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-26",
       "frp_p50": 0.97,
       "frp_p90": 1.38,
-      "jul_aug_share": 0.1765
+      "jul_aug_share": 0.1768
+    },
+    {
+      "lat": 33.13,
+      "lon": 3.31,
+      "site_id": "dz-3313-332",
+      "static_share": 0.9624,
+      "active_days": 901,
+      "detection_count": 1171,
+      "first_seen": "2016-01-04",
+      "last_seen": "2025-12-11",
+      "frp_p50": 1.02,
+      "frp_p90": 2.06,
+      "jul_aug_share": 0.1785
+    },
+    {
+      "lat": 28.92,
+      "lon": 9.74,
+      "site_id": "dz-2892-975",
+      "static_share": 0.8118,
+      "active_days": 622,
+      "detection_count": 1169,
+      "first_seen": "2016-04-24",
+      "last_seen": "2025-12-22",
+      "frp_p50": 7.13,
+      "frp_p90": 21.76,
+      "jul_aug_share": 0.3388
     },
     {
       "lat": 27.71,
       "lon": 9.88,
       "site_id": "dz-2774-992",
-      "static_share": 0.8589,
+      "static_share": 0.8596,
       "active_days": 837,
-      "detection_count": 1162,
+      "detection_count": 1161,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-11",
       "frp_p50": 1.36,
       "frp_p90": 2.52,
-      "jul_aug_share": 0.191
+      "jul_aug_share": 0.1912
     },
     {
       "lat": 30.87,
@@ -2735,12 +2722,12 @@
       "site_id": "dz-3088-564",
       "static_share": 0.968,
       "active_days": 756,
-      "detection_count": 1156,
+      "detection_count": 1155,
       "first_seen": "2016-02-12",
       "last_seen": "2025-12-17",
-      "frp_p50": 3.53,
+      "frp_p50": 3.52,
       "frp_p90": 9.57,
-      "jul_aug_share": 0.2016
+      "jul_aug_share": 0.2017
     },
     {
       "lat": 31.96,
@@ -2748,90 +2735,90 @@
       "site_id": "dz-3196-522",
       "static_share": 0.9557,
       "active_days": 845,
-      "detection_count": 1151,
+      "detection_count": 1150,
       "first_seen": "2016-01-05",
       "last_seen": "2025-12-30",
       "frp_p50": 1.3,
-      "frp_p90": 5.72,
-      "jul_aug_share": 0.2242
+      "frp_p90": 5.83,
+      "jul_aug_share": 0.2243
     },
     {
       "lat": 31.7,
       "lon": 9.24,
       "site_id": "dz-3170-924",
-      "static_share": 0.9754,
+      "static_share": 0.9753,
       "active_days": 888,
-      "detection_count": 1136,
+      "detection_count": 1133,
       "first_seen": "2016-01-05",
       "last_seen": "2025-12-08",
       "frp_p50": 0.91,
       "frp_p90": 2.25,
-      "jul_aug_share": 0.1496
-    },
-    {
-      "lat": 27.7,
-      "lon": 9.18,
-      "site_id": "dz-2775-915",
-      "static_share": 0.9716,
-      "active_days": 957,
-      "detection_count": 1126,
-      "first_seen": "2016-01-22",
-      "last_seen": "2025-12-31",
-      "frp_p50": 1.18,
-      "frp_p90": 2.9,
-      "jul_aug_share": 0.1652
+      "jul_aug_share": 0.15
     },
     {
       "lat": 31.58,
       "lon": 5.95,
       "site_id": "dz-3159-596",
-      "static_share": 0.9457,
+      "static_share": 0.9456,
       "active_days": 752,
-      "detection_count": 1124,
+      "detection_count": 1122,
       "first_seen": "2016-02-03",
       "last_seen": "2025-12-30",
       "frp_p50": 3.16,
       "frp_p90": 8.16,
-      "jul_aug_share": 0.1886
+      "jul_aug_share": 0.1889
+    },
+    {
+      "lat": 27.7,
+      "lon": 9.18,
+      "site_id": "dz-2775-915",
+      "static_share": 0.9714,
+      "active_days": 957,
+      "detection_count": 1118,
+      "first_seen": "2016-01-22",
+      "last_seen": "2025-12-31",
+      "frp_p50": 1.19,
+      "frp_p90": 2.91,
+      "jul_aug_share": 0.1664
     },
     {
       "lat": 31.02,
       "lon": 8.17,
       "site_id": "dz-3101-817",
-      "static_share": 0.9444,
+      "static_share": 0.9442,
       "active_days": 823,
-      "detection_count": 1115,
+      "detection_count": 1111,
       "first_seen": "2016-01-07",
       "last_seen": "2025-12-13",
-      "frp_p50": 3.06,
+      "frp_p50": 3.05,
       "frp_p90": 18.36,
-      "jul_aug_share": 0.1184
-    },
-    {
-      "lat": 31.41,
-      "lon": 5.98,
-      "site_id": "dz-3141-598",
-      "static_share": 0.7453,
-      "active_days": 631,
-      "detection_count": 1115,
-      "first_seen": "2022-08-12",
-      "last_seen": "2025-12-28",
-      "frp_p50": 4.55,
-      "frp_p90": 13.72,
-      "jul_aug_share": 0.1991
+      "jul_aug_share": 0.1188
     },
     {
       "lat": 32.28,
       "lon": 3.98,
       "site_id": "dz-3228-399",
-      "static_share": 0.9515,
+      "static_share": 0.9523,
       "active_days": 846,
-      "detection_count": 1114,
+      "detection_count": 1111,
       "first_seen": "2016-01-07",
       "last_seen": "2025-12-23",
-      "frp_p50": 1.85,
-      "frp_p90": 7.54,
-      "jul_aug_share": 0.2621
+      "frp_p50": 1.83,
+      "frp_p90": 7.5,
+      "jul_aug_share": 0.2628
+    },
+    {
+      "lat": 31.41,
+      "lon": 5.98,
+      "site_id": "dz-3141-598",
+      "static_share": 0.7439,
+      "active_days": 631,
+      "detection_count": 1109,
+      "first_seen": "2022-08-12",
+      "last_seen": "2025-12-28",
+      "frp_p50": 4.54,
+      "frp_p90": 13.75,
+      "jul_aug_share": 0.2002
     },
     {
       "lat": 36.79,
@@ -2850,40 +2837,40 @@
       "lat": 28.89,
       "lon": 9.97,
       "site_id": "dz-2889-995",
-      "static_share": 0.7812,
+      "static_share": 0.781,
       "active_days": 913,
-      "detection_count": 1097,
+      "detection_count": 1096,
       "first_seen": "2017-04-15",
       "last_seen": "2025-12-05",
       "frp_p50": 0.66,
       "frp_p90": 1.17,
-      "jul_aug_share": 0.2397
-    },
-    {
-      "lat": 29.11,
-      "lon": 9.67,
-      "site_id": "dz-2911-967",
-      "static_share": 0.8852,
-      "active_days": 463,
-      "detection_count": 1089,
-      "first_seen": "2016-01-18",
-      "last_seen": "2025-11-09",
-      "frp_p50": 6.49,
-      "frp_p90": 21.65,
-      "jul_aug_share": 0.1855
+      "jul_aug_share": 0.24
     },
     {
       "lat": 31.4,
       "lon": 5.97,
       "site_id": "dz-3141-598",
-      "static_share": 0.8096,
+      "static_share": 0.8089,
       "active_days": 661,
-      "detection_count": 1087,
+      "detection_count": 1083,
       "first_seen": "2022-08-30",
       "last_seen": "2025-12-31",
       "frp_p50": 2.3,
       "frp_p90": 8.97,
-      "jul_aug_share": 0.172
+      "jul_aug_share": 0.1727
+    },
+    {
+      "lat": 29.11,
+      "lon": 9.67,
+      "site_id": "dz-2911-967",
+      "static_share": 0.8843,
+      "active_days": 463,
+      "detection_count": 1080,
+      "first_seen": "2016-01-18",
+      "last_seen": "2025-11-09",
+      "frp_p50": 6.56,
+      "frp_p90": 21.69,
+      "jul_aug_share": 0.187
     },
     {
       "lat": 35.8,
@@ -2891,51 +2878,51 @@
       "site_id": "dz-3581--25",
       "static_share": 0.9935,
       "active_days": 977,
-      "detection_count": 1074,
+      "detection_count": 1073,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-23",
       "frp_p50": 1.3,
       "frp_p90": 2.83,
-      "jul_aug_share": 0.1406
+      "jul_aug_share": 0.1407
     },
     {
       "lat": 28.61,
       "lon": 7.5,
       "site_id": "dz-2861-750",
-      "static_share": 0.784,
+      "static_share": 0.7838,
       "active_days": 709,
-      "detection_count": 1074,
+      "detection_count": 1073,
       "first_seen": "2016-06-23",
       "last_seen": "2025-12-09",
       "frp_p50": 1.25,
       "frp_p90": 2.95,
-      "jul_aug_share": 0.2048
+      "jul_aug_share": 0.205
     },
     {
       "lat": 36.59,
       "lon": 10.32,
       "site_id": "dz-3659-1032",
-      "static_share": 0.9689,
+      "static_share": 0.9688,
       "active_days": 930,
-      "detection_count": 1061,
+      "detection_count": 1058,
       "first_seen": "2016-01-02",
       "last_seen": "2025-12-31",
       "frp_p50": 0.87,
-      "frp_p90": 1.3,
-      "jul_aug_share": 0.2158
+      "frp_p90": 1.31,
+      "jul_aug_share": 0.2164
     },
     {
       "lat": 31.64,
       "lon": 5.98,
       "site_id": "dz-3163-598",
-      "static_share": 0.9165,
+      "static_share": 0.9162,
       "active_days": 651,
-      "detection_count": 1054,
+      "detection_count": 1050,
       "first_seen": "2017-08-05",
       "last_seen": "2025-12-31",
-      "frp_p50": 3.1,
-      "frp_p90": 8.03,
-      "jul_aug_share": 0.1452
+      "frp_p50": 3.11,
+      "frp_p90": 8.06,
+      "jul_aug_share": 0.1457
     },
     {
       "lat": 31.96,
@@ -2943,51 +2930,51 @@
       "site_id": "dz-3196-1114",
       "static_share": 0.9971,
       "active_days": 973,
-      "detection_count": 1052,
+      "detection_count": 1048,
       "first_seen": "2016-01-03",
       "last_seen": "2025-12-31",
       "frp_p50": 1.24,
-      "frp_p90": 2.81,
-      "jul_aug_share": 0.2215
+      "frp_p90": 2.82,
+      "jul_aug_share": 0.2223
     },
     {
       "lat": 35.77,
       "lon": -0.27,
       "site_id": "dz-3581--25",
-      "static_share": 0.9467,
+      "static_share": 0.9465,
       "active_days": 856,
-      "detection_count": 1050,
+      "detection_count": 1046,
       "first_seen": "2016-01-12",
       "last_seen": "2025-12-21",
       "frp_p50": 1.42,
       "frp_p90": 2.34,
-      "jul_aug_share": 0.1086
+      "jul_aug_share": 0.109
     },
     {
       "lat": 34.98,
       "lon": 5.71,
       "site_id": "dz-3498-572",
-      "static_share": 0.9693,
+      "static_share": 0.9692,
       "active_days": 824,
-      "detection_count": 1041,
+      "detection_count": 1039,
       "first_seen": "2018-03-09",
       "last_seen": "2025-12-28",
       "frp_p50": 1.52,
-      "frp_p90": 2.67,
-      "jul_aug_share": 0.1162
+      "frp_p90": 2.68,
+      "jul_aug_share": 0.1165
     },
     {
       "lat": 30.97,
       "lon": 5.76,
       "site_id": "dz-3098-576",
-      "static_share": 0.7161,
+      "static_share": 0.7158,
       "active_days": 556,
-      "detection_count": 1039,
+      "detection_count": 1038,
       "first_seen": "2016-01-13",
       "last_seen": "2025-12-22",
       "frp_p50": 2.57,
       "frp_p90": 12.8,
-      "jul_aug_share": 0.2339
+      "jul_aug_share": 0.2341
     },
     {
       "lat": 27.93,
@@ -2995,12 +2982,12 @@
       "site_id": "dz-2793-911",
       "static_share": 0.9816,
       "active_days": 855,
-      "detection_count": 1035,
+      "detection_count": 1032,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-01",
       "frp_p50": 1.36,
       "frp_p90": 2.93,
-      "jul_aug_share": 0.1952
+      "jul_aug_share": 0.1957
     },
     {
       "lat": 31.5,
@@ -3021,25 +3008,25 @@
       "site_id": "dz-2864-754",
       "static_share": 0.955,
       "active_days": 763,
-      "detection_count": 1023,
+      "detection_count": 1022,
       "first_seen": "2016-01-05",
       "last_seen": "2025-12-23",
       "frp_p50": 2.44,
       "frp_p90": 8.01,
-      "jul_aug_share": 0.2522
+      "jul_aug_share": 0.2524
     },
     {
       "lat": 31.47,
       "lon": 5.94,
       "site_id": "dz-3146-594",
-      "static_share": 0.8712,
+      "static_share": 0.8711,
       "active_days": 725,
-      "detection_count": 1017,
+      "detection_count": 1016,
       "first_seen": "2016-01-01",
       "last_seen": "2022-12-27",
       "frp_p50": 1.31,
       "frp_p90": 5.04,
-      "jul_aug_share": 0.1622
+      "jul_aug_share": 0.1624
     },
     {
       "lat": 27.72,
@@ -3058,40 +3045,40 @@
       "lat": 31.75,
       "lon": 5.22,
       "site_id": "dz-3175-523",
-      "static_share": 0.9543,
+      "static_share": 0.9542,
       "active_days": 641,
-      "detection_count": 1006,
+      "detection_count": 1005,
       "first_seen": "2016-01-07",
       "last_seen": "2025-12-29",
-      "frp_p50": 2.47,
+      "frp_p50": 2.46,
       "frp_p90": 5.79,
-      "jul_aug_share": 0.2157
+      "jul_aug_share": 0.2159
     },
     {
       "lat": 31.18,
       "lon": 8.1,
       "site_id": "dz-3118-810",
-      "static_share": 0.9427,
+      "static_share": 0.9425,
       "active_days": 720,
-      "detection_count": 994,
+      "detection_count": 992,
       "first_seen": "2016-01-12",
       "last_seen": "2025-12-30",
       "frp_p50": 1.36,
       "frp_p90": 4.03,
-      "jul_aug_share": 0.1026
+      "jul_aug_share": 0.1028
     },
     {
       "lat": 30.26,
       "lon": 8.08,
       "site_id": "dz-3025-808",
-      "static_share": 0.9424,
+      "static_share": 0.9452,
       "active_days": 715,
-      "detection_count": 990,
+      "detection_count": 985,
       "first_seen": "2016-01-12",
       "last_seen": "2025-12-30",
       "frp_p50": 1.71,
-      "frp_p90": 12.37,
-      "jul_aug_share": 0.1525
+      "frp_p90": 11.68,
+      "jul_aug_share": 0.1533
     },
     {
       "lat": 35.71,
@@ -3099,25 +3086,25 @@
       "site_id": "dz-3571-448",
       "static_share": 0.9704,
       "active_days": 880,
-      "detection_count": 981,
+      "detection_count": 980,
       "first_seen": "2016-01-25",
       "last_seen": "2025-12-31",
       "frp_p50": 0.81,
       "frp_p90": 2.33,
-      "jul_aug_share": 0.3588
+      "jul_aug_share": 0.3592
     },
     {
       "lat": 28.86,
       "lon": 9.92,
       "site_id": "dz-2889-995",
-      "static_share": 0.7629,
+      "static_share": 0.7626,
       "active_days": 830,
-      "detection_count": 970,
+      "detection_count": 969,
       "first_seen": "2016-01-08",
       "last_seen": "2022-11-21",
       "frp_p50": 0.88,
       "frp_p90": 1.48,
-      "jul_aug_share": 0.1928
+      "jul_aug_share": 0.193
     },
     {
       "lat": 31.95,
@@ -3125,12 +3112,12 @@
       "site_id": "dz-3196-1114",
       "static_share": 0.9907,
       "active_days": 884,
-      "detection_count": 967,
+      "detection_count": 965,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-28",
       "frp_p50": 1.2,
       "frp_p90": 2.38,
-      "jul_aug_share": 0.2575
+      "jul_aug_share": 0.258
     },
     {
       "lat": 36.97,
@@ -3138,51 +3125,51 @@
       "site_id": "dz-3697--191",
       "static_share": 0.999,
       "active_days": 889,
-      "detection_count": 967,
+      "detection_count": 965,
       "first_seen": "2016-01-02",
       "last_seen": "2025-12-29",
-      "frp_p50": 1.14,
+      "frp_p50": 1.13,
       "frp_p90": 1.85,
-      "jul_aug_share": 0.181
+      "jul_aug_share": 0.1813
     },
     {
       "lat": 35.1,
       "lon": 5.65,
       "site_id": "dz-3510-565",
-      "static_share": 0.8904,
+      "static_share": 0.8899,
       "active_days": 859,
-      "detection_count": 967,
+      "detection_count": 963,
       "first_seen": "2016-07-18",
       "last_seen": "2025-12-11",
       "frp_p50": 1.04,
       "frp_p90": 1.75,
-      "jul_aug_share": 0.1344
+      "jul_aug_share": 0.135
     },
     {
       "lat": 30.88,
       "lon": 5.65,
       "site_id": "dz-3088-564",
-      "static_share": 0.9616,
+      "static_share": 0.9615,
       "active_days": 709,
-      "detection_count": 963,
+      "detection_count": 962,
       "first_seen": "2016-01-14",
       "last_seen": "2025-12-31",
       "frp_p50": 4.47,
       "frp_p90": 13.15,
-      "jul_aug_share": 0.1869
+      "jul_aug_share": 0.1871
     },
     {
       "lat": 30.41,
       "lon": 6.54,
       "site_id": "dz-3041-654",
-      "static_share": 0.7266,
+      "static_share": 0.7263,
       "active_days": 338,
-      "detection_count": 951,
+      "detection_count": 950,
       "first_seen": "2016-02-03",
       "last_seen": "2025-11-07",
-      "frp_p50": 6.24,
-      "frp_p90": 22.85,
-      "jul_aug_share": 0.244
+      "frp_p50": 6.31,
+      "frp_p90": 22.9,
+      "jul_aug_share": 0.2442
     },
     {
       "lat": 31.49,
@@ -3201,40 +3188,40 @@
       "lat": 27.72,
       "lon": 9.91,
       "site_id": "dz-2774-992",
-      "static_share": 0.8661,
+      "static_share": 0.868,
       "active_days": 698,
-      "detection_count": 926,
+      "detection_count": 924,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-13",
       "frp_p50": 1.54,
       "frp_p90": 2.86,
-      "jul_aug_share": 0.1879
+      "jul_aug_share": 0.1883
     },
     {
       "lat": 31.81,
       "lon": 6.23,
       "site_id": "dz-3182-622",
-      "static_share": 0.7356,
+      "static_share": 0.738,
       "active_days": 668,
-      "detection_count": 923,
+      "detection_count": 920,
       "first_seen": "2016-04-27",
       "last_seen": "2023-05-17",
-      "frp_p50": 5.61,
-      "frp_p90": 11.96,
-      "jul_aug_share": 0.1896
+      "frp_p50": 5.62,
+      "frp_p90": 12.01,
+      "jul_aug_share": 0.1902
     },
     {
       "lat": 31.41,
       "lon": 5.97,
       "site_id": "dz-3141-598",
-      "static_share": 0.7865,
+      "static_share": 0.7856,
       "active_days": 520,
-      "detection_count": 904,
+      "detection_count": 900,
       "first_seen": "2022-08-13",
       "last_seen": "2025-12-29",
-      "frp_p50": 4.31,
-      "frp_p90": 11.57,
-      "jul_aug_share": 0.208
+      "frp_p50": 4.3,
+      "frp_p90": 11.84,
+      "jul_aug_share": 0.2089
     },
     {
       "lat": 27.71,
@@ -3253,27 +3240,14 @@
       "lat": 35.8,
       "lon": -0.21,
       "site_id": "dz-3581--25",
-      "static_share": 0.9624,
+      "static_share": 0.9622,
       "active_days": 656,
-      "detection_count": 877,
+      "detection_count": 874,
       "first_seen": "2016-01-01",
       "last_seen": "2025-11-13",
       "frp_p50": 1.46,
       "frp_p90": 2.76,
-      "jul_aug_share": 0.1585
-    },
-    {
-      "lat": 35.57,
-      "lon": -0.94,
-      "site_id": "dz-3557--94",
-      "static_share": 0.803,
-      "active_days": 776,
-      "detection_count": 873,
-      "first_seen": "2019-04-17",
-      "last_seen": "2025-12-30",
-      "frp_p50": 0.88,
-      "frp_p90": 1.37,
-      "jul_aug_share": 0.2085
+      "jul_aug_share": 0.159
     },
     {
       "lat": 31.95,
@@ -3281,12 +3255,25 @@
       "site_id": "dz-3196-1114",
       "static_share": 0.9966,
       "active_days": 830,
-      "detection_count": 872,
+      "detection_count": 871,
       "first_seen": "2016-01-09",
       "last_seen": "2025-12-25",
       "frp_p50": 1.26,
       "frp_p90": 2.62,
-      "jul_aug_share": 0.2248
+      "jul_aug_share": 0.225
+    },
+    {
+      "lat": 35.57,
+      "lon": -0.94,
+      "site_id": "dz-3557--94",
+      "static_share": 0.8025,
+      "active_days": 776,
+      "detection_count": 871,
+      "first_seen": "2019-04-17",
+      "last_seen": "2025-12-30",
+      "frp_p50": 0.88,
+      "frp_p90": 1.37,
+      "jul_aug_share": 0.209
     },
     {
       "lat": 28.91,
@@ -3294,12 +3281,12 @@
       "site_id": "dz-2892-975",
       "static_share": 0.9479,
       "active_days": 565,
-      "detection_count": 864,
+      "detection_count": 863,
       "first_seen": "2016-02-04",
       "last_seen": "2025-12-28",
       "frp_p50": 5.7,
       "frp_p90": 22.59,
-      "jul_aug_share": 0.3692
+      "jul_aug_share": 0.3696
     },
     {
       "lat": 28.72,
@@ -3307,12 +3294,12 @@
       "site_id": "dz-2870-894",
       "static_share": 0.9776,
       "active_days": 721,
-      "detection_count": 849,
+      "detection_count": 847,
       "first_seen": "2016-01-07",
       "last_seen": "2025-12-14",
       "frp_p50": 0.89,
       "frp_p90": 1.75,
-      "jul_aug_share": 0.1602
+      "jul_aug_share": 0.1606
     },
     {
       "lat": 31.18,
@@ -3344,53 +3331,40 @@
       "lat": 31.64,
       "lon": 6.06,
       "site_id": "dz-3166-606",
-      "static_share": 0.957,
+      "static_share": 0.9569,
       "active_days": 520,
-      "detection_count": 838,
+      "detection_count": 835,
       "first_seen": "2016-01-07",
       "last_seen": "2025-06-23",
-      "frp_p50": 6.42,
+      "frp_p50": 6.45,
       "frp_p90": 18.13,
-      "jul_aug_share": 0.1778
+      "jul_aug_share": 0.1784
     },
     {
       "lat": 32.27,
       "lon": 3.99,
       "site_id": "dz-3228-399",
-      "static_share": 0.9559,
+      "static_share": 0.9557,
       "active_days": 656,
-      "detection_count": 817,
+      "detection_count": 813,
       "first_seen": "2016-01-07",
       "last_seen": "2025-12-22",
       "frp_p50": 1.61,
-      "frp_p90": 5.21,
-      "jul_aug_share": 0.2399
+      "frp_p90": 5.2,
+      "jul_aug_share": 0.2411
     },
     {
       "lat": 31.81,
       "lon": 6,
-      "site_id": "dz-3183-597",
-      "static_share": 0.9532,
+      "site_id": "dz-3181-600",
+      "static_share": 0.9531,
       "active_days": 779,
-      "detection_count": 812,
+      "detection_count": 810,
       "first_seen": "2016-01-04",
       "last_seen": "2025-12-28",
       "frp_p50": 1.02,
-      "frp_p90": 1.82,
-      "jul_aug_share": 0.2094
-    },
-    {
-      "lat": 37.57,
-      "lon": -0.92,
-      "site_id": "dz-3757--92",
-      "static_share": 0.8779,
-      "active_days": 592,
-      "detection_count": 811,
-      "first_seen": "2016-03-01",
-      "last_seen": "2025-11-21",
-      "frp_p50": 1.15,
-      "frp_p90": 2.65,
-      "jul_aug_share": 0.1702
+      "frp_p90": 1.83,
+      "jul_aug_share": 0.2099
     },
     {
       "lat": 31.63,
@@ -3406,17 +3380,17 @@
       "jul_aug_share": 0.1519
     },
     {
-      "lat": 36.5,
-      "lon": 10.03,
-      "site_id": "dz-3650-1003",
-      "static_share": 0.9654,
-      "active_days": 705,
-      "detection_count": 809,
-      "first_seen": "2016-01-08",
-      "last_seen": "2025-12-17",
-      "frp_p50": 0.64,
-      "frp_p90": 0.93,
-      "jul_aug_share": 0.1595
+      "lat": 37.57,
+      "lon": -0.92,
+      "site_id": "dz-3757--92",
+      "static_share": 0.8778,
+      "active_days": 592,
+      "detection_count": 810,
+      "first_seen": "2016-03-01",
+      "last_seen": "2025-11-21",
+      "frp_p50": 1.16,
+      "frp_p90": 2.66,
+      "jul_aug_share": 0.1704
     },
     {
       "lat": 28.56,
@@ -3432,43 +3406,43 @@
       "jul_aug_share": 0.1792
     },
     {
+      "lat": 36.5,
+      "lon": 10.03,
+      "site_id": "dz-3650-1003",
+      "static_share": 0.9653,
+      "active_days": 705,
+      "detection_count": 808,
+      "first_seen": "2016-01-08",
+      "last_seen": "2025-12-17",
+      "frp_p50": 0.64,
+      "frp_p90": 0.93,
+      "jul_aug_share": 0.1597
+    },
+    {
       "lat": 33.37,
       "lon": -7.75,
       "site_id": "dz-3337--775",
-      "static_share": 0.9626,
+      "static_share": 0.9625,
       "active_days": 733,
-      "detection_count": 802,
+      "detection_count": 801,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-21",
       "frp_p50": 0.94,
       "frp_p90": 1.47,
-      "jul_aug_share": 0.1172
+      "jul_aug_share": 0.1174
     },
     {
       "lat": 32.99,
       "lon": -7.15,
       "site_id": "dz-3299--715",
-      "static_share": 0.9938,
+      "static_share": 0.9937,
       "active_days": 748,
-      "detection_count": 801,
+      "detection_count": 799,
       "first_seen": "2016-01-01",
       "last_seen": "2025-11-15",
       "frp_p50": 0.75,
       "frp_p90": 1.09,
-      "jul_aug_share": 0.1511
-    },
-    {
-      "lat": 31.81,
-      "lon": 5.99,
-      "site_id": "dz-3183-597",
-      "static_share": 0.9447,
-      "active_days": 755,
-      "detection_count": 795,
-      "first_seen": "2016-01-16",
-      "last_seen": "2025-12-31",
-      "frp_p50": 1.03,
-      "frp_p90": 1.8,
-      "jul_aug_share": 0.2214
+      "jul_aug_share": 0.1514
     },
     {
       "lat": 31.69,
@@ -3484,17 +3458,30 @@
       "jul_aug_share": 0.2368
     },
     {
+      "lat": 31.81,
+      "lon": 5.99,
+      "site_id": "dz-3181-600",
+      "static_share": 0.9444,
+      "active_days": 755,
+      "detection_count": 792,
+      "first_seen": "2016-01-16",
+      "last_seen": "2025-12-31",
+      "frp_p50": 1.04,
+      "frp_p90": 1.8,
+      "jul_aug_share": 0.2222
+    },
+    {
       "lat": 35.81,
       "lon": -0.23,
       "site_id": "dz-3581--25",
       "static_share": 0.9962,
       "active_days": 627,
-      "detection_count": 789,
+      "detection_count": 787,
       "first_seen": "2016-01-13",
       "last_seen": "2025-12-26",
       "frp_p50": 3.1,
       "frp_p90": 16.67,
-      "jul_aug_share": 0.1584
+      "jul_aug_share": 0.1588
     },
     {
       "lat": 34.44,
@@ -3513,40 +3500,27 @@
       "lat": 36.97,
       "lon": -1.9,
       "site_id": "dz-3697--191",
-      "static_share": 0.9807,
+      "static_share": 0.9806,
       "active_days": 735,
-      "detection_count": 777,
+      "detection_count": 775,
       "first_seen": "2016-01-06",
       "last_seen": "2025-12-22",
       "frp_p50": 1.21,
       "frp_p90": 1.77,
-      "jul_aug_share": 0.1802
+      "jul_aug_share": 0.1806
     },
     {
       "lat": 31.63,
       "lon": 5.99,
       "site_id": "dz-3163-598",
-      "static_share": 0.9221,
+      "static_share": 0.9219,
       "active_days": 640,
-      "detection_count": 770,
+      "detection_count": 768,
       "first_seen": "2016-02-07",
       "last_seen": "2025-12-30",
-      "frp_p50": 1.3,
+      "frp_p50": 1.31,
       "frp_p90": 5.97,
-      "jul_aug_share": 0.1844
-    },
-    {
-      "lat": 31.4,
-      "lon": 5.98,
-      "site_id": "dz-3141-598",
-      "static_share": 0.7785,
-      "active_days": 497,
-      "detection_count": 754,
-      "first_seen": "2022-08-13",
-      "last_seen": "2025-12-28",
-      "frp_p50": 4.41,
-      "frp_p90": 13.93,
-      "jul_aug_share": 0.1777
+      "jul_aug_share": 0.1849
     },
     {
       "lat": 31.76,
@@ -3562,30 +3536,30 @@
       "jul_aug_share": 0.2566
     },
     {
+      "lat": 31.4,
+      "lon": 5.98,
+      "site_id": "dz-3141-598",
+      "static_share": 0.7776,
+      "active_days": 497,
+      "detection_count": 751,
+      "first_seen": "2022-08-13",
+      "last_seen": "2025-12-28",
+      "frp_p50": 4.36,
+      "frp_p90": 13.56,
+      "jul_aug_share": 0.1784
+    },
+    {
       "lat": 31.8,
       "lon": 6.05,
       "site_id": "dz-3180-606",
-      "static_share": 0.938,
+      "static_share": 0.939,
       "active_days": 520,
-      "detection_count": 742,
+      "detection_count": 738,
       "first_seen": "2016-01-02",
       "last_seen": "2025-12-22",
       "frp_p50": 2.02,
-      "frp_p90": 13.41,
-      "jul_aug_share": 0.1698
-    },
-    {
-      "lat": 29.67,
-      "lon": 6.72,
-      "site_id": "dz-2970-671",
-      "static_share": 0.8912,
-      "active_days": 436,
-      "detection_count": 726,
-      "first_seen": "2016-01-04",
-      "last_seen": "2025-12-31",
-      "frp_p50": 1.68,
-      "frp_p90": 10.91,
-      "jul_aug_share": 0.1694
+      "frp_p90": 13.23,
+      "jul_aug_share": 0.1707
     },
     {
       "lat": 30.97,
@@ -3604,14 +3578,14 @@
       "lat": 31.33,
       "lon": 6.03,
       "site_id": "dz-3133-603",
-      "static_share": 0.6699,
+      "static_share": 0.6718,
       "active_days": 482,
-      "detection_count": 721,
+      "detection_count": 719,
       "first_seen": "2016-01-28",
       "last_seen": "2023-03-29",
-      "frp_p50": 2.64,
-      "frp_p90": 4.64,
-      "jul_aug_share": 0.2288
+      "frp_p50": 2.65,
+      "frp_p90": 4.65,
+      "jul_aug_share": 0.2295
     },
     {
       "lat": 30.26,
@@ -3619,12 +3593,25 @@
       "site_id": "dz-3025-808",
       "static_share": 0.9469,
       "active_days": 580,
-      "detection_count": 716,
+      "detection_count": 715,
       "first_seen": "2016-02-14",
       "last_seen": "2025-12-28",
       "frp_p50": 1.63,
       "frp_p90": 9.34,
-      "jul_aug_share": 0.162
+      "jul_aug_share": 0.1622
+    },
+    {
+      "lat": 29.67,
+      "lon": 6.72,
+      "site_id": "dz-2970-671",
+      "static_share": 0.8914,
+      "active_days": 436,
+      "detection_count": 709,
+      "first_seen": "2016-01-04",
+      "last_seen": "2025-12-31",
+      "frp_p50": 1.63,
+      "frp_p90": 10.88,
+      "jul_aug_share": 0.1735
     },
     {
       "lat": 28.57,
@@ -3632,12 +3619,12 @@
       "site_id": "dz-2858-766",
       "static_share": 0.99,
       "active_days": 573,
-      "detection_count": 702,
+      "detection_count": 700,
       "first_seen": "2016-01-18",
       "last_seen": "2025-12-31",
-      "frp_p50": 2,
+      "frp_p50": 1.99,
       "frp_p90": 4.83,
-      "jul_aug_share": 0.2507
+      "jul_aug_share": 0.2514
     },
     {
       "lat": 28.95,
@@ -3656,14 +3643,14 @@
       "lat": 36.74,
       "lon": 6.25,
       "site_id": "dz-3675-626",
-      "static_share": 0.8209,
+      "static_share": 0.8207,
       "active_days": 531,
-      "detection_count": 698,
+      "detection_count": 697,
       "first_seen": "2020-01-21",
       "last_seen": "2025-12-28",
       "frp_p50": 1.94,
       "frp_p90": 4.99,
-      "jul_aug_share": 0.2149
+      "jul_aug_share": 0.2152
     },
     {
       "lat": 31.58,
@@ -3679,32 +3666,6 @@
       "jul_aug_share": 0.1351
     },
     {
-      "lat": 28.48,
-      "lon": 7.51,
-      "site_id": "dz-2846-752",
-      "static_share": 0.8367,
-      "active_days": 492,
-      "detection_count": 692,
-      "first_seen": "2022-06-07",
-      "last_seen": "2025-09-21",
-      "frp_p50": 1.05,
-      "frp_p90": 2.03,
-      "jul_aug_share": 0.1561
-    },
-    {
-      "lat": 29.68,
-      "lon": 6.7,
-      "site_id": "dz-2970-671",
-      "static_share": 0.9826,
-      "active_days": 519,
-      "detection_count": 690,
-      "first_seen": "2016-01-01",
-      "last_seen": "2025-12-07",
-      "frp_p50": 1.82,
-      "frp_p90": 4.5,
-      "jul_aug_share": 0.1551
-    },
-    {
       "lat": 31.75,
       "lon": 6.14,
       "site_id": "dz-3176-614",
@@ -3718,43 +3679,69 @@
       "jul_aug_share": 0.3043
     },
     {
+      "lat": 28.48,
+      "lon": 7.51,
+      "site_id": "dz-2846-752",
+      "static_share": 0.8358,
+      "active_days": 492,
+      "detection_count": 688,
+      "first_seen": "2022-06-07",
+      "last_seen": "2025-09-21",
+      "frp_p50": 1.05,
+      "frp_p90": 2.06,
+      "jul_aug_share": 0.157
+    },
+    {
+      "lat": 29.68,
+      "lon": 6.7,
+      "site_id": "dz-2970-671",
+      "static_share": 0.9825,
+      "active_days": 519,
+      "detection_count": 686,
+      "first_seen": "2016-01-01",
+      "last_seen": "2025-12-07",
+      "frp_p50": 1.83,
+      "frp_p90": 4.5,
+      "jul_aug_share": 0.156
+    },
+    {
       "lat": 35.77,
       "lon": -0.26,
       "site_id": "dz-3581--25",
-      "static_share": 0.8794,
+      "static_share": 0.8787,
       "active_days": 551,
-      "detection_count": 680,
+      "detection_count": 676,
       "first_seen": "2016-02-24",
       "last_seen": "2025-12-18",
-      "frp_p50": 1.45,
+      "frp_p50": 1.46,
       "frp_p90": 2.6,
-      "jul_aug_share": 0.0691
+      "jul_aug_share": 0.0695
     },
     {
       "lat": 36.34,
       "lon": 5.48,
       "site_id": "dz-3633-548",
-      "static_share": 0.9912,
+      "static_share": 0.9926,
       "active_days": 620,
-      "detection_count": 679,
+      "detection_count": 675,
       "first_seen": "2016-01-02",
       "last_seen": "2025-11-11",
       "frp_p50": 0.95,
-      "frp_p90": 1.75,
-      "jul_aug_share": 0.268
+      "frp_p90": 1.74,
+      "jul_aug_share": 0.2696
     },
     {
       "lat": 35.46,
       "lon": -0.39,
       "site_id": "dz-3546--40",
-      "static_share": 0.9867,
+      "static_share": 0.9866,
       "active_days": 625,
-      "detection_count": 675,
+      "detection_count": 674,
       "first_seen": "2016-01-03",
       "last_seen": "2025-12-31",
       "frp_p50": 0.99,
       "frp_p90": 1.86,
-      "jul_aug_share": 0.1378
+      "jul_aug_share": 0.138
     },
     {
       "lat": 28.57,
@@ -3762,12 +3749,12 @@
       "site_id": "dz-2858-766",
       "static_share": 0.9836,
       "active_days": 581,
-      "detection_count": 672,
+      "detection_count": 670,
       "first_seen": "2016-01-02",
       "last_seen": "2025-12-29",
-      "frp_p50": 2.12,
+      "frp_p50": 2.11,
       "frp_p90": 4.77,
-      "jul_aug_share": 0.2158
+      "jul_aug_share": 0.2164
     },
     {
       "lat": 28.74,
@@ -3799,14 +3786,14 @@
       "lat": 28.46,
       "lon": 9.05,
       "site_id": "dz-2847-906",
-      "static_share": 0.9712,
+      "static_share": 0.9711,
       "active_days": 550,
-      "detection_count": 660,
+      "detection_count": 658,
       "first_seen": "2016-01-29",
       "last_seen": "2025-12-28",
       "frp_p50": 2.12,
       "frp_p90": 4.52,
-      "jul_aug_share": 0.197
+      "jul_aug_share": 0.1976
     },
     {
       "lat": 32.74,
@@ -3822,19 +3809,6 @@
       "jul_aug_share": 0.1951
     },
     {
-      "lat": 28.21,
-      "lon": -0.16,
-      "site_id": "dz-2821--16",
-      "static_share": 0.8578,
-      "active_days": 468,
-      "detection_count": 654,
-      "first_seen": "2016-02-10",
-      "last_seen": "2025-12-29",
-      "frp_p50": 1.02,
-      "frp_p90": 2.56,
-      "jul_aug_share": 0.0749
-    },
-    {
       "lat": 28.87,
       "lon": 9.92,
       "site_id": "dz-2889-995",
@@ -3848,19 +3822,6 @@
       "jul_aug_share": 0.1746
     },
     {
-      "lat": 31.66,
-      "lon": 6.07,
-      "site_id": "dz-3166-606",
-      "static_share": 0.9492,
-      "active_days": 502,
-      "detection_count": 649,
-      "first_seen": "2016-01-01",
-      "last_seen": "2025-11-21",
-      "frp_p50": 4.68,
-      "frp_p90": 14.65,
-      "jul_aug_share": 0.2049
-    },
-    {
       "lat": 31.78,
       "lon": 6.07,
       "site_id": "dz-3180-606",
@@ -3872,6 +3833,32 @@
       "frp_p50": 1.56,
       "frp_p90": 4.32,
       "jul_aug_share": 0.1664
+    },
+    {
+      "lat": 28.21,
+      "lon": -0.16,
+      "site_id": "dz-2821--16",
+      "static_share": 0.8565,
+      "active_days": 468,
+      "detection_count": 648,
+      "first_seen": "2016-02-10",
+      "last_seen": "2025-12-29",
+      "frp_p50": 1.02,
+      "frp_p90": 2.62,
+      "jul_aug_share": 0.0756
+    },
+    {
+      "lat": 31.66,
+      "lon": 6.07,
+      "site_id": "dz-3166-606",
+      "static_share": 0.9488,
+      "active_days": 502,
+      "detection_count": 644,
+      "first_seen": "2016-01-01",
+      "last_seen": "2025-11-21",
+      "frp_p50": 4.67,
+      "frp_p90": 14.55,
+      "jul_aug_share": 0.2065
     },
     {
       "lat": 36.87,
@@ -3890,14 +3877,14 @@
       "lat": 31.64,
       "lon": 6,
       "site_id": "dz-3163-598",
-      "static_share": 0.9483,
+      "static_share": 0.9482,
       "active_days": 464,
-      "detection_count": 619,
+      "detection_count": 618,
       "first_seen": "2016-01-07",
       "last_seen": "2025-12-22",
       "frp_p50": 2.85,
       "frp_p90": 8.72,
-      "jul_aug_share": 0.2294
+      "jul_aug_share": 0.2298
     },
     {
       "lat": 28.47,
@@ -3905,25 +3892,25 @@
       "site_id": "dz-2846-752",
       "static_share": 0.9789,
       "active_days": 495,
-      "detection_count": 616,
+      "detection_count": 615,
       "first_seen": "2016-01-10",
       "last_seen": "2025-11-28",
       "frp_p50": 1.15,
       "frp_p90": 3.43,
-      "jul_aug_share": 0.1412
+      "jul_aug_share": 0.1415
     },
     {
       "lat": 28.62,
       "lon": 7.7,
       "site_id": "dz-2862-771",
-      "static_share": 0.9237,
+      "static_share": 0.9235,
       "active_days": 465,
-      "detection_count": 616,
+      "detection_count": 614,
       "first_seen": "2016-01-23",
       "last_seen": "2025-11-02",
       "frp_p50": 2.63,
       "frp_p90": 4.75,
-      "jul_aug_share": 0.1964
+      "jul_aug_share": 0.1971
     },
     {
       "lat": 26.44,
@@ -3968,27 +3955,27 @@
       "lat": 30.47,
       "lon": 6.47,
       "site_id": "dz-3047-647",
-      "static_share": 0.8514,
+      "static_share": 0.8502,
       "active_days": 355,
-      "detection_count": 599,
+      "detection_count": 594,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-17",
-      "frp_p50": 2.57,
+      "frp_p50": 2.58,
       "frp_p90": 10.48,
-      "jul_aug_share": 0.1736
+      "jul_aug_share": 0.1751
     },
     {
       "lat": 35.8,
       "lon": -0.22,
       "site_id": "dz-3581--25",
-      "static_share": 0.9581,
+      "static_share": 0.9579,
       "active_days": 441,
-      "detection_count": 597,
+      "detection_count": 594,
       "first_seen": "2016-01-01",
       "last_seen": "2025-11-07",
       "frp_p50": 1.47,
       "frp_p90": 3.15,
-      "jul_aug_share": 0.1993
+      "jul_aug_share": 0.2003
     },
     {
       "lat": 35.81,
@@ -4022,25 +4009,12 @@
       "site_id": "dz-3180-606",
       "static_share": 0.9672,
       "active_days": 499,
-      "detection_count": 580,
+      "detection_count": 579,
       "first_seen": "2016-01-02",
       "last_seen": "2025-12-27",
       "frp_p50": 1.57,
       "frp_p90": 3.78,
-      "jul_aug_share": 0.1793
-    },
-    {
-      "lat": 32.29,
-      "lon": 10.97,
-      "site_id": "dz-3229-1097",
-      "static_share": 0.7439,
-      "active_days": 490,
-      "detection_count": 574,
-      "first_seen": "2016-01-12",
-      "last_seen": "2025-11-29",
-      "frp_p50": 0.64,
-      "frp_p90": 1.2,
-      "jul_aug_share": 0.2056
+      "jul_aug_share": 0.1796
     },
     {
       "lat": 31.69,
@@ -4056,30 +4030,17 @@
       "jul_aug_share": 0.2112
     },
     {
-      "lat": 30.48,
-      "lon": 6.47,
-      "site_id": "dz-3047-647",
-      "static_share": 0.8209,
-      "active_days": 325,
-      "detection_count": 564,
-      "first_seen": "2016-01-01",
-      "last_seen": "2025-12-31",
-      "frp_p50": 2.65,
-      "frp_p90": 9.05,
-      "jul_aug_share": 0.1844
-    },
-    {
-      "lat": 29.67,
-      "lon": 6.73,
-      "site_id": "dz-2970-671",
-      "static_share": 0.9218,
-      "active_days": 371,
-      "detection_count": 563,
-      "first_seen": "2016-02-01",
-      "last_seen": "2025-12-28",
-      "frp_p50": 2.3,
-      "frp_p90": 12.41,
-      "jul_aug_share": 0.1705
+      "lat": 32.29,
+      "lon": 10.97,
+      "site_id": "dz-3229-1097",
+      "static_share": 0.7478,
+      "active_days": 490,
+      "detection_count": 571,
+      "first_seen": "2016-01-12",
+      "last_seen": "2025-11-29",
+      "frp_p50": 0.64,
+      "frp_p90": 1.2,
+      "jul_aug_share": 0.2067
     },
     {
       "lat": 35.09,
@@ -4098,27 +4059,53 @@
       "lat": 32.75,
       "lon": 3.19,
       "site_id": "dz-3275-318",
-      "static_share": 0.9698,
+      "static_share": 0.9697,
       "active_days": 482,
-      "detection_count": 562,
+      "detection_count": 561,
       "first_seen": "2016-01-02",
       "last_seen": "2025-12-16",
       "frp_p50": 1.07,
       "frp_p90": 5.28,
-      "jul_aug_share": 0.169
+      "jul_aug_share": 0.1693
+    },
+    {
+      "lat": 30.48,
+      "lon": 6.47,
+      "site_id": "dz-3047-647",
+      "static_share": 0.8193,
+      "active_days": 325,
+      "detection_count": 559,
+      "first_seen": "2016-01-01",
+      "last_seen": "2025-12-31",
+      "frp_p50": 2.64,
+      "frp_p90": 9.22,
+      "jul_aug_share": 0.186
+    },
+    {
+      "lat": 29.67,
+      "lon": 6.73,
+      "site_id": "dz-2970-671",
+      "static_share": 0.9256,
+      "active_days": 371,
+      "detection_count": 551,
+      "first_seen": "2016-02-01",
+      "last_seen": "2025-12-28",
+      "frp_p50": 2.26,
+      "frp_p90": 12.41,
+      "jul_aug_share": 0.1742
     },
     {
       "lat": 31.65,
       "lon": 6,
       "site_id": "dz-3163-598",
-      "static_share": 0.9509,
+      "static_share": 0.9508,
       "active_days": 436,
-      "detection_count": 550,
+      "detection_count": 549,
       "first_seen": "2016-01-13",
       "last_seen": "2025-11-25",
-      "frp_p50": 2.88,
-      "frp_p90": 9.45,
-      "jul_aug_share": 0.2382
+      "frp_p50": 2.87,
+      "frp_p90": 9.42,
+      "jul_aug_share": 0.2386
     },
     {
       "lat": 33.06,
@@ -4150,14 +4137,14 @@
       "lat": 35.78,
       "lon": 9.89,
       "site_id": "dz-3578-989",
-      "static_share": 0.9624,
+      "static_share": 0.9623,
       "active_days": 512,
-      "detection_count": 532,
+      "detection_count": 531,
       "first_seen": "2016-01-07",
       "last_seen": "2025-12-28",
       "frp_p50": 0.87,
       "frp_p90": 1.16,
-      "jul_aug_share": 0.1466
+      "jul_aug_share": 0.1469
     },
     {
       "lat": 30.22,
@@ -4189,27 +4176,27 @@
       "lat": 31.24,
       "lon": 8.56,
       "site_id": "dz-3123-856",
-      "static_share": 0.9575,
+      "static_share": 0.9591,
       "active_days": 401,
-      "detection_count": 518,
+      "detection_count": 513,
       "first_seen": "2016-01-12",
       "last_seen": "2025-12-17",
       "frp_p50": 1.86,
-      "frp_p90": 6.44,
-      "jul_aug_share": 0.1602
+      "frp_p90": 6.36,
+      "jul_aug_share": 0.1618
     },
     {
       "lat": 27.53,
       "lon": 9.63,
       "site_id": "dz-2753-962",
-      "static_share": 0.6602,
+      "static_share": 0.6608,
       "active_days": 487,
-      "detection_count": 515,
+      "detection_count": 513,
       "first_seen": "2016-02-14",
       "last_seen": "2025-12-31",
       "frp_p50": 0.82,
       "frp_p90": 1.51,
-      "jul_aug_share": 0.1398
+      "jul_aug_share": 0.1404
     },
     {
       "lat": 34.5,
@@ -4228,27 +4215,14 @@
       "lat": 31.37,
       "lon": 6.05,
       "site_id": "dz-3137-605",
-      "static_share": 0.72,
+      "static_share": 0.7189,
       "active_days": 299,
-      "detection_count": 500,
+      "detection_count": 498,
       "first_seen": "2023-03-26",
       "last_seen": "2025-12-31",
-      "frp_p50": 3.89,
+      "frp_p50": 3.91,
       "frp_p90": 11.58,
-      "jul_aug_share": 0.176
-    },
-    {
-      "lat": 29.69,
-      "lon": 6.69,
-      "site_id": "dz-2970-671",
-      "static_share": 0.9355,
-      "active_days": 385,
-      "detection_count": 496,
-      "first_seen": "2016-01-02",
-      "last_seen": "2025-12-23",
-      "frp_p50": 2.28,
-      "frp_p90": 6.14,
-      "jul_aug_share": 0.1875
+      "jul_aug_share": 0.1767
     },
     {
       "lat": 35.88,
@@ -4277,6 +4251,19 @@
       "jul_aug_share": 0.2081
     },
     {
+      "lat": 29.69,
+      "lon": 6.69,
+      "site_id": "dz-2970-671",
+      "static_share": 0.9351,
+      "active_days": 385,
+      "detection_count": 493,
+      "first_seen": "2016-01-02",
+      "last_seen": "2025-12-23",
+      "frp_p50": 2.28,
+      "frp_p90": 6.02,
+      "jul_aug_share": 0.1886
+    },
+    {
       "lat": 37.36,
       "lon": -5.86,
       "site_id": "dz-3736--586",
@@ -4290,32 +4277,6 @@
       "jul_aug_share": 0.1943
     },
     {
-      "lat": 36.88,
-      "lon": 6.96,
-      "site_id": "dz-3687-698",
-      "static_share": 0.7659,
-      "active_days": 412,
-      "detection_count": 487,
-      "first_seen": "2016-03-27",
-      "last_seen": "2025-12-30",
-      "frp_p50": 1.04,
-      "frp_p90": 2.9,
-      "jul_aug_share": 0.2053
-    },
-    {
-      "lat": 28.16,
-      "lon": 8.97,
-      "site_id": "dz-2815-897",
-      "static_share": 0.9856,
-      "active_days": 426,
-      "detection_count": 486,
-      "first_seen": "2016-01-01",
-      "last_seen": "2025-12-03",
-      "frp_p50": 0.93,
-      "frp_p90": 2.35,
-      "jul_aug_share": 0.1523
-    },
-    {
       "lat": 36.6,
       "lon": 3.14,
       "site_id": "dz-3660-314",
@@ -4327,6 +4288,32 @@
       "frp_p50": 1.02,
       "frp_p90": 1.88,
       "jul_aug_share": 0.5278
+    },
+    {
+      "lat": 36.88,
+      "lon": 6.96,
+      "site_id": "dz-3687-698",
+      "static_share": 0.767,
+      "active_days": 412,
+      "detection_count": 485,
+      "first_seen": "2016-03-27",
+      "last_seen": "2025-12-30",
+      "frp_p50": 1.04,
+      "frp_p90": 2.9,
+      "jul_aug_share": 0.2062
+    },
+    {
+      "lat": 28.16,
+      "lon": 8.97,
+      "site_id": "dz-2815-897",
+      "static_share": 0.9855,
+      "active_days": 426,
+      "detection_count": 484,
+      "first_seen": "2016-01-01",
+      "last_seen": "2025-12-03",
+      "frp_p50": 0.93,
+      "frp_p90": 2.35,
+      "jul_aug_share": 0.1529
     },
     {
       "lat": 37.36,
@@ -4345,27 +4332,27 @@
       "lat": 32.93,
       "lon": 3.22,
       "site_id": "dz-3295-323",
-      "static_share": 0.9271,
+      "static_share": 0.929,
       "active_days": 456,
-      "detection_count": 480,
+      "detection_count": 479,
       "first_seen": "2021-02-06",
       "last_seen": "2025-12-14",
       "frp_p50": 1.03,
       "frp_p90": 1.67,
-      "jul_aug_share": 0.2
+      "jul_aug_share": 0.2004
     },
     {
       "lat": 35.8,
       "lon": -0.25,
       "site_id": "dz-3581--25",
-      "static_share": 0.9643,
+      "static_share": 0.9642,
       "active_days": 414,
-      "detection_count": 476,
+      "detection_count": 475,
       "first_seen": "2016-01-07",
       "last_seen": "2025-11-18",
-      "frp_p50": 1.53,
+      "frp_p50": 1.52,
       "frp_p90": 6.35,
-      "jul_aug_share": 0.1513
+      "jul_aug_share": 0.1516
     },
     {
       "lat": 28.62,
@@ -4384,14 +4371,14 @@
       "lat": 31.68,
       "lon": 5.81,
       "site_id": "dz-3170-581",
-      "static_share": 0.7431,
+      "static_share": 0.7426,
       "active_days": 248,
-      "detection_count": 471,
+      "detection_count": 470,
       "first_seen": "2016-04-29",
       "last_seen": "2025-04-26",
-      "frp_p50": 6.75,
-      "frp_p90": 19.56,
-      "jul_aug_share": 0.1423
+      "frp_p50": 6.88,
+      "frp_p90": 19.98,
+      "jul_aug_share": 0.1426
     },
     {
       "lat": 35.85,
@@ -4410,14 +4397,14 @@
       "lat": 30.66,
       "lon": 8.11,
       "site_id": "dz-3066-810",
-      "static_share": 0.9743,
+      "static_share": 0.9741,
       "active_days": 415,
-      "detection_count": 467,
+      "detection_count": 464,
       "first_seen": "2016-01-04",
       "last_seen": "2025-12-21",
       "frp_p50": 1.4,
       "frp_p90": 8.86,
-      "jul_aug_share": 0.1156
+      "jul_aug_share": 0.1164
     },
     {
       "lat": 32.74,
@@ -4449,14 +4436,14 @@
       "lat": 36.78,
       "lon": 10.2,
       "site_id": "dz-3678-1020",
-      "static_share": 0.9356,
+      "static_share": 0.9353,
       "active_days": 430,
-      "detection_count": 450,
+      "detection_count": 448,
       "first_seen": "2016-02-06",
       "last_seen": "2025-12-10",
       "frp_p50": 0.6,
       "frp_p90": 1,
-      "jul_aug_share": 0.1733
+      "jul_aug_share": 0.1741
     },
     {
       "lat": 27.75,
@@ -4503,12 +4490,12 @@
       "site_id": "dz-3616-1028",
       "static_share": 0.9977,
       "active_days": 407,
-      "detection_count": 439,
+      "detection_count": 433,
       "first_seen": "2016-02-02",
       "last_seen": "2025-12-22",
       "frp_p50": 0.75,
       "frp_p90": 1.1,
-      "jul_aug_share": 0.1686
+      "jul_aug_share": 0.1709
     },
     {
       "lat": 33.12,
@@ -4527,27 +4514,27 @@
       "lat": 30.65,
       "lon": 8.1,
       "site_id": "dz-3066-810",
-      "static_share": 0.9157,
+      "static_share": 0.9149,
       "active_days": 280,
-      "detection_count": 427,
+      "detection_count": 423,
       "first_seen": "2016-01-04",
       "last_seen": "2025-12-30",
       "frp_p50": 4.55,
       "frp_p90": 16.59,
-      "jul_aug_share": 0.2201
+      "jul_aug_share": 0.2222
     },
     {
       "lat": 31.86,
       "lon": 6.16,
       "site_id": "dz-3186-617",
-      "static_share": 0.94,
+      "static_share": 0.9399,
       "active_days": 304,
-      "detection_count": 417,
+      "detection_count": 416,
       "first_seen": "2016-01-02",
       "last_seen": "2025-07-22",
       "frp_p50": 10.89,
       "frp_p90": 20.12,
-      "jul_aug_share": 0.2038
+      "jul_aug_share": 0.2043
     },
     {
       "lat": 32.29,
@@ -4563,56 +4550,43 @@
       "jul_aug_share": 0.1783
     },
     {
-      "lat": 35.31,
-      "lon": -1.35,
-      "site_id": "dz-3531--134",
-      "static_share": 0.9027,
-      "active_days": 367,
-      "detection_count": 411,
-      "first_seen": "2016-05-17",
-      "last_seen": "2025-12-01",
-      "frp_p50": 0.96,
-      "frp_p90": 1.35,
-      "jul_aug_share": 0.1192
-    },
-    {
       "lat": 27.77,
       "lon": 9.2,
       "site_id": "dz-2775-915",
       "static_share": 0.9707,
       "active_days": 377,
-      "detection_count": 410,
+      "detection_count": 409,
       "first_seen": "2016-01-01",
       "last_seen": "2025-01-31",
       "frp_p50": 2.46,
       "frp_p90": 6.48,
-      "jul_aug_share": 0.139
+      "jul_aug_share": 0.1394
+    },
+    {
+      "lat": 35.31,
+      "lon": -1.35,
+      "site_id": "dz-3531--134",
+      "static_share": 0.9022,
+      "active_days": 367,
+      "detection_count": 409,
+      "first_seen": "2016-05-17",
+      "last_seen": "2025-12-01",
+      "frp_p50": 0.96,
+      "frp_p90": 1.35,
+      "jul_aug_share": 0.1198
     },
     {
       "lat": 36.09,
       "lon": 6.8,
       "site_id": "dz-3609-680",
-      "static_share": 0.8509,
+      "static_share": 0.8505,
       "active_days": 374,
-      "detection_count": 409,
+      "detection_count": 408,
       "first_seen": "2019-09-30",
       "last_seen": "2025-11-30",
       "frp_p50": 1.17,
       "frp_p90": 1.69,
-      "jul_aug_share": 0.2518
-    },
-    {
-      "lat": 30.39,
-      "lon": 7.9,
-      "site_id": "dz-3039-791",
-      "static_share": 0.8894,
-      "active_days": 326,
-      "detection_count": 407,
-      "first_seen": "2016-01-04",
-      "last_seen": "2025-12-30",
-      "frp_p50": 0.94,
-      "frp_p90": 6.7,
-      "jul_aug_share": 0.1351
+      "jul_aug_share": 0.2525
     },
     {
       "lat": 33.48,
@@ -4646,25 +4620,38 @@
       "site_id": "dz-3460--235",
       "static_share": 0.9751,
       "active_days": 377,
-      "detection_count": 402,
+      "detection_count": 401,
       "first_seen": "2016-01-10",
       "last_seen": "2025-11-06",
       "frp_p50": 1.11,
       "frp_p90": 1.84,
-      "jul_aug_share": 0.2065
+      "jul_aug_share": 0.207
+    },
+    {
+      "lat": 30.39,
+      "lon": 7.9,
+      "site_id": "dz-3039-791",
+      "static_share": 0.895,
+      "active_days": 326,
+      "detection_count": 400,
+      "first_seen": "2016-01-04",
+      "last_seen": "2025-12-30",
+      "frp_p50": 0.92,
+      "frp_p90": 6,
+      "jul_aug_share": 0.1375
     },
     {
       "lat": 31.24,
       "lon": 8.57,
       "site_id": "dz-3123-856",
-      "static_share": 0.9576,
+      "static_share": 0.9573,
       "active_days": 330,
-      "detection_count": 401,
+      "detection_count": 398,
       "first_seen": "2016-01-03",
       "last_seen": "2025-12-01",
       "frp_p50": 1.41,
-      "frp_p90": 5.42,
-      "jul_aug_share": 0.1322
+      "frp_p90": 5.44,
+      "jul_aug_share": 0.1332
     },
     {
       "lat": 35.83,
@@ -4693,19 +4680,6 @@
       "jul_aug_share": 0.1603
     },
     {
-      "lat": 36.71,
-      "lon": -4.33,
-      "site_id": "dz-3671--433",
-      "static_share": 1,
-      "active_days": 377,
-      "detection_count": 382,
-      "first_seen": "2016-01-01",
-      "last_seen": "2025-12-04",
-      "frp_p50": 0.75,
-      "frp_p90": 1.13,
-      "jul_aug_share": 0.1099
-    },
-    {
       "lat": 31.4,
       "lon": 9.85,
       "site_id": "dz-3140-985",
@@ -4719,17 +4693,17 @@
       "jul_aug_share": 0.1601
     },
     {
-      "lat": 35.81,
-      "lon": -0.35,
-      "site_id": "dz-3581--25",
-      "static_share": 0.9096,
-      "active_days": 306,
-      "detection_count": 376,
-      "first_seen": "2016-01-02",
-      "last_seen": "2025-12-31",
-      "frp_p50": 1.29,
-      "frp_p90": 3.86,
-      "jul_aug_share": 0.1809
+      "lat": 36.71,
+      "lon": -4.33,
+      "site_id": "dz-3671--433",
+      "static_share": 1,
+      "active_days": 377,
+      "detection_count": 381,
+      "first_seen": "2016-01-01",
+      "last_seen": "2025-12-04",
+      "frp_p50": 0.75,
+      "frp_p90": 1.13,
+      "jul_aug_share": 0.1102
     },
     {
       "lat": 31.69,
@@ -4745,17 +4719,30 @@
       "jul_aug_share": 0.0856
     },
     {
+      "lat": 35.81,
+      "lon": -0.35,
+      "site_id": "dz-3581--25",
+      "static_share": 0.9142,
+      "active_days": 306,
+      "detection_count": 373,
+      "first_seen": "2016-01-02",
+      "last_seen": "2025-12-31",
+      "frp_p50": 1.27,
+      "frp_p90": 3.8,
+      "jul_aug_share": 0.1823
+    },
+    {
       "lat": 31.87,
       "lon": 6.16,
       "site_id": "dz-3186-617",
-      "static_share": 0.9383,
+      "static_share": 0.9382,
       "active_days": 264,
-      "detection_count": 373,
+      "detection_count": 372,
       "first_seen": "2016-01-01",
       "last_seen": "2025-07-20",
       "frp_p50": 11.69,
       "frp_p90": 20.15,
-      "jul_aug_share": 0.1903
+      "jul_aug_share": 0.1909
     },
     {
       "lat": 31.41,
@@ -4800,40 +4787,27 @@
       "lat": 35.82,
       "lon": -0.28,
       "site_id": "dz-3581--25",
-      "static_share": 0.8854,
+      "static_share": 0.8844,
       "active_days": 286,
-      "detection_count": 349,
+      "detection_count": 346,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-10",
       "frp_p50": 3.02,
       "frp_p90": 9.71,
-      "jul_aug_share": 0.1633
+      "jul_aug_share": 0.1647
     },
     {
       "lat": 37.26,
       "lon": 9.85,
       "site_id": "dz-3726-985",
-      "static_share": 0.9133,
+      "static_share": 0.9128,
       "active_days": 326,
-      "detection_count": 346,
+      "detection_count": 344,
       "first_seen": "2016-01-05",
       "last_seen": "2023-10-12",
       "frp_p50": 0.83,
-      "frp_p90": 1.25,
-      "jul_aug_share": 0.159
-    },
-    {
-      "lat": 31.71,
-      "lon": 5.97,
-      "site_id": "dz-3170-596",
-      "static_share": 0.7267,
-      "active_days": 236,
-      "detection_count": 344,
-      "first_seen": "2016-07-06",
-      "last_seen": "2024-05-29",
-      "frp_p50": 7.54,
-      "frp_p90": 20.93,
-      "jul_aug_share": 0.0988
+      "frp_p90": 1.22,
+      "jul_aug_share": 0.1599
     },
     {
       "lat": 35.78,
@@ -4849,17 +4823,30 @@
       "jul_aug_share": 0.4286
     },
     {
+      "lat": 31.71,
+      "lon": 5.97,
+      "site_id": "dz-3170-596",
+      "static_share": 0.7251,
+      "active_days": 236,
+      "detection_count": 342,
+      "first_seen": "2016-07-06",
+      "last_seen": "2024-05-29",
+      "frp_p50": 7.54,
+      "frp_p90": 20.93,
+      "jul_aug_share": 0.0994
+    },
+    {
       "lat": 35.82,
       "lon": -0.32,
       "site_id": "dz-3581--25",
-      "static_share": 0.9349,
+      "static_share": 0.9343,
       "active_days": 290,
-      "detection_count": 338,
+      "detection_count": 335,
       "first_seen": "2016-02-14",
       "last_seen": "2025-12-18",
       "frp_p50": 1.12,
       "frp_p90": 3.49,
-      "jul_aug_share": 0.1686
+      "jul_aug_share": 0.1701
     },
     {
       "lat": 31.01,
@@ -4878,14 +4865,14 @@
       "lat": 36.12,
       "lon": 1.24,
       "site_id": "dz-3613-124",
-      "static_share": 0.988,
+      "static_share": 0.9879,
       "active_days": 312,
-      "detection_count": 332,
+      "detection_count": 331,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-27",
       "frp_p50": 1.17,
       "frp_p90": 1.99,
-      "jul_aug_share": 0.1386
+      "jul_aug_share": 0.139
     },
     {
       "lat": 30.89,
@@ -4901,30 +4888,30 @@
       "jul_aug_share": 0.2813
     },
     {
-      "lat": 37.95,
-      "lon": -8.8,
-      "site_id": "dz-3795--880",
-      "static_share": 0.8379,
-      "active_days": 235,
-      "detection_count": 327,
-      "first_seen": "2016-01-24",
-      "last_seen": "2025-12-05",
-      "frp_p50": 1.3,
-      "frp_p90": 3.41,
-      "jul_aug_share": 0.107
-    },
-    {
       "lat": 35.71,
       "lon": 4.47,
       "site_id": "dz-3571-448",
       "static_share": 0.9969,
       "active_days": 312,
-      "detection_count": 327,
+      "detection_count": 326,
       "first_seen": "2016-02-05",
       "last_seen": "2025-12-14",
-      "frp_p50": 0.87,
+      "frp_p50": 0.88,
       "frp_p90": 2.07,
-      "jul_aug_share": 0.3761
+      "jul_aug_share": 0.3773
+    },
+    {
+      "lat": 37.95,
+      "lon": -8.8,
+      "site_id": "dz-3795--880",
+      "static_share": 0.8369,
+      "active_days": 235,
+      "detection_count": 325,
+      "first_seen": "2016-01-24",
+      "last_seen": "2025-12-05",
+      "frp_p50": 1.3,
+      "frp_p90": 3.26,
+      "jul_aug_share": 0.1077
     },
     {
       "lat": 28.63,
@@ -4943,27 +4930,27 @@
       "lat": 37.96,
       "lon": -8.8,
       "site_id": "dz-3795--880",
-      "static_share": 0.886,
+      "static_share": 0.8845,
       "active_days": 268,
-      "detection_count": 307,
+      "detection_count": 303,
       "first_seen": "2016-01-06",
       "last_seen": "2025-12-26",
       "frp_p50": 1.24,
-      "frp_p90": 2.35,
-      "jul_aug_share": 0.0945
+      "frp_p90": 2.2,
+      "jul_aug_share": 0.0957
     },
     {
       "lat": 27.69,
       "lon": 9.88,
       "site_id": "dz-2774-992",
-      "static_share": 0.7358,
+      "static_share": 0.7383,
       "active_days": 252,
-      "detection_count": 299,
+      "detection_count": 298,
       "first_seen": "2016-01-20",
       "last_seen": "2025-12-08",
       "frp_p50": 1.19,
       "frp_p90": 2.28,
-      "jul_aug_share": 0.1003
+      "jul_aug_share": 0.1007
     },
     {
       "lat": 36.86,
@@ -5008,27 +4995,27 @@
       "lat": 31.71,
       "lon": 9.24,
       "site_id": "dz-3170-924",
-      "static_share": 0.9032,
+      "static_share": 0.9025,
       "active_days": 250,
-      "detection_count": 279,
+      "detection_count": 277,
       "first_seen": "2016-07-18",
       "last_seen": "2025-12-03",
       "frp_p50": 1.06,
       "frp_p90": 2.18,
-      "jul_aug_share": 0.1792
+      "jul_aug_share": 0.1805
     },
     {
       "lat": 37.36,
       "lon": -6.67,
       "site_id": "dz-3736--667",
-      "static_share": 0.852,
+      "static_share": 0.8514,
       "active_days": 259,
-      "detection_count": 277,
+      "detection_count": 276,
       "first_seen": "2016-01-07",
       "last_seen": "2025-12-08",
       "frp_p50": 0.62,
       "frp_p90": 0.99,
-      "jul_aug_share": 0.1444
+      "jul_aug_share": 0.1449
     },
     {
       "lat": 28.73,
@@ -5047,27 +5034,14 @@
       "lat": 31.18,
       "lon": 6.79,
       "site_id": "dz-3119-679",
-      "static_share": 0.703,
+      "static_share": 0.7057,
       "active_days": 239,
-      "detection_count": 266,
+      "detection_count": 265,
       "first_seen": "2016-01-12",
       "last_seen": "2025-10-14",
       "frp_p50": 2.42,
       "frp_p90": 4.92,
-      "jul_aug_share": 0.188
-    },
-    {
-      "lat": 30.66,
-      "lon": 8.09,
-      "site_id": "dz-3066-810",
-      "static_share": 0.8226,
-      "active_days": 186,
-      "detection_count": 265,
-      "first_seen": "2016-01-07",
-      "last_seen": "2025-11-21",
-      "frp_p50": 4.13,
-      "frp_p90": 12.81,
-      "jul_aug_share": 0.2226
+      "jul_aug_share": 0.1887
     },
     {
       "lat": 36.62,
@@ -5083,30 +5057,30 @@
       "jul_aug_share": 0.2083
     },
     {
+      "lat": 30.66,
+      "lon": 8.09,
+      "site_id": "dz-3066-810",
+      "static_share": 0.8213,
+      "active_days": 186,
+      "detection_count": 263,
+      "first_seen": "2016-01-07",
+      "last_seen": "2025-11-21",
+      "frp_p50": 4.12,
+      "frp_p90": 12.81,
+      "jul_aug_share": 0.2243
+    },
+    {
       "lat": 33.91,
       "lon": -5.5,
       "site_id": "dz-3391--550",
-      "static_share": 0.8643,
+      "static_share": 0.8677,
       "active_days": 240,
-      "detection_count": 258,
+      "detection_count": 257,
       "first_seen": "2016-01-04",
       "last_seen": "2025-10-11",
       "frp_p50": 0.71,
       "frp_p90": 1.15,
-      "jul_aug_share": 0.1395
-    },
-    {
-      "lat": 35.8,
-      "lon": -0.26,
-      "site_id": "dz-3581--25",
-      "static_share": 0.9685,
-      "active_days": 205,
-      "detection_count": 254,
-      "first_seen": "2016-03-11",
-      "last_seen": "2025-11-02",
-      "frp_p50": 3.63,
-      "frp_p90": 9.4,
-      "jul_aug_share": 0.2126
+      "jul_aug_share": 0.1401
     },
     {
       "lat": 36.87,
@@ -5122,19 +5096,6 @@
       "jul_aug_share": 0.1937
     },
     {
-      "lat": 30.87,
-      "lon": 5.65,
-      "site_id": "dz-3088-564",
-      "static_share": 0.9286,
-      "active_days": 216,
-      "detection_count": 252,
-      "first_seen": "2016-01-16",
-      "last_seen": "2025-12-16",
-      "frp_p50": 4.29,
-      "frp_p90": 10.27,
-      "jul_aug_share": 0.2143
-    },
-    {
       "lat": 36.87,
       "lon": 6.96,
       "site_id": "dz-3687-698",
@@ -5148,6 +5109,19 @@
       "jul_aug_share": 0.3452
     },
     {
+      "lat": 30.87,
+      "lon": 5.65,
+      "site_id": "dz-3088-564",
+      "static_share": 0.9283,
+      "active_days": 216,
+      "detection_count": 251,
+      "first_seen": "2016-01-16",
+      "last_seen": "2025-12-16",
+      "frp_p50": 4.29,
+      "frp_p90": 10.27,
+      "jul_aug_share": 0.2151
+    },
+    {
       "lat": 31.69,
       "lon": 5.8,
       "site_id": "dz-3170-581",
@@ -5159,6 +5133,19 @@
       "frp_p50": 8.52,
       "frp_p90": 23.67,
       "jul_aug_share": 0.1673
+    },
+    {
+      "lat": 35.8,
+      "lon": -0.26,
+      "site_id": "dz-3581--25",
+      "static_share": 0.968,
+      "active_days": 205,
+      "detection_count": 250,
+      "first_seen": "2016-03-11",
+      "last_seen": "2025-11-02",
+      "frp_p50": 3.62,
+      "frp_p90": 9.54,
+      "jul_aug_share": 0.216
     },
     {
       "lat": 32.57,
@@ -5213,19 +5200,6 @@
       "jul_aug_share": 0.1184
     },
     {
-      "lat": 37.57,
-      "lon": -0.91,
-      "site_id": "dz-3757--92",
-      "static_share": 0.8755,
-      "active_days": 207,
-      "detection_count": 241,
-      "first_seen": "2016-04-02",
-      "last_seen": "2025-10-23",
-      "frp_p50": 1.16,
-      "frp_p90": 2.91,
-      "jul_aug_share": 0.1743
-    },
-    {
       "lat": 31.63,
       "lon": 6.13,
       "site_id": "dz-3163-613",
@@ -5239,43 +5213,43 @@
       "jul_aug_share": 0.2417
     },
     {
+      "lat": 37.57,
+      "lon": -0.91,
+      "site_id": "dz-3757--92",
+      "static_share": 0.875,
+      "active_days": 207,
+      "detection_count": 240,
+      "first_seen": "2016-04-02",
+      "last_seen": "2025-10-23",
+      "frp_p50": 1.17,
+      "frp_p90": 2.92,
+      "jul_aug_share": 0.175
+    },
+    {
       "lat": 27.92,
       "lon": 9.11,
       "site_id": "dz-2793-911",
-      "static_share": 0.9412,
+      "static_share": 0.9409,
       "active_days": 218,
-      "detection_count": 238,
+      "detection_count": 237,
       "first_seen": "2016-01-02",
       "last_seen": "2025-12-03",
-      "frp_p50": 1.44,
+      "frp_p50": 1.43,
       "frp_p90": 2.63,
-      "jul_aug_share": 0.1975
+      "jul_aug_share": 0.1983
     },
     {
       "lat": 36.18,
       "lon": -5.4,
       "site_id": "dz-3618--542",
-      "static_share": 0.8445,
+      "static_share": 0.8426,
       "active_days": 229,
-      "detection_count": 238,
+      "detection_count": 235,
       "first_seen": "2016-01-16",
       "last_seen": "2025-10-19",
       "frp_p50": 1.17,
       "frp_p90": 1.56,
-      "jul_aug_share": 0.0294
-    },
-    {
-      "lat": 33.05,
-      "lon": -7.53,
-      "site_id": "dz-3306--753",
-      "static_share": 0.966,
-      "active_days": 222,
-      "detection_count": 235,
-      "first_seen": "2016-01-04",
-      "last_seen": "2025-12-14",
-      "frp_p50": 0.74,
-      "frp_p90": 1.08,
-      "jul_aug_share": 0.1021
+      "jul_aug_share": 0.0298
     },
     {
       "lat": 33.13,
@@ -5289,6 +5263,19 @@
       "frp_p50": 0.89,
       "frp_p90": 1.76,
       "jul_aug_share": 0.3205
+    },
+    {
+      "lat": 33.05,
+      "lon": -7.53,
+      "site_id": "dz-3306--753",
+      "static_share": 0.9654,
+      "active_days": 222,
+      "detection_count": 231,
+      "first_seen": "2016-01-04",
+      "last_seen": "2025-12-14",
+      "frp_p50": 0.74,
+      "frp_p90": 1.08,
+      "jul_aug_share": 0.1039
     },
     {
       "lat": 28.87,
@@ -5346,14 +5333,14 @@
       "lat": 30.76,
       "lon": 5.46,
       "site_id": "dz-3076-545",
-      "static_share": 0.7431,
+      "static_share": 0.7465,
       "active_days": 163,
-      "detection_count": 218,
+      "detection_count": 217,
       "first_seen": "2016-08-31",
       "last_seen": "2025-08-04",
       "frp_p50": 3.03,
       "frp_p90": 7.22,
-      "jul_aug_share": 0.2339
+      "jul_aug_share": 0.235
     },
     {
       "lat": 31.7,
@@ -5424,14 +5411,14 @@
       "lat": 31.7,
       "lon": 9.25,
       "site_id": "dz-3170-924",
-      "static_share": 0.933,
+      "static_share": 0.9327,
       "active_days": 196,
-      "detection_count": 209,
+      "detection_count": 208,
       "first_seen": "2016-01-04",
       "last_seen": "2025-11-08",
       "frp_p50": 1.02,
       "frp_p90": 3.22,
-      "jul_aug_share": 0.11
+      "jul_aug_share": 0.1106
     },
     {
       "lat": 36.93,
@@ -5450,14 +5437,14 @@
       "lat": 32.27,
       "lon": 3.98,
       "site_id": "dz-3228-399",
-      "static_share": 0.901,
+      "static_share": 0.9005,
       "active_days": 187,
-      "detection_count": 202,
+      "detection_count": 201,
       "first_seen": "2016-04-28",
       "last_seen": "2025-12-31",
-      "frp_p50": 1.87,
+      "frp_p50": 1.86,
       "frp_p90": 5.71,
-      "jul_aug_share": 0.2921
+      "jul_aug_share": 0.2935
     },
     {
       "lat": 35.83,
@@ -5476,27 +5463,14 @@
       "lat": 30.47,
       "lon": 6.48,
       "site_id": "dz-3047-647",
-      "static_share": 0.7842,
+      "static_share": 0.7831,
       "active_days": 145,
-      "detection_count": 190,
-      "first_seen": "2016-01-01",
-      "last_seen": "2025-10-04",
-      "frp_p50": 2.68,
-      "frp_p90": 20.09,
-      "jul_aug_share": 0.1474
-    },
-    {
-      "lat": 36.43,
-      "lon": 6.63,
-      "site_id": "dz-3643-662",
-      "static_share": 0.873,
-      "active_days": 178,
       "detection_count": 189,
       "first_seen": "2016-01-01",
-      "last_seen": "2025-12-28",
-      "frp_p50": 1.12,
-      "frp_p90": 1.93,
-      "jul_aug_share": 0.1429
+      "last_seen": "2025-10-04",
+      "frp_p50": 2.65,
+      "frp_p90": 20.09,
+      "jul_aug_share": 0.1481
     },
     {
       "lat": 32.55,
@@ -5512,30 +5486,30 @@
       "jul_aug_share": 0.254
     },
     {
+      "lat": 36.43,
+      "lon": 6.63,
+      "site_id": "dz-3643-662",
+      "static_share": 0.8717,
+      "active_days": 178,
+      "detection_count": 187,
+      "first_seen": "2016-01-01",
+      "last_seen": "2025-12-28",
+      "frp_p50": 1.12,
+      "frp_p90": 1.93,
+      "jul_aug_share": 0.1444
+    },
+    {
       "lat": 30.48,
       "lon": 6.48,
       "site_id": "dz-3047-647",
-      "static_share": 0.7778,
+      "static_share": 0.7753,
       "active_days": 153,
-      "detection_count": 180,
+      "detection_count": 178,
       "first_seen": "2016-01-01",
       "last_seen": "2025-12-30",
-      "frp_p50": 2.57,
+      "frp_p50": 2.54,
       "frp_p90": 16.87,
-      "jul_aug_share": 0.1389
-    },
-    {
-      "lat": 36.87,
-      "lon": 6.97,
-      "site_id": "dz-3687-698",
-      "static_share": 0.7865,
-      "active_days": 143,
-      "detection_count": 178,
-      "first_seen": "2016-01-23",
-      "last_seen": "2025-10-09",
-      "frp_p50": 2.32,
-      "frp_p90": 4.21,
-      "jul_aug_share": 0.264
+      "jul_aug_share": 0.1404
     },
     {
       "lat": 27.71,
@@ -5551,19 +5525,6 @@
       "jul_aug_share": 0.209
     },
     {
-      "lat": 32.51,
-      "lon": 6.7,
-      "site_id": "dz-3251-671",
-      "static_share": 0.7853,
-      "active_days": 155,
-      "detection_count": 177,
-      "first_seen": "2016-08-08",
-      "last_seen": "2024-11-14",
-      "frp_p50": 4.71,
-      "frp_p90": 8.19,
-      "jul_aug_share": 0.226
-    },
-    {
       "lat": 31.84,
       "lon": 5.06,
       "site_id": "dz-3185-506",
@@ -5577,6 +5538,19 @@
       "jul_aug_share": 0.2386
     },
     {
+      "lat": 36.87,
+      "lon": 6.97,
+      "site_id": "dz-3687-698",
+      "static_share": 0.7841,
+      "active_days": 143,
+      "detection_count": 176,
+      "first_seen": "2016-01-23",
+      "last_seen": "2025-10-09",
+      "frp_p50": 2.32,
+      "frp_p90": 4.21,
+      "jul_aug_share": 0.267
+    },
+    {
       "lat": 31.76,
       "lon": 6.15,
       "site_id": "dz-3176-614",
@@ -5588,6 +5562,19 @@
       "frp_p50": 5.09,
       "frp_p90": 21.64,
       "jul_aug_share": 0.3125
+    },
+    {
+      "lat": 32.51,
+      "lon": 6.7,
+      "site_id": "dz-3251-671",
+      "static_share": 0.7841,
+      "active_days": 155,
+      "detection_count": 176,
+      "first_seen": "2016-08-08",
+      "last_seen": "2024-11-14",
+      "frp_p50": 4.75,
+      "frp_p90": 8.19,
+      "jul_aug_share": 0.2273
     },
     {
       "lat": 31.4,
@@ -5619,14 +5606,14 @@
       "lat": 32.41,
       "lon": 4.01,
       "site_id": "dz-3240-401",
-      "static_share": 0.9264,
+      "static_share": 0.9259,
       "active_days": 148,
-      "detection_count": 163,
+      "detection_count": 162,
       "first_seen": "2016-06-29",
       "last_seen": "2025-10-25",
-      "frp_p50": 1.82,
+      "frp_p50": 1.87,
       "frp_p90": 13.04,
-      "jul_aug_share": 0.2209
+      "jul_aug_share": 0.2222
     },
     {
       "lat": 32.83,
@@ -5642,19 +5629,6 @@
       "jul_aug_share": 0.2298
     },
     {
-      "lat": 30.61,
-      "lon": 8.27,
-      "site_id": "dz-3061-826",
-      "static_share": 0.8137,
-      "active_days": 142,
-      "detection_count": 161,
-      "first_seen": "2016-01-01",
-      "last_seen": "2025-10-25",
-      "frp_p50": 2.27,
-      "frp_p90": 6.81,
-      "jul_aug_share": 0.087
-    },
-    {
       "lat": 36.16,
       "lon": 10.29,
       "site_id": "dz-3616-1028",
@@ -5666,6 +5640,19 @@
       "frp_p50": 0.75,
       "frp_p90": 1.07,
       "jul_aug_share": 0.087
+    },
+    {
+      "lat": 30.61,
+      "lon": 8.27,
+      "site_id": "dz-3061-826",
+      "static_share": 0.8176,
+      "active_days": 142,
+      "detection_count": 159,
+      "first_seen": "2016-01-01",
+      "last_seen": "2025-10-25",
+      "frp_p50": 2.27,
+      "frp_p90": 6.99,
+      "jul_aug_share": 0.0881
     },
     {
       "lat": 31.75,
@@ -5681,19 +5668,6 @@
       "jul_aug_share": 0.3526
     },
     {
-      "lat": 34.6,
-      "lon": -2.34,
-      "site_id": "dz-3460--235",
-      "static_share": 0.9871,
-      "active_days": 148,
-      "detection_count": 155,
-      "first_seen": "2016-01-01",
-      "last_seen": "2025-11-11",
-      "frp_p50": 1.12,
-      "frp_p90": 1.94,
-      "jul_aug_share": 0.129
-    },
-    {
       "lat": 28.63,
       "lon": 7.61,
       "site_id": "dz-2864-762",
@@ -5707,9 +5681,22 @@
       "jul_aug_share": 0.2452
     },
     {
+      "lat": 34.6,
+      "lon": -2.34,
+      "site_id": "dz-3460--235",
+      "static_share": 0.9869,
+      "active_days": 148,
+      "detection_count": 153,
+      "first_seen": "2016-01-01",
+      "last_seen": "2025-11-11",
+      "frp_p50": 1.11,
+      "frp_p90": 1.94,
+      "jul_aug_share": 0.1307
+    },
+    {
       "lat": 31.8,
       "lon": 6,
-      "site_id": "dz-3183-597",
+      "site_id": "dz-3181-600",
       "static_share": 0.9216,
       "active_days": 150,
       "detection_count": 153,
@@ -5736,14 +5723,14 @@
       "lat": 31.62,
       "lon": 6.06,
       "site_id": "dz-3166-606",
-      "static_share": 0.7867,
+      "static_share": 0.7852,
       "active_days": 100,
-      "detection_count": 150,
+      "detection_count": 149,
       "first_seen": "2020-01-22",
       "last_seen": "2025-12-16",
       "frp_p50": 3.34,
       "frp_p90": 12.27,
-      "jul_aug_share": 0.1
+      "jul_aug_share": 0.1007
     },
     {
       "lat": 28.7,
@@ -5889,19 +5876,6 @@
       "jul_aug_share": 0.2835
     },
     {
-      "lat": 35.8,
-      "lon": -0.23,
-      "site_id": "dz-3581--25",
-      "static_share": 0.9597,
-      "active_days": 101,
-      "detection_count": 124,
-      "first_seen": "2016-01-06",
-      "last_seen": "2025-12-10",
-      "frp_p50": 2.73,
-      "frp_p90": 14.39,
-      "jul_aug_share": 0.2339
-    },
-    {
       "lat": 28.85,
       "lon": 9.91,
       "site_id": "dz-2889-995",
@@ -5926,6 +5900,19 @@
       "frp_p50": 1.38,
       "frp_p90": 16.59,
       "jul_aug_share": 0.0887
+    },
+    {
+      "lat": 35.8,
+      "lon": -0.23,
+      "site_id": "dz-3581--25",
+      "static_share": 0.9587,
+      "active_days": 101,
+      "detection_count": 121,
+      "first_seen": "2016-01-06",
+      "last_seen": "2025-12-10",
+      "frp_p50": 2.73,
+      "frp_p90": 14.39,
+      "jul_aug_share": 0.2397
     },
     {
       "lat": 32.95,
@@ -6097,19 +6084,6 @@
       "jul_aug_share": 0.1792
     },
     {
-      "lat": 35.8,
-      "lon": -0.34,
-      "site_id": "dz-3581--25",
-      "static_share": 0.9524,
-      "active_days": 89,
-      "detection_count": 105,
-      "first_seen": "2016-02-16",
-      "last_seen": "2025-08-04",
-      "frp_p50": 1.5,
-      "frp_p90": 4.07,
-      "jul_aug_share": 0.2286
-    },
-    {
       "lat": 28.89,
       "lon": 9.96,
       "site_id": "dz-2889-995",
@@ -6136,17 +6110,17 @@
       "jul_aug_share": 0.2596
     },
     {
-      "lat": 31.22,
-      "lon": 8.56,
-      "site_id": "dz-3123-856",
-      "static_share": 0.7184,
-      "active_days": 70,
+      "lat": 35.8,
+      "lon": -0.34,
+      "site_id": "dz-3581--25",
+      "static_share": 0.9515,
+      "active_days": 89,
       "detection_count": 103,
-      "first_seen": "2016-03-17",
-      "last_seen": "2025-12-02",
-      "frp_p50": 4.44,
-      "frp_p90": 28.42,
-      "jul_aug_share": 0.1165
+      "first_seen": "2016-02-16",
+      "last_seen": "2025-08-04",
+      "frp_p50": 1.5,
+      "frp_p90": 4.07,
+      "jul_aug_share": 0.233
     },
     {
       "lat": 31.19,
@@ -6173,6 +6147,19 @@
       "frp_p50": 1.32,
       "frp_p90": 2.6,
       "jul_aug_share": 0.1515
+    },
+    {
+      "lat": 31.22,
+      "lon": 8.56,
+      "site_id": "dz-3123-856",
+      "static_share": 0.7273,
+      "active_days": 70,
+      "detection_count": 99,
+      "first_seen": "2016-03-17",
+      "last_seen": "2025-12-02",
+      "frp_p50": 4.44,
+      "frp_p90": 26.83,
+      "jul_aug_share": 0.1212
     },
     {
       "lat": 28.86,
@@ -6268,7 +6255,7 @@
     {
       "lat": 31.8,
       "lon": 5.99,
-      "site_id": "dz-3183-597",
+      "site_id": "dz-3181-600",
       "static_share": 0.931,
       "active_days": 87,
       "detection_count": 87,
@@ -6321,27 +6308,27 @@
       "lat": 36.81,
       "lon": 3.02,
       "site_id": "dz-3681-302",
-      "static_share": 0.9286,
+      "static_share": 0.9398,
       "active_days": 83,
-      "detection_count": 84,
+      "detection_count": 83,
       "first_seen": "2016-01-07",
       "last_seen": "2021-10-20",
       "frp_p50": 0.89,
       "frp_p90": 1.26,
-      "jul_aug_share": 0.131
+      "jul_aug_share": 0.1325
     },
     {
       "lat": 30.18,
       "lon": 7.68,
       "site_id": "dz-3018-769",
-      "static_share": 0.6867,
+      "static_share": 0.7037,
       "active_days": 68,
-      "detection_count": 83,
+      "detection_count": 81,
       "first_seen": "2016-01-12",
       "last_seen": "2025-12-23",
       "frp_p50": 1.12,
       "frp_p90": 4.28,
-      "jul_aug_share": 0.0964
+      "jul_aug_share": 0.0988
     },
     {
       "lat": 36.76,
@@ -6355,19 +6342,6 @@
       "frp_p50": 1.32,
       "frp_p90": 1.81,
       "jul_aug_share": 0.358
-    },
-    {
-      "lat": 31.67,
-      "lon": 6.07,
-      "site_id": "dz-3166-606",
-      "static_share": 0.8625,
-      "active_days": 76,
-      "detection_count": 80,
-      "first_seen": "2016-01-05",
-      "last_seen": "2025-03-14",
-      "frp_p50": 1.34,
-      "frp_p90": 4.94,
-      "jul_aug_share": 0.0625
     },
     {
       "lat": 28.09,
@@ -6396,17 +6370,17 @@
       "jul_aug_share": 0.1519
     },
     {
-      "lat": 28.15,
-      "lon": 8.96,
-      "site_id": "dz-2815-897",
-      "static_share": 0.8442,
-      "active_days": 65,
-      "detection_count": 77,
-      "first_seen": "2016-06-25",
-      "last_seen": "2025-12-22",
-      "frp_p50": 1.22,
-      "frp_p90": 3.35,
-      "jul_aug_share": 0.2208
+      "lat": 31.67,
+      "lon": 6.07,
+      "site_id": "dz-3166-606",
+      "static_share": 0.859,
+      "active_days": 76,
+      "detection_count": 78,
+      "first_seen": "2016-01-05",
+      "last_seen": "2025-03-14",
+      "frp_p50": 1.29,
+      "frp_p90": 4.88,
+      "jul_aug_share": 0.0641
     },
     {
       "lat": 31.41,
@@ -6446,6 +6420,19 @@
       "frp_p50": 0.83,
       "frp_p90": 1.14,
       "jul_aug_share": 0.08
+    },
+    {
+      "lat": 28.15,
+      "lon": 8.96,
+      "site_id": "dz-2815-897",
+      "static_share": 0.8378,
+      "active_days": 65,
+      "detection_count": 74,
+      "first_seen": "2016-06-25",
+      "last_seen": "2025-12-22",
+      "frp_p50": 1.22,
+      "frp_p90": 3.35,
+      "jul_aug_share": 0.2297
     },
     {
       "lat": 36.5,
@@ -6552,19 +6539,6 @@
       "jul_aug_share": 0.2154
     },
     {
-      "lat": 33.05,
-      "lon": -7.54,
-      "site_id": "dz-3306--753",
-      "static_share": 0.7656,
-      "active_days": 63,
-      "detection_count": 64,
-      "first_seen": "2016-01-31",
-      "last_seen": "2025-09-24",
-      "frp_p50": 0.77,
-      "frp_p90": 1.17,
-      "jul_aug_share": 0.0781
-    },
-    {
       "lat": 33.06,
       "lon": 3.32,
       "site_id": "dz-3307-333",
@@ -6591,6 +6565,19 @@
       "jul_aug_share": 0.2188
     },
     {
+      "lat": 33.05,
+      "lon": -7.54,
+      "site_id": "dz-3306--753",
+      "static_share": 0.7619,
+      "active_days": 63,
+      "detection_count": 63,
+      "first_seen": "2016-01-31",
+      "last_seen": "2025-09-24",
+      "frp_p50": 0.77,
+      "frp_p90": 1.17,
+      "jul_aug_share": 0.0794
+    },
+    {
       "lat": 35.1,
       "lon": 5.64,
       "site_id": "dz-3510-565",
@@ -6602,19 +6589,6 @@
       "frp_p50": 1.12,
       "frp_p90": 1.96,
       "jul_aug_share": 0.1935
-    },
-    {
-      "lat": 31.71,
-      "lon": 9.25,
-      "site_id": "dz-3170-924",
-      "static_share": 0.8966,
-      "active_days": 53,
-      "detection_count": 58,
-      "first_seen": "2016-01-28",
-      "last_seen": "2025-08-05",
-      "frp_p50": 0.91,
-      "frp_p90": 4.04,
-      "jul_aug_share": 0.1034
     },
     {
       "lat": 36.33,
@@ -6641,6 +6615,19 @@
       "frp_p50": 0.76,
       "frp_p90": 1.35,
       "jul_aug_share": 0.2456
+    },
+    {
+      "lat": 31.71,
+      "lon": 9.25,
+      "site_id": "dz-3170-924",
+      "static_share": 0.8947,
+      "active_days": 53,
+      "detection_count": 57,
+      "first_seen": "2016-01-28",
+      "last_seen": "2025-08-05",
+      "frp_p50": 0.91,
+      "frp_p90": 4.04,
+      "jul_aug_share": 0.1053
     },
     {
       "lat": 33.13,
@@ -6708,19 +6695,6 @@
       "jul_aug_share": 0.1071
     },
     {
-      "lat": 28.72,
-      "lon": 8.94,
-      "site_id": "dz-2870-894",
-      "static_share": 0.7778,
-      "active_days": 50,
-      "detection_count": 54,
-      "first_seen": "2016-05-09",
-      "last_seen": "2025-09-23",
-      "frp_p50": 1.15,
-      "frp_p90": 6.79,
-      "jul_aug_share": 0.1667
-    },
-    {
       "lat": 36.86,
       "lon": 6.99,
       "site_id": "dz-3687-698",
@@ -6732,6 +6706,19 @@
       "frp_p50": 1.49,
       "frp_p90": 3.77,
       "jul_aug_share": 0.2963
+    },
+    {
+      "lat": 28.72,
+      "lon": 8.94,
+      "site_id": "dz-2870-894",
+      "static_share": 0.7925,
+      "active_days": 50,
+      "detection_count": 53,
+      "first_seen": "2016-05-09",
+      "last_seen": "2025-09-23",
+      "frp_p50": 1.15,
+      "frp_p90": 6.79,
+      "jul_aug_share": 0.1698
     },
     {
       "lat": 27.71,
@@ -6955,19 +6942,6 @@
       "jul_aug_share": 0.1282
     },
     {
-      "lat": 35.8,
-      "lon": -0.35,
-      "site_id": "dz-3581--25",
-      "static_share": 0.7368,
-      "active_days": 34,
-      "detection_count": 38,
-      "first_seen": "2016-01-22",
-      "last_seen": "2025-11-28",
-      "frp_p50": 1.68,
-      "frp_p90": 3.63,
-      "jul_aug_share": 0.2105
-    },
-    {
       "lat": 30.65,
       "lon": 8.11,
       "site_id": "dz-3066-810",
@@ -6992,6 +6966,19 @@
       "frp_p50": 1.51,
       "frp_p90": 9.63,
       "jul_aug_share": 0.1351
+    },
+    {
+      "lat": 35.8,
+      "lon": -0.35,
+      "site_id": "dz-3581--25",
+      "static_share": 0.7297,
+      "active_days": 34,
+      "detection_count": 37,
+      "first_seen": "2016-01-22",
+      "last_seen": "2025-11-28",
+      "frp_p50": 1.66,
+      "frp_p90": 3.63,
+      "jul_aug_share": 0.2162
     },
     {
       "lat": 33.13,
@@ -7075,14 +7062,14 @@
       "lat": 29.68,
       "lon": 6.69,
       "site_id": "dz-2970-671",
-      "static_share": 0.7419,
+      "static_share": 0.7667,
       "active_days": 28,
-      "detection_count": 31,
+      "detection_count": 30,
       "first_seen": "2016-04-07",
       "last_seen": "2024-07-17",
-      "frp_p50": 2.62,
-      "frp_p90": 10.53,
-      "jul_aug_share": 0.1935
+      "frp_p50": 2.69,
+      "frp_p90": 11.54,
+      "jul_aug_share": 0.2
     },
     {
       "lat": 35.75,
@@ -7231,14 +7218,14 @@
       "lat": 36.82,
       "lon": 3.01,
       "site_id": "dz-3681-302",
-      "static_share": 0.9,
+      "static_share": 0.9474,
       "active_days": 19,
-      "detection_count": 20,
+      "detection_count": 19,
       "first_seen": "2016-01-31",
       "last_seen": "2021-05-13",
       "frp_p50": 1.04,
       "frp_p90": 2.08,
-      "jul_aug_share": 0.15
+      "jul_aug_share": 0.1579
     },
     {
       "lat": 36.77,

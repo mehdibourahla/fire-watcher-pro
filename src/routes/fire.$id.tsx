@@ -5,7 +5,6 @@ import { useTranslation } from "react-i18next";
 
 import { MapCanvas } from "@/components/MapCanvas";
 import { DetectionStrip } from "@/components/nadhir/DetectionStrip";
-import { RiskChip } from "@/components/nadhir/RiskChip";
 import { StatCard } from "@/components/nadhir/StatCard";
 import { EmptyState, Skeleton } from "@/components/nadhir/states";
 import { EmergencyNumbers } from "@/components/SiteChrome";
@@ -89,10 +88,15 @@ function FireDetail() {
     locale,
   );
 
+  // measured from the nearest detection: a fire reaches a village from its front
   const nearby = (settlements.data ?? [])
     .map((s) => ({
       settlement: s,
-      km: haversineKm(cluster.lat, cluster.lon, s.lat, s.lon),
+      km: detections.length
+        ? Math.min(
+            ...detections.map((d) => haversineKm(d.lat, d.lon, s.lat, s.lon)),
+          )
+        : haversineKm(cluster.lat, cluster.lon, s.lat, s.lon),
       bearing: bearingBetween(cluster.lat, cluster.lon, s.lat, s.lon),
     }))
     .sort((a, b) => a.km - b.km)
@@ -119,10 +123,9 @@ function FireDetail() {
             {wilaya ? <span>{unitName(wilaya, locale)} ·</span> : null}
             <span>{t(`state.${cluster.state}`)}</span>
             <span className="tabular text-xs">· {cluster.short_id}</span>
-            <RiskChip
-              level={Math.max(1, Math.round(cluster.confidence * 5))}
-              showName={false}
-            />
+            <span className="tabular text-xs">
+              · {t("fire.confidence")} {Math.round(cluster.confidence * 100)}%
+            </span>
           </p>
         </div>
 
@@ -154,11 +157,19 @@ function FireDetail() {
         <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
           <StatCard
             label={t("fire.area")}
-            value={`${Math.round(cluster.est_area_ha ?? 0)} ${t("common.ha")}`}
+            value={
+              cluster.est_area_ha == null
+                ? "—"
+                : `${Math.round(cluster.est_area_ha)} ${t("common.ha")}`
+            }
           />
           <StatCard
             label={t("fire.peakFrp")}
-            value={`${Math.round(cluster.max_frp_mw ?? 0)} ${t("common.mw")}`}
+            value={
+              cluster.max_frp_mw == null
+                ? "—"
+                : `${Math.round(cluster.max_frp_mw)} ${t("common.mw")}`
+            }
           />
           <StatCard
             label={t("fire.detectionCount")}
@@ -178,7 +189,11 @@ function FireDetail() {
           />
           <StatCard
             label={t("fire.wind")}
-            value={`${Math.round(cluster.wind_speed_kmh ?? 0)} ${t("common.kmh")}`}
+            value={
+              cluster.wind_speed_kmh == null
+                ? "—"
+                : `${Math.round(cluster.wind_speed_kmh)} ${t("common.kmh")}`
+            }
             sub={bearingLabel(cluster.wind_dir_deg)}
           />
           <StatCard

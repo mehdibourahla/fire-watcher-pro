@@ -2,6 +2,8 @@ import { isInAlgeriaNorth } from "./geo";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import type { TablesUpdate } from "@/integrations/supabase/types";
 import { fetchAllPages } from "@/lib/paginate";
+
+import { estimateAreaHa, nearestFrom } from "./fusion-geometry";
 import { haversineKm } from "@/lib/nadhir";
 
 const LIVE = ["active", "unconfirmed", "contained_guess"];
@@ -56,12 +58,6 @@ export function stateFor(dets: Det[], lastMs: number, now: number) {
 }
 
 /** Rough burned-area proxy from detection footprint and FRP. */
-function estimateAreaHa(dets: Det[]) {
-  const frp = dets.reduce((s, d) => s + (d.frp_mw ?? 0), 0);
-  const pixels = dets.length * 14; // ~375 m VIIRS pixel ≈ 14 ha
-  return Math.round(Math.max(pixels, frp * 0.9));
-}
-
 /**
  * Two ingest runs can spawn separate clusters for one fire (centroid drift, a
  * cluster ageing out of the live set between passes). Fold any live clusters
@@ -336,28 +332,15 @@ export async function fuseDetections(lookbackHours = 48): Promise<FusionRun> {
     const lastMs = Math.max(...times);
     const nextState = stateFor(list, lastMs, now);
 
-    let nearestId: string | null = null;
-    let nearestKm: number | null = null;
-    let nearestCommuneId: string | null = null;
-    for (const s of settlements) {
-      const km = haversineKm(lat, lon, s.lat, s.lon);
-      if (
-        km <= MAX_SETTLEMENT_DISTANCE_KM &&
-        (nearestKm === null || km < nearestKm)
-      ) {
-        nearestKm = km;
-        nearestId = s.id;
-      }
-    }
-
-    let nearestCommuneKm = MAX_COMMUNE_DISTANCE_KM;
-    for (const c of communes) {
-      const km = haversineKm(lat, lon, c.lat, c.lon);
-      if (km <= nearestCommuneKm) {
-        nearestCommuneKm = km;
-        nearestCommuneId = c.id;
-      }
-    }
+    const nearestSettlement = nearestFrom(
+      list,
+      settlements,
+      MAX_SETTLEMENT_DISTANCE_KM,
+    );
+    const nearestId = nearestSettlement?.id ?? null;
+    const nearestKm = nearestSettlement?.km ?? null;
+    const nearestCommuneId =
+      nearestFrom(list, communes, MAX_COMMUNE_DISTANCE_KM)?.id ?? null;
     // a fire across the border is not "in" the nearest Algerian commune 60 km away
     const communeId = isInAlgeriaNorth(lat, lon) ? nearestCommuneId : null;
     const wilayaId = communeId ? (parentOf.get(communeId) ?? null) : null;

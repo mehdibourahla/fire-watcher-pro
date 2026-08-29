@@ -3,7 +3,7 @@ import { queryOptions } from "@tanstack/react-query";
 import { isInAlgeriaNorth } from "@/lib/ingest/geo";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchAllPages } from "@/lib/paginate";
-import type { Locale } from "@/i18n";
+import type { AnyLocale, Locale } from "@/i18n";
 
 export type ClusterState =
   | "unconfirmed"
@@ -133,7 +133,7 @@ export { dangerFromFwi as levelFromFwi } from "@/lib/ingest/fwi";
 
 export function unitName(
   unit: Pick<AdminUnit, "name_ar" | "name_fr" | "name_en" | "name_kab">,
-  locale: Locale,
+  locale: AnyLocale,
 ) {
   if (locale === "ar") return unit.name_ar;
   if (locale === "fr") return unit.name_fr;
@@ -234,10 +234,15 @@ export function bearingBetween(
   return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
 }
 
-export function relativeTime(iso: string, locale: Locale) {
+/** Intl has no Kabyle data; French is the closest locale Algeria actually uses. */
+export function intlLocale(locale: AnyLocale): string {
+  return locale === "kab" ? "fr" : locale;
+}
+
+export function relativeTime(iso: string, locale: AnyLocale) {
   const diffMs = Date.now() - new Date(iso).getTime();
   const mins = Math.round(diffMs / 60000);
-  const rtf = new Intl.RelativeTimeFormat(locale === "kab" ? "fr" : locale, {
+  const rtf = new Intl.RelativeTimeFormat(intlLocale(locale), {
     numeric: "auto",
   });
   if (Math.abs(mins) < 60) return rtf.format(-mins, "minute");
@@ -350,23 +355,37 @@ export const dataSourcesQuery = queryOptions({
 /* The table accumulates one 9216-row set per forecast date, so an unfiltered
  * limit both truncates communes and mixes dates. Pin to the newest date and
  * page through all of it. */
+export const HORIZON_DAYS = 6;
+
 export const riskForecastsQuery = queryOptions({
   queryKey: ["risk_forecasts"],
   queryFn: async () => {
+    // forecast_date is the day a forecast is FOR, so a horizon-5 row is dated five days
+    // ahead. Anchoring on max(forecast_date) selects the furthest horizon and returns no
+    // horizon-0 row at all, which renders today's national danger as the seed value.
     const { data: latest, error } = await supabase
       .from("risk_forecasts")
       .select("forecast_date")
+      .eq("horizon_days", 0)
       .order("forecast_date", { ascending: false })
       .limit(1);
     if (error) throw new Error(error.message);
-    const date = (latest?.[0] as { forecast_date?: string } | undefined)
+    const base = (latest?.[0] as { forecast_date?: string } | undefined)
       ?.forecast_date;
-    if (!date) return [] as RiskForecast[];
+    if (!base) return [] as RiskForecast[];
+
+    // Runs overlap in this table — a given date carries both today's horizon h and
+    // yesterday's h+1 — so the current run is pinned date-by-date, not by range.
+    const baseMs = Date.parse(`${base}T00:00:00Z`);
+    const pairs = Array.from({ length: HORIZON_DAYS }, (_, h) => {
+      const d = new Date(baseMs + h * 86_400_000).toISOString().slice(0, 10);
+      return `and(forecast_date.eq.${d},horizon_days.eq.${h})`;
+    });
     return fetchAllPages<RiskForecast>((from, to) =>
       supabase
         .from("risk_forecasts")
         .select("*")
-        .eq("forecast_date", date)
+        .or(pairs.join(","))
         .order("id")
         .range(from, to),
     );

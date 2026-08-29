@@ -9,7 +9,6 @@ import { MapCanvas } from "@/components/MapCanvas";
 import { DangerScale } from "@/components/nadhir/DangerScale";
 import { DetailSheet } from "@/components/nadhir/DetailSheet";
 import { LayerToggle } from "@/components/nadhir/LayerToggle";
-import { RiskChip } from "@/components/nadhir/RiskChip";
 import { riskSolid } from "@/components/nadhir/risk-visuals";
 import { EmptyState, SkeletonList } from "@/components/nadhir/states";
 import {
@@ -288,7 +287,9 @@ function LiveMapPage() {
         </span>
         <span className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
           <span className="tabular">
-            {Math.round(cluster.est_area_ha ?? 0)} {t("common.ha")}
+            {cluster.est_area_ha == null
+              ? "—"
+              : `${Math.round(cluster.est_area_ha)} ${t("common.ha")}`}
           </span>
           <span className="tabular">
             {cluster.detection_count} {t("map.detections")}
@@ -628,7 +629,9 @@ function ClusterDetail({
         <div className="card p-2.5">
           <dt className="text-xs text-muted-foreground">{t("fire.area")}</dt>
           <dd className="tabular font-medium">
-            {Math.round(cluster.est_area_ha ?? 0)} {t("common.ha")}
+            {cluster.est_area_ha == null
+              ? "—"
+              : `${Math.round(cluster.est_area_ha)} ${t("common.ha")}`}
           </dd>
         </div>
         <div className="card p-2.5">
@@ -640,7 +643,9 @@ function ClusterDetail({
         <div className="card p-2.5">
           <dt className="text-xs text-muted-foreground">{t("fire.peakFrp")}</dt>
           <dd className="tabular font-medium">
-            {Math.round(cluster.max_frp_mw ?? 0)} {t("common.mw")}
+            {cluster.max_frp_mw == null
+              ? "—"
+              : `${Math.round(cluster.max_frp_mw)} ${t("common.mw")}`}
           </dd>
         </div>
         <div className="card p-2.5">
@@ -648,10 +653,9 @@ function ClusterDetail({
             {t("fire.confidence")}
           </dt>
           <dd className="font-medium">
-            <RiskChip
-              level={Math.max(1, Math.round(cluster.confidence * 5))}
-              showName={false}
-            />
+            <span className="tabular">
+              {Math.round(cluster.confidence * 100)}%
+            </span>
           </dd>
         </div>
       </dl>
