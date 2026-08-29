@@ -18,6 +18,7 @@ import { Route as ForecastRouteImport } from './routes/forecast'
 import { Route as HistoryRouteImport } from './routes/history'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as StatusRouteImport } from './routes/status'
+import { Route as SurvivalRouteRouteImport } from './routes/survival/route'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedAlertsRouteImport } from './routes/_authenticated/alerts'
 import { Route as AuthenticatedModerationRouteImport } from './routes/_authenticated/moderation'
@@ -27,6 +28,10 @@ import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/t
 import { Route as AuthenticatedWebhooksRouteImport } from './routes/_authenticated/webhooks'
 import { Route as AuthenticatedZonesRouteImport } from './routes/_authenticated/zones'
 import { Route as FireIdRouteImport } from './routes/fire.$id'
+import { Route as SurvivalIndexRouteImport } from './routes/survival/index'
+import { Route as SurvivalAreasRouteImport } from './routes/survival/areas'
+import { Route as SurvivalCheckinRouteImport } from './routes/survival/checkin'
+import { Route as SurvivalSosRouteImport } from './routes/survival/sos'
 import { Route as ApiPublicCronAlertsRouteImport } from './routes/api/public/cron/alerts'
 import { Route as ApiPublicCronIngestRouteImport } from './routes/api/public/cron/ingest'
 import { Route as ApiPublicCronRiskRouteImport } from './routes/api/public/cron/risk'
@@ -79,6 +84,11 @@ const StatusRoute = StatusRouteImport.update({
   path: '/status',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SurvivalRouteRoute = SurvivalRouteRouteImport.update({
+  id: '/survival',
+  path: '/survival',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
@@ -124,6 +134,26 @@ const FireIdRoute = FireIdRouteImport.update({
   path: '/fire/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SurvivalIndexRoute = SurvivalIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => SurvivalRouteRoute,
+} as any)
+const SurvivalAreasRoute = SurvivalAreasRouteImport.update({
+  id: '/areas',
+  path: '/areas',
+  getParentRoute: () => SurvivalRouteRoute,
+} as any)
+const SurvivalCheckinRoute = SurvivalCheckinRouteImport.update({
+  id: '/checkin',
+  path: '/checkin',
+  getParentRoute: () => SurvivalRouteRoute,
+} as any)
+const SurvivalSosRoute = SurvivalSosRouteImport.update({
+  id: '/sos',
+  path: '/sos',
+  getParentRoute: () => SurvivalRouteRoute,
+} as any)
 const ApiPublicCronAlertsRoute = ApiPublicCronAlertsRouteImport.update({
   id: '/api/public/cron/alerts',
   path: '/api/public/cron/alerts',
@@ -162,6 +192,7 @@ const ApiPublicV1StatsRoute = ApiPublicV1StatsRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/survival': typeof SurvivalRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
   '/developers': typeof DevelopersRoute
@@ -178,6 +209,10 @@ export interface FileRoutesByFullPath {
   '/webhooks': typeof AuthenticatedWebhooksRoute
   '/zones': typeof AuthenticatedZonesRoute
   '/fire/$id': typeof FireIdRoute
+  '/survival/areas': typeof SurvivalAreasRoute
+  '/survival/checkin': typeof SurvivalCheckinRoute
+  '/survival/sos': typeof SurvivalSosRoute
+  '/survival/': typeof SurvivalIndexRoute
   '/api/public/cron/alerts': typeof ApiPublicCronAlertsRoute
   '/api/public/cron/ingest': typeof ApiPublicCronIngestRoute
   '/api/public/cron/risk': typeof ApiPublicCronRiskRoute
@@ -204,6 +239,10 @@ export interface FileRoutesByTo {
   '/webhooks': typeof AuthenticatedWebhooksRoute
   '/zones': typeof AuthenticatedZonesRoute
   '/fire/$id': typeof FireIdRoute
+  '/survival/areas': typeof SurvivalAreasRoute
+  '/survival/checkin': typeof SurvivalCheckinRoute
+  '/survival/sos': typeof SurvivalSosRoute
+  '/survival': typeof SurvivalIndexRoute
   '/api/public/cron/alerts': typeof ApiPublicCronAlertsRoute
   '/api/public/cron/ingest': typeof ApiPublicCronIngestRoute
   '/api/public/cron/risk': typeof ApiPublicCronRiskRoute
@@ -216,6 +255,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/survival': typeof SurvivalRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
   '/developers': typeof DevelopersRoute
@@ -232,6 +272,10 @@ export interface FileRoutesById {
   '/_authenticated/webhooks': typeof AuthenticatedWebhooksRoute
   '/_authenticated/zones': typeof AuthenticatedZonesRoute
   '/fire/$id': typeof FireIdRoute
+  '/survival/areas': typeof SurvivalAreasRoute
+  '/survival/checkin': typeof SurvivalCheckinRoute
+  '/survival/sos': typeof SurvivalSosRoute
+  '/survival/': typeof SurvivalIndexRoute
   '/api/public/cron/alerts': typeof ApiPublicCronAlertsRoute
   '/api/public/cron/ingest': typeof ApiPublicCronIngestRoute
   '/api/public/cron/risk': typeof ApiPublicCronRiskRoute
@@ -244,6 +288,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/survival'
     | '/about'
     | '/auth'
     | '/developers'
@@ -260,6 +305,10 @@ export interface FileRouteTypes {
     | '/webhooks'
     | '/zones'
     | '/fire/$id'
+    | '/survival/areas'
+    | '/survival/checkin'
+    | '/survival/sos'
+    | '/survival/'
     | '/api/public/cron/alerts'
     | '/api/public/cron/ingest'
     | '/api/public/cron/risk'
@@ -286,6 +335,10 @@ export interface FileRouteTypes {
     | '/webhooks'
     | '/zones'
     | '/fire/$id'
+    | '/survival/areas'
+    | '/survival/checkin'
+    | '/survival/sos'
+    | '/survival'
     | '/api/public/cron/alerts'
     | '/api/public/cron/ingest'
     | '/api/public/cron/risk'
@@ -297,6 +350,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/survival'
     | '/about'
     | '/auth'
     | '/developers'
@@ -313,6 +367,10 @@ export interface FileRouteTypes {
     | '/_authenticated/webhooks'
     | '/_authenticated/zones'
     | '/fire/$id'
+    | '/survival/areas'
+    | '/survival/checkin'
+    | '/survival/sos'
+    | '/survival/'
     | '/api/public/cron/alerts'
     | '/api/public/cron/ingest'
     | '/api/public/cron/risk'
@@ -325,6 +383,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  SurvivalRouteRoute: typeof SurvivalRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
   AuthRoute: typeof AuthRoute
   DevelopersRoute: typeof DevelopersRoute
@@ -408,6 +467,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StatusRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/survival': {
+      id: '/survival'
+      path: '/survival'
+      fullPath: '/survival'
+      preLoaderRoute: typeof SurvivalRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/terms': {
       id: '/terms'
       path: '/terms'
@@ -470,6 +536,34 @@ declare module '@tanstack/react-router' {
       fullPath: '/fire/$id'
       preLoaderRoute: typeof FireIdRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/survival/': {
+      id: '/survival/'
+      path: '/'
+      fullPath: '/survival/'
+      preLoaderRoute: typeof SurvivalIndexRouteImport
+      parentRoute: typeof SurvivalRouteRoute
+    }
+    '/survival/areas': {
+      id: '/survival/areas'
+      path: '/areas'
+      fullPath: '/survival/areas'
+      preLoaderRoute: typeof SurvivalAreasRouteImport
+      parentRoute: typeof SurvivalRouteRoute
+    }
+    '/survival/checkin': {
+      id: '/survival/checkin'
+      path: '/checkin'
+      fullPath: '/survival/checkin'
+      preLoaderRoute: typeof SurvivalCheckinRouteImport
+      parentRoute: typeof SurvivalRouteRoute
+    }
+    '/survival/sos': {
+      id: '/survival/sos'
+      path: '/sos'
+      fullPath: '/survival/sos'
+      preLoaderRoute: typeof SurvivalSosRouteImport
+      parentRoute: typeof SurvivalRouteRoute
     }
     '/api/public/cron/alerts': {
       id: '/api/public/cron/alerts'
@@ -546,9 +640,28 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface SurvivalRouteRouteChildren {
+  SurvivalAreasRoute: typeof SurvivalAreasRoute
+  SurvivalCheckinRoute: typeof SurvivalCheckinRoute
+  SurvivalSosRoute: typeof SurvivalSosRoute
+  SurvivalIndexRoute: typeof SurvivalIndexRoute
+}
+
+const SurvivalRouteRouteChildren: SurvivalRouteRouteChildren = {
+  SurvivalAreasRoute: SurvivalAreasRoute,
+  SurvivalCheckinRoute: SurvivalCheckinRoute,
+  SurvivalSosRoute: SurvivalSosRoute,
+  SurvivalIndexRoute: SurvivalIndexRoute,
+}
+
+const SurvivalRouteRouteWithChildren = SurvivalRouteRoute._addFileChildren(
+  SurvivalRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  SurvivalRouteRoute: SurvivalRouteRouteWithChildren,
   AboutRoute: AboutRoute,
   AuthRoute: AuthRoute,
   DevelopersRoute: DevelopersRoute,

@@ -4,6 +4,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -142,6 +143,10 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient, locale } = Route.useRouteContext();
   const i18nInstance = useMemo(() => localeInstance(locale), [locale]);
+  // Survival Mode owns the whole screen: no header, tabs or footer competing for it.
+  const survival = useRouterState({
+    select: (s) => s.location.pathname.startsWith("/survival"),
+  });
 
   useEffect(() => {
     // Keeps <html lang/dir> aligned with the cookie locale after hydration.
@@ -153,13 +158,17 @@ function RootComponent() {
       <QueryClientProvider client={queryClient}>
         <div className="flex min-h-screen flex-col">
           <AlertNotifier />
-          <SiteHeader />
+          {survival ? null : <SiteHeader />}
           <main className="flex-1">
             {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
             <Outlet />
           </main>
-          <SiteFooter />
-          <BottomTabs />
+          {survival ? null : (
+            <>
+              <SiteFooter />
+              <BottomTabs />
+            </>
+          )}
         </div>
       </QueryClientProvider>
     </I18nextProvider>
