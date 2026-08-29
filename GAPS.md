@@ -13,7 +13,7 @@ honest status page. Treat §1 as the distance between those two things.
 
 ## 1. Blocking a real warning service
 
-### 1.1 The danger scale lacks a fuel mask and an arid-zone presentation
+### 1.1 The danger scale needs an arid-zone presentation (fuel mask shipped)
 
 An earlier version of this section said the scale "carries no information" because 68.8% of
 communes read Extreme with none at Low. That predates the noon-LST input fix and was
@@ -30,11 +30,12 @@ the old text, and do not edit the FWI maths (verified against Van Wagner's worke
 
 Two real gaps remain:
 
-- **No fuel mask.** FWI is a weather index with no fuel term. Tamanrasset reads level 5 on
-  89% of all days including winter, and ~200 of the 697 Extreme communes have essentially no
-  burn history. EFFIS handles this by refusing to rate unvegetated land (recorded as
-  `masked` in `effis_danger` since the palette fix); Nadhir rates it Extreme. Needs §2.1's
-  land-cover work.
+- **Fuel mask — shipped 2026-08-30.** FWI is a weather index with no fuel term; Tamanrasset
+  read level 5 on 89% of all days including winter. Since the WorldCover enrichment, a
+  commune below 5% burnable cover (tree+shrub+grass+crop, `isFuelLimited` in
+  `src/lib/zonal.ts`) is written with `risk_forecasts.fuel_limited`; surfaces show "not
+  rated", rollups and risk alerts skip it. Dense-urban cores (Alger-Centre) mask too, same
+  as EFFIS's own no-data treatment of cities. Absent land-cover data never masks.
 - **Arid-zone saturation.** The steppe (El Bayadh) is level 5 on 92 of 92 July days —
   absolute thresholds carry no information there. The standard remedy is a local-percentile
   view beside the absolute class; the CEMS fire-danger reanalysis (86 years of ECMWF FWI,
@@ -94,13 +95,22 @@ minutes. Fixing it means decoding netCDF somewhere that is not a Worker.
 
 ## 2. Data quality
 
-### 2.1 `forest_fraction` is effectively unpopulated
+### 2.1 Land cover and terrain — populated 2026-08-30
 
-Only **13 of 1536 communes** and 10 of 69 wilayas have a non-zero value (max 0.72). The §9.3
-wind bump in the risk model is implemented but reads 0 for 99% of the country, so it almost
-never fires. Populating it needs ESA WorldCover land-cover data joined to commune geometry.
+All **1536 communes** now carry WorldCover 2021 class fractions (`landcover`),
+`forest_fraction` from tree cover, and Copernicus DEM slope/aspect stats (`terrain`).
+Commune polygons were seeded from Overpass into `admin_units.geom` (join by `ref:ONS`,
+1536/1537). The §9.3 wind bump has 250 eligible communes (was 13); 168 communes fall under
+the 5% burnable-cover fuel mask. Verified against an independent benchmark at Tizi Ouzou
+(tree 0.499 vs 0.431, mean slope 7.7° vs 6.0°, p90 18.9° vs 19.9°).
 
-Reproduce: `select level, count(*) filter (where coalesce(forest_fraction,0)>0), count(*) from admin_units group by level;`
+Remaining, stated rather than hidden: wilaya rows are not enriched (the model reads commune
+values only); WorldCover is frozen at 2021, so a commune that burned since is still modelled
+as vegetated — Impact Observatory's annual product is the refresh path; `terrain` has no
+reader in the risk model yet, stored so the raster pass is not run twice.
+
+Re-run: `bun run seed:polygons`, `bun run enrich:zonal`.
+Reproduce: `select count(*) filter (where landcover is not null) from admin_units where level='commune';`
 
 ### 2.2 EFFIS / GWIS is connected for danger classes only
 
@@ -111,8 +121,10 @@ originally claimed, all verified live on 2026-08-29:
 - **Raw FWI is available programmatically.** GetFeatureInfo on layer `ecmwf007.query` with
   `info_format=text/html` returns FWI, FFMC, DMC, DC, ISI, BUI and the danger/anomaly/
   ranking indices as numbers. Earlier checks missed it because text/plain and GML return
-  empty attributes and a continental bbox returns an empty body. Switching the ingest to
-  this layer would supersede the palette decode entirely.
+  empty attributes and a continental bbox returns an empty body. A wholesale switch was
+  considered and rejected: per-commune point queries mean 1,536 daily requests against
+  JRC's free WMS versus one GetMap; the layer serves the cold-start guard and future
+  spot-calibration instead.
 - **The palette labels were shifted one class.** The legend's six classes start at Low —
   there is no very_low, and the top class is Very Extreme. Fixed in `effis.server.ts`;
   the mislabeled 2026-08-29 rows were deleted by migration. White pixels are EFFIS

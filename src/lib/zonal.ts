@@ -143,6 +143,17 @@ export function landcoverFractions(
   };
 }
 
+/* Mirrors EFFIS's refusal to rate unvegetated land: below 5% burnable cover
+ * (tree, shrub, grass, crop stubble) a fire-weather rating carries no warning
+ * value. Absent land-cover data never masks — a warning service must not
+ * silence a commune it cannot see. */
+export const FUEL_LIMIT = 0.05;
+
+export function isFuelLimited(lc: LandcoverFractions | null): boolean {
+  if (!lc) return false;
+  return lc.tree + lc.shrub + lc.grass + lc.crop < FUEL_LIMIT;
+}
+
 /* Scanline even-odd fill, same parity rule as pointInRing: a cell is inside
  * when an odd number of edge crossings lie strictly right of its center.
  * O(rows·edges + cells), where the per-cell test is O(cells·edges). */

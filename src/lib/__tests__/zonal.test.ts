@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   assembleRings,
   buildMultiPolygon,
+  isFuelLimited,
   landcoverFractions,
   pointInMultiPolygon,
   rasterizeMask,
@@ -103,6 +104,42 @@ describe("landcoverFractions", () => {
 
   it("returns null when every sample is nodata", () => {
     expect(landcoverFractions([0, 0])).toBeNull();
+  });
+});
+
+describe("isFuelLimited", () => {
+  it("flags a bare-desert commune", () => {
+    expect(
+      isFuelLimited({
+        tree: 0,
+        shrub: 0.01,
+        grass: 0.02,
+        crop: 0,
+        built: 0.01,
+        bare: 0.95,
+        water: 0,
+        other: 0.01,
+      }),
+    ).toBe(true);
+  });
+
+  it("keeps a steppe commune rated — grass burns", () => {
+    expect(
+      isFuelLimited({
+        tree: 0.01,
+        shrub: 0.05,
+        grass: 0.4,
+        crop: 0.1,
+        built: 0.02,
+        bare: 0.42,
+        water: 0,
+        other: 0,
+      }),
+    ).toBe(false);
+  });
+
+  it("never masks without land-cover data", () => {
+    expect(isFuelLimited(null)).toBe(false);
   });
 });
 

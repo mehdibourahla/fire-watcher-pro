@@ -47,8 +47,11 @@ export const Route = createFileRoute("/forecast")({
   component: ForecastPage,
 });
 
-type Day = { fwi: number; level: number };
+type Day = { fwi: number; level: number; fuelLimited: boolean };
 type Row = { commune: AdminUnit; days: Record<number, Day> };
+
+const rankedLevel = (r: Row) =>
+  r.days[0] && !r.days[0].fuelLimited ? r.days[0].level : 0;
 
 const HORIZONS = [0, 1, 2, 3, 4, 5];
 
@@ -67,13 +70,17 @@ function ForecastPage() {
     const byCommune = new Map<string, Record<number, Day>>();
     for (const f of forecasts.data ?? []) {
       const entry = byCommune.get(f.commune_id) ?? {};
-      entry[f.horizon_days] = { fwi: f.fwi, level: f.danger_level };
+      entry[f.horizon_days] = {
+        fwi: f.fwi,
+        level: f.danger_level,
+        fuelLimited: f.fuel_limited,
+      };
       byCommune.set(f.commune_id, entry);
     }
     return communes
       .map((commune) => ({ commune, days: byCommune.get(commune.id) ?? {} }))
       .filter((r) => Object.keys(r.days).length > 0)
-      .sort((a, b) => (b.days[0]?.level ?? 0) - (a.days[0]?.level ?? 0));
+      .sort((a, b) => rankedLevel(b) - rankedLevel(a));
   }, [forecasts.data, units.data]);
 
   const filtered = useMemo(() => {
@@ -100,14 +107,11 @@ function ForecastPage() {
         const wRows = communes
           .map((c) => byId.get(c.id))
           .filter((r): r is Row => !!r)
-          .sort((a, b) => (b.days[0]?.level ?? 0) - (a.days[0]?.level ?? 0));
+          .sort((a, b) => rankedLevel(b) - rankedLevel(a));
         return {
           wilaya,
           rows: wRows,
-          maxLevel: wRows.reduce(
-            (m, r) => Math.max(m, r.days[0]?.level ?? 0),
-            0,
-          ),
+          maxLevel: wRows.reduce((m, r) => Math.max(m, rankedLevel(r)), 0),
         };
       })
       .filter((g) => g.rows.length > 0)
@@ -142,6 +146,12 @@ function ForecastPage() {
             guidance
             className="mt-4"
           />
+
+          {featured.days[0]?.fuelLimited ? (
+            <p className="mt-2 text-sm text-muted-foreground">
+              {t("risk.fuelLimited")}
+            </p>
+          ) : null}
 
           {(() => {
             const row = effis.data?.get(featured.commune.id);
@@ -289,7 +299,12 @@ function CommuneRow({
         {HORIZONS.map((h) => {
           const day = row.days[h];
           return day ? (
-            <RiskChip key={h} level={day.level} showName={false} />
+            <RiskChip
+              key={h}
+              level={day.level}
+              showName={false}
+              fuelLimited={day.fuelLimited}
+            />
           ) : (
             <span key={h} className="px-1 text-xs text-muted-foreground">
               —

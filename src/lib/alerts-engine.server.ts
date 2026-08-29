@@ -268,11 +268,17 @@ export async function evaluateAlerts(userId?: string): Promise<AlertRun> {
   const { data: forecasts } = communeIds.length
     ? await supabaseAdmin
         .from("risk_forecasts")
-        .select("commune_id, forecast_date, danger_level")
+        .select("commune_id, forecast_date, danger_level, fuel_limited")
         .eq("forecast_date", today)
         .eq("horizon_days", 0)
         .in("commune_id", communeIds)
-    : { data: [] as { commune_id: string; danger_level: number }[] };
+    : {
+        data: [] as {
+          commune_id: string;
+          danger_level: number;
+          fuel_limited: boolean;
+        }[],
+      };
   const forecastByCommune = new Map(
     (forecasts ?? []).map((f) => [f.commune_id, f]),
   );
@@ -394,7 +400,11 @@ export async function evaluateAlerts(userId?: string): Promise<AlertRun> {
         zone.min_danger_level,
         profile?.min_danger_level ?? 1,
       );
-      if (forecast && forecast.danger_level >= threshold) {
+      if (
+        forecast &&
+        !forecast.fuel_limited &&
+        forecast.danger_level >= threshold
+      ) {
         if (quiet) {
           suppressed += 1;
         } else {

@@ -827,6 +827,7 @@ export type Database = {
           components: Json | null;
           created_at: string;
           danger_level: number;
+          fuel_limited: boolean;
           forecast_date: string;
           fwi: number;
           horizon_days: number;
@@ -838,6 +839,7 @@ export type Database = {
           components?: Json | null;
           created_at?: string;
           danger_level: number;
+          fuel_limited?: boolean;
           forecast_date: string;
           fwi: number;
           horizon_days: number;
@@ -849,6 +851,7 @@ export type Database = {
           components?: Json | null;
           created_at?: string;
           danger_level?: number;
+          fuel_limited?: boolean;
           forecast_date?: string;
           fwi?: number;
           horizon_days?: number;

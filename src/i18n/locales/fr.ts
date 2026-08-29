@@ -259,6 +259,7 @@ export const fr: Translation = {
     communeCount: "{{count}} communes",
     groupWorst: "Niveau de la commune la plus exposée de la wilaya",
     effis: "EFFIS/GWIS (autorité européenne) classe cette commune : {{class}}",
+    fuelLimited: "Non évalué — végétation combustible négligeable",
     effisMasked:
       "EFFIS n'évalue pas le terrain de cette commune (zone non végétalisée).",
     effisNone:
