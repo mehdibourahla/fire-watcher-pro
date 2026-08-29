@@ -46,6 +46,8 @@ export type Database = {
           forest_fraction: number;
           geom: Json | null;
           id: string;
+          landcover: Json | null;
+          terrain: Json | null;
           lat: number;
           level: string;
           lon: number;
@@ -62,6 +64,8 @@ export type Database = {
           forest_fraction?: number;
           geom?: Json | null;
           id?: string;
+          landcover?: Json | null;
+          terrain?: Json | null;
           lat: number;
           level: string;
           lon: number;
@@ -78,6 +82,8 @@ export type Database = {
           forest_fraction?: number;
           geom?: Json | null;
           id?: string;
+          landcover?: Json | null;
+          terrain?: Json | null;
           lat?: number;
           level?: string;
           lon?: number;
