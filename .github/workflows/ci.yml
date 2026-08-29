@@ -46,6 +46,17 @@ jobs:
           bun-version: 1.3.14
 
       - run: bun install --frozen-lockfile
+
+      # Schema before code: new code must never meet the old schema. The window
+      # where old code meets new schema requires additive migrations (CONTRIBUTING).
+      - run: bunx supabase@2.116.0 link --project-ref kuukthyenirwgdfkltlm
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      - run: bunx supabase@2.116.0 db push -p "$SUPABASE_DB_PASSWORD"
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+
       - run: bun run build
       - run: bunx wrangler deploy
         env:
