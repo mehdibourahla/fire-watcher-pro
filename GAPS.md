@@ -104,6 +104,15 @@ wired at all. `/status` correctly reports it unavailable rather than pretending.
   are still missing. Currently 0 reports, so those are gaps to close before promoting the
   feature, not a live exposure.
 - **Admin console** has no cluster resolve (US-6), no broadcast, and no audit log.
+- **Survival mode** (`/survival`) ships with deliberate limits, each stated in the UI
+  rather than papered over: the SOS queue is **local-only** — no server inbox exists
+  because nobody would monitor it (§1.3), and the copy says so; quick hazard reports
+  reuse the authenticated report flow, so they are unreachable until §1.2's SMTP wall
+  falls; `open_areas` is empty until its migration is applied and
+  `bun run seed:open-areas` is run against the live project; threat facts inherit §1.4's
+  hours of detection latency and always display their age; the service worker caches the
+  survival shell only; spoken/recorded guidance audio (accessibility for low literacy)
+  does not exist yet and must be human-recorded, not TTS.
 - **Public API** has no WebSocket and no tiles. What exists is `/api/public/v1/fires`
   (with `?format=geojson`), `/api/public/v1/risk` and `/api/public/v1/stats`; the risk
   endpoint takes `?commune=<code>` using `admin_units.code`, not a place name.
