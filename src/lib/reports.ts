@@ -6,10 +6,12 @@ import { supabase } from "@/integrations/supabase/client";
 export type ReportStatus = "pending" | "approved" | "rejected";
 export type Sighting = "smoke" | "flames" | "smell" | "other";
 export type SizeHint = "small" | "medium" | "large";
+export type ReportKind = "sighting" | "road_blocked" | "person_trapped";
 
 export type CitizenReport = {
   id: string;
   user_id: string;
+  kind: ReportKind;
   lat: number;
   lon: number;
   observed_at: string;
@@ -26,6 +28,7 @@ export type CitizenReport = {
 };
 
 export type NewReport = {
+  kind: ReportKind;
   lat: number;
   lon: number;
   sighting: Sighting;
