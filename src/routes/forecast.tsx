@@ -296,7 +296,7 @@ function CommuneRow({
         })}
       </span>
       <span className="tabular text-sm text-muted-foreground">
-        {t("risk.fwi")} {(row.days[0]?.fwi ?? 0).toFixed(0)}
+        {t("risk.fwi")} {row.days[0] ? row.days[0].fwi.toFixed(0) : "—"}
       </span>
     </button>
   );

@@ -223,6 +223,32 @@ export async function evaluateAlerts(userId?: string): Promise<AlertRun> {
     ALERTING_STATES.includes(c.state),
   );
 
+  // R3 gates on how close the fire actually is; the centroid understates that by
+  // kilometres for a spread-out fire, which silently skips the emergency escalation.
+  const frontByCluster = new Map<string, { lat: number; lon: number }[]>();
+  if (alertable.length) {
+    const points = await fetchAllPages<{
+      cluster_id: string | null;
+      lat: number;
+      lon: number;
+    }>((from, to) =>
+      supabaseAdmin
+        .from("detections")
+        .select("cluster_id, lat, lon")
+        .in(
+          "cluster_id",
+          alertable.map((c) => c.id),
+        )
+        .range(from, to),
+    );
+    for (const p of points) {
+      if (!p.cluster_id) continue;
+      const bucket = frontByCluster.get(p.cluster_id);
+      if (bucket) bucket.push({ lat: p.lat, lon: p.lon });
+      else frontByCluster.set(p.cluster_id, [{ lat: p.lat, lon: p.lon }]);
+    }
+  }
+
   const settlements = await fetchAllPages<{
     id: string;
     name: string;
@@ -283,13 +309,27 @@ export async function evaluateAlerts(userId?: string): Promise<AlertRun> {
         MIN_CONFIDENCE;
       for (const cluster of alertable) {
         if (cluster.confidence < floor) continue;
-        const km = haversineKm(zone.lat, zone.lon, cluster.lat, cluster.lon);
+        const zoneFront = frontByCluster.get(cluster.id) ?? [
+          { lat: cluster.lat, lon: cluster.lon },
+        ];
+        let km = Infinity;
+        for (const p of zoneFront) {
+          const one = haversineKm(zone.lat, zone.lon, p.lat, p.lon);
+          if (one < km) km = one;
+        }
         if (km > zone.radius_km) continue;
 
         // R3: nearest settlement inside the fire's downwind cone escalates to emergency
         let urgent: { name: string; bearing: number } | null = null;
+        const front = frontByCluster.get(cluster.id) ?? [
+          { lat: cluster.lat, lon: cluster.lon },
+        ];
         for (const s of settlements) {
-          const sKm = haversineKm(cluster.lat, cluster.lon, s.lat, s.lon);
+          let sKm = Infinity;
+          for (const p of front) {
+            const one = haversineKm(p.lat, p.lon, s.lat, s.lon);
+            if (one < sKm) sKm = one;
+          }
           if (sKm > SETTLEMENT_EMERGENCY_KM) continue;
           const bearing = bearingBetween(
             cluster.lat,
