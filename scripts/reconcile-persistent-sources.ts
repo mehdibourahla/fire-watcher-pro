@@ -111,15 +111,18 @@ for (const [reason, ids] of byReason) {
 
 // Derived from the database, not from `affected`: screening nulls cluster_id, so a
 // cluster emptied by an earlier partial run is no longer reachable from detections.
-const live = await page<{ id: string; state: string }>(
+// every non-rejected state, not just the live ones: a cluster that lost all its
+// detections to screening while already extinguished stays published as a real fire
+const candidates = await page<{ id: string; state: string }>(
   "fire_clusters",
   "id, state",
   (q) =>
-    (q as unknown as { in: (c: string, v: string[]) => Paged<never> }).in(
+    (q as unknown as { neq: (c: string, v: string) => Paged<never> }).neq(
       "state",
-      ["active", "unconfirmed", "contained_guess"],
+      "false_positive",
     ) as unknown as Paged<{ id: string; state: string }>,
 );
+const LIVE = ["active", "unconfirmed", "contained_guess"];
 
 const current = await page<Det>("detections", DET_COLUMNS, (q) =>
   (q as unknown as { is: (c: string, v: null) => Paged<Det> }).is(
@@ -138,9 +141,10 @@ for (const d of current) {
 let resolved = 0;
 let recomputed = 0;
 const now = Date.now();
-for (const { id: clusterId } of live) {
+for (const { id: clusterId, state } of candidates) {
   const list = survivors.get(clusterId);
   if (!list?.length) {
+    if (state === "false_positive") continue;
     const { error } = await db
       .from("fire_clusters")
       // false_positive, not extinguished: a flare never went out, and
@@ -155,6 +159,8 @@ for (const { id: clusterId } of live) {
     resolved += 1;
     continue;
   }
+  // a cluster that kept real detections is only recomputed while it is still live
+  if (!LIVE.includes(state)) continue;
   const lat = list.reduce((s, d) => s + d.lat, 0) / list.length;
   const lon = list.reduce((s, d) => s + d.lon, 0) / list.length;
   const lastMs = Math.max(...list.map((d) => Date.parse(d.detected_at)));
