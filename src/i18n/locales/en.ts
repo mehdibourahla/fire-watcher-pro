@@ -252,6 +252,7 @@ export const en = {
     communeCount: "{{count}} communes",
     groupWorst: "Highest commune level in this wilaya",
     effis: "EFFIS/GWIS (European fire authority) rates this commune: {{class}}",
+    fuelLimited: "Not rated — negligible burnable vegetation",
     effisMasked:
       "EFFIS does not rate this commune's terrain (unvegetated land).",
     effisNone:

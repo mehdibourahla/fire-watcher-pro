@@ -79,6 +79,7 @@ export type RiskForecast = {
   source: string;
   fwi: number;
   danger_level: number;
+  fuel_limited: boolean;
 };
 
 export type EffisDanger = {

@@ -30,11 +30,12 @@ the old text, and do not edit the FWI maths (verified against Van Wagner's worke
 
 Two real gaps remain:
 
-- **No fuel mask.** FWI is a weather index with no fuel term. Tamanrasset reads level 5 on
-  89% of all days including winter, and ~200 of the 697 Extreme communes have essentially no
-  burn history. EFFIS handles this by refusing to rate unvegetated land (recorded as
-  `masked` in `effis_danger` since the palette fix); Nadhir rates it Extreme. Needs §2.1's
-  land-cover work.
+- **Fuel mask — shipped 2026-08-30.** FWI is a weather index with no fuel term; Tamanrasset
+  read level 5 on 89% of all days including winter. Since the WorldCover enrichment, a
+  commune below 5% burnable cover (tree+shrub+grass+crop, `isFuelLimited` in
+  `src/lib/zonal.ts`) is written with `risk_forecasts.fuel_limited`; surfaces show "not
+  rated", rollups and risk alerts skip it. Dense-urban cores (Alger-Centre) mask too, same
+  as EFFIS's own no-data treatment of cities. Absent land-cover data never masks.
 - **Arid-zone saturation.** The steppe (El Bayadh) is level 5 on 92 of 92 July days —
   absolute thresholds carry no information there. The standard remedy is a local-percentile
   view beside the absolute class; the CEMS fire-danger reanalysis (86 years of ECMWF FWI,

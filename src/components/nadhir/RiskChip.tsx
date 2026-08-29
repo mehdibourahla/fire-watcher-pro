@@ -8,14 +8,32 @@ import { RISK_ICON, clampLevel, riskInk, riskTint } from "./risk-visuals";
 type Props = {
   level: number;
   showName?: boolean;
+  fuelLimited?: boolean;
   className?: string;
 };
 
-export function RiskChip({ level, showName = true, className }: Props) {
+export function RiskChip({
+  level,
+  showName = true,
+  fuelLimited = false,
+  className,
+}: Props) {
   const { t } = useTranslation();
   const current = clampLevel(level);
   const Icon = RISK_ICON[current];
   const name = t(`risk.${dangerLevelKey(current)}`);
+
+  if (fuelLimited)
+    return (
+      <span
+        className={cn(
+          "inline-flex items-center rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground",
+          className,
+        )}
+      >
+        {t("risk.fuelLimited")}
+      </span>
+    );
 
   return (
     <span

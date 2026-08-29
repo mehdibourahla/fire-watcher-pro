@@ -154,7 +154,9 @@ function LiveMapPage() {
   );
 
   const national = useMemo(() => {
-    const today = (risk.data ?? []).filter((r) => r.horizon_days === 0);
+    const today = (risk.data ?? []).filter(
+      (r) => r.horizon_days === 0 && !r.fuel_limited,
+    );
     return today.reduce(
       (acc, r) =>
         r.danger_level > acc.level

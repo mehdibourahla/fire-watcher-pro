@@ -1,6 +1,8 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { fetchAllPages } from "@/lib/paginate";
 
+import { isFuelLimited, type LandcoverFractions } from "@/lib/zonal";
+
 import { dailyFromHourly, type HourlyBlock } from "./noon-weather";
 import {
   FWI_START,
@@ -178,10 +180,11 @@ export async function refreshRiskForecasts(): Promise<RiskRun> {
     lat: number;
     lon: number;
     forest_fraction: number | null;
+    landcover: LandcoverFractions | null;
   }>((from, to) =>
     supabaseAdmin
       .from("admin_units")
-      .select("id, lat, lon, forest_fraction")
+      .select("id, lat, lon, forest_fraction, landcover")
       .eq("level", "commune")
       .range(from, to),
   );
@@ -229,6 +232,7 @@ export async function refreshRiskForecasts(): Promise<RiskRun> {
     source: string;
     fwi: number;
     danger_level: number;
+    fuel_limited: boolean;
     components: Record<string, number>;
   };
 
@@ -294,6 +298,7 @@ export async function refreshRiskForecasts(): Promise<RiskRun> {
           commune.forest_fraction ?? 0,
           resume,
         );
+        const fuelLimited = isFuelLimited(commune.landcover);
         if (carried) nextState.push({ commune_id: commune.id, ...carried });
         // derived from the date, not the array index: a dropped day would otherwise
         // shift every horizon and label a forecast with the wrong day
@@ -309,6 +314,7 @@ export async function refreshRiskForecasts(): Promise<RiskRun> {
             source: SOURCE,
             fwi: day.fwi,
             danger_level: day.level,
+            fuel_limited: fuelLimited,
             components: day.components,
           });
         });
