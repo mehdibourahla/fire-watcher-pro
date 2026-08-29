@@ -13,22 +13,37 @@ honest status page. Treat §1 as the distance between those two things.
 
 ## 1. Blocking a real warning service
 
-### 1.1 The danger scale is not calibrated for Algeria
+### 1.1 The danger scale lacks a fuel mask and an arid-zone presentation
 
-Today's forecast puts **1057 of 1536 communes (68.8%) at level 5 "Extreme"**, 12.2% at level 4
-and 18.9% at level 3. **No commune is at level 1 or 2.** A scale that never says "Low" carries
-no information, and a public that sees "Extreme" every day stops reading it.
+An earlier version of this section said the scale "carries no information" because 68.8% of
+communes read Extreme with none at Low. That predates the noon-LST input fix and was
+investigated on 2026-08-29 against a 3-year FWI climatology (the repo's own code over ERA5
+archive weather) and ten years of NASA-labelled vegetation fires. The distribution is
+seasonal, not broken: Tizi Ouzou spends 48% of the year at level 1 (January: 88 of 93 days)
+and ~half of August days at level 5, so "no commune at Low in late August" is what a working
+Mediterranean fire-weather scale says at seasonal peak. The scale also discriminates — the 15
+largest real-fire days near Tizi Ouzou (2023–25) average level 4.47 against an all-day mean
+of 2.25, and 71% of the 697 communes at Extreme on 2026-08-29 had ≥10 vegetation-fire
+detections within ~10 km in 2016–25. Do not re-derive "the thresholds are uncalibrated" from
+the old text, and do not edit the FWI maths (verified against Van Wagner's worked example in
+`src/lib/__tests__/risk.test.ts`).
 
-This is not an arithmetic bug. The CFFDRS implementation is verified against Van Wagner's
-published worked example to ±0.01 in `src/lib/__tests__/risk.test.ts`. The numbers are right;
-the _thresholds_ are borrowed from a Canadian boreal regime and applied to an arid one.
+Two real gaps remain:
 
-Do not "fix" it by editing the FWI maths. The options are recalibrated level thresholds
-(spec §9.1), a scale that only covers the forested north, or deferring to EFFIS as the
-authority. All three need a fire scientist's judgement, not a patch.
+- **No fuel mask.** FWI is a weather index with no fuel term. Tamanrasset reads level 5 on
+  89% of all days including winter, and ~200 of the 697 Extreme communes have essentially no
+  burn history. EFFIS handles this by refusing to rate unvegetated land (recorded as
+  `masked` in `effis_danger` since the palette fix); Nadhir rates it Extreme. Needs §2.1's
+  land-cover work.
+- **Arid-zone saturation.** The steppe (El Bayadh) is level 5 on 92 of 92 July days —
+  absolute thresholds carry no information there. The standard remedy is a local-percentile
+  view beside the absolute class; the CEMS fire-danger reanalysis (86 years of ECMWF FWI,
+  CC BY 4.0) is the calibration source, and EFFIS publishes anomaly/ranking indices per
+  pixel via the same query layer as §2.2.
 
-Reproduce: `select danger_level, count(*) from risk_forecasts where horizon_days=0 group by 1;`
-Start at: `dangerFromFwi`, `src/lib/ingest/fwi.ts:134`.
+Reproduce the seasonality and discrimination numbers: the queries and scripts are described
+in the 2026-08-29 investigation; the distribution itself is
+`select danger_level, count(*) from risk_forecasts where horizon_days=0 group by 1;`
 
 ### 1.2 Nobody can register
 
@@ -90,12 +105,26 @@ Reproduce: `select level, count(*) filter (where coalesce(forest_fraction,0)>0),
 ### 2.2 EFFIS / GWIS is connected for danger classes only
 
 Since 2026-08-29 the daily risk refresh samples the EFFIS WMS danger map per commune into
-`effis_danger` — the external comparator §1.1 needs. Limits, stated rather than hidden: the
-JRC server publishes no raw FWI values programmatically (WCS has no FWI coverage; point
-queries return nothing), so the six **danger classes** decoded from their classified raster
-are the whole contract; the layer only serves its current run, so each row is stamped with
-the fetch date; and a palette change on their side degrades the source loudly instead of
-mis-classifying (the run errors when zero communes match).
+`effis_danger` — the external comparator §1.1 needs. Three corrections to what this section
+originally claimed, all verified live on 2026-08-29:
+
+- **Raw FWI is available programmatically.** GetFeatureInfo on layer `ecmwf007.query` with
+  `info_format=text/html` returns FWI, FFMC, DMC, DC, ISI, BUI and the danger/anomaly/
+  ranking indices as numbers. Earlier checks missed it because text/plain and GML return
+  empty attributes and a continental bbox returns an empty body. Switching the ingest to
+  this layer would supersede the palette decode entirely.
+- **The palette labels were shifted one class.** The legend's six classes start at Low —
+  there is no very_low, and the top class is Very Extreme. Fixed in `effis.server.ts`;
+  the mislabeled 2026-08-29 rows were deleted by migration. White pixels are EFFIS
+  declining to rate unvegetated land and are stored as `masked` rather than dropped.
+- **EFFIS runs can be cold-started.** On 2026-08-29 every Mediterranean pixel (Tizi Ouzou,
+  Seville, Sicily) carried DMC ≈ 6.5 and DC ≈ 16 — the CFFDRS initialization values,
+  physically impossible in late August. The ingest now checks sentinel DC values through
+  the query layer and refuses the run during the dry season when all sit below 100.
+
+The layer only serves its current run, so each row is stamped with the fetch date, and a
+palette change on their side still degrades the source loudly (the run errors when zero
+communes match).
 
 ### 2.3 Commune-to-wilaya assignment diverges from the 2026 law
 

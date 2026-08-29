@@ -149,9 +149,11 @@ function ForecastPage() {
               <p className="mt-3 border-t border-border pt-3 text-sm text-muted-foreground">
                 {row ? (
                   <>
-                    {t("risk.effis", {
-                      class: t(`risk.effisClass.${row.danger_class}`),
-                    })}{" "}
+                    {row.danger_class === "masked"
+                      ? t("risk.effisMasked")
+                      : t("risk.effis", {
+                          class: t(`risk.effisClass.${row.danger_class}`),
+                        })}{" "}
                     <span className="tabular text-xs">
                       ({relativeTime(row.created_at, locale)})
                     </span>

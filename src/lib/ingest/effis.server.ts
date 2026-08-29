@@ -2,20 +2,21 @@ import { PNG } from "pngjs";
 
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
-/* Colors verified against the ecmwf007.fwi GetLegendGraphic on 2026-08-29; the
- * WMS serves classified pixels, not FWI values (no WCS coverage exists), so the
- * palette IS the data contract. classifyPixel matching nothing on a land pixel
- * means EFFIS changed it — the run then classifies 0 and degrades the source. */
+/* Colors and labels verified against the ecmwf007.fwi GetLegendGraphic on
+ * 2026-08-29: six classes starting at Low — the layer has no very_low. White is
+ * EFFIS declining to rate unvegetated land, recorded as masked rather than
+ * dropped. classifyPixel matching nothing on a land pixel means EFFIS changed
+ * the palette — the run then classifies 0 and degrades the source. */
 export const EFFIS_CLASSES = [
-  { key: "very_low", rgb: [145, 252, 170] },
-  { key: "low", rgb: [210, 225, 74] },
-  { key: "moderate", rgb: [241, 179, 0] },
-  { key: "high", rgb: [231, 117, 0] },
-  { key: "very_high", rgb: [192, 0, 12] },
-  { key: "extreme", rgb: [58, 0, 21] },
+  { key: "low", rgb: [145, 252, 170] },
+  { key: "moderate", rgb: [210, 225, 74] },
+  { key: "high", rgb: [241, 179, 0] },
+  { key: "very_high", rgb: [231, 117, 0] },
+  { key: "extreme", rgb: [192, 0, 12] },
+  { key: "very_extreme", rgb: [58, 0, 21] },
 ] as const;
 
-export type EffisClass = (typeof EFFIS_CLASSES)[number]["key"];
+export type EffisClass = (typeof EFFIS_CLASSES)[number]["key"] | "masked";
 
 /* All of Algeria, not the northern fire-watch strip: the Saharan communes are
  * the ones whose local "Extreme" ratings most need the external comparison.
@@ -37,9 +38,59 @@ export function classifyPixel(
   g: number,
   b: number,
 ): EffisClass | null {
+  if (r === 255 && g === 255 && b === 255) return "masked";
   for (const c of EFFIS_CLASSES)
     if (c.rgb[0] === r && c.rgb[1] === g && c.rgb[2] === b) return c.key;
   return null;
+}
+
+export function parseFeatureInfoDc(html: string): number | null {
+  const m = html.match(/Drought Code \(DC\)<\/td><td>([0-9.eE+-]+)/);
+  if (!m) return null;
+  const v = Number(m[1]);
+  return Number.isFinite(v) ? v : null;
+}
+
+/* An EFFIS run whose fuel-moisture codes sit at the CFFDRS start values (DC 15)
+ * across the Mediterranean dry season is re-initialized, not observed — seen
+ * live on 2026-08-29 (DC ~16-17 at Tizi Ouzou, Seville and Sicily in August).
+ * Ingesting it would poison the comparator with a low-everywhere day. */
+export function isColdStart(dcs: number[], month: number): boolean {
+  if (month < 5 || month > 10) return false;
+  if (dcs.length === 0) return false;
+  return dcs.every((dc) => dc < 100);
+}
+
+const DC_SENTINELS = [
+  { lat: 36.72, lon: 4.05 },
+  { lat: 37.4, lon: -5.9 },
+  { lat: 37.6, lon: 14.0 },
+];
+
+async function fetchSentinelDcs(): Promise<number[]> {
+  const dcs: number[] = [];
+  for (const s of DC_SENTINELS) {
+    const url = new URL("https://ies-ows.jrc.ec.europa.eu/effis");
+    url.search = new URLSearchParams({
+      service: "WMS",
+      version: "1.1.1",
+      request: "GetFeatureInfo",
+      layers: "ecmwf007.query",
+      query_layers: "ecmwf007.query",
+      srs: "EPSG:4326",
+      bbox: `${s.lon - 0.04},${s.lat - 0.04},${s.lon + 0.04},${s.lat + 0.04}`,
+      width: "10",
+      height: "10",
+      x: "5",
+      y: "5",
+      info_format: "text/html",
+    }).toString();
+    const res = await fetch(url).catch(() => null);
+    if (!res?.ok) continue;
+    const dc = parseFeatureInfoDc(await res.text());
+    if (dc !== null) dcs.push(dc);
+  }
+  return dcs;
 }
 
 export function pixelFor(
@@ -66,6 +117,15 @@ export type EffisRun = {
 };
 
 export async function ingestEffis(): Promise<EffisRun> {
+  const month = new Date().getUTCMonth() + 1;
+  const dcs = await fetchSentinelDcs();
+  if (isColdStart(dcs, month))
+    return {
+      communes: 0,
+      classified: 0,
+      error: `EFFIS run cold-started (sentinel DC ${dcs.map((d) => d.toFixed(1)).join(", ")}) — refusing to ingest`,
+    };
+
   const res = await fetch(EFFIS_URL);
   if (!res.ok)
     return { communes: 0, classified: 0, error: `EFFIS WMS ${res.status}` };
@@ -105,7 +165,9 @@ export async function ingestEffis(): Promise<EffisRun> {
     if (cls) rows.push({ commune_id: c.id, date, danger_class: cls });
   }
 
-  if (rows.length === 0)
+  // white always matches as masked, so the palette-change alarm must count
+  // danger classes only or it can never fire again
+  if (rows.every((r) => r.danger_class === "masked"))
     return {
       communes: communes.length,
       classified: 0,

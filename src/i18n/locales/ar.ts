@@ -253,15 +253,16 @@ export const ar: Translation = {
     communeCount: "{{count}} بلدية",
     groupWorst: "أعلى مستوى بين بلديات الولاية",
     effis: "‏EFFIS/GWIS (المرجع الأوروبي) يصنف هذه البلدية: {{class}}",
+    effisMasked: "لا يصنف EFFIS أراضي هذه البلدية (منطقة بلا غطاء نباتي).",
     effisNone:
       "لا مقارنة من EFFIS بعد — يصل التصنيف الأوروبي مع التحديث اليومي.",
     effisClass: {
-      very_low: "منخفض جدًا",
       low: "منخفض",
       moderate: "متوسط",
       high: "مرتفع",
       very_high: "مرتفع جدًا",
       extreme: "أقصى",
+      very_extreme: "أقصى للغاية",
     },
     guidance: {
       1: "ظروف عادية. الحرائق تبقى سهلة السيطرة. لا تترك نارًا دون مراقبة.",

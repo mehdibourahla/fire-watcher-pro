@@ -254,15 +254,16 @@ export const kab: Translation = {
     communeCount: "{{count}} n tɣiwanin",
     groupWorst: "Aswir afellay n tɣiwant deg twilayt",
     effis: "EFFIS/GWIS (tadbelt tuṛufit) tsemma taɣiwant-a: {{class}}",
+    effisMasked: "EFFIS ur isemma ara akal n taɣiwant-a (akal war imɣan).",
     effisNone:
       "Ulac aserwes EFFIS ar tura — asmil uṛufi yettas-d s uleqqem n yal ass.",
     effisClass: {
-      very_low: "Meẓẓi aṭas",
       low: "Meẓẓi",
       moderate: "Alemmas",
       high: "Ɛlay",
       very_high: "Ɛlay aṭas",
       extreme: "Amtawi",
+      very_extreme: "Amtawi aṭas",
     },
     guidance: {
       1: "Tigniyin timagdazin. Timessi ttwaḥebbsent s wudem afessas. Ur ttaǧǧa ara times war aɛessi.",

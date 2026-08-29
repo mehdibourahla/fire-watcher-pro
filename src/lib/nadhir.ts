@@ -86,7 +86,13 @@ export type EffisDanger = {
   commune_id: string;
   date: string;
   danger_class:
-    "very_low" | "low" | "moderate" | "high" | "very_high" | "extreme";
+    | "low"
+    | "moderate"
+    | "high"
+    | "very_high"
+    | "extreme"
+    | "very_extreme"
+    | "masked";
   created_at: string;
 };
 
