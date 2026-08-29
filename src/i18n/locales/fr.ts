@@ -307,6 +307,8 @@ export const fr: Translation = {
     ok: "Opérationnel",
     degraded: "Dégradé",
     unavailable: "Indisponible",
+    stale:
+      "Aucune exécution réussie depuis {{time}} — le planificateur est peut-être à l'arrêt.",
   },
   about: {
     attribution: "Données : NASA FIRMS, Open-Meteo, OpenStreetMap — CC-BY 4.0",

@@ -297,6 +297,7 @@ export const en = {
     ok: "Operational",
     degraded: "Degraded",
     unavailable: "Unavailable",
+    stale: "No successful run for {{time}} — the scheduler may be down.",
   },
   about: {
     attribution: "Data: NASA FIRMS, Open-Meteo, OpenStreetMap — CC-BY 4.0",

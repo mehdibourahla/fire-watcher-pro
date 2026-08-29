@@ -295,6 +295,7 @@ export const ar: Translation = {
     ok: "يعمل",
     degraded: "متدهور",
     unavailable: "غير متوفر",
+    stale: "لا تشغيل ناجحًا منذ {{time}} — قد يكون المجدوِل متوقفًا.",
   },
   about: {
     attribution: "البيانات: NASA FIRMS، Open-Meteo، OpenStreetMap — CC-BY 4.0",
