@@ -56,9 +56,9 @@ and new columns with defaults are fine; a rename or drop needs a two-step releas
 - **Ingestion work** (FIRMS, EUMETSAT): register your **own** free keys
   ([FIRMS](https://firms.modaps.eosdis.nasa.gov/api/), [EUMETSAT](https://eoportal.eumetsat.int/)).
   Project keys are never shared.
-- **Migrations, seeds, deploys**: operator work. Deploys happen automatically from CI on
-  merge to `main`; migrations and seeds run only against the live project by an operator.
-  You write the migration file and the PR; you never need the database password.
+- **Deploys and live migrations**: fully automatic — CI applies pending migrations and
+  deploys on every merge to `main` (secrets live in the `production` environment). Only
+  live _seeds_ and ad-hoc database surgery remain operator work.
 
 ## Access tiers
 
