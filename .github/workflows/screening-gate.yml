@@ -21,7 +21,7 @@ concurrency:
 jobs:
   confusion-matrix:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
@@ -31,16 +31,33 @@ jobs:
 
       - run: bun install --frozen-lockfile
 
-      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+      # Fork pull requests receive no secrets, so the gate reports "not evaluated"
+      # rather than failing a contributor for something they cannot supply.
+      - id: key
+        env:
+          FIRMS_MAP_KEY: ${{ secrets.FIRMS_MAP_KEY }}
+        run: echo "present=${{ secrets.FIRMS_MAP_KEY != '' }}" >> "$GITHUB_OUTPUT"
+
+      - if: steps.key.outputs.present != 'true'
+        run: |
+          echo "::warning::FIRMS_MAP_KEY unavailable — the held-out confusion matrix was not evaluated."
+          echo "Screening thresholds are UNVERIFIED for this run. A maintainer must re-run with the secret before merging a threshold change."
+
+      - if: steps.key.outputs.present == 'true'
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: .cache/firms-archive
           key: firms-archive-v1
 
-      - name: Rebuild the registry from the labelled archive
+      # Cold cache pulls ~733 windows paced at 2s; the pacing is deliberate because
+      # FIRMS meters transactions per key and the deployed ingest shares this one.
+      - if: steps.key.outputs.present == 'true'
+        name: Rebuild the registry from the labelled archive
         env:
           FIRMS_MAP_KEY: ${{ secrets.FIRMS_MAP_KEY }}
         run: bun run build:sources
 
       # Fails the check if real-event loss or false-event removal breach their bounds.
-      - name: Held-out confusion matrix
+      - if: steps.key.outputs.present == 'true'
+        name: Held-out confusion matrix
         run: bun run evaluate:sources
