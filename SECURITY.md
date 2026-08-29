@@ -38,8 +38,8 @@ These are tracked in [GAPS.md](GAPS.md) and are not new findings:
 - Citizen report uploads have no EXIF stripping, captcha, or antivirus scan.
 - Sign-up has no captcha, and the auth API accepts a 6-character password while the UI asks
   for 8.
-- Any authenticated user can read the `user_roles` table, which reveals who the moderators and
-  admins are.
+- The public API's rate limiter fails open: if the limiter itself errors, the request is
+  served rather than rejected. That is deliberate for a read-only feed about a live hazard.
 
 Reports that restate these are welcome only if you have a concrete exploit that goes further
 than the description there.

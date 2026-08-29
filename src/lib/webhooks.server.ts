@@ -18,6 +18,37 @@ async function sign(secret: string, body: string) {
   return createHmac("sha256", secret).update(body, "utf8").digest("hex");
 }
 
+// The URL is user-supplied and the response body is stored where its owner can read
+// it, so an unchecked target turns delivery into a read primitive against any host.
+export function isDeliverableUrl(raw: string): boolean {
+  let url: URL;
+  try {
+    url = new URL(raw);
+  } catch {
+    return false;
+  }
+  if (url.protocol !== "https:") return false;
+
+  const host = url.hostname.toLowerCase();
+  if (
+    host === "localhost" ||
+    host.endsWith(".local") ||
+    host.endsWith(".internal")
+  )
+    return false;
+  if (host.startsWith("[")) return false;
+
+  const v4 = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(host);
+  if (v4) {
+    const [a, b] = [Number(v4[1]), Number(v4[2])];
+    if (a === 0 || a === 10 || a === 127 || a >= 224) return false;
+    if (a === 169 && b === 254) return false;
+    if (a === 172 && b >= 16 && b <= 31) return false;
+    if (a === 192 && b === 168) return false;
+  }
+  return true;
+}
+
 /** Fan alerts out to each owner's active webhook endpoints. Never throws. */
 export async function dispatchWebhooks(alerts: AlertRow[]) {
   if (!alerts.length) return { sent: 0, failed: 0 };
@@ -59,6 +90,8 @@ export async function dispatchWebhooks(alerts: AlertRow[]) {
       let status: number | null = null;
       let error: string | null = null;
       try {
+        if (!isDeliverableUrl(endpoint.url))
+          throw new Error("endpoint url must be https and publicly routable");
         const signature = await sign(endpoint.secret, body);
         const response = await fetch(endpoint.url, {
           method: "POST",
