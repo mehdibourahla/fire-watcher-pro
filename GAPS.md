@@ -142,6 +142,27 @@ React SSR costs more than the Cloudflare free plan's 10 ms CPU budget. On the fr
 default is 50 ms, which is also too low; the deployed limit is set explicitly to 30 s in
 `vite.config.ts`.
 
+## 5. Traps
+
+Things that cost real debugging time here, none of them obvious from the code.
+
+- **Migrations.** Two agents adding migrations the same hour produced a duplicate version
+  prefix, which the Supabase ledger cannot hold. Applying one with `psql` without inserting a
+  row into `supabase_migrations.schema_migrations` silently breaks the next `supabase db push`.
+  Check existing versions and the ledger before adding one.
+- **`main` is protected.** Pull request with a review required; force-push and deletion blocked.
+  An admin push still succeeds while printing the rule warning — that output is not an error.
+- **Declaring `routes` in the wrangler config flips `workers_dev` to false.** Attaching the
+  custom domain silently disabled the old `workers.dev` hostname, which broke a scheduled cron
+  that was still pointed at it. Update the `nadhir_app_url` vault secret in the same change.
+- **maplibre loads its worker as a sibling file of its own chunk.** Nothing emits that file by
+  default; a small plugin in `vite.config.ts` does. Remove it and the map renders blank with no
+  console error and no failed request — it simply never asks for a tile.
+- **PostgREST truncates at 1000 rows.** Use `fetchAllPages` from `src/lib/paginate.ts` for any
+  select that can exceed it. Reads only; `.in()` on update or delete is fine.
+- **One GitHub setting is not API-reachable**: Settings → Actions → fork pull request workflows.
+  It should require approval for all outside collaborators.
+
 ## Where to start
 
 | If you want                    | Look at                                                        |
