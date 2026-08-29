@@ -13,6 +13,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "seed:geo": "bun run scripts/seed-geo.ts",
+    "seed:open-areas": "bun run scripts/seed-open-areas.ts",
     "bootstrap:fwi": "bash scripts/bootstrap-fwi.sh"
   },
   "overrides": {

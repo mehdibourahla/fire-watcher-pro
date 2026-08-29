@@ -13,6 +13,7 @@ export type OpenAreaType =
 
 export type OpenArea = {
   id: string;
+  osm_id: number | null;
   name: string;
   name_ar: string | null;
   area_type: OpenAreaType;

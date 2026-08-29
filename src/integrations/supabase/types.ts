@@ -613,6 +613,7 @@ export type Database = {
           lon: number;
           name: string;
           name_ar: string | null;
+          osm_id: number | null;
           source: string;
         };
         Insert: {
@@ -624,6 +625,7 @@ export type Database = {
           lon: number;
           name: string;
           name_ar?: string | null;
+          osm_id?: number | null;
           source?: string;
         };
         Update: {
@@ -635,6 +637,7 @@ export type Database = {
           lon?: number;
           name?: string;
           name_ar?: string | null;
+          osm_id?: number | null;
           source?: string;
         };
         Relationships: [
