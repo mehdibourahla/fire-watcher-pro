@@ -39,7 +39,7 @@ Seed and ops credentials live in `~/.config/nadhir/`, never in this repo.
       coordinates instead of borrowing the nearest Algerian commune name
 - [x] Exif stripped from citizen report photos before upload (JPEG and PNG only)
 - [x] Public API: GeoJSON on `/fires`, plus `/stats`
-- [x] CAP 1.2 alert object (`cap_alerts`) — **migration not yet applied to the live project**
+- [x] CAP 1.2 alert object (`cap_alerts`) — migration applied to the live project 2026-08-29
 - [x] P12 Survival mode v1 — chrome-less `/survival` (hub with Standing Guidance, SOS +
       position card, check-in via the user's own SMS/WhatsApp, open areas), entry points on
       the live map (pill, position-based interstitial, zone banner), offline Survival Pack +
