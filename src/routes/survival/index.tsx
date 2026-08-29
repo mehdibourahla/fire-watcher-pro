@@ -161,7 +161,7 @@ function SurvivalHub() {
 
       <section className="flex flex-col gap-2">
         <h2 className="text-[11px] font-bold tracking-wider text-muted-foreground">
-          {(online && threat
+          {(online
             ? t("survival.knows")
             : t("survival.lastKnown")
           ).toUpperCase()}
