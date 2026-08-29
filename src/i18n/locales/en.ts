@@ -80,7 +80,8 @@ export const en = {
     sosCoords: "Coordinates",
     sosQueueNote:
       "If the call fails, your SOS is saved on this phone only. No rescue service receives or monitors it yet — keep trying 14.",
-    sosQueued: "SOS saved {{time}} — not sent, no monitored receiver exists yet.",
+    sosQueued:
+      "SOS saved {{time}} — not sent, no monitored receiver exists yet.",
     checkinTitle: "Check in",
     checkinIntro:
       "Tell your family where you are, from your own phone. They need no app — the message arrives as a normal SMS or WhatsApp.",
@@ -121,13 +122,13 @@ export const en = {
     },
     offlineBanner:
       "No network. Showing saved data — last verified {{time}}. The situation may have changed.",
-    packSaved: "Offline pack saved {{time}} — position, open areas, guidance, numbers",
+    packSaved:
+      "Offline pack saved {{time}} — position, open areas, guidance, numbers",
     report: "Report",
     reportFire: "Fire here",
     reportSmoke: "Heavy smoke",
     reportRoadBlocked: "Road blocked",
     reportPersonTrapped: "Person trapped",
-    zoneAlert: "Fire confirmed {{km}} km from your zone {{place}}",
     zoneElsewhere: "You appear to be elsewhere — showing alerts only.",
     zoneView: "View fire",
     zoneImHere: "I am in the area",

@@ -82,7 +82,8 @@ export const kab: Translation = {
     sosCoords: "Timsisiyin",
     sosQueueNote:
       "Ma yecceḍ usiwel, SOS-ik ad yettwaḥrez deg utilifun-a kan. Ulac aɣmis n usellek ara t-id-yeṭṭfen ass-a — kemmel siwel i 14.",
-    sosQueued: "SOS yettwaḥrez {{time}} — ur yettwazen ara, ulac amsekles yettwaɛassen.",
+    sosQueued:
+      "SOS yettwaḥrez {{time}} — ur yettwazen ara, ulac amsekles yettwaɛassen.",
     checkinTitle: "Sers lexbaṛ",
     checkinIntro:
       "Ini i twacult-ik anda telliḍ, seg utilifun-ik. Ur ḥwaǧen ara asnas — izen yettaweḍ d SMS neɣ WhatsApp.",
@@ -130,7 +131,6 @@ export const kab: Translation = {
     reportSmoke: "Abbu aquran",
     reportRoadBlocked: "Abrid yeqqen",
     reportPersonTrapped: "Amdan yettwaḥbes",
-    zoneAlert: "Timess tettwasentem ɣef {{km}} km si temnaḍt-ik {{place}}",
     zoneElsewhere: "Aql-ak waqila deg wemkan-nniḍen — ilɣa kan.",
     zoneView: "Wali timess",
     zoneImHere: "Aql-i deg wemkan",

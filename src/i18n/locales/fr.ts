@@ -33,7 +33,8 @@ export const fr: Translation = {
     enterTitle: "Êtes-vous près d'un feu en ce moment ?",
     enterBody:
       "Le mode survie montre une seule chose à faire à la fois, garde votre zone enregistrée hors ligne et prépare votre position pour un appel à la Protection Civile au 14.",
-    enterFetching: "Localisation GPS en cours · enregistrement du pack hors ligne…",
+    enterFetching:
+      "Localisation GPS en cours · enregistrement du pack hors ligne…",
     enterYes: "Oui — activer le mode survie",
     enterCancel: "Annuler",
     enterFootnote:
@@ -82,14 +83,16 @@ export const fr: Translation = {
     sosCoords: "Coordonnées",
     sosQueueNote:
       "Si l'appel échoue, votre SOS n'est enregistré que sur ce téléphone. Aucun service de secours ne le reçoit ni ne le surveille pour l'instant — continuez d'appeler le 14.",
-    sosQueued: "SOS enregistré {{time}} — non envoyé, aucun récepteur surveillé n'existe encore.",
+    sosQueued:
+      "SOS enregistré {{time}} — non envoyé, aucun récepteur surveillé n'existe encore.",
     checkinTitle: "Donner des nouvelles",
     checkinIntro:
       "Dites à votre famille où vous êtes, depuis votre propre téléphone. Aucune application requise — le message arrive par SMS ou WhatsApp.",
     checkinOk: "Signaler que je vais bien",
     checkinOkSub: "envoie votre état et votre position maintenant",
     checkinAssist: "Signaler que j'ai besoin d'aide",
-    checkinAssistSub: "demande à votre famille d'appeler le 14 pour vous avec votre position",
+    checkinAssistSub:
+      "demande à votre famille d'appeler le 14 pour vous avec votre position",
     checkinPreview: "Aperçu du message",
     checkin: {
       msgOk:
@@ -123,13 +126,13 @@ export const fr: Translation = {
     },
     offlineBanner:
       "Pas de réseau. Données enregistrées — dernière vérification {{time}}. La situation peut avoir changé.",
-    packSaved: "Pack hors ligne enregistré {{time}} — position, espaces ouverts, consignes, numéros",
+    packSaved:
+      "Pack hors ligne enregistré {{time}} — position, espaces ouverts, consignes, numéros",
     report: "Signaler",
     reportFire: "Feu ici",
     reportSmoke: "Fumée épaisse",
     reportRoadBlocked: "Route coupée",
     reportPersonTrapped: "Personne bloquée",
-    zoneAlert: "Feu confirmé à {{km}} km de votre zone {{place}}",
     zoneElsewhere: "Vous semblez être ailleurs — alertes seulement.",
     zoneView: "Voir le feu",
     zoneImHere: "Je suis sur place",
