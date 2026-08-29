@@ -62,8 +62,8 @@ be four rewrites plus a backfill. Signing, approval chains and Cell Broadcast re
 institutional work, not code.
 
 What is left is the delivery itself: pick a provider per channel and render the CAP object to
-it. **The `cap_alerts` migration has not been applied to the live project yet**, and the
-engine writes to that table, so apply it before deploying.
+it. The `cap_alerts` migration was applied to the live project on 2026-08-29
+(ledger version 20260829010000).
 
 Start at: `src/lib/alerts-engine.server.ts`, `src/lib/cap.ts`.
 
@@ -108,8 +108,9 @@ wired at all. `/status` correctly reports it unavailable rather than pretending.
   rather than papered over: the SOS queue is **local-only** — no server inbox exists
   because nobody would monitor it (§1.3), and the copy says so; quick hazard reports
   reuse the authenticated report flow, so they are unreachable until §1.2's SMTP wall
-  falls; `open_areas` is empty until its migration is applied and
-  `bun run seed:open-areas` is run against the live project; threat facts inherit §1.4's
+  falls; `open_areas` was seeded on 2026-08-29 (2068 rows from OSM — reproduce:
+  `select count(*) from open_areas;`) but has had no field verification of any entry;
+  threat facts inherit §1.4's
   hours of detection latency and always display their age; the service worker caches the
   survival shell only; spoken/recorded guidance audio (accessibility for low literacy)
   does not exist yet and must be human-recorded, not TTS.
