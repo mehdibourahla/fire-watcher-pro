@@ -91,7 +91,12 @@ function nearestCommune(
 const res = await fetch(OVERPASS, {
   method: "POST",
   body: `data=${encodeURIComponent(QUERY)}`,
-  headers: { "content-type": "application/x-www-form-urlencoded" },
+  headers: {
+    "content-type": "application/x-www-form-urlencoded",
+    // Overpass usage policy: requests must carry an identifying user agent.
+    "user-agent":
+      "nadhir-seed/1.0 (https://nadhir.app; open source wildfire warning)",
+  },
 });
 if (!res.ok) {
   console.error(`Overpass returned ${res.status}`);

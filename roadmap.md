@@ -44,9 +44,8 @@ Seed and ops credentials live in `~/.config/nadhir/`, never in this repo.
       position card, check-in via the user's own SMS/WhatsApp, open areas), entry points on
       the live map (pill, position-based interstitial, zone banner), offline Survival Pack +
       service worker, hazard report kinds. Language and invariants: `CONTEXT.md`,
-      `docs/adr/0002`, `docs/adr/0003`. **`open_areas` migration not applied to the live
-      project and `bun run seed:open-areas` not run** — the open-areas screen shows its
-      honest empty state until then.
+      `docs/adr/0002`, `docs/adr/0003`. Migration applied and `open_areas` seeded with
+      2068 OSM rows on 2026-08-29.
 
 ## Known gaps
 
