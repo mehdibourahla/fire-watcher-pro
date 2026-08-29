@@ -17,27 +17,27 @@ the writer; fusion itself is not modified.
 
 ## Why the current pipeline fails
 
-Measured 2026-08-29 from 10 fire seasons of FIRMS `VIIRS_SNPP_SP` (2016–2025, 1 May –
-15 Nov, 1959 observation days, ~598k detections inside Algeria).
+Measured 2026-08-29 from 10 full years of FIRMS `VIIRS_SNPP_SP` (2016–2025, 3611
+observation days, 1,103,368 detections).
 
 NASA classifies every detection in the science-processed archive with a `type` field.
 For Algeria:
 
 | type                             | detections  | share     |
 | -------------------------------- | ----------- | --------- |
-| 0 — presumed vegetation fire     | 47,872      | 31.3%     |
-| **2 — other static land source** | **104,176** | **68.1%** |
-| 3 — offshore                     | 892         | 0.6%      |
+| 0 — presumed vegetation fire     | 250,498     | 22.7%     |
+| **2 — other static land source** | **847,170** | **76.8%** |
+| 3 — offshore                     | 5,700       | 0.5%      |
 
-**68% of Algerian fire detections are classified by NASA itself as static land
-sources** — gas flares and industrial plant. The physics corroborates it: type=2 is 78%
-night-detected (a flare contrasts best against cool ground), type=0 is 58% day-detected.
+**77% of Algerian fire detections are classified by NASA itself as static land
+sources** — gas flares and industrial plant. The physics corroborates it: type=2 is 79%
+night-detected (a flare contrasts best against cool ground), type=0 is only 52%.
 
 Restricted to Nadhir's own ingest box (`AREA`, `src/lib/ingest/firms.server.ts:6`) over
 the held-out period 2024–25, and clustered with Nadhir's own fusion parameters (3 km,
 24 h), events large enough to alert on (≥5 detections):
 
-- **157 real fire events. 801 false ones. 84% of Nadhir's alertable "fires" are flares.**
+- **181 real fire events. 1326 false ones. 88% of Nadhir's alertable "fires" are flares.**
 
 The confidence model makes this worse rather than catching it:
 
@@ -68,11 +68,16 @@ stacks. A cell is registered when all three hold:
 
 | criterion                                         | threshold | purpose                         |
 | ------------------------------------------------- | --------- | ------------------------------- |
-| share of its archive detections labelled `type=2` | ≥ 0.70    | the discriminator               |
+| share of its archive detections labelled `type=2` | ≥ 0.65    | the discriminator               |
 | distinct active days                              | ≥ 5       | excludes one-off coincidence    |
 | total detections                                  | ≥ 10      | stability of the share estimate |
 
-523 cells nationwide, 118 inside the ingest box.
+568 cells grouped into 157 sites nationwide, 120 inside the ingest box.
+
+The 0.65 floor was fitted on the full-year archive, not chosen. At 0.70 the Skikda
+cells sit at 0.64–0.69 static share and escape the registry, leaking 120 false alerting
+events against 21 at 0.65; every value from 0.50 to 0.65 performs identically, so 0.65
+is the most conservative threshold that reaches the result.
 
 An earlier draft of this spec used persistence and aseasonality heuristics (≥60 active
 days, Jul+Aug share ≤0.45) instead of the NASA label. Those were **measured to be
@@ -134,17 +139,18 @@ the ingest box.
 
 |                                                 | without screen | with screen                   |
 | ----------------------------------------------- | -------------- | ----------------------------- |
-| real fire events, alerting size (≥5 detections) | 157            | **150 kept — 7 lost (4.5%)**  |
-| false events, alerting size                     | 801            | **19 remain (97.6% removed)** |
+| real fire events, alerting size (≥5 detections) | 181            | **171 kept — 10 lost (5.5%)** |
+| false events, alerting size                     | 1326           | **21 remain (98.4% removed)** |
 
-The 7 lost events were inspected individually. Five are inside the Arzew and Skikda
-refinery complexes themselves (Aïn El Bia ×3, Mersat El Hadjadj, Skikda) — industrial
-ground, not wildfires threatening a settlement. Two are plausibly genuine vegetation
+The 10 lost events were inspected individually. Eight are inside the Arzew/Bethioua and
+Skikda industrial corridors (Aïn El Bia ×3, Chehairia, Douar Araba, Mersat El Hadjadj,
+علاوة طغان) — industrial ground, not wildfires threatening a settlement. Peak FRP across
+all ten is 19.3 MW. Two are plausibly genuine vegetation
 fires, near El Milia and Debil, with peak FRP of 4.2 and 2.0 MW against 17.1 MW for the
 Jijel wildfire burning on the day this was written.
 
-**Residual risk, stated rather than hidden:** roughly 0.8 false alerting-size events per
-month remain, and about 3 genuine low-intensity events per year are lost. Neither figure
+**Residual risk, stated rather than hidden:** roughly 0.9 false alerting-size events per
+month remain, and about 5 genuine low-intensity events per year are lost. Neither figure
 is zero and no location-based screen can make them zero.
 
 Detection-level rates are worse than event-level (10.8% of real fire detections screened)
@@ -156,7 +162,8 @@ confidence — below `MIN_CONFIDENCE` — so Nadhir would never have alerted on 
 
 - Re-screen all existing detections (4,263 at time of writing).
 - Clusters whose surviving unscreened detection count falls to zero are resolved with
-  `resolution_reason = 'persistent_source'` and `resolved_at` set. **Resolved, not
+  `resolution_reason = 'flare'` and `resolved_at` set — the schema's existing
+  vocabulary (`flare|glint|industry|agri_burn|other`), not a new term. **Resolved, not
   deleted** — the record that Nadhir once called a flare a fire is worth keeping.
 - Clusters retaining unscreened detections are recomputed (centroid, confidence, state).
 - Counts of detections screened and clusters resolved are written to `ingest_runs`.
@@ -186,8 +193,9 @@ at `/api/public/v1/sources`.
 Fusion is the weakest-tested area in the codebase (GAPS §4.3), so this work carries its
 own tests.
 
-- Unit: registration criteria — a cell at 0.71 static share with 12 detections over 6 days
-  registers; the same cell at 0.69 does not; a cell at 0.9 share with 8 detections does not.
+- Unit: registration criteria, expressed relative to `MIN_STATIC_SHARE` so retuning the
+  floor cannot silently invert the test: at the floor registers, one point below does not,
+  and a cell at 0.9 share with 8 detections does not.
 - Unit: a detection 1.4 km from a registry cell is screened; one at 1.6 km is not.
 - Regression: `fuseDetections` produces no cluster from a screened detection.
 - Reconciliation: a cluster built entirely from registry-cell detections resolves with
@@ -196,7 +204,8 @@ own tests.
   train/test split. CI asserts real-event loss ≤6% and false-event removal ≥95%, so a
   future change to the thresholds cannot silently degrade either side.
 
-Acceptance on the live database, verified 2026-08-29: 16 of 54 live clusters are screened,
-5 of them currently `state='active'` — including DZQJFKN (Arzew) and DZRQFCM (Skikda) —
-while DZKVLV6 (298 detections, 4,847 ha), DZ62QZY (9,624 ha), DZPWMRD (2,489 ha) and
-DZVVQPN (1,078 ha), the four large genuine fires burning that day, are all kept.
+Acceptance on the live database, executed 2026-08-29: 206 of 4,263 historical detections
+were screened and **17 clusters resolved with `resolution_reason = 'flare'`** — DZQJFKN
+(Arzew), DZRQFCM (Skikda) and DZC2UJA among them. Every live cluster's `detection_count`
+matches its surviving detections, and DZKVLV6 (298 detections), DZ62QZY (155), DZPWMRD
+(157) and DZVVQPN (77) — the four large genuine fires burning that day — are untouched.

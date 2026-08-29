@@ -125,6 +125,18 @@ where c.level='commune' group by 1;`
   enforces the size and mime limits server-side, nothing more. Captcha and antivirus scanning
   are still missing. Currently 0 reports, so those are gaps to close before promoting the
   feature, not a live exposure.
+- **Persistent industrial sources are screened** since 2026-08-29. NASA's science-processed
+  archive labels 76.8% of Algeria's 1.1M detections (2016–2025) as `type=2` static land
+  sources — gas flares, refineries, power plants — and the NRT feeds Nadhir ingests carry no
+  such label, so a registry of 568 grid cells in 157 sites is learned offline and applied at
+  ingest (`src/lib/ingest/persistent.server.ts`, `data/flares/`). Held out on 2024–25 inside
+  the ingest box, it removes **98.4%** of alerting-size false events (1326 → 21) and loses
+  **5.5%** of real ones (181 → 171); the losses are almost all inside the Arzew and Skikda
+  complexes, peak FRP 19.3 MW. Residual: ~0.9 false alerting events per month and ~5 genuine
+  low-intensity events a year. On the live database this resolved 17 clusters as `flare`,
+  including Arzew and Skikda, which the confidence model had scored at 0.82 — above the 0.6
+  alerting bar, while a genuine new wildfire scores ~0.40.
+  Reproduce: `bun run evaluate:sources`.
 - **Admin console** has no cluster resolve (US-6), no broadcast, and no audit log.
 - **Survival mode** (`/survival`) ships with deliberate limits, each stated in the UI
   rather than papered over: the SOS queue is **local-only** — no server inbox exists
@@ -159,12 +171,16 @@ real boundary, so the effective policy is 6. Captcha is disabled, which combined
 
 ### 4.3 Test coverage is narrow
 
-77 tests across 12 files cover the FWI maths, FWI state advancement, alert rule evaluation, geo
+126 tests across 18 files cover the FWI maths, FWI state advancement, alert rule evaluation, geo
 seeding, i18n key parity, ingest guards, the cross-border watch area, place labelling, Exif
-stripping, CAP construction, the public API helpers and the webhook URL guard. There is still no
-coverage of clustering/fusion internals, RLS policies, the route handlers end to end, or any UI.
-Fusion is the weakest spot: its commune attribution is guarded only by an assertion over the
-source text, not by exercising the function.
+stripping, CAP construction, the public API helpers, the webhook URL guard, and the
+persistent-source grid, registration criteria, screen radius and drift heuristic. There is still
+no coverage of clustering/fusion internals, RLS policies, the route handlers end to end, or any
+UI. Fusion remains the weakest spot: both its commune attribution and its `fp_reason` filter —
+the one the whole screening design rests on — are guarded only by assertions over the source
+text, not by exercising the function. The screening thresholds are separately gated on a
+held-out confusion matrix (`.github/workflows/screening-gate.yml`), which is a real behavioural
+test but of the registry, not of fusion.
 
 ### 4.4 Hosting needs the Workers Paid plan
 

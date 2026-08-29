@@ -47,6 +47,12 @@ Seed and ops credentials live in `~/.config/nadhir/`, never in this repo.
       `docs/adr/0002`, `docs/adr/0003`. Migration applied and `open_areas` seeded with
       2068 OSM rows on 2026-08-29.
 
+- [x] Persistent-source screening — 568-cell registry in 157 sites learned from NASA's
+      `type` label in the FIRMS science archive, applied at ingest via `detections.fp_reason`,
+      with a held-out confusion matrix gated in CI (`bun run evaluate:sources`). Removes 98.4%
+      of alerting-size false fires for 5.5% of real ones. Spec:
+      `docs/superpowers/specs/2026-08-29-persistent-source-screening-design.md`.
+
 ## Known gaps
 
 The full, evidence-checked list lives in [GAPS.md](GAPS.md) — kept there rather than duplicated
