@@ -47,10 +47,12 @@ export const RATE_LIMIT_PER_MINUTE = 60;
 export async function enforceRateLimit(
   request: Request,
 ): Promise<Response | null> {
+  // cf-connecting-ip is set by the edge; x-forwarded-for is caller-supplied, so
+  // trusting it first let anyone reset their own bucket on every request
   const forwarded = request.headers.get("x-forwarded-for") ?? "";
   const ip =
-    forwarded.split(",")[0]?.trim() ||
     request.headers.get("cf-connecting-ip") ||
+    forwarded.split(",")[0]?.trim() ||
     request.headers.get("x-real-ip") ||
     "unknown";
 
