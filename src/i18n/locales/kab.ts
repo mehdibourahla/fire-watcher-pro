@@ -299,6 +299,7 @@ export const kab: Translation = {
     ok: "Iteddu",
     degraded: "Iceḍḍ",
     unavailable: "Ulac-it",
+    stale: "Ulac tazzla yeddan seg {{time}} — ahat yeḥbes umsɣiwes.",
   },
   about: {
     attribution: "Isefka: NASA FIRMS, Open-Meteo, OpenStreetMap — CC-BY 4.0",

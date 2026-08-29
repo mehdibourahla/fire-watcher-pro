@@ -115,6 +115,15 @@ export async function ingestFirms(dayRange = 1): Promise<FirmsRun> {
     }
   }
 
+  // Zero rows from feeds that answered is a quiet day; zero feeds answering is an
+  // outage (revoked key, FIRMS down) and must degrade the source, not report ok.
+  if (feeds.length === 0)
+    return {
+      fetched: 0,
+      inserted: 0,
+      feeds,
+      error: "all FIRMS feeds failed or returned invalid data",
+    };
   if (all.length === 0) return { fetched: 0, inserted: 0, feeds };
 
   // de-duplicate within the batch, then upsert on the natural key

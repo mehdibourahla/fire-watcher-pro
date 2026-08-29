@@ -53,3 +53,12 @@ describe("emitted literals satisfy the DB CHECK constraints", () => {
       expect(allowed("fire_clusters", "state")).toContain(state);
   });
 });
+
+describe("FIRMS silent-death guard", () => {
+  it("total feed failure degrades the source instead of reporting ok", () => {
+    const src = read("src/lib/ingest/firms.server.ts");
+    expect(src).toMatch(
+      /feeds\.length === 0[\s\S]{0,200}error: "all FIRMS feeds failed/,
+    );
+  });
+});

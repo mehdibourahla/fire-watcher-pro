@@ -19,6 +19,7 @@ import {
 } from "@/components/SiteChrome";
 import type { Locale } from "@/i18n";
 import { alertsQuery } from "@/lib/alerts";
+import { sourceStale } from "@/lib/freshness";
 import {
   LIVE_STATES,
   adminUnitsQuery,
@@ -164,7 +165,9 @@ function LiveMapPage() {
     );
   }, [risk.data]);
 
-  const degraded = (sources.data ?? []).some((s) => s.status !== "ok");
+  const degraded = (sources.data ?? []).some(
+    (s) => s.status !== "ok" || sourceStale(s),
+  );
 
   const sorted = useMemo(
     () =>
