@@ -22,6 +22,7 @@ import {
   adminUnitsQuery,
   algiersTime,
   historyClustersQuery,
+  intlLocale,
   unitName,
   type FireCluster,
 } from "@/lib/nadhir";
@@ -152,7 +153,7 @@ function HistoryPage() {
   }, [filtered, wilayaById]);
 
   const monthNames = useMemo(() => {
-    const fmt = new Intl.DateTimeFormat(locale === "kab" ? "fr" : locale, {
+    const fmt = new Intl.DateTimeFormat(intlLocale(locale), {
       month: "short",
       timeZone: "UTC",
     });

@@ -3,7 +3,7 @@ import { queryOptions } from "@tanstack/react-query";
 import { isInAlgeriaNorth } from "@/lib/ingest/geo";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchAllPages } from "@/lib/paginate";
-import type { Locale } from "@/i18n";
+import type { AnyLocale, Locale } from "@/i18n";
 
 export type ClusterState =
   | "unconfirmed"
@@ -133,7 +133,7 @@ export { dangerFromFwi as levelFromFwi } from "@/lib/ingest/fwi";
 
 export function unitName(
   unit: Pick<AdminUnit, "name_ar" | "name_fr" | "name_en" | "name_kab">,
-  locale: Locale,
+  locale: AnyLocale,
 ) {
   if (locale === "ar") return unit.name_ar;
   if (locale === "fr") return unit.name_fr;
@@ -234,10 +234,15 @@ export function bearingBetween(
   return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
 }
 
-export function relativeTime(iso: string, locale: Locale) {
+/** Intl has no Kabyle data; French is the closest locale Algeria actually uses. */
+export function intlLocale(locale: AnyLocale): string {
+  return locale === "kab" ? "fr" : locale;
+}
+
+export function relativeTime(iso: string, locale: AnyLocale) {
   const diffMs = Date.now() - new Date(iso).getTime();
   const mins = Math.round(diffMs / 60000);
-  const rtf = new Intl.RelativeTimeFormat(locale === "kab" ? "fr" : locale, {
+  const rtf = new Intl.RelativeTimeFormat(intlLocale(locale), {
     numeric: "auto",
   });
   if (Math.abs(mins) < 60) return rtf.format(-mins, "minute");

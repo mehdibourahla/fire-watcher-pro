@@ -1,0 +1,18 @@
+- generic [ref=e1]:
+    - generic [ref=e3]:
+        - generic [ref=e4]:
+            - generic [ref=e5]: WildfireSolution
+            - generic [ref=e12]:
+                - button "Sign In" [ref=e13] [cursor=pointer]
+                - button "Get Full Access" [ref=e17] [cursor=pointer]
+        - generic [ref=e22]:
+            - paragraph [ref=e25]: No snapshot identifier provided.
+            - paragraph [ref=e26]: A specific link with a valid snapshot identifier is required to access wildfire data. Please request one from the link owner.
+    - dialog [ref=e28]:
+        - generic [ref=e29]: We use Cookies
+        - generic [ref=e32]:
+            - text: We use cookies to enhance your experience.
+            - strong [ref=e36] [cursor=pointer]: More details
+        - generic [ref=e40]:
+            - button "Decline" [ref=e41] [cursor=pointer]
+            - button "Accept" [active] [ref=e43] [cursor=pointer]
