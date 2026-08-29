@@ -6,7 +6,13 @@ import {
   isPersistentCandidate,
   nearestSource,
 } from "@/lib/ingest/persistent.server";
-import { cellCentre, cellKey, qualifies, siteIdFor } from "@/lib/persistent";
+import {
+  MIN_STATIC_SHARE,
+  cellCentre,
+  cellKey,
+  qualifies,
+  siteIdFor,
+} from "@/lib/persistent";
 
 describe("grid", () => {
   it("keys a coordinate to its 0.01 degree cell and back to the centre", () => {
@@ -28,14 +34,25 @@ describe("grid", () => {
 });
 
 describe("registration criteria", () => {
-  const base = { staticShare: 0.71, activeDays: 6, detectionCount: 12 };
+  // expressed relative to the floor so retuning it cannot silently invert the test
+  const base = {
+    staticShare: MIN_STATIC_SHARE + 0.01,
+    activeDays: 6,
+    detectionCount: 12,
+  };
 
   it("registers a cell meeting all three criteria", () => {
     expect(qualifies(base)).toBe(true);
   });
 
+  it("registers a cell exactly at the static share floor", () => {
+    expect(qualifies({ ...base, staticShare: MIN_STATIC_SHARE })).toBe(true);
+  });
+
   it("rejects a cell below the static share floor", () => {
-    expect(qualifies({ ...base, staticShare: 0.69 })).toBe(false);
+    expect(qualifies({ ...base, staticShare: MIN_STATIC_SHARE - 0.01 })).toBe(
+      false,
+    );
   });
 
   it("rejects a persistent cell with too few detections to be stable", () => {
