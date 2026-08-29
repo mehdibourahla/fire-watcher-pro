@@ -247,6 +247,8 @@ export const ar: Translation = {
     high: "مرتفع",
     very_high: "مرتفع جدًا",
     extreme: "أقصى",
+    communeCount: "{{count}} بلدية",
+    groupWorst: "أعلى مستوى بين بلديات الولاية",
     effis: "‏EFFIS/GWIS (المرجع الأوروبي) يصنف هذه البلدية: {{class}}",
     effisNone:
       "لا مقارنة من EFFIS بعد — يصل التصنيف الأوروبي مع التحديث اليومي.",

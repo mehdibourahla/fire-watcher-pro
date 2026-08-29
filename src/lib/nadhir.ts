@@ -177,6 +177,24 @@ export function placeLabel(
   return { name: coordLabel(cluster.lat, cluster.lon), approximate: false };
 }
 
+/** Wilaya is the administrative identity people navigate by; communes hang off it. */
+export function wilayaGroups(
+  units: AdminUnit[],
+): { wilaya: AdminUnit; communes: AdminUnit[] }[] {
+  const byParent = new Map<string, AdminUnit[]>();
+  for (const u of units) {
+    if (u.level !== "commune" || !u.parent_id) continue;
+    const list = byParent.get(u.parent_id);
+    if (list) list.push(u);
+    else byParent.set(u.parent_id, [u]);
+  }
+  return units
+    .filter((u) => u.level === "wilaya")
+    .map((wilaya) => ({ wilaya, communes: byParent.get(wilaya.id) ?? [] }))
+    .filter((g) => g.communes.length > 0)
+    .sort((a, b) => a.wilaya.code.localeCompare(b.wilaya.code));
+}
+
 const BEARINGS = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
 
 export function bearingLabel(deg: number | null) {

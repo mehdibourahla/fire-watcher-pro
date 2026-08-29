@@ -254,6 +254,8 @@ export const fr: Translation = {
     high: "Élevé",
     very_high: "Très élevé",
     extreme: "Extrême",
+    communeCount: "{{count}} communes",
+    groupWorst: "Niveau de la commune la plus exposée de la wilaya",
     effis: "EFFIS/GWIS (autorité européenne) classe cette commune : {{class}}",
     effisNone:
       "Pas encore de comparaison EFFIS — la classification européenne arrive avec le rafraîchissement quotidien.",

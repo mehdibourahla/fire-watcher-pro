@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { Search } from "lucide-react";
+import { ChevronDown, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -15,6 +15,7 @@ import {
   relativeTime,
   riskForecastsQuery,
   unitName,
+  wilayaGroups,
   type AdminUnit,
 } from "@/lib/nadhir";
 
@@ -91,6 +92,29 @@ function ForecastPage() {
   }, [rows, search]);
 
   const featured = filtered.find((r) => r.commune.id === pinned) ?? filtered[0];
+
+  const grouped = useMemo(() => {
+    const byId = new Map(rows.map((r) => [r.commune.id, r]));
+    return wilayaGroups(units.data ?? [])
+      .map(({ wilaya, communes }) => {
+        const wRows = communes
+          .map((c) => byId.get(c.id))
+          .filter((r): r is Row => !!r)
+          .sort((a, b) => (b.days[0]?.level ?? 0) - (a.days[0]?.level ?? 0));
+        return {
+          wilaya,
+          rows: wRows,
+          maxLevel: wRows.reduce(
+            (m, r) => Math.max(m, r.days[0]?.level ?? 0),
+            0,
+          ),
+        };
+      })
+      .filter((g) => g.rows.length > 0)
+      .sort((a, b) => b.maxLevel - a.maxLevel);
+  }, [rows, units.data]);
+
+  const searching = search.trim().length > 0;
 
   return (
     <div className="mx-auto max-w-[1200px] px-4 py-6">
@@ -180,42 +204,100 @@ function ForecastPage() {
 
       {filtered.length === 0 ? (
         <EmptyState title={t("risk.noResults")} className="mt-4" />
-      ) : (
+      ) : searching ? (
         <ul className="mt-4 flex flex-col gap-2">
           {filtered.map((row) => (
             <li key={row.commune.id}>
-              <button
-                type="button"
-                onClick={() => setPinned(row.commune.id)}
-                aria-pressed={featured?.commune.id === row.commune.id}
-                className="card flex w-full flex-wrap items-center gap-x-4 gap-y-2 p-3 text-start transition-colors hover:bg-muted"
-              >
-                <span className="min-w-40 flex-1 font-medium">
-                  {unitName(row.commune, locale)}
-                </span>
-                <span className="flex flex-wrap items-center gap-1.5">
-                  {HORIZONS.map((h) => {
-                    const day = row.days[h];
-                    return day ? (
-                      <RiskChip key={h} level={day.level} showName={false} />
-                    ) : (
-                      <span
-                        key={h}
-                        className="px-1 text-xs text-muted-foreground"
-                      >
-                        —
-                      </span>
-                    );
-                  })}
-                </span>
-                <span className="tabular text-sm text-muted-foreground">
-                  {t("risk.fwi")} {(row.days[0]?.fwi ?? 0).toFixed(0)}
-                </span>
-              </button>
+              <CommuneRow
+                row={row}
+                active={featured?.commune.id === row.commune.id}
+                onPick={() => setPinned(row.commune.id)}
+                locale={locale}
+              />
             </li>
           ))}
         </ul>
+      ) : (
+        <div className="mt-4 flex flex-col gap-2">
+          {grouped.map(({ wilaya, rows: wRows, maxLevel }) => (
+            <details key={wilaya.id} className="card">
+              <summary className="flex cursor-pointer list-none flex-wrap items-center gap-x-4 gap-y-2 p-3 [&::-webkit-details-marker]:hidden">
+                <ChevronDown
+                  aria-hidden
+                  className="size-4 shrink-0 text-muted-foreground"
+                />
+                <span className="min-w-40 flex-1 font-medium">
+                  {unitName(wilaya, locale)}
+                </span>
+                <span className="tabular text-xs text-muted-foreground">
+                  {t("risk.communeCount", { count: wRows.length })}
+                </span>
+                <span title={t("risk.groupWorst")}>
+                  <RiskChip level={maxLevel} />
+                </span>
+              </summary>
+              <ul className="divide-y divide-border border-t border-border">
+                {wRows.map((row) => (
+                  <li key={row.commune.id}>
+                    <CommuneRow
+                      row={row}
+                      active={featured?.commune.id === row.commune.id}
+                      onPick={() => setPinned(row.commune.id)}
+                      locale={locale}
+                      flat
+                    />
+                  </li>
+                ))}
+              </ul>
+            </details>
+          ))}
+        </div>
       )}
     </div>
+  );
+}
+
+function CommuneRow({
+  row,
+  active,
+  onPick,
+  locale,
+  flat = false,
+}: {
+  row: Row;
+  active: boolean;
+  onPick: () => void;
+  locale: Locale;
+  flat?: boolean;
+}) {
+  const { t } = useTranslation();
+  return (
+    <button
+      type="button"
+      onClick={onPick}
+      aria-pressed={active}
+      className={`flex w-full flex-wrap items-center gap-x-4 gap-y-2 p-3 text-start transition-colors hover:bg-muted ${
+        flat ? "" : "card"
+      }`}
+    >
+      <span className="min-w-40 flex-1 font-medium">
+        {unitName(row.commune, locale)}
+      </span>
+      <span className="flex flex-wrap items-center gap-1.5">
+        {HORIZONS.map((h) => {
+          const day = row.days[h];
+          return day ? (
+            <RiskChip key={h} level={day.level} showName={false} />
+          ) : (
+            <span key={h} className="px-1 text-xs text-muted-foreground">
+              —
+            </span>
+          );
+        })}
+      </span>
+      <span className="tabular text-sm text-muted-foreground">
+        {t("risk.fwi")} {(row.days[0]?.fwi ?? 0).toFixed(0)}
+      </span>
+    </button>
   );
 }

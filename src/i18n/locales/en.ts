@@ -247,6 +247,8 @@ export const en = {
     high: "High",
     very_high: "Very high",
     extreme: "Extreme",
+    communeCount: "{{count}} communes",
+    groupWorst: "Highest commune level in this wilaya",
     effis: "EFFIS/GWIS (European fire authority) rates this commune: {{class}}",
     effisNone:
       "No EFFIS comparison yet — the European classification arrives with the daily refresh.",

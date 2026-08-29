@@ -4,7 +4,12 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { Locale } from "@/i18n";
-import { adminUnitsQuery, relativeTime, unitName } from "@/lib/nadhir";
+import {
+  adminUnitsQuery,
+  relativeTime,
+  unitName,
+  wilayaGroups,
+} from "@/lib/nadhir";
 import { ReportPhoto } from "@/components/ReportPhoto";
 import {
   createReport,
@@ -90,7 +95,6 @@ function ReportPage() {
   const [geoError, setGeoError] = useState(false);
   const [done, setDone] = useState(false);
 
-  const communes = (units.data ?? []).filter((u) => u.level === "commune");
   const invalidate = () => qc.invalidateQueries({ queryKey: ["reports"] });
 
   const submit = useMutation({
@@ -197,11 +201,17 @@ function ReportPage() {
                 className="mt-1 w-full rounded-md border border-border bg-background px-2 py-1.5 text-sm text-foreground"
               >
                 <option value="">{t("reports.communeNone")}</option>
-                {communes.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {unitName(c, locale)}
-                  </option>
-                ))}
+                {wilayaGroups(units.data ?? []).map(
+                  ({ wilaya, communes: cs }) => (
+                    <optgroup key={wilaya.id} label={unitName(wilaya, locale)}>
+                      {cs.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {unitName(c, locale)}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ),
+                )}
               </select>
             </label>
           </div>

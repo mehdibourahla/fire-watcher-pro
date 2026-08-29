@@ -14,6 +14,7 @@ import {
   haversineKm,
   riskColorVar,
   unitName,
+  wilayaGroups,
 } from "@/lib/nadhir";
 
 export const Route = createFileRoute("/_authenticated/zones")({
@@ -163,11 +164,17 @@ function ZonesPage() {
                 className="w-full rounded-md border border-border bg-background px-3 py-2"
               >
                 <option value="">{t("account.zoneCustom")}</option>
-                {communes.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {unitName(c, locale)}
-                  </option>
-                ))}
+                {wilayaGroups(units.data ?? []).map(
+                  ({ wilaya, communes: cs }) => (
+                    <optgroup key={wilaya.id} label={unitName(wilaya, locale)}>
+                      {cs.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {unitName(c, locale)}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ),
+                )}
               </select>
             </label>
             <label className="block">

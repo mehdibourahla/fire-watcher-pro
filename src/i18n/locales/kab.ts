@@ -249,6 +249,8 @@ export const kab: Translation = {
     high: "Ɛlay",
     very_high: "Ɛlay aṭas",
     extreme: "Amtawi",
+    communeCount: "{{count}} n tɣiwanin",
+    groupWorst: "Aswir afellay n tɣiwant deg twilayt",
     effis: "EFFIS/GWIS (tadbelt tuṛufit) tsemma taɣiwant-a: {{class}}",
     effisNone:
       "Ulac aserwes EFFIS ar tura — asmil uṛufi yettas-d s uleqqem n yal ass.",
