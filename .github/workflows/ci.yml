@@ -57,7 +57,12 @@ jobs:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
 
+      # VITE_* values bake into the client at build time and CI has no .env.local;
+      # the example ships the real public values, so it IS the build config here.
+      - run: cp .env.example .env.local
       - run: bun run build
+      # A client built without Supabase config throws on every navigation.
+      - run: grep -q "kuukthyenirwgdfkltlm" .output/public/assets/client-*.js
       - run: bunx wrangler deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
