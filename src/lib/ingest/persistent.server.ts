@@ -45,14 +45,17 @@ export function isPersistentCandidate(
   return sd / mean <= CANDIDATE_MAX_CV;
 }
 
-export async function screenPersistentSources(): Promise<{ screened: number }> {
+export async function screenPersistentSources(): Promise<{
+  screened: number;
+  registry: number;
+}> {
   const sources = await fetchAllPages<Source>((from, to) =>
     supabaseAdmin
       .from("persistent_sources")
       .select("lat, lon, site_id")
       .range(from, to),
   );
-  if (!sources.length) return { screened: 0 };
+  if (!sources.length) return { screened: 0, registry: 0 };
 
   const pending = await fetchAllPages<{ id: string; lat: number; lon: number }>(
     (from, to) =>
@@ -86,7 +89,7 @@ export async function screenPersistentSources(): Promise<{ screened: number }> {
       screened += slice.length;
     }
   }
-  return { screened };
+  return { screened, registry: sources.length };
 }
 
 export async function flagPersistentCandidates(): Promise<{ flagged: number }> {

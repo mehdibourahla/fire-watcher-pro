@@ -107,11 +107,20 @@ export async function runDetectionPipeline(): Promise<PipelineResult> {
       recordsIn: screen.screened,
       recordsNew: screen.screened,
     });
+    await markSource(
+      "screen",
+      screen.registry > 0,
+      screen.registry === 0
+        ? "Registry empty — no detections are being screened."
+        : `${screen.registry} known sources, ${screen.screened} detections screened this run`,
+    );
   } catch (error) {
+    const message = error instanceof Error ? error.message : "screen failed";
     await recordRun("screen", screenStartedAt, {
       status: "failed",
-      error: error instanceof Error ? error.message : "screen failed",
+      error: message,
     });
+    await markSource("screen", false, message);
     throw error;
   }
 
