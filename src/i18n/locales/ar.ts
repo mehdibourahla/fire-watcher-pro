@@ -158,6 +158,9 @@ export const ar: Translation = {
     webhooks: "روابط الإشعار",
     team: "الفريق",
     language: "اللغة",
+    themeSystem: "المظهر: حسب جهازك — بدّل إلى الفاتح",
+    themeLight: "المظهر: فاتح — بدّل إلى الداكن",
+    themeDark: "المظهر: داكن — اتبع جهازك",
   },
   emergency: {
     title: "أرقام الطوارئ",

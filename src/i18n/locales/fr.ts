@@ -162,6 +162,9 @@ export const fr: Translation = {
     webhooks: "Webhooks",
     team: "Équipe",
     language: "Langue",
+    themeSystem: "Thème : suit votre appareil — passer en clair",
+    themeLight: "Thème : clair — passer en sombre",
+    themeDark: "Thème : sombre — suivre votre appareil",
   },
   emergency: {
     title: "Numéros d'urgence",
