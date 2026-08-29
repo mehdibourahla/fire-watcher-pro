@@ -19,10 +19,15 @@ export const Route = createFileRoute("/_authenticated/webhooks")({
       { title: "Alert webhooks — Nadhir" },
       {
         name: "description",
-        content: "Forward your Nadhir zone alerts to another system with signed HTTP webhooks.",
+        content:
+          "Forward your Nadhir zone alerts to another system with signed HTTP webhooks.",
       },
       { property: "og:title", content: "Alert webhooks — Nadhir" },
-      { property: "og:description", content: "Signed HTTP delivery of wildfire zone alerts to your own systems." },
+      {
+        property: "og:description",
+        content:
+          "Signed HTTP delivery of wildfire zone alerts to your own systems.",
+      },
     ],
   }),
   component: WebhooksPage,
@@ -47,7 +52,13 @@ function WebhooksPage() {
   };
 
   const create = useMutation({
-    mutationFn: () => createWebhook({ label: label.trim(), url: url.trim(), kinds, min_severity: minSeverity }),
+    mutationFn: () =>
+      createWebhook({
+        label: label.trim(),
+        url: url.trim(),
+        kinds,
+        min_severity: minSeverity,
+      }),
     onSuccess: () => {
       setLabel("");
       setUrl("");
@@ -58,7 +69,8 @@ function WebhooksPage() {
   });
 
   const toggle = useMutation({
-    mutationFn: (v: { id: string; active: boolean }) => updateWebhook(v.id, { active: v.active }),
+    mutationFn: (v: { id: string; active: boolean }) =>
+      updateWebhook(v.id, { active: v.active }),
     onSuccess: invalidate,
   });
 
@@ -72,7 +84,9 @@ function WebhooksPage() {
   return (
     <div className="mx-auto max-w-[900px] px-4 py-6">
       <h1 className="text-2xl">{t("webhooks.title")}</h1>
-      <p className="mt-1 text-sm text-muted-foreground">{t("webhooks.subtitle")}</p>
+      <p className="mt-1 text-sm text-muted-foreground">
+        {t("webhooks.subtitle")}
+      </p>
 
       <section className="panel mt-5 p-4">
         <h2 className="text-base">{t("webhooks.add")}</h2>
@@ -113,7 +127,11 @@ function WebhooksPage() {
                     type="checkbox"
                     checked={kinds.includes(k)}
                     onChange={(e) =>
-                      setKinds((prev) => (e.target.checked ? [...prev, k] : prev.filter((x) => x !== k)))
+                      setKinds((prev) =>
+                        e.target.checked
+                          ? [...prev, k]
+                          : prev.filter((x) => x !== k),
+                      )
                     }
                   />
                   {t(`webhooks.kind_${k}`)}
@@ -144,7 +162,9 @@ function WebhooksPage() {
               {create.isPending ? t("webhooks.saving") : t("webhooks.save")}
             </button>
             {url && !validUrl ? (
-              <span className="ms-3 text-xs text-muted-foreground">{t("webhooks.httpsOnly")}</span>
+              <span className="ms-3 text-xs text-muted-foreground">
+                {t("webhooks.httpsOnly")}
+              </span>
             ) : null}
           </div>
         </form>
@@ -152,7 +172,9 @@ function WebhooksPage() {
 
       <section className="panel mt-5 divide-y divide-border">
         {(endpoints.data ?? []).length === 0 ? (
-          <p className="p-4 text-sm text-muted-foreground">{t("webhooks.empty")}</p>
+          <p className="p-4 text-sm text-muted-foreground">
+            {t("webhooks.empty")}
+          </p>
         ) : null}
         {(endpoints.data ?? []).map((e) => (
           <div key={e.id} className="p-4">
@@ -160,15 +182,23 @@ function WebhooksPage() {
               <span className="font-medium">{e.label}</span>
               <span className="text-xs text-muted-foreground">
                 {e.last_attempt_at
-                  ? t("webhooks.lastAttempt", { time: algiersTime(e.last_attempt_at), status: e.last_status ?? "—" })
+                  ? t("webhooks.lastAttempt", {
+                      time: algiersTime(e.last_attempt_at),
+                      status: e.last_status ?? "—",
+                    })
                   : t("webhooks.neverSent")}
               </span>
             </div>
-            <p className="mt-1 break-all text-xs text-muted-foreground">{e.url}</p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              {e.kinds.map((k) => t(`webhooks.kind_${k}`)).join(" · ")} · {t("webhooks.minSeverity")} {e.min_severity}
+            <p className="mt-1 break-all text-xs text-muted-foreground">
+              {e.url}
             </p>
-            {e.last_error ? <p className="mt-1 text-xs text-destructive">{e.last_error}</p> : null}
+            <p className="mt-1 text-xs text-muted-foreground">
+              {e.kinds.map((k) => t(`webhooks.kind_${k}`)).join(" · ")} ·{" "}
+              {t("webhooks.minSeverity")} {e.min_severity}
+            </p>
+            {e.last_error ? (
+              <p className="mt-1 text-xs text-destructive">{e.last_error}</p>
+            ) : null}
             <div className="mt-2 flex flex-wrap items-center gap-3 text-xs">
               <button
                 type="button"
@@ -191,7 +221,9 @@ function WebhooksPage() {
               >
                 {t("webhooks.delete")}
               </button>
-              {revealed === e.id ? <code className="break-all text-[11px]">{e.secret}</code> : null}
+              {revealed === e.id ? (
+                <code className="break-all text-[11px]">{e.secret}</code>
+              ) : null}
             </div>
           </div>
         ))}
@@ -200,16 +232,21 @@ function WebhooksPage() {
       <section className="panel mt-5 p-4">
         <h2 className="text-base">{t("webhooks.deliveries")}</h2>
         <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
-          {(deliveries.data ?? []).length === 0 ? <li>{t("webhooks.noDeliveries")}</li> : null}
+          {(deliveries.data ?? []).length === 0 ? (
+            <li>{t("webhooks.noDeliveries")}</li>
+          ) : null}
           {(deliveries.data ?? []).map((d) => (
             <li key={d.id} className="tabular">
-              {algiersTime(d.created_at)} · {d.ok ? "200 OK" : `${d.status_code ?? "ERR"} ${d.error ?? ""}`}
+              {algiersTime(d.created_at)} ·{" "}
+              {d.ok ? "200 OK" : `${d.status_code ?? "ERR"} ${d.error ?? ""}`}
             </li>
           ))}
         </ul>
       </section>
 
-      <p className="mt-4 text-xs text-muted-foreground">{t("webhooks.signatureNote")}</p>
+      <p className="mt-4 text-xs text-muted-foreground">
+        {t("webhooks.signatureNote")}
+      </p>
     </div>
   );
 }

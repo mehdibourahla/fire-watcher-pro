@@ -50,8 +50,10 @@
   --font-sans: "Inter", "IBM Plex Sans Arabic", system-ui, sans-serif;
   --font-arabic: "IBM Plex Sans Arabic", "Inter", system-ui, sans-serif;
 
-  --shadow-card: 0 1px 2px rgb(11 16 14 / 0.05), 0 8px 24px -16px rgb(11 16 14 / 0.28);
-  --shadow-sheet: 0 -2px 8px rgb(11 16 14 / 0.06), 0 -18px 48px -24px rgb(11 16 14 / 0.35);
+  --shadow-card:
+    0 1px 2px rgb(11 16 14 / 0.05), 0 8px 24px -16px rgb(11 16 14 / 0.28);
+  --shadow-sheet:
+    0 -2px 8px rgb(11 16 14 / 0.06), 0 -18px 48px -24px rgb(11 16 14 / 0.35);
 }
 
 :root {
@@ -66,9 +68,9 @@
   --ink-soft: #5f6469;
   --ink-faint: #8c9094;
 
-  --accent: #2171cc;
+  --accent: #03332c;
   --accent-ink: #ffffff;
-  --accent-tint: #e8f1fc;
+  --accent-tint: #e6f2ef;
 
   --emergency: #d40924;
   --emergency-surface: #fceced;
@@ -105,9 +107,9 @@
   --ink-soft: #a1a5a9;
   --ink-faint: #777b7f;
 
-  --accent: #63b3ff;
-  --accent-ink: #08131f;
-  --accent-tint: #13263a;
+  --accent: #57cbb0;
+  --accent-ink: #04231d;
+  --accent-tint: #10312a;
 
   --emergency: #ee3b3b;
   --emergency-surface: #341e20;

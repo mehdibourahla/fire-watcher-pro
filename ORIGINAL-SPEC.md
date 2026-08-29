@@ -86,37 +86,37 @@ US-8: As a user, I see a 6-day danger forecast for any commune with plain-langua
 
                         ┌─────────────────────────────────────────────┐
                         │                 INGESTION                   │
-  NASA FIRMS ──poll──▶  │  firms_worker      (every 10 min)           │
-  EUMETSAT DataStore ─▶ │  fci_worker        (every 10 min)           │
-  EFFIS/GWIS WMS ────▶  │  effis_worker      (daily 06:00 UTC)        │
-  Open-Meteo ────────▶  │  weather_worker    (hourly)                 │
-  OSM/GADM (static) ─▶  │  geo_seeder        (one-off + monthly)      │
-                        └───────────────┬─────────────────────────────┘
-                                        ▼
-                        ┌─────────────────────────────────────────────┐
-                        │   PostgreSQL 16 + PostGIS 3.4 + Timescale   │
-                        │   Redis 7 (queues, cache, rate limits)      │
-                        └───────────────┬─────────────────────────────┘
-                                        ▼
-                 ┌──────────────────────┼──────────────────────┐
-                 ▼                      ▼                      ▼
-        ┌───────────────┐     ┌───────────────┐      ┌────────────────┐
-        │ FUSION ENGINE │     │  RISK ENGINE  │      │ ALERT ENGINE   │
-        │ cluster, dedup│     │ FWI, levels   │      │ rules, fan-out │
-        │ lifecycle FSM │     │ per commune   │      │ FCM/SMS/TG/mail│
-        └───────┬───────┘     └───────┬───────┘      └───────┬────────┘
-                └──────────────┬──────┘                      │
-                               ▼                             ▼
-                      ┌────────────────┐            ┌────────────────┐
-                      │  API SERVICE   │◀──────────▶│ Delivery       │
-                      │ FastAPI + WS   │            │ providers      │
-                      └───────┬────────┘            └────────────────┘
-                              ▼
-        ┌──────────────┬──────────────┬───────────────┐
-        │  Web app     │  Mobile app  │ Admin console │
-        │  React+Vite  │  Expo RN     │ (web, /admin) │
-        └──────────────┴──────────────┴───────────────┘
 
+NASA FIRMS ──poll──▶ │ firms_worker (every 10 min) │
+EUMETSAT DataStore ─▶ │ fci_worker (every 10 min) │
+EFFIS/GWIS WMS ────▶ │ effis_worker (daily 06:00 UTC) │
+Open-Meteo ────────▶ │ weather_worker (hourly) │
+OSM/GADM (static) ─▶ │ geo_seeder (one-off + monthly) │
+└───────────────┬─────────────────────────────┘
+▼
+┌─────────────────────────────────────────────┐
+│ PostgreSQL 16 + PostGIS 3.4 + Timescale │
+│ Redis 7 (queues, cache, rate limits) │
+└───────────────┬─────────────────────────────┘
+▼
+┌──────────────────────┼──────────────────────┐
+▼ ▼ ▼
+┌───────────────┐ ┌───────────────┐ ┌────────────────┐
+│ FUSION ENGINE │ │ RISK ENGINE │ │ ALERT ENGINE │
+│ cluster, dedup│ │ FWI, levels │ │ rules, fan-out │
+│ lifecycle FSM │ │ per commune │ │ FCM/SMS/TG/mail│
+└───────┬───────┘ └───────┬───────┘ └───────┬────────┘
+└──────────────┬──────┘ │
+▼ ▼
+┌────────────────┐ ┌────────────────┐
+│ API SERVICE │◀──────────▶│ Delivery │
+│ FastAPI + WS │ │ providers │
+└───────┬────────┘ └────────────────┘
+▼
+┌──────────────┬──────────────┬───────────────┐
+│ Web app │ Mobile app │ Admin console │
+│ React+Vite │ Expo RN │ (web, /admin) │
+└──────────────┴──────────────┴───────────────┘
 
 Services (each a separate process, all in one docker-compose):
 
@@ -143,35 +143,34 @@ Layer Choice Notes Backend Python 3.12, FastAPI ≥0.110, SQLAlchemy 2 + GeoAlch
 nadhir/
 ├── docker-compose.yml
 ├── .env.example
-├── Makefile                  # make dev / test / seed / migrate
+├── Makefile # make dev / test / seed / migrate
 ├── backend/
-│   ├── pyproject.toml
-│   ├── alembic/
-│   ├── app/
-│   │   ├── main.py           # FastAPI app factory
-│   │   ├── config.py         # pydantic-settings, all env vars
-│   │   ├── models/           # SQLAlchemy models (one file per domain)
-│   │   ├── schemas/          # Pydantic DTOs
-│   │   ├── api/v1/           # routers: fires, risk, zones, alerts, reports, auth, admin, public
-│   │   ├── ingest/           # firms.py, fci.py, effis.py, weather.py, geo_seed.py
-│   │   ├── fusion/           # clustering.py, lifecycle.py, confidence.py
-│   │   ├── risk/             # fwi.py, levels.py
-│   │   ├── alerts/           # rules.py, fanout.py, templates/, providers/
-│   │   ├── ws.py             # WebSocket hub
-│   │   └── workers.py        # Celery app + beat schedule
-│   └── tests/                # pytest; fixtures/ contains sample payloads
-├── web/                      # React app (public site + /admin)
-│   ├── src/
-│   │   ├── pages/            # Map, Forecast, FireDetail, History, About, Report, Settings, Admin/*
-│   │   ├── components/
-│   │   ├── map/              # MapLibre style, layers, sources
-│   │   ├── i18n/             # ar.json, fr.json, en.json, kab.json
-│   │   └── design/tokens.ts
-├── mobile/                   # Expo app
-│   ├── app/                  # expo-router screens
-│   ├── src/{components,i18n,offline,notifications}/
-└── docs/                     # this spec, ADRs, runbooks
-
+│ ├── pyproject.toml
+│ ├── alembic/
+│ ├── app/
+│ │ ├── main.py # FastAPI app factory
+│ │ ├── config.py # pydantic-settings, all env vars
+│ │ ├── models/ # SQLAlchemy models (one file per domain)
+│ │ ├── schemas/ # Pydantic DTOs
+│ │ ├── api/v1/ # routers: fires, risk, zones, alerts, reports, auth, admin, public
+│ │ ├── ingest/ # firms.py, fci.py, effis.py, weather.py, geo_seed.py
+│ │ ├── fusion/ # clustering.py, lifecycle.py, confidence.py
+│ │ ├── risk/ # fwi.py, levels.py
+│ │ ├── alerts/ # rules.py, fanout.py, templates/, providers/
+│ │ ├── ws.py # WebSocket hub
+│ │ └── workers.py # Celery app + beat schedule
+│ └── tests/ # pytest; fixtures/ contains sample payloads
+├── web/ # React app (public site + /admin)
+│ ├── src/
+│ │ ├── pages/ # Map, Forecast, FireDetail, History, About, Report, Settings, Admin/*
+│ │ ├── components/
+│ │ ├── map/ # MapLibre style, layers, sources
+│ │ ├── i18n/ # ar.json, fr.json, en.json, kab.json
+│ │ └── design/tokens.ts
+├── mobile/ # Expo app
+│ ├── app/ # expo-router screens
+│ ├── src/{components,i18n,offline,notifications}/
+└── docs/ # this spec, ADRs, runbooks
 
 6. Data sources & ingestion (exact specs)
 
@@ -326,10 +325,9 @@ Points over admin_units desert communes with forest_fraction < 0.01 AND no settl
 unconfirmed ──(2+ detections OR any detection ≥0.8 conf OR FCI+FIRMS agreement)──▶ active
 unconfirmed ──(no new detection for 6 h)──▶ false_positive(auto) [no alert ever sent]
 active ──(no new detection for 12 h)──▶ contained_guess
-contained_guess ──(new detection within eps)──▶ active        # re-flare
+contained_guess ──(new detection within eps)──▶ active # re-flare
 contained_guess ──(no detection for 24 h)──▶ extinguished ──▶ schedule burned-area job (§6.6)
 any ──(admin action)──▶ false_positive | extinguished
-
 
 all_clear alert (§10) fires on active→contained_guess only if a fire_new/fire_near_settlement alert had been sent for the cluster.
 
@@ -430,15 +428,14 @@ Errors: RFC 7807 problem+json. All list endpoints cursor-paginated.
 Aesthetic direction. This is a civic-safety tool for Algeria, not a startup dashboard. The visual identity draws from the landscape it protects: deep cedar-forest greens as the calm base, mineral sand neutrals, and a fire scale that is unmistakable and colorblind-checked. Interface is quiet; the data is the color. One signature element: the Danger Dial (§12.3) that renders the day's FWI level as a semicircular gauge echoing a compass/sundial — it appears on Home, commune pages, and the mobile widget, and is the thing people remember.
 
 Palette
---ink:        #1A2421   (near-black green; primary text)
---paper:      #FAF7F0   (warm off-white background)
---cedar:      #2F5D50   (primary brand; buttons, links, active states)
---sand:       #C9B99B   (borders, muted chips)
---night:      #0E1613   (dark-mode background; dark mode REQUIRED)
+--ink: #1A2421 (near-black green; primary text)
+--paper: #FAF7F0 (warm off-white background)
+--cedar: #2F5D50 (primary brand; buttons, links, active states)
+--sand: #C9B99B (borders, muted chips)
+--night: #0E1613 (dark-mode background; dark mode REQUIRED)
 Risk scale (fixed, AA-contrast labels, distinguishable under deuteranopia):
---risk-1: #7FB069  --risk-2: #F2C14E  --risk-3: #F78154  --risk-4: #C1292E  --risk-5: #6B0F1A
+--risk-1: #7FB069 --risk-2: #F2C14E --risk-3: #F78154 --risk-4: #C1292E --risk-5: #6B0F1A
 Alert accents: --emergency: #C1292E on #FFF3F0 banner; --info: cedar.
-
 
 Typography. Display: Zodiak or Fraunces (self-host) — used only for page titles and the Danger Dial numeral. Body: Inter. Arabic: IBM Plex Sans Arabic (body) + Amiri only for the wordmark نذير. Tamazight (Latin) uses body face; ensure Tifinagh glyph fallback (Noto Sans Tifinagh) for the optional Tifinagh toggle on names. Type scale 1.25 ratio; base 16 px; numerals tabular in data tables.
 
@@ -446,17 +443,16 @@ Spacing/radius/motion. 4 px grid; radius 8 (cards) / 999 (chips); motion: 150–
 
 12.2 Information architecture (routes)
 
-/            Home = Live Map (default view)
-/forecast    Danger forecast (choropleth + commune search)
-/fire/:id    Fire detail
-/history     Statistics & burned areas archive
-/report      Citizen report flow (auth-gated at submit)
-/alerts      My alerts feed (auth)
-/settings    Zones, channels, language, quiet hours (auth)
-/about       Methodology, data sources, disclaimers, API docs link
-/status      Source health
-/admin/*     Console (role-gated): Overview, Clusters, Reports, Broadcast, Sources, Users, Webhooks, Audit
-
+/ Home = Live Map (default view)
+/forecast Danger forecast (choropleth + commune search)
+/fire/:id Fire detail
+/history Statistics & burned areas archive
+/report Citizen report flow (auth-gated at submit)
+/alerts My alerts feed (auth)
+/settings Zones, channels, language, quiet hours (auth)
+/about Methodology, data sources, disclaimers, API docs link
+/status Source health
+/admin/* Console (role-gated): Overview, Clusters, Reports, Broadcast, Sources, Users, Webhooks, Audit
 
 Global shell: top bar (logo, language switcher ar/fr/en/kab, auth avatar), map-first layout — the map is the homepage, not a hero page. Mobile web: bottom tab bar mirroring the native app (§13).
 

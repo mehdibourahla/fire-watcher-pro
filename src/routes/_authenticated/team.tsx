@@ -12,10 +12,14 @@ export const Route = createFileRoute("/_authenticated/team")({
       { title: "Team & roles — Nadhir" },
       {
         name: "description",
-        content: "Grant or revoke moderator and administrator access for the Nadhir wildfire platform.",
+        content:
+          "Grant or revoke moderator and administrator access for the Nadhir wildfire platform.",
       },
       { property: "og:title", content: "Team & roles — Nadhir" },
-      { property: "og:description", content: "Administer moderator and admin access on Nadhir." },
+      {
+        property: "og:description",
+        content: "Administer moderator and admin access on Nadhir.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -34,27 +38,44 @@ function TeamPage() {
   const [search, setSearch] = useState("");
 
   const mutate = useMutation({
-    mutationFn: async (input: { userId: string; role: AppRole; grant: boolean }) =>
-      input.grant ? grantRole(input.userId, input.role) : revokeRole(input.userId, input.role),
+    mutationFn: async (input: {
+      userId: string;
+      role: AppRole;
+      grant: boolean;
+    }) =>
+      input.grant
+        ? grantRole(input.userId, input.role)
+        : revokeRole(input.userId, input.role),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["roles"] }),
   });
 
   if (roles.isLoading) {
-    return <main className="mx-auto max-w-4xl px-4 py-10 text-sm text-muted-foreground">{t("common.loading")}</main>;
+    return (
+      <main className="mx-auto max-w-4xl px-4 py-10 text-sm text-muted-foreground">
+        {t("common.loading")}
+      </main>
+    );
   }
 
   if (!isAdmin) {
     return (
       <main className="mx-auto w-full max-w-2xl px-4 py-16 text-center">
-        <h1 className="font-display text-2xl font-semibold">{t("team.title")}</h1>
-        <p className="mt-2 text-sm text-muted-foreground">{t("team.noAccess")}</p>
+        <h1 className="font-display text-2xl font-semibold">
+          {t("team.title")}
+        </h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {t("team.noAccess")}
+        </p>
       </main>
     );
   }
 
   const q = search.trim().toLowerCase();
   const rows = (members.data ?? []).filter(
-    (m) => !q || (m.display_name ?? "").toLowerCase().includes(q) || m.id.toLowerCase().includes(q),
+    (m) =>
+      !q ||
+      (m.display_name ?? "").toLowerCase().includes(q) ||
+      m.id.toLowerCase().includes(q),
   );
 
   return (
@@ -70,7 +91,9 @@ function TeamPage() {
       />
 
       {members.isLoading ? (
-        <p className="mt-6 text-sm text-muted-foreground">{t("common.loading")}</p>
+        <p className="mt-6 text-sm text-muted-foreground">
+          {t("common.loading")}
+        </p>
       ) : rows.length === 0 ? (
         <p className="mt-6 text-sm text-muted-foreground">{t("team.empty")}</p>
       ) : (
@@ -81,8 +104,12 @@ function TeamPage() {
               className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-card p-3"
             >
               <div className="min-w-0">
-                <p className="truncate text-sm font-medium">{m.display_name || t("team.unnamed")}</p>
-                <p className="truncate font-mono text-xs text-muted-foreground">{m.id}</p>
+                <p className="truncate text-sm font-medium">
+                  {m.display_name || t("team.unnamed")}
+                </p>
+                <p className="truncate font-mono text-xs text-muted-foreground">
+                  {m.id}
+                </p>
                 <p className="mt-1 text-xs text-muted-foreground">
                   {m.roles.length ? m.roles.join(" · ") : t("team.roleUser")}
                 </p>
@@ -95,7 +122,9 @@ function TeamPage() {
                       key={role}
                       type="button"
                       disabled={mutate.isPending}
-                      onClick={() => mutate.mutate({ userId: m.id, role, grant: !has })}
+                      onClick={() =>
+                        mutate.mutate({ userId: m.id, role, grant: !has })
+                      }
                       className={
                         has
                           ? "rounded-md border border-border px-2 py-1 text-xs text-muted-foreground hover:text-destructive"
@@ -114,7 +143,9 @@ function TeamPage() {
         </ul>
       )}
       {mutate.isError ? (
-        <p className="mt-3 text-sm text-destructive">{(mutate.error as Error).message}</p>
+        <p className="mt-3 text-sm text-destructive">
+          {(mutate.error as Error).message}
+        </p>
       ) : null}
     </main>
   );

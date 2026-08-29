@@ -44,13 +44,13 @@ The spec's hues were **rejected**: kept alongside the new neutral chrome they
 produced a muddy pink-beige cast, and `#6B0F1A` reads as dried blood rather than
 fire. The ramp is re-derived in OKLCH at higher chroma with a wider hue spread.
 
-| Level | Key | Solid (light) | Solid (dark) |
-|---|---|---|---|
-| 1 | `risk.low` | `#30AD51` | `#46C865` |
-| 2 | `risk.moderate` | `#E4AF00` | `#F7CE21` |
-| 3 | `risk.high` | `#F16A00` | `#FF8A2B` |
-| 4 | `risk.very_high` | `#D40924` | `#EE3B3B` |
-| 5 | `risk.extreme` | `#8C1220` | `#9C1F35` |
+| Level | Key              | Solid (light) | Solid (dark) |
+| ----- | ---------------- | ------------- | ------------ |
+| 1     | `risk.low`       | `#30AD51`     | `#46C865`    |
+| 2     | `risk.moderate`  | `#E4AF00`     | `#F7CE21`    |
+| 3     | `risk.high`      | `#F16A00`     | `#FF8A2B`    |
+| 4     | `risk.very_high` | `#D40924`     | `#EE3B3B`    |
+| 5     | `risk.extreme`   | `#8C1220`     | `#9C1F35`    |
 
 Validator results, per theme:
 
@@ -85,16 +85,16 @@ Near-achromatic with a faint cool bias so the hazard ramp owns every saturated
 colour on screen. A first attempt used warm limestone neutrals; combined with the
 hazard tints they produced a beige cast and were rejected.
 
-| Token | Light | Dark |
-|---|---|---|
-| `--ground` | `#F9FAFB` | `#0B0D10` |
-| `--surface` | `#FFFFFF` | `#16191C` |
-| `--raised` | `#EEF0F3` | `#212428` |
-| `--border` | `#DBDEE2` | `#2F3338` |
-| `--ink` | `#161B20` | `#ECEFF1` |
-| `--ink-soft` | `#5F6469` | `#A1A5A9` |
+| Token         | Light     | Dark      |
+| ------------- | --------- | --------- |
+| `--ground`    | `#F9FAFB` | `#0B0D10` |
+| `--surface`   | `#FFFFFF` | `#16191C` |
+| `--raised`    | `#EEF0F3` | `#212428` |
+| `--border`    | `#DBDEE2` | `#2F3338` |
+| `--ink`       | `#161B20` | `#ECEFF1` |
+| `--ink-soft`  | `#5F6469` | `#A1A5A9` |
 | `--ink-faint` | `#8C9094` | `#777B7F` |
-| `--accent` | `#2171CC` | `#63B3FF` |
+| `--accent`    | `#2171CC` | `#63B3FF` |
 
 The accent clears AA as text (4.67:1 light, 8.73:1 dark) and sits provably outside
 the fire family, unlike the old cedar which was adjacent to `risk-1` green.
@@ -130,7 +130,7 @@ Replaces the flat panel stack.
 - **Card grid** — stat cards of differing weight replace undifferentiated panels.
 - **Segmented scale** — the `DangerScale` primitive: gradient track, marker at the
   current level, numeral, level name, and the plain-language `risk.guidance.{level}`
-  sentence. Guidance appears *above* supporting detail, following civil-warning
+  sentence. Guidance appears _above_ supporting detail, following civil-warning
   convention.
 - Mobile web gets a bottom tab bar mirroring the native app (§12.2).
 
@@ -138,32 +138,32 @@ Replaces the flat panel stack.
 
 New or rebuilt primitives, each independently testable:
 
-| Component | Responsibility |
-|---|---|
-| `DangerScale` | Level 1–5 as gradient track + marker + numeral + name + guidance. Replaces `DangerDial`. Sizes: sm, md, lg. |
-| `RiskChip` | Tint + same-hue ink badge with icon. The only way a level appears inline. |
-| `MapGround` | Full-bleed MapLibre layer, layer-toggle control, marker styling by state and confidence. |
-| `DetailSheet` | Draggable sheet (mobile) / rail (desktop). Holds cluster detail. |
-| `DetectionStrip` | Dot strip of detections over time, keyed by source, with legend. |
-| `StatCard` | Label + value + optional delta and sparkline. Tabular numerals. |
-| `SourceHealth` | Per-source status row: state, age, note. Honest degradation. |
-| `EmptyState` / `Skeleton` / `ErrorState` | The §12.9 quality floor, applied on every route. |
+| Component                                | Responsibility                                                                                              |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `DangerScale`                            | Level 1–5 as gradient track + marker + numeral + name + guidance. Replaces `DangerDial`. Sizes: sm, md, lg. |
+| `RiskChip`                               | Tint + same-hue ink badge with icon. The only way a level appears inline.                                   |
+| `MapGround`                              | Full-bleed MapLibre layer, layer-toggle control, marker styling by state and confidence.                    |
+| `DetailSheet`                            | Draggable sheet (mobile) / rail (desktop). Holds cluster detail.                                            |
+| `DetectionStrip`                         | Dot strip of detections over time, keyed by source, with legend.                                            |
+| `StatCard`                               | Label + value + optional delta and sparkline. Tabular numerals.                                             |
+| `SourceHealth`                           | Per-source status row: state, age, note. Honest degradation.                                                |
+| `EmptyState` / `Skeleton` / `ErrorState` | The §12.9 quality floor, applied on every route.                                                            |
 
 ## Route changes
 
-| Route | Change |
-|---|---|
-| `/` | Map as ground. Layer toggle. Cluster sheet leading with a status sentence, then detection strip, wind vector, nearest settlements. Empty state shows today's level plus a prevention tip. |
-| `/forecast` | Commune search, `DangerScale` per day across d0–d5, FWI value, guidance sentence first. |
-| `/fire/:id` | Detection timeline, spread bearing, nearest-settlement table, share and report CTAs. |
-| `/history` | Recharts (already a dependency, unused) for monthly distribution and cumulative area. Gets its own unbounded, paginated query — fixes the 72-hour window defect. |
-| `/status` | Reports FCI and EFFIS as unavailable rather than healthy. |
-| `/alerts` | Feed with unread state, severity stripe, link to the fire. |
-| `/zones` | Map picker, radius slider, per-zone channel toggles. |
-| `/settings` | Channel toggles, quiet hours, language, minimum danger level. Bound to the columns that exist today (`min_danger_level`); the spec's `min_confidence` needs a migration and stays in the audit backlog. |
-| `/report` | Three-step flow: location, photo and note, confirm. |
-| `/moderation`, `/team` | Dense desktop-first tables, LTR layout with localised strings (§12.8). |
-| `/about`, `/developers`, `/terms`, `/privacy` | Same system. `/about` drops the EFFIS attribution until that source is actually contacted. |
+| Route                                         | Change                                                                                                                                                                                                  |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`                                           | Map as ground. Layer toggle. Cluster sheet leading with a status sentence, then detection strip, wind vector, nearest settlements. Empty state shows today's level plus a prevention tip.               |
+| `/forecast`                                   | Commune search, `DangerScale` per day across d0–d5, FWI value, guidance sentence first.                                                                                                                 |
+| `/fire/:id`                                   | Detection timeline, spread bearing, nearest-settlement table, share and report CTAs.                                                                                                                    |
+| `/history`                                    | Recharts (already a dependency, unused) for monthly distribution and cumulative area. Gets its own unbounded, paginated query — fixes the 72-hour window defect.                                        |
+| `/status`                                     | Reports FCI and EFFIS as unavailable rather than healthy.                                                                                                                                               |
+| `/alerts`                                     | Feed with unread state, severity stripe, link to the fire.                                                                                                                                              |
+| `/zones`                                      | Map picker, radius slider, per-zone channel toggles.                                                                                                                                                    |
+| `/settings`                                   | Channel toggles, quiet hours, language, minimum danger level. Bound to the columns that exist today (`min_danger_level`); the spec's `min_confidence` needs a migration and stays in the audit backlog. |
+| `/report`                                     | Three-step flow: location, photo and note, confirm.                                                                                                                                                     |
+| `/moderation`, `/team`                        | Dense desktop-first tables, LTR layout with localised strings (§12.8).                                                                                                                                  |
+| `/about`, `/developers`, `/terms`, `/privacy` | Same system. `/about` drops the EFFIS attribution until that source is actually contacted.                                                                                                              |
 
 ## Data fixes in scope
 

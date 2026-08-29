@@ -10,7 +10,7 @@
 
 ## Global Constraints
 
-- Zero comments and zero docstrings unless a non-obvious *why* — one short line.
+- Zero comments and zero docstrings unless a non-obvious _why_ — one short line.
 - Every user-facing string goes through i18next. No hardcoded copy in components.
 - Danger level never communicated by colour alone: numeral + name + icon always.
 - Hazard solids only on marks ≥8px. Chips use tint background + same-hue ink.
@@ -26,9 +26,11 @@
 ### Task 1: Token system
 
 **Files:**
+
 - Modify: `src/styles.css` (full rewrite of the token blocks)
 
 **Interfaces:**
+
 - Produces: CSS custom properties `--ground --surface --raised --border --ink --ink-soft --ink-faint --accent --risk-1..5 --risk-tint-1..5 --risk-ink-1..5 --emergency`, and Tailwind theme bindings for each.
 
 - [ ] **Step 1:** Replace `:root` and `.dark` blocks with the chrome and hazard values from the design spec's colour tables.
@@ -41,12 +43,14 @@
 ### Task 2: Risk primitives
 
 **Files:**
+
 - Create: `src/components/nadhir/DangerScale.tsx`
 - Create: `src/components/nadhir/RiskChip.tsx`
 - Delete: `src/components/DangerDial.tsx`
 - Test: `src/lib/__tests__/risk.test.ts`
 
 **Interfaces:**
+
 - Consumes: `dangerLevelKey`, `levelFromFwi` from `src/lib/nadhir.ts`.
 - Produces:
   - `DangerScale({ level, fwi?, size?: "sm"|"md"|"lg", guidance?: boolean, caption?: string })`
@@ -82,12 +86,14 @@ describe("levelFromFwi", () => {
 ### Task 3: Layout and state primitives
 
 **Files:**
+
 - Create: `src/components/nadhir/StatCard.tsx`
 - Create: `src/components/nadhir/states.tsx`
 - Create: `src/components/nadhir/DetectionStrip.tsx`
 - Create: `src/components/nadhir/SourceHealth.tsx`
 
 **Interfaces:**
+
 - Produces:
   - `StatCard({ label, value, sub?, tone?: "default"|"emergency" })`
   - `Skeleton({ className })`, `EmptyState({ title, body, action? })`, `ErrorState({ title, body, onRetry })`
@@ -104,11 +110,13 @@ describe("levelFromFwi", () => {
 ### Task 4: Map ground and sheet
 
 **Files:**
+
 - Modify: `src/components/FireMap.tsx` (rewrite)
 - Create: `src/components/nadhir/DetailSheet.tsx`
 - Modify: `src/components/MapCanvas.tsx`
 
 **Interfaces:**
+
 - Produces:
   - `FireMap({ clusters, selectedShortId, onSelect, center?, zoom?, layers })`
   - `DetailSheet({ open, onClose, children })` — bottom sheet under `lg`, right rail at `lg` and up.
@@ -124,10 +132,12 @@ describe("levelFromFwi", () => {
 ### Task 5: App shell
 
 **Files:**
+
 - Modify: `src/components/SiteChrome.tsx` (rewrite)
 - Modify: `src/routes/__root.tsx`
 
 **Interfaces:**
+
 - Produces: `SiteHeader`, `BottomTabs`, `EmergencyNumbers`, `RiskLegend`.
 
 - [ ] **Step 1:** Top bar — wordmark, language switcher, auth avatar, degraded-source banner slot.
@@ -140,10 +150,12 @@ describe("levelFromFwi", () => {
 ### Task 6: Public routes
 
 **Files:**
+
 - Modify: `src/routes/index.tsx`, `forecast.tsx`, `fire.$id.tsx`, `history.tsx`, `status.tsx`, `about.tsx`, `developers.tsx`
 - Modify: `src/lib/nadhir.ts` (add `historyClustersQuery`)
 
 **Interfaces:**
+
 - Produces: `historyClustersQuery` — unbounded by time, paginated, ordered by `first_detected_at` desc.
 
 - [ ] **Step 1:** `/` — map ground, sheet/rail, layer toggle, today summary using `DangerScale`, cluster list sorted by distance-to-settlement, empty state.
@@ -158,6 +170,7 @@ describe("levelFromFwi", () => {
 ### Task 7: Authenticated routes
 
 **Files:**
+
 - Modify: `src/routes/_authenticated/{alerts,zones,settings,report,moderation,team,webhooks}.tsx`
 
 - [ ] **Step 1:** `/alerts` — severity stripe using `RiskChip`, unread state, link to fire. Fix the `var(var(--risk-N))` double-wrap bug at `alerts.tsx:123`.
@@ -171,6 +184,7 @@ describe("levelFromFwi", () => {
 ### Task 8: Blocking data fixes
 
 **Files:**
+
 - Modify: `src/lib/ingest/weather.server.ts:6`
 - Modify: `src/lib/ingest/eumetsat.server.ts:126`
 - Modify: `src/lib/ingest/fusion.server.ts:43`
@@ -178,6 +192,7 @@ describe("levelFromFwi", () => {
 - Test: `src/lib/__tests__/ingest.test.ts`
 
 **Interfaces:**
+
 - Consumes: the `CHECK` constraints in `supabase/migrations/20260828131723_*.sql`.
 
 - [ ] **Step 1: Write the failing test** asserting every emitted literal is inside its constraint.
@@ -190,7 +205,9 @@ const read = (p: string) => readFileSync(p, "utf8");
 
 describe("emitted literals satisfy DB CHECK constraints", () => {
   it("risk_forecasts.source", () => {
-    expect(read("src/lib/ingest/weather.server.ts")).toMatch(/SOURCE = "local_fwi"/);
+    expect(read("src/lib/ingest/weather.server.ts")).toMatch(
+      /SOURCE = "local_fwi"/,
+    );
   });
   it("detections.source", () => {
     expect(read("src/lib/ingest/eumetsat.server.ts")).toMatch(/source: "fci"/);

@@ -26,13 +26,24 @@ export function AlertNotifier() {
         .channel(`alerts-${user.id}`)
         .on(
           "postgres_changes",
-          { event: "INSERT", schema: "public", table: "alerts", filter: `user_id=eq.${user.id}` },
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "alerts",
+            filter: `user_id=eq.${user.id}`,
+          },
           (payload) => {
             const alert = payload.new as AlertRow;
             void qc.invalidateQueries({ queryKey: ["alerts"] });
-            if (typeof Notification !== "undefined" && Notification.permission === "granted") {
+            if (
+              typeof Notification !== "undefined" &&
+              Notification.permission === "granted"
+            ) {
               try {
-                new Notification(alert.title, { body: alert.body, tag: alert.id });
+                new Notification(alert.title, {
+                  body: alert.body,
+                  tag: alert.id,
+                });
               } catch {
                 /* notifications unavailable */
               }
@@ -52,7 +63,9 @@ export function AlertNotifier() {
 }
 
 /** Asks the browser for notification permission; returns the resulting state. */
-export async function requestNotificationPermission(): Promise<NotificationPermission | "unsupported"> {
+export async function requestNotificationPermission(): Promise<
+  NotificationPermission | "unsupported"
+> {
   if (typeof Notification === "undefined") return "unsupported";
   if (Notification.permission === "granted") return "granted";
   return Notification.requestPermission();

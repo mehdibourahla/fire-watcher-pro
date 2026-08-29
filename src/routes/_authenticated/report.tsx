@@ -27,7 +27,10 @@ export const Route = createFileRoute("/_authenticated/report")({
           "Send a geolocated fire sighting to Nadhir moderators and help confirm satellite detections across Algeria.",
       },
       { property: "og:title", content: "Report a wildfire — Nadhir" },
-      { property: "og:description", content: "Help confirm satellite detections with a ground report." },
+      {
+        property: "og:description",
+        content: "Help confirm satellite detections with a ground report.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -45,7 +48,9 @@ function ReportPage() {
   const units = useQuery(adminUnitsQuery);
   const mine = useQuery(myReportsQuery);
   const roles = useQuery(myRolesQuery);
-  const isModerator = (roles.data ?? []).some((r) => r === "moderator" || r === "admin");
+  const isModerator = (roles.data ?? []).some(
+    (r) => r === "moderator" || r === "admin",
+  );
 
   const [lat, setLat] = useState("36.60");
   const [lon, setLon] = useState("4.05");
@@ -82,10 +87,14 @@ function ReportPage() {
       invalidate();
     },
   });
-  const remove = useMutation({ mutationFn: deleteReport, onSuccess: invalidate });
+  const remove = useMutation({
+    mutationFn: deleteReport,
+    onSuccess: invalidate,
+  });
 
   function locate() {
-    if (typeof navigator === "undefined" || !navigator.geolocation) return setGeoError(true);
+    if (typeof navigator === "undefined" || !navigator.geolocation)
+      return setGeoError(true);
     setLocating(true);
     setGeoError(false);
     navigator.geolocation.getCurrentPosition(
@@ -103,11 +112,20 @@ function ReportPage() {
 
   return (
     <main className="mx-auto w-full max-w-3xl px-4 py-8">
-      <h1 className="font-display text-2xl font-semibold">{t("reports.title")}</h1>
-      <p className="mt-1 text-sm text-muted-foreground">{t("reports.subtitle")}</p>
-      <p className="mt-3 rounded-md border border-border bg-secondary/40 p-3 text-sm">{t("reports.safety")}</p>
+      <h1 className="font-display text-2xl font-semibold">
+        {t("reports.title")}
+      </h1>
+      <p className="mt-1 text-sm text-muted-foreground">
+        {t("reports.subtitle")}
+      </p>
+      <p className="mt-3 rounded-md border border-border bg-secondary/40 p-3 text-sm">
+        {t("reports.safety")}
+      </p>
       {isModerator ? (
-        <Link to="/moderation" className="mt-3 inline-block text-sm font-medium text-primary">
+        <Link
+          to="/moderation"
+          className="mt-3 inline-block text-sm font-medium text-primary"
+        >
           {t("nav.moderation")}
         </Link>
       ) : null}
@@ -121,7 +139,9 @@ function ReportPage() {
         }}
       >
         <fieldset className="space-y-2">
-          <legend className="text-sm font-medium">{t("reports.location")}</legend>
+          <legend className="text-sm font-medium">
+            {t("reports.location")}
+          </legend>
           <div className="grid gap-3 sm:grid-cols-3">
             <label className="text-xs text-muted-foreground">
               {t("reports.lat")}
@@ -166,14 +186,24 @@ function ReportPage() {
           >
             {locating ? t("reports.locating") : t("reports.useMyLocation")}
           </button>
-          {geoError ? <p className="text-xs text-destructive">{t("reports.locationError")}</p> : null}
+          {geoError ? (
+            <p className="text-xs text-destructive">
+              {t("reports.locationError")}
+            </p>
+          ) : null}
         </fieldset>
 
         <fieldset className="space-y-2">
-          <legend className="text-sm font-medium">{t("reports.sighting")}</legend>
+          <legend className="text-sm font-medium">
+            {t("reports.sighting")}
+          </legend>
           <div className="flex flex-wrap gap-2">
             {SIGHTINGS.map((s) => (
-              <Chip key={s} active={sighting === s} onClick={() => setSighting(s)}>
+              <Chip
+                key={s}
+                active={sighting === s}
+                onClick={() => setSighting(s)}
+              >
                 {t(`reports.sighting${s.charAt(0).toUpperCase()}${s.slice(1)}`)}
               </Chip>
             ))}
@@ -234,9 +264,17 @@ function ReportPage() {
               className="mt-1 w-full rounded-md border border-border bg-background px-2 py-1.5 text-sm font-normal text-foreground"
             />
           </label>
-          <p className="text-xs text-muted-foreground">{t("reports.photoHint")}</p>
-          {uploading ? <p className="text-xs text-muted-foreground">{t("reports.photoUploading")}</p> : null}
-          {photoError ? <p className="text-xs text-destructive">{photoError}</p> : null}
+          <p className="text-xs text-muted-foreground">
+            {t("reports.photoHint")}
+          </p>
+          {uploading ? (
+            <p className="text-xs text-muted-foreground">
+              {t("reports.photoUploading")}
+            </p>
+          ) : null}
+          {photoError ? (
+            <p className="text-xs text-destructive">{photoError}</p>
+          ) : null}
           {photo ? (
             <div className="flex items-start gap-3">
               <ReportPhoto photo={photo} />
@@ -259,22 +297,39 @@ function ReportPage() {
           >
             {submit.isPending ? t("reports.submitting") : t("reports.submit")}
           </button>
-          {done ? <span className="text-sm text-muted-foreground">{t("reports.submitted")}</span> : null}
+          {done ? (
+            <span className="text-sm text-muted-foreground">
+              {t("reports.submitted")}
+            </span>
+          ) : null}
           {submit.isError ? (
-            <span className="text-sm text-destructive">{(submit.error as Error).message}</span>
+            <span className="text-sm text-destructive">
+              {(submit.error as Error).message}
+            </span>
           ) : null}
         </div>
       </form>
 
-      <h2 className="mt-10 font-display text-lg font-semibold">{t("reports.mine")}</h2>
+      <h2 className="mt-10 font-display text-lg font-semibold">
+        {t("reports.mine")}
+      </h2>
       {mine.isLoading ? (
-        <p className="mt-3 text-sm text-muted-foreground">{t("common.loading")}</p>
+        <p className="mt-3 text-sm text-muted-foreground">
+          {t("common.loading")}
+        </p>
       ) : (mine.data ?? []).length === 0 ? (
-        <p className="mt-3 text-sm text-muted-foreground">{t("reports.empty")}</p>
+        <p className="mt-3 text-sm text-muted-foreground">
+          {t("reports.empty")}
+        </p>
       ) : (
         <ul className="mt-3 space-y-2">
           {(mine.data ?? []).map((r) => (
-            <ReportRow key={r.id} report={r} locale={locale} onDelete={() => remove.mutate(r.id)} />
+            <ReportRow
+              key={r.id}
+              report={r}
+              locale={locale}
+              onDelete={() => remove.mutate(r.id)}
+            />
           ))}
         </ul>
       )}
@@ -327,18 +382,29 @@ export function ReportRow({
     <li className="rounded-lg border border-border p-3">
       <div className="flex flex-wrap items-center gap-2 text-sm">
         <span className="font-medium">
-          {t(`reports.sighting${report.sighting.charAt(0).toUpperCase()}${report.sighting.slice(1)}`)} ·{" "}
-          {t(`reports.size${report.size_hint.charAt(0).toUpperCase()}${report.size_hint.slice(1)}`)}
+          {t(
+            `reports.sighting${report.sighting.charAt(0).toUpperCase()}${report.sighting.slice(1)}`,
+          )}{" "}
+          ·{" "}
+          {t(
+            `reports.size${report.size_hint.charAt(0).toUpperCase()}${report.size_hint.slice(1)}`,
+          )}
         </span>
-        <span className="text-xs text-muted-foreground">{relativeTime(report.observed_at, locale)}</span>
-        <span className="ms-auto rounded-full border border-border px-2 py-0.5 text-xs">{t(statusKey)}</span>
+        <span className="text-xs text-muted-foreground">
+          {relativeTime(report.observed_at, locale)}
+        </span>
+        <span className="ms-auto rounded-full border border-border px-2 py-0.5 text-xs">
+          {t(statusKey)}
+        </span>
       </div>
       <p className="mt-1 text-xs text-muted-foreground">
         {report.lat.toFixed(3)}, {report.lon.toFixed(3)}
       </p>
       {report.note ? <p className="mt-2 text-sm">{report.note}</p> : null}
       {report.moderation_note ? (
-        <p className="mt-1 text-xs text-muted-foreground">{report.moderation_note}</p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          {report.moderation_note}
+        </p>
       ) : null}
       <ReportPhoto photo={report.photo_url} />
       <div className="mt-2 flex gap-3 text-xs">
@@ -348,7 +414,11 @@ export function ReportRow({
           </Link>
         ) : null}
         {onDelete ? (
-          <button type="button" onClick={onDelete} className="text-muted-foreground hover:text-destructive">
+          <button
+            type="button"
+            onClick={onDelete}
+            className="text-muted-foreground hover:text-destructive"
+          >
             {t("reports.delete")}
           </button>
         ) : null}

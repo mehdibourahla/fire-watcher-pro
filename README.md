@@ -160,9 +160,11 @@ want to contribute. The blockers that matter most:
 
 Issues and pull requests are welcome. [GAPS.md](GAPS.md) lists every known gap with the file
 to start from and a rough sense of difficulty; the "Where to start" table at the end maps
-interests to tasks. Genuinely small first contributions: add the missing `LICENSE` file, run
-`bun run format` (1681 formatting errors, zero real code errors), or add CI that runs the
-existing test suite.
+interests to tasks.
+
+CI runs `tsc --noEmit`, the test suite and eslint on every pull request, and `main` requires a
+reviewed pull request — pushes straight to it are blocked. Run `bun run format` before opening
+one; prettier is enforced through eslint.
 
 Before changing anything that decides what a user is told, read `ORIGINAL-SPEC.md` for the
 intended model. It is authoritative except on the wilaya count — Algeria has 69, not the 58
@@ -174,6 +176,4 @@ The application declares its code AGPL-3.0 and its derived data CC-BY 4.0, with 
 to "Nadhir — NASA FIRMS, Open-Meteo". Source data stays under the licences of NASA FIRMS,
 EUMETSAT, Copernicus, Open-Meteo and OpenStreetMap.
 
-**There is no `LICENSE` file in this repository yet**, so that declaration currently has no
-legal force and the code is not safely reusable. Adding one is tracked in
-[GAPS.md](GAPS.md#41-there-is-no-license-file).
+The full AGPL-3.0 text is in [LICENSE](LICENSE).

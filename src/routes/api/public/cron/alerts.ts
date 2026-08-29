@@ -14,7 +14,10 @@ export const Route = createFileRoute("/api/public/cron/alerts")({
           return Response.json({ ok: true, ...result });
         } catch (error) {
           return Response.json(
-            { ok: false, error: error instanceof Error ? error.message : "unknown" },
+            {
+              ok: false,
+              error: error instanceof Error ? error.message : "unknown",
+            },
             { status: 500 },
           );
         }

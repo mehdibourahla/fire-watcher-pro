@@ -37,7 +37,9 @@ export const Route = createFileRoute("/api/public/v1/risk")({
 
         let query = supabase
           .from("risk_forecasts")
-          .select("forecast_date, horizon_days, fwi, danger_level, source, admin_units!inner(code, name_en, name_ar, name_fr, level)")
+          .select(
+            "forecast_date, horizon_days, fwi, danger_level, source, admin_units!inner(code, name_en, name_ar, name_fr, level)",
+          )
           .eq("horizon_days", horizon)
           .order("danger_level", { ascending: false })
           .range(offset, offset + limit - 1);

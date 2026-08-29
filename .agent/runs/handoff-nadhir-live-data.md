@@ -18,15 +18,15 @@ were already prettier-dirty before this work and are still failing. That is pre-
 
 Live database (Supabase `nadhir`, ref `kuukthyenirwgdfkltlm`, eu-west-3), verified at handoff:
 
-| table | rows |
-|---|---|
-| `admin_units` | 1605 (69 wilayas + 1536 communes) |
-| `settlements` | 10257 |
-| `detections` | 3878 (real FIRMS) |
-| `fire_clusters` | 147, all with a commune |
-| `risk_forecasts` | 5250 |
-| `fwi_state` | **875 / 1536 — incomplete** |
-| migrations applied | 21 |
+| table              | rows                              |
+| ------------------ | --------------------------------- |
+| `admin_units`      | 1605 (69 wilayas + 1536 communes) |
+| `settlements`      | 10257                             |
+| `detections`       | 3878 (real FIRMS)                 |
+| `fire_clusters`    | 147, all with a commune           |
+| `risk_forecasts`   | 5250                              |
+| `fwi_state`        | **875 / 1536 — incomplete**       |
+| migrations applied | 21                                |
 
 ## 2. In flight
 
