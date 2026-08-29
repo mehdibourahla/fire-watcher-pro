@@ -81,7 +81,7 @@ export const fr: Translation = {
     sosNearestValue: "{{km}} km de {{place}}",
     sosCoords: "Coordonnées",
     sosQueueNote:
-      "Si l'appel échoue, votre SOS est enregistré sur ce téléphone et renvoyé au retour du réseau. Nadhir l'enregistre mais aucun secouriste ne le surveille — continuez d'appeler le 14.",
+      "Si l'appel échoue, votre SOS n'est enregistré que sur ce téléphone. Aucun service de secours ne le reçoit ni ne le surveille pour l'instant — continuez d'appeler le 14.",
     sosQueued: "SOS enregistré {{time}} — non envoyé, aucun récepteur surveillé n'existe encore.",
     checkinTitle: "Donner des nouvelles",
     checkinIntro:

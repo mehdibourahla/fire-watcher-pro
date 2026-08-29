@@ -79,7 +79,7 @@ export const en = {
     sosNearestValue: "{{km}} km from {{place}}",
     sosCoords: "Coordinates",
     sosQueueNote:
-      "If the call fails, your SOS is saved on this phone and re-sent when the network returns. It is recorded by Nadhir but not monitored by rescuers — keep trying 14.",
+      "If the call fails, your SOS is saved on this phone only. No rescue service receives or monitors it yet — keep trying 14.",
     sosQueued: "SOS saved {{time}} — not sent, no monitored receiver exists yet.",
     checkinTitle: "Check in",
     checkinIntro:

@@ -39,10 +39,3 @@ export function enqueueSos(
   storage.setItem(KEY, JSON.stringify(queue));
   return entry;
 }
-
-export function markSosSent(storage: QueueStorage, id: string) {
-  const queue = loadSosQueue(storage).map((e) =>
-    e.id === id ? { ...e, sent: true } : e,
-  );
-  storage.setItem(KEY, JSON.stringify(queue));
-}

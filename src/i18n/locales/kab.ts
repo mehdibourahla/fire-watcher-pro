@@ -81,7 +81,7 @@ export const kab: Translation = {
     sosNearestValue: "{{km}} km si {{place}}",
     sosCoords: "Timsisiyin",
     sosQueueNote:
-      "Ma yecceḍ usiwel, SOS-ik ad yettwaḥrez deg utilifun-a, ad yettwazen mi d-yuɣal uẓeṭṭa. Nadhir yeskles-it maca ulac win i t-yettɛassan — kemmel siwel i 14.",
+      "Ma yecceḍ usiwel, SOS-ik ad yettwaḥrez deg utilifun-a kan. Ulac aɣmis n usellek ara t-id-yeṭṭfen ass-a — kemmel siwel i 14.",
     sosQueued: "SOS yettwaḥrez {{time}} — ur yettwazen ara, ulac amsekles yettwaɛassen.",
     checkinTitle: "Sers lexbaṛ",
     checkinIntro:
