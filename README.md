@@ -37,7 +37,7 @@ assumes it.
 
 ```sh
 bun install
-cp .env.example .env.local   # then fill in the Supabase values
+cp .env.example .env.local   # ships working public values — nothing to fill
 bun run dev                  # http://localhost:8080
 ```
 
