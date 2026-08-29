@@ -247,6 +247,17 @@ export const en = {
     high: "High",
     very_high: "Very high",
     extreme: "Extreme",
+    effis: "EFFIS/GWIS (European fire authority) rates this commune: {{class}}",
+    effisNone:
+      "No EFFIS comparison yet — the European classification arrives with the daily refresh.",
+    effisClass: {
+      very_low: "Very low",
+      low: "Low",
+      moderate: "Moderate",
+      high: "High",
+      very_high: "Very high",
+      extreme: "Extreme",
+    },
     guidance: {
       1: "Normal conditions. Fires stay easy to control. Still never leave a fire unattended.",
       2: "Dry fuels are catching. Avoid burning waste or stubble, and keep water nearby when working outdoors.",

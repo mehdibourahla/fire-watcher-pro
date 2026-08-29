@@ -81,6 +81,15 @@ export type RiskForecast = {
   danger_level: number;
 };
 
+export type EffisDanger = {
+  id: string;
+  commune_id: string;
+  date: string;
+  danger_class:
+    "very_low" | "low" | "moderate" | "high" | "very_high" | "extreme";
+  created_at: string;
+};
+
 export type DataSource = {
   id: string;
   name: string;
@@ -292,6 +301,24 @@ export const settlementsQuery = queryOptions({
     fetchAllPages<Settlement>((from, to) =>
       supabase.from("settlements").select("*").order("name").range(from, to),
     ),
+});
+
+/** Latest EFFIS classification per commune (their run lags ours by design). */
+export const effisDangerQuery = queryOptions({
+  queryKey: ["effis_danger"],
+  queryFn: async () => {
+    const { data, error } = await supabase
+      .from("effis_danger")
+      .select("*")
+      .order("date", { ascending: false })
+      .limit(1600);
+    if (error) throw new Error(error.message);
+    const rows = (data ?? []) as unknown as EffisDanger[];
+    const latest = new Map<string, EffisDanger>();
+    for (const r of rows)
+      if (!latest.has(r.commune_id)) latest.set(r.commune_id, r);
+    return latest;
+  },
 });
 
 export const dataSourcesQuery = queryOptions({

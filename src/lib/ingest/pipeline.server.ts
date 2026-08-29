@@ -1,5 +1,6 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
+import { ingestEffis, type EffisRun } from "./effis.server";
 import { ingestEumetsat } from "./eumetsat.server";
 import { ingestFirms } from "./firms.server";
 import { fuseDetections } from "./fusion.server";
@@ -126,7 +127,7 @@ export async function runDetectionPipeline(): Promise<PipelineResult> {
   return { firms, eumetsat, fusion, winds };
 }
 
-/** Daily FWI outlook refresh. */
+/** Daily FWI outlook refresh, plus the EFFIS external cross-check. */
 export async function runRiskPipeline() {
   const risk = await refreshRiskForecasts();
   await markSource(
@@ -135,5 +136,27 @@ export async function runRiskPipeline() {
     risk.error ??
       `FWI computed locally for ${risk.communes} communes (${risk.rows} rows)`,
   );
-  return risk;
+
+  const effisStartedAt = new Date().toISOString();
+  const effis = await ingestEffis().catch((e): EffisRun => ({
+    communes: 0,
+    classified: 0,
+    error: e instanceof Error ? e.message : String(e),
+  }));
+  await recordRun("effis", effisStartedAt, {
+    status: effis.error ? "failed" : "ok",
+    recordsIn: effis.communes,
+    recordsNew: effis.classified,
+    ...(effis.error ? { error: effis.error } : {}),
+  });
+  await markSource(
+    "effis",
+    !effis.error,
+    effis.error ??
+      `EFFIS danger classes stored for ${effis.classified} of ${effis.communes} communes`,
+  );
+
+  // The workflow greps this JSON for "error": EFFIS failure must only degrade
+  // its own health row, never fail the FWI refresh — so no error string here.
+  return { ...risk, effisClassified: effis.classified };
 }

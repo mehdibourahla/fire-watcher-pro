@@ -349,6 +349,38 @@ export type Database = {
         };
         Relationships: [];
       };
+      effis_danger: {
+        Row: {
+          commune_id: string;
+          created_at: string;
+          danger_class: string;
+          date: string;
+          id: string;
+        };
+        Insert: {
+          commune_id: string;
+          created_at?: string;
+          danger_class: string;
+          date: string;
+          id?: string;
+        };
+        Update: {
+          commune_id?: string;
+          created_at?: string;
+          danger_class?: string;
+          date?: string;
+          id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "effis_danger_commune_id_fkey";
+            columns: ["commune_id"];
+            isOneToOne: false;
+            referencedRelation: "admin_units";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       detections: {
         Row: {
           cluster_id: string | null;

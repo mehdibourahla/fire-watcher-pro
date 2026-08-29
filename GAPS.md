@@ -87,10 +87,15 @@ never fires. Populating it needs ESA WorldCover land-cover data joined to commun
 
 Reproduce: `select level, count(*) filter (where coalesce(forest_fraction,0)>0), count(*) from admin_units group by level;`
 
-### 2.2 EFFIS / GWIS is not connected
+### 2.2 EFFIS / GWIS is connected for danger classes only
 
-The European fire information system is the natural external authority for §1.1 and is not
-wired at all. `/status` correctly reports it unavailable rather than pretending.
+Since 2026-08-29 the daily risk refresh samples the EFFIS WMS danger map per commune into
+`effis_danger` — the external comparator §1.1 needs. Limits, stated rather than hidden: the
+JRC server publishes no raw FWI values programmatically (WCS has no FWI coverage; point
+queries return nothing), so the six **danger classes** decoded from their classified raster
+are the whole contract; the layer only serves its current run, so each row is stamped with
+the fetch date; and a palette change on their side degrades the source loudly instead of
+mis-classifying (the run errors when zero communes match).
 
 ## 3. Product surface
 
