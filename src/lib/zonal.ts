@@ -143,6 +143,45 @@ export function landcoverFractions(
   };
 }
 
+/* Scanline even-odd fill, same parity rule as pointInRing: a cell is inside
+ * when an odd number of edge crossings lie strictly right of its center.
+ * O(rows·edges + cells), where the per-cell test is O(cells·edges). */
+export function rasterizeMask(
+  mp: MultiPolygon,
+  west: number,
+  north: number,
+  degPerPxX: number,
+  degPerPxY: number,
+  width: number,
+  height: number,
+): boolean[][] {
+  const mask: boolean[][] = Array.from({ length: height }, () =>
+    Array.from({ length: width }, () => false),
+  );
+  for (const poly of mp)
+    for (let r = 0; r < height; r += 1) {
+      const y = north - (r + 0.5) * degPerPxY;
+      const crossings: number[] = [];
+      for (const ring of poly)
+        for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+          const [xi, yi] = ring[i]!;
+          const [xj, yj] = ring[j]!;
+          if (yi > y !== yj > y)
+            crossings.push(((xj - xi) * (y - yi)) / (yj - yi) + xi);
+        }
+      if (!crossings.length) continue;
+      crossings.sort((a, b) => a - b);
+      let k = 0;
+      const row = mask[r]!;
+      for (let c = 0; c < width; c += 1) {
+        const x = west + (c + 0.5) * degPerPxX;
+        while (k < crossings.length && crossings[k]! <= x) k += 1;
+        if ((crossings.length - k) % 2 === 1) row[c] = true;
+      }
+    }
+  return mask;
+}
+
 export type SlopeStats = {
   mean_slope_deg: number;
   p90_slope_deg: number;

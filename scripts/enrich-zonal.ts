@@ -1,10 +1,11 @@
 import { createClient } from "@supabase/supabase-js";
 import { fromUrl, type GeoTIFF } from "geotiff";
 
+import { fetchCommunePolygons } from "./overpass-communes";
 import {
   bboxOf,
   landcoverFractions,
-  pointInMultiPolygon,
+  rasterizeMask,
   sampleGrid,
   slopeStats,
   type MultiPolygon,
@@ -67,8 +68,16 @@ const openTiff = (tileUrl: string) => {
 
 type Window = { west: number; south: number; east: number; north: number };
 
+const READ_TIMEOUT_MS = 60_000;
+
+const withTimeout = <T>(p: Promise<T>): Promise<T | null> =>
+  Promise.race([
+    p,
+    new Promise<null>((r) => setTimeout(() => r(null), READ_TIMEOUT_MS)),
+  ]).catch(() => null);
+
 async function readWindow(tileUrl: string, win: Window, maxPx: number) {
-  const tiff = await openTiff(tileUrl);
+  const tiff = await withTimeout(openTiff(tileUrl));
   if (!tiff) return null;
   const full = await tiff.getImage(0);
   const [tw, ts, te, tn] = full.getBoundingBox() as [
@@ -103,13 +112,14 @@ async function readWindow(tileUrl: string, win: Window, maxPx: number) {
   const x1 = Math.min(image.getWidth(), Math.ceil((east - tw) / degPerPxX));
   const y1 = Math.min(image.getHeight(), Math.ceil((tn - south) / degPerPxY));
   if (x1 - x0 < 1 || y1 - y0 < 1) return null;
-  const data = (await image.readRasters({
-    window: [x0, y0, x1, y1],
-  })) as unknown as {
+  const data = (await withTimeout(
+    image.readRasters({ window: [x0, y0, x1, y1] }),
+  )) as unknown as {
     0: ArrayLike<number>;
     width: number;
     height: number;
-  };
+  } | null;
+  if (!data) return null;
   return {
     values: data[0],
     width: data.width,
@@ -156,33 +166,30 @@ async function landcoverFor(mp: MultiPolygon) {
 async function terrainFor(mp: MultiPolygon) {
   const box = bboxOf(mp);
   const parts: SlopeStats[] = [];
+  const tiles =
+    (Math.floor(box.north) - Math.floor(box.south) + 1) *
+    (Math.floor(box.east) - Math.floor(box.west) + 1);
+  // one cell budget per commune, however many 1-degree tiles its bbox spans
+  const maxPx = Math.max(64, Math.floor(DEM_MAX_PX / Math.sqrt(tiles)));
   for (let la = Math.floor(box.south); la <= Math.floor(box.north); la += 1)
     for (let lo = Math.floor(box.west); lo <= Math.floor(box.east); lo += 1) {
-      const w = await readWindow(
-        demTileUrl(la + 0.5, lo + 0.5),
-        box,
-        DEM_MAX_PX,
-      );
+      const w = await readWindow(demTileUrl(la + 0.5, lo + 0.5), box, maxPx);
       if (!w) continue;
+      const mask = rasterizeMask(
+        mp,
+        w.west,
+        w.north,
+        w.degPerPxX,
+        w.degPerPxY,
+        w.width,
+        w.height,
+      );
       const elev: number[][] = [];
-      const mask: boolean[][] = [];
       for (let r = 0; r < w.height; r += 1) {
         const er: number[] = [];
-        const mr: boolean[] = [];
-        for (let c = 0; c < w.width; c += 1) {
+        for (let c = 0; c < w.width; c += 1)
           er.push(Number(w.values[r * w.width + c]));
-          mr.push(
-            pointInMultiPolygon(
-              [
-                w.west + (c + 0.5) * w.degPerPxX,
-                w.north - (r + 0.5) * w.degPerPxY,
-              ],
-              mp,
-            ),
-          );
-        }
         elev.push(er);
-        mask.push(mr);
       }
       const latMid = w.north - (w.height / 2) * w.degPerPxY;
       const s = slopeStats(
@@ -207,15 +214,15 @@ async function terrainFor(mp: MultiPolygon) {
   };
 }
 
-const communes: {
-  id: string;
-  code: string;
-  geom: { coordinates: MultiPolygon } | null;
-}[] = [];
+// polygons come straight from Overpass so the backfill does not depend on
+// admin_units.geom being populated (kept empty until the select(*) fix ships)
+const { polygons } = await fetchCommunePolygons();
+const byCode = new Map(polygons.map((p) => [p.code, p.coordinates]));
+const communes: { id: string; code: string }[] = [];
 for (let page = 0; ; page += 1) {
   const { data, error } = await db
     .from("admin_units")
-    .select("id, code, geom")
+    .select("id, code")
     .eq("level", "commune")
     .order("id")
     .range(page * 1000, page * 1000 + 999);
@@ -230,13 +237,18 @@ let done = 0;
 let skipped = 0;
 
 async function enrichOne(c: (typeof communes)[number]) {
-  if (!c.geom?.coordinates) {
+  const mp = byCode.get(c.code);
+  if (!mp) {
     skipped += 1;
     return;
   }
-  const mp = c.geom.coordinates;
+  const t0 = Date.now();
   const lc = await landcoverFor(mp);
   const tr = await terrainFor(mp);
+  if (Date.now() - t0 > 20_000)
+    console.log(
+      `slow commune ${c.code}: ${Math.round((Date.now() - t0) / 1000)}s`,
+    );
   if (!lc && !tr) {
     skipped += 1;
     return;

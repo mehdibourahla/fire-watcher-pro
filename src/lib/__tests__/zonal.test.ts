@@ -5,6 +5,7 @@ import {
   buildMultiPolygon,
   landcoverFractions,
   pointInMultiPolygon,
+  rasterizeMask,
   sampleGrid,
   slopeStats,
   type Ring,
@@ -102,6 +103,24 @@ describe("landcoverFractions", () => {
 
   it("returns null when every sample is nodata", () => {
     expect(landcoverFractions([0, 0])).toBeNull();
+  });
+});
+
+describe("rasterizeMask", () => {
+  it("matches per-cell point-in-polygon on a grid over the holed square", () => {
+    const mp = buildMultiPolygon([square], [hole]);
+    const w = 16;
+    const h = 16;
+    const degPerPx = 4 / w;
+    const mask = rasterizeMask(mp, 0, 4, degPerPx, degPerPx, w, h);
+    for (let r = 0; r < h; r += 1)
+      for (let c = 0; c < w; c += 1) {
+        const expected = pointInMultiPolygon(
+          [(c + 0.5) * degPerPx, 4 - (r + 0.5) * degPerPx],
+          mp,
+        );
+        expect(mask[r]![c]).toBe(expected);
+      }
   });
 });
 
