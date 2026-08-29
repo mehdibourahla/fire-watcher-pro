@@ -37,4 +37,11 @@ describe("survival pack", () => {
       loadPack(memoryStorage({ "nadhir.survival.pack": "]]" })),
     ).toBeNull();
   });
+
+  it("rejects a structurally incomplete pack", () => {
+    const partial = JSON.stringify({ saved_at: "2026-08-29T12:00:00Z" });
+    expect(
+      loadPack(memoryStorage({ "nadhir.survival.pack": partial })),
+    ).toBeNull();
+  });
 });

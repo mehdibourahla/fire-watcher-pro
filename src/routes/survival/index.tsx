@@ -18,6 +18,7 @@ import {
   adminUnitsQuery,
   bearingLabel,
   clustersQuery,
+  haversineKm,
   relativeTime,
   settlementsQuery,
 } from "@/lib/nadhir";
@@ -125,6 +126,20 @@ function SurvivalHub() {
     return { fires, reports };
   }, [lastCheck, clusters.data, hazards.data]);
 
+  // A saved threat was computed for the pack's position. Show it only when live data
+  // is unavailable and the user has not moved away from where it was measured.
+  const offlineThreat = useMemo(() => {
+    const saved = pack?.threats[0];
+    if (threat || !saved || clusters.data) return null;
+    if (
+      position &&
+      pack &&
+      haversineKm(position.lat, position.lon, pack.lat, pack.lon) > 2
+    )
+      return null;
+    return saved;
+  }, [threat, pack, clusters.data, position]);
+
   if (!active) {
     return (
       <EnterSheet
@@ -135,8 +150,6 @@ function SurvivalHub() {
       />
     );
   }
-
-  const offlineThreat = !threat && pack?.threats[0] ? pack.threats[0] : null;
 
   return (
     <>

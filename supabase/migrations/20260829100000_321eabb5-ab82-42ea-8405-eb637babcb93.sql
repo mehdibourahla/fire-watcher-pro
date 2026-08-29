@@ -4,7 +4,10 @@
 
 create table public.open_areas (
   id uuid primary key default gen_random_uuid(),
-  osm_id bigint unique,
+  -- OSM ids are only unique per primitive type (node/way/relation).
+  osm_type text,
+  osm_id bigint,
+  unique (osm_type, osm_id),
   name text not null,
   name_ar text,
   area_type text not null check (area_type in ('stadium','pitch','schoolyard','parking','square','beach')),

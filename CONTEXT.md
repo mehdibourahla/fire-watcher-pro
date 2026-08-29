@@ -74,9 +74,10 @@ _Avoid_: safe (as a label), mark safe, safety status
 
 **SOS**:
 The one-button distress action in Survival Mode: dials Protection Civile 14 and shows the
-Position Card. With no signal it queues and shows "not sent — no signal" until it can
-transmit; the queue's only receiver today is an unmonitored record, and the UI says so.
-No "request received" acknowledgment may ever appear without a staffed receiving end.
+Position Card. A failed attempt is saved on the device only, labelled "not sent"; nothing
+transmits it and no rescue service receives or monitors it — the UI says so and tells the
+user to keep calling 14. No "request received" acknowledgment may ever appear without a
+staffed receiving end.
 _Avoid_: emergency request, help request
 
 **Position Card**:

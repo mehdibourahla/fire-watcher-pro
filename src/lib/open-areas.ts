@@ -8,6 +8,7 @@ export type OpenAreaType =
 
 export type OpenArea = {
   id: string;
+  osm_type: string | null;
   osm_id: number | null;
   name: string;
   name_ar: string | null;
@@ -23,7 +24,12 @@ export const openAreasQuery = queryOptions({
   queryKey: ["open_areas"],
   queryFn: () =>
     fetchAllPages<OpenArea>((from, to) =>
-      supabase.from("open_areas").select("*").order("name").range(from, to),
+      supabase
+        .from("open_areas")
+        .select("*")
+        .order("name")
+        .order("id")
+        .range(from, to),
     ),
 });
 

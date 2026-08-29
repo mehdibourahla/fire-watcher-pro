@@ -145,7 +145,9 @@ function RootComponent() {
   const i18nInstance = useMemo(() => localeInstance(locale), [locale]);
   // Survival Mode owns the whole screen: no header, tabs or footer competing for it.
   const survival = useRouterState({
-    select: (s) => s.location.pathname.startsWith("/survival"),
+    select: (s) =>
+      s.location.pathname === "/survival" ||
+      s.location.pathname.startsWith("/survival/"),
   });
 
   useEffect(() => {

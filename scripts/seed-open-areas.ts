@@ -8,6 +8,16 @@ if (!url || !key) {
   );
   process.exit(1);
 }
+// The service-role key rides in headers; never send it in clear text.
+if (
+  !url.startsWith("https://") &&
+  !/^http:\/\/(localhost|127\.0\.0\.1)/.test(url)
+) {
+  console.error(
+    "SUPABASE_URL must be https:// (or localhost for development).",
+  );
+  process.exit(1);
+}
 
 const db = createClient(url, key, {
   auth: { persistSession: false, autoRefreshToken: false },
@@ -56,6 +66,7 @@ async function communesById() {
       .from("admin_units")
       .select("id, lat, lon")
       .eq("level", "commune")
+      .order("id")
       .range(page * 1000, page * 1000 + 999);
     if (error) throw new Error(error.message);
     rows.push(...((data ?? []) as typeof rows));
@@ -98,6 +109,7 @@ const rows = payload.elements.flatMap((el) => {
   if (!type || lat === undefined || lon === undefined || !name) return [];
   return [
     {
+      osm_type: el.type,
       osm_id: el.id,
       name,
       name_ar: tags["name:ar"] ?? null,
@@ -117,7 +129,7 @@ console.log(
 for (let i = 0; i < rows.length; i += 500) {
   const { error } = await db
     .from("open_areas")
-    .upsert(rows.slice(i, i + 500), { onConflict: "osm_id" });
+    .upsert(rows.slice(i, i + 500), { onConflict: "osm_type,osm_id" });
   if (error) throw new Error(`open_areas upsert failed: ${error.message}`);
 }
 

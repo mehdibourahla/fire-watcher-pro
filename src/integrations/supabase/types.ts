@@ -614,6 +614,7 @@ export type Database = {
           name: string;
           name_ar: string | null;
           osm_id: number | null;
+          osm_type: string | null;
           source: string;
         };
         Insert: {
@@ -626,6 +627,7 @@ export type Database = {
           name: string;
           name_ar?: string | null;
           osm_id?: number | null;
+          osm_type?: string | null;
           source?: string;
         };
         Update: {
@@ -638,6 +640,7 @@ export type Database = {
           name?: string;
           name_ar?: string | null;
           osm_id?: number | null;
+          osm_type?: string | null;
           source?: string;
         };
         Relationships: [

@@ -25,9 +25,15 @@ export function loadPack(storage: PackStorage): SurvivalPack | null {
     const raw = storage.getItem(KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as SurvivalPack;
-    return typeof parsed === "object" && parsed !== null && "saved_at" in parsed
-      ? parsed
-      : null;
+    const complete =
+      typeof parsed === "object" &&
+      parsed !== null &&
+      typeof parsed.saved_at === "string" &&
+      typeof parsed.lat === "number" &&
+      typeof parsed.lon === "number" &&
+      Array.isArray(parsed.openAreas) &&
+      Array.isArray(parsed.threats);
+    return complete ? parsed : null;
   } catch {
     return null;
   }

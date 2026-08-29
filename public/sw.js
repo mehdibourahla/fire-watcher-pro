@@ -31,7 +31,7 @@ self.addEventListener("fetch", (event) => {
         const hit = await cache.match(event.request);
         if (hit) return hit;
         const res = await fetch(event.request);
-        if (res.ok) void cache.put(event.request, res.clone());
+        if (res.ok) await cache.put(event.request, res.clone()).catch(() => {});
         return res;
       }),
     );
@@ -48,7 +48,8 @@ self.addEventListener("fetch", (event) => {
       caches.open(PAGE_CACHE).then(async (cache) => {
         try {
           const res = await fetch(event.request);
-          if (res.ok) void cache.put(event.request, res.clone());
+          if (res.ok)
+            await cache.put(event.request, res.clone()).catch(() => {});
           return res;
         } catch {
           const hit =

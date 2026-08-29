@@ -48,7 +48,8 @@ function CheckInPage() {
     return null;
   }, [position, units.data, settlements.data, pack, locale]);
 
-  const message = useMemo(() => {
+  // Built at render AND at send time, so a page left open never sends a stale timestamp.
+  const composeMessage = () => {
     if (!card) return null;
     const time = new Intl.DateTimeFormat("fr-DZ", {
       timeZone: "Africa/Algiers",
@@ -63,14 +64,16 @@ function CheckInPage() {
       time,
       t: (k, o) => (o ? t(k, o) : t(k)),
     });
-  }, [kind, card, t]);
+  };
+  const message = composeMessage();
 
   const onSend = () => {
-    if (!message) return;
+    const fresh = composeMessage();
+    if (!fresh) return;
     if (navigator.share) {
-      void navigator.share({ text: message }).catch(() => undefined);
+      void navigator.share({ text: fresh }).catch(() => undefined);
     } else {
-      window.location.href = `sms:?&body=${encodeURIComponent(message)}`;
+      window.location.href = `sms:?&body=${encodeURIComponent(fresh)}`;
     }
   };
 
