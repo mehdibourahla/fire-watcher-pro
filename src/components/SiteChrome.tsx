@@ -4,7 +4,12 @@ import { useTranslation } from "react-i18next";
 
 import { BrandMark } from "@/components/BrandMark";
 import { RISK_LEVELS, riskSolid } from "@/components/nadhir/risk-visuals";
-import { LOCALES, LOCALE_LABELS, applyLocale } from "@/i18n";
+import {
+  LOCALES,
+  LOCALE_LABELS,
+  LOCALE_SHORT_LABELS,
+  applyLocale,
+} from "@/i18n";
 import { dangerLevelKey } from "@/lib/nadhir";
 import { cn } from "@/lib/utils";
 
@@ -39,13 +44,14 @@ export function LanguageSwitcher() {
           onClick={() => applyLocale(locale)}
           aria-current={i18n.language === locale ? "true" : undefined}
           className={cn(
-            "rounded-md px-2 py-1 text-xs font-medium transition-colors",
+            "rounded-md px-1.5 py-1 text-xs font-medium transition-colors sm:px-2",
             i18n.language === locale
               ? "bg-[var(--accent-tint)] text-[var(--accent)]"
               : "text-muted-foreground hover:bg-muted",
           )}
         >
-          {LOCALE_LABELS[locale]}
+          <span className="sm:hidden">{LOCALE_SHORT_LABELS[locale]}</span>
+          <span className="hidden sm:inline">{LOCALE_LABELS[locale]}</span>
         </button>
       ))}
     </div>
@@ -56,10 +62,11 @@ export function SiteHeader() {
   const { t } = useTranslation();
   return (
     <header className="sticky top-0 z-20 border-b border-border bg-surface/95 backdrop-blur">
-      <div className="mx-auto flex h-14 max-w-[1600px] items-center gap-4 px-4">
-        <Link to="/" className="flex items-center gap-2">
+      <div className="mx-auto flex h-14 max-w-[1600px] items-center gap-2 px-3 sm:gap-4 sm:px-4">
+        <Link to="/" className="flex min-w-0 items-center gap-2">
           <BrandMark className="h-7 w-7 shrink-0 rounded-[7px]" />
-          <span className="font-display text-lg font-semibold">
+          {/* below 360px the wordmark plus the controls no longer fit; the logo carries it */}
+          <span className="truncate font-display text-lg font-semibold max-[359px]:hidden">
             {t("common.appName")}
           </span>
           <span className="hidden text-xs text-muted-foreground sm:inline">
@@ -87,7 +94,7 @@ export function SiteHeader() {
           <LanguageSwitcher />
           <Link
             to="/zones"
-            className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground"
+            className="shrink-0 whitespace-nowrap rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground"
           >
             {t("nav.account")}
           </Link>
