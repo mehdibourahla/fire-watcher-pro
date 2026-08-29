@@ -160,6 +160,9 @@ export const kab: Translation = {
     webhooks: "Webhooks",
     team: "Tarbaɛt",
     language: "Tutlayt",
+    themeSystem: "Askan: yeḍfer ibenk-ik — uɣal ɣer uceɛlal",
+    themeLight: "Askan: aceɛlal — uɣal ɣer uberkan",
+    themeDark: "Askan: aberkan — ḍfer ibenk-ik",
   },
   emergency: {
     title: "Uṭṭunen n tuffɣa",

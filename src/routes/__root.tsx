@@ -19,6 +19,7 @@ import {
   RTL_LOCALES,
   syncClientLocale,
 } from "../i18n";
+import { THEME_BOOT_SCRIPT, applyTheme, readThemeCookie } from "../lib/theme";
 import { SiteHeader, SiteFooter, BottomTabs } from "../components/SiteChrome";
 import { AlertNotifier } from "../components/AlertNotifier";
 
@@ -127,9 +128,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   const locale = readLocaleCookie();
+  const theme = readThemeCookie();
   return (
-    <html lang={locale} dir={RTL_LOCALES.includes(locale) ? "rtl" : "ltr"}>
+    <html
+      lang={locale}
+      dir={RTL_LOCALES.includes(locale) ? "rtl" : "ltr"}
+      className={theme === "dark" ? "dark" : undefined}
+    >
       <head>
+        {/* Must run before paint: SSR cannot know prefers-color-scheme for "system". */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
         <HeadContent />
       </head>
       <body>
@@ -158,6 +166,15 @@ function RootComponent() {
   useEffect(() => {
     if (import.meta.env.PROD && "serviceWorker" in navigator)
       void navigator.serviceWorker.register("/sw.js").catch(() => undefined);
+  }, []);
+
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    const onChange = () => {
+      if (readThemeCookie() === "system") applyTheme("system");
+    };
+    media.addEventListener("change", onChange);
+    return () => media.removeEventListener("change", onChange);
   }, []);
 
   return (

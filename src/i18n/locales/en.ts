@@ -158,6 +158,9 @@ export const en = {
     webhooks: "Webhooks",
     team: "Team",
     language: "Language",
+    themeSystem: "Theme: follows your device — switch to light",
+    themeLight: "Theme: light — switch to dark",
+    themeDark: "Theme: dark — switch to follow your device",
   },
   emergency: {
     title: "Emergency numbers",

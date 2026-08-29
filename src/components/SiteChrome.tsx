@@ -1,5 +1,15 @@
 import { Link } from "@tanstack/react-router";
-import { Bell, Flame, MapPin, Settings, TriangleAlert } from "lucide-react";
+import {
+  Bell,
+  Flame,
+  MapPin,
+  Monitor,
+  Moon,
+  Settings,
+  Sun,
+  TriangleAlert,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { BrandMark } from "@/components/BrandMark";
@@ -11,6 +21,12 @@ import {
   applyLocale,
 } from "@/i18n";
 import { dangerLevelKey } from "@/lib/nadhir";
+import {
+  applyTheme,
+  nextTheme,
+  readThemeCookie,
+  type Theme,
+} from "@/lib/theme";
 import { cn } from "@/lib/utils";
 
 const PRIMARY_NAV = [
@@ -58,6 +74,38 @@ export function LanguageSwitcher() {
   );
 }
 
+const THEME_ICON = { system: Monitor, light: Sun, dark: Moon } as const;
+
+export function ThemeToggle() {
+  const { t } = useTranslation();
+  // Starts at "system" and syncs on mount so SSR and hydration render the same icon.
+  const [theme, setTheme] = useState<Theme>("system");
+  useEffect(() => setTheme(readThemeCookie()), []);
+  const Icon = THEME_ICON[theme];
+  const label = t(
+    theme === "system"
+      ? "nav.themeSystem"
+      : theme === "light"
+        ? "nav.themeLight"
+        : "nav.themeDark",
+  );
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        const next = nextTheme(theme);
+        applyTheme(next);
+        setTheme(next);
+      }}
+      aria-label={label}
+      title={label}
+      className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+    >
+      <Icon aria-hidden className="size-4" />
+    </button>
+  );
+}
+
 export function SiteHeader() {
   const { t } = useTranslation();
   return (
@@ -90,8 +138,9 @@ export function SiteHeader() {
           ))}
         </nav>
 
-        <div className="ms-auto flex items-center gap-2">
+        <div className="ms-auto flex items-center gap-1 sm:gap-2">
           <LanguageSwitcher />
+          <ThemeToggle />
           <Link
             to="/zones"
             className="shrink-0 whitespace-nowrap rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground"
