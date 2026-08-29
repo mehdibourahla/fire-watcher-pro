@@ -10,6 +10,8 @@ import {
 import type { Locale } from "@/i18n";
 
 export const SURVIVAL_AUTO_KM = 10;
+// Beyond this a fire is context, not a threat to this person; showing it would overclaim.
+export const SURVIVAL_THREAT_KM = 50;
 export const SURVIVAL_ACTIVE_KEY = "nadhir.survival.active";
 export const SURVIVAL_LAST_CHECK_KEY = "nadhir.survival.lastCheck";
 export const SURVIVAL_DISMISS_KEY = "nadhir.survival.dismissed";
@@ -27,11 +29,13 @@ export function nearestThreat(
   lat: number,
   lon: number,
   clusters: FireCluster[],
+  maxKm: number = SURVIVAL_THREAT_KM,
 ): Threat | null {
   let best: { cluster: FireCluster; km: number } | null = null;
   for (const c of clusters) {
     if (!LIVE_STATES.includes(c.state)) continue;
     const km = haversineKm(lat, lon, c.lat, c.lon);
+    if (km > maxKm) continue;
     if (!best || km < best.km) best = { cluster: c, km };
   }
   if (!best) return null;

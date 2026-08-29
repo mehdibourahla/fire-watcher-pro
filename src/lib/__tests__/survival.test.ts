@@ -116,6 +116,11 @@ describe("nearestThreat", () => {
   it("keeps the auto-entry radius at 10 km", () => {
     expect(SURVIVAL_AUTO_KM).toBe(10);
   });
+
+  it("treats a distant fire as no threat at all", () => {
+    const far = cluster({ lat: 45.0, lon: 20.0 });
+    expect(nearestThreat(36.5, 4.0, [far])).toBeNull();
+  });
 });
 
 describe("positionCard", () => {

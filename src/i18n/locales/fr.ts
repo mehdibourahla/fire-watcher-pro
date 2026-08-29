@@ -61,11 +61,11 @@ export const fr: Translation = {
       "Aucune instruction officielle pour votre zone pour l'instant. Ce sont des consignes générales, rédigées et approuvées à l'avance.",
     knows: "Ce que Nadhir sait",
     lastKnown: "Dernier état connu — peut être dépassé",
-    fireObserved: "Feu observé à {{km}} km au {{bearing}}",
+    fireObserved: "Feu observé à {{km}} km, direction {{bearing}}",
     seenAgo: "vu {{time}}",
     closer: "plus proche qu'au passage précédent",
     bySatellite: "satellite",
-    wind: "Vent {{kmh}} km/h venant du {{bearing}}",
+    wind: "Vent {{kmh}} km/h du secteur {{bearing}}",
     windToward: "souffle du feu vers vous",
     noFreshData:
       "Aucune observation récente près de vous. Cela signifie que Nadhir n'a rien vu — pas qu'il n'y a rien.",
