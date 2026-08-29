@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5";
   };
+  graphql_public: {
+    Tables: {
+      [_ in never]: never;
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json;
+          operationName?: string;
+          query?: string;
+          variables?: Json;
+        };
+        Returns: Json;
+      };
+    };
+    Enums: {
+      [_ in never]: never;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
+    };
+  };
   public: {
     Tables: {
       admin_units: {
@@ -349,38 +374,6 @@ export type Database = {
         };
         Relationships: [];
       };
-      effis_danger: {
-        Row: {
-          commune_id: string;
-          created_at: string;
-          danger_class: string;
-          date: string;
-          id: string;
-        };
-        Insert: {
-          commune_id: string;
-          created_at?: string;
-          danger_class: string;
-          date: string;
-          id?: string;
-        };
-        Update: {
-          commune_id?: string;
-          created_at?: string;
-          danger_class?: string;
-          date?: string;
-          id?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "effis_danger_commune_id_fkey";
-            columns: ["commune_id"];
-            isOneToOne: false;
-            referencedRelation: "admin_units";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
       detections: {
         Row: {
           cluster_id: string | null;
@@ -440,6 +433,38 @@ export type Database = {
           },
         ];
       };
+      effis_danger: {
+        Row: {
+          commune_id: string;
+          created_at: string;
+          danger_class: string;
+          date: string;
+          id: string;
+        };
+        Insert: {
+          commune_id: string;
+          created_at?: string;
+          danger_class: string;
+          date: string;
+          id?: string;
+        };
+        Update: {
+          commune_id?: string;
+          created_at?: string;
+          danger_class?: string;
+          date?: string;
+          id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "effis_danger_commune_id_fkey";
+            columns: ["commune_id"];
+            isOneToOne: false;
+            referencedRelation: "admin_units";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       fire_clusters: {
         Row: {
           commune_id: string | null;
@@ -464,6 +489,7 @@ export type Database = {
           sources: string[];
           spread_bearing_deg: number | null;
           state: string;
+          suspected_persistent_source: boolean;
           updated_at: string;
           wilaya_id: string | null;
           wind_dir_deg: number | null;
@@ -492,6 +518,7 @@ export type Database = {
           sources?: string[];
           spread_bearing_deg?: number | null;
           state?: string;
+          suspected_persistent_source?: boolean;
           updated_at?: string;
           wilaya_id?: string | null;
           wind_dir_deg?: number | null;
@@ -520,6 +547,7 @@ export type Database = {
           sources?: string[];
           spread_bearing_deg?: number | null;
           state?: string;
+          suspected_persistent_source?: boolean;
           updated_at?: string;
           wilaya_id?: string | null;
           wind_dir_deg?: number | null;
@@ -684,6 +712,60 @@ export type Database = {
             referencedColumns: ["id"];
           },
         ];
+      };
+      persistent_sources: {
+        Row: {
+          active_days: number;
+          created_at: string;
+          detection_count: number;
+          first_seen: string;
+          frp_p50: number | null;
+          frp_p90: number | null;
+          id: string;
+          jul_aug_share: number | null;
+          last_seen: string;
+          lat: number;
+          lon: number;
+          observation_days: number;
+          site_id: string;
+          site_name: string | null;
+          static_share: number;
+        };
+        Insert: {
+          active_days: number;
+          created_at?: string;
+          detection_count: number;
+          first_seen: string;
+          frp_p50?: number | null;
+          frp_p90?: number | null;
+          id?: string;
+          jul_aug_share?: number | null;
+          last_seen: string;
+          lat: number;
+          lon: number;
+          observation_days: number;
+          site_id: string;
+          site_name?: string | null;
+          static_share: number;
+        };
+        Update: {
+          active_days?: number;
+          created_at?: string;
+          detection_count?: number;
+          first_seen?: string;
+          frp_p50?: number | null;
+          frp_p90?: number | null;
+          id?: string;
+          jul_aug_share?: number | null;
+          last_seen?: string;
+          lat?: number;
+          lon?: number;
+          observation_days?: number;
+          site_id?: string;
+          site_name?: string | null;
+          static_share?: number;
+        };
+        Relationships: [];
       };
       profiles: {
         Row: {
@@ -1007,6 +1089,26 @@ export type Database = {
           sighting: string | null;
           status: string | null;
         };
+        Insert: {
+          created_at?: string | null;
+          id?: string | null;
+          kind?: string | null;
+          lat?: number | null;
+          lon?: number | null;
+          observed_at?: string | null;
+          sighting?: string | null;
+          status?: string | null;
+        };
+        Update: {
+          created_at?: string | null;
+          id?: string | null;
+          kind?: string | null;
+          lat?: number | null;
+          lon?: number | null;
+          observed_at?: string | null;
+          sighting?: string | null;
+          status?: string | null;
+        };
         Relationships: [];
       };
     };
@@ -1150,6 +1252,9 @@ export type CompositeTypes<
     : never;
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],

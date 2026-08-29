@@ -15,6 +15,7 @@ zone. The interface ships in Arabic (default, RTL), French, English and Kabyle.
 | Source                                          | State                                                                                                                                 |
 | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
 | NASA FIRMS (SNPP, NOAA-20, NOAA-21, MODIS)      | connected, ingesting                                                                                                                  |
+| NASA FIRMS science archive (`VIIRS_SNPP_SP`)    | source of the persistent-industrial-source registry — its `type` label is absent from the near-real-time feeds                        |
 | Open-Meteo (weather, fire-weather index, winds) | connected                                                                                                                             |
 | OpenStreetMap (admin boundaries, settlements)   | seeded from `data/geo/`, ODbL                                                                                                         |
 | EUMETSAT MTG FCI                                | credentials valid, **feed health only** — the granules are netCDF, which the edge runtime cannot decode, so no detections are written |
@@ -155,6 +156,11 @@ want to contribute. The blockers that matter most:
   commune name, but nothing yet says which country they are in.
 - **No sub-5-minute detection.** The geostationary FCI feed is polled for health only — its
   netCDF granules cannot be decoded in the edge runtime, so it writes no detections.
+- **Gas flares are screened, not perfectly.** 77% of Algeria's satellite fire detections are
+  permanent industrial heat sources. A registry learned from NASA's own labels removes 98.4%
+  of alerting-size false fires, at the cost of 5.5% of real ones — almost all of them small
+  fires inside refinery grounds. Screened detections stay in the database and are shown on an
+  opt-in "known industrial heat sources" map layer and at `/api/public/v1/sources`.
 
 ## Contributing
 

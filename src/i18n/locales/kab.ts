@@ -192,6 +192,7 @@ export const kab: Translation = {
     layerFires: "Timessi urmidin",
     layerRisk: "Asmenyaf n uɣilif",
     layerUnverified: "Tifin ur nettwasenqed ara",
+    layerIndustrialSources: "Iɣbula n uzɣal n tenzagt",
     layerWind: "Ineẓẓafen n waḍu",
     unverified: "Ur yettwasenqed ara",
     selectHint: "Fren tamessi ɣef tkarḍa akken ad twaliḍ talqayt.",

@@ -190,6 +190,7 @@ export const ar: Translation = {
     layerFires: "الحرائق النشطة",
     layerRisk: "توقع الخطر",
     layerUnverified: "رصد غير مؤكد",
+    layerIndustrialSources: "مصادر حرارية صناعية معروفة",
     layerWind: "اتجاه الرياح",
     unverified: "غير مؤكد",
     selectHint: "اختر حريقًا على الخريطة لعرض تفاصيله.",

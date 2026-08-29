@@ -33,6 +33,7 @@
 **Files:** Create `src/lib/survival.ts`, `src/lib/__tests__/survival.test.ts`.
 
 **Produces:**
+
 - `SURVIVAL_AUTO_KM = 10` (auto-entry radius), `SURVIVAL_ACTIVE_KEY = "nadhir.survival.active"`.
 - `type Threat = { cluster: FireCluster; km: number; bearing: number; closing: boolean | null }`
 - `nearestThreat(lat, lon, clusters: FireCluster[]): Threat | null` — nearest LIVE_STATES cluster by haversine; `closing` true when `spread_bearing_deg` points within ±60° of the bearing cluster→user, null when no bearing.
@@ -71,6 +72,7 @@ Copy follows the validated mockups; Arabic from the Arabic artboard; Kabyle foll
 **Files:** Create `supabase/migrations/20260829100000_<uuid>.sql`, `src/lib/open-areas.ts`, `scripts/seed-open-areas.ts`. Modify `src/lib/reports.ts` (add `kind`).
 
 Migration:
+
 ```sql
 create table public.open_areas (
   id uuid primary key default gen_random_uuid(),
@@ -99,6 +101,7 @@ create view public.hazard_reports with (security_invoker = off) as
   where status in ('pending','approved');
 grant select on public.hazard_reports to anon, authenticated;
 ```
+
 `open-areas.ts`: `type OpenArea` mirroring the table; `openAreasQuery` via `fetchAllPages`; `hazardReportsQuery` selecting last 24 h from the view. Seed script: Overpass query per north-Algeria bbox for `leisure=stadium|pitch`, `amenity=school` (yard), `landuse=recreation_ground`, `amenity=parking` (surface), inserts with nearest commune id; runnable `bun run scripts/seed-open-areas.ts`; reads credentials like `scripts/seed-geo.ts` does.
 
 - [ ] Write migration (uuid via `uuidgen`), lib, seed script; typecheck; commit "Add open_areas, report kinds and safe-columns hazard view"

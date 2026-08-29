@@ -1,0 +1,49 @@
+name: sources-refresh
+
+on:
+  schedule:
+    - cron: "0 3 1 * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    # the only workflow here that writes to the repo, and only to open a PR
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: 1.3.14
+
+      - run: bun install --frozen-lockfile
+      - name: Restore FIRMS archive cache
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: .cache/firms-archive
+          key: firms-archive-v1
+      - name: Rebuild registry
+        env:
+          FIRMS_MAP_KEY: ${{ secrets.FIRMS_MAP_KEY }}
+        run: bun run build:sources
+      # a registry that breaches either bound must never reach review
+      - name: Evaluate before proposing
+        run: bun run evaluate:sources
+      - uses: peter-evans/create-pull-request@c5a7806660adbe173f04e3e038b0ccdcd758773c # v6
+        with:
+          branch: sources-refresh
+          title: "Monthly persistent-source registry refresh"
+          body: |
+            Regenerated from the FIRMS archive.
+
+            Review the cell diff before merging — this changes what Nadhir suppresses.
+            The held-out confusion matrix in the job log must show real-event loss
+            within bounds and false-event removal above the floor.
+          commit-message: "Refresh persistent-source registry"
+          add-paths: data/flares/algeria-persistent-sources.json

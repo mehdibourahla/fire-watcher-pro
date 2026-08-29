@@ -14,7 +14,7 @@ const MAX_SETTLEMENT_DISTANCE_KM = 15;
 const MAX_COMMUNE_DISTANCE_KM = 60;
 const HOUR = 3600_000;
 
-type Det = {
+export type Det = {
   id: string;
   source: string;
   sensor: string;
@@ -34,7 +34,7 @@ function shortId() {
   return out;
 }
 
-function confidenceScore(dets: Det[]) {
+export function confidenceScore(dets: Det[]) {
   const sources = new Set(dets.map((d) => d.sensor)).size;
   const mean = dets.reduce((s, d) => s + d.confidence_raw, 0) / dets.length;
   const volume = Math.min(1, dets.length / 6);
@@ -46,7 +46,7 @@ function confidenceScore(dets: Det[]) {
   );
 }
 
-function stateFor(dets: Det[], lastMs: number, now: number) {
+export function stateFor(dets: Det[], lastMs: number, now: number) {
   const ageH = (now - lastMs) / HOUR;
   const sources = new Set(dets.map((d) => d.sensor)).size;
   if (ageH > 24) return "extinguished";
