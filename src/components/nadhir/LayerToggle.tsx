@@ -16,6 +16,7 @@ export function LayerToggle({ layers, onChange }: Props) {
   const rows: { key: keyof MapLayers; label: string }[] = [
     { key: "fires", label: t("map.layerFires") },
     { key: "unverified", label: t("map.layerUnverified") },
+    { key: "industrialSources", label: t("map.layerIndustrialSources") },
   ];
 
   return (

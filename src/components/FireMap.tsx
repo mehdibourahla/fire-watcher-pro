@@ -9,6 +9,7 @@ import type { FireCluster } from "@/lib/nadhir";
 export type MapLayers = {
   fires: boolean;
   unverified: boolean;
+  industrialSources: boolean;
 };
 
 type Props = {
@@ -203,7 +204,7 @@ export default function FireMap({
   center = [3.6, 35.8],
   zoom = 5.1,
   interactive = true,
-  layers = { fires: true, unverified: false },
+  layers = { fires: true, unverified: false, industrialSources: false },
 }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);

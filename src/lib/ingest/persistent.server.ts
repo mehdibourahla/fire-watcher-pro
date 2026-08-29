@@ -22,6 +22,29 @@ export function nearestSource(
   return best;
 }
 
+const CANDIDATE_MIN_DAYS = 14;
+const CANDIDATE_MAX_CV = 0.35;
+const CANDIDATE_MAX_STALE_DAYS = 2;
+
+/** Flags only — a long-burning real fire must never be silenced by a heuristic. */
+export function isPersistentCandidate(
+  cluster: { firstMs: number; lastMs: number; frps: number[] },
+  now: number,
+): boolean {
+  const spanDays = (cluster.lastMs - cluster.firstMs) / 86_400_000;
+  if (spanDays < CANDIDATE_MIN_DAYS) return false;
+  if ((now - cluster.lastMs) / 86_400_000 > CANDIDATE_MAX_STALE_DAYS)
+    return false;
+  const frps = cluster.frps.filter((f) => Number.isFinite(f) && f > 0);
+  if (frps.length < 3) return false;
+  const mean = frps.reduce((s, f) => s + f, 0) / frps.length;
+  if (mean === 0) return false;
+  const sd = Math.sqrt(
+    frps.reduce((s, f) => s + (f - mean) ** 2, 0) / frps.length,
+  );
+  return sd / mean <= CANDIDATE_MAX_CV;
+}
+
 export async function screenPersistentSources(): Promise<{ screened: number }> {
   const sources = await fetchAllPages<Source>((from, to) =>
     supabaseAdmin

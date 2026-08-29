@@ -189,6 +189,7 @@ export const en = {
     layerFires: "Active fires",
     layerRisk: "Danger forecast",
     layerUnverified: "Unverified detections",
+    layerIndustrialSources: "Known industrial heat sources",
     layerWind: "Wind vectors",
     unverified: "Unverified",
     selectHint: "Select a fire on the map to see its detail.",

@@ -80,6 +80,7 @@ function LiveMapPage() {
   const [layers, setLayers] = useState<MapLayers>({
     fires: true,
     unverified: false,
+    industrialSources: false,
   });
   const [railSearch, setRailSearch] = useState("");
 

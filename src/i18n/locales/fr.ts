@@ -195,6 +195,7 @@ export const fr: Translation = {
     layerFires: "Feux actifs",
     layerRisk: "Prévision de danger",
     layerUnverified: "Détections non vérifiées",
+    layerIndustrialSources: "Sources thermiques industrielles connues",
     layerWind: "Vecteurs de vent",
     unverified: "Non vérifié",
     selectHint: "Sélectionnez un feu sur la carte pour voir son détail.",

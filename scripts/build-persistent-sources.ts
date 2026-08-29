@@ -42,22 +42,37 @@ function* windows() {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+// The deployed ingest shares this MAP_KEY and runs every 10 minutes. FIRMS meters
+// 5000 transactions per 10 minutes per key, so this backfill paces itself well
+// under that ceiling rather than starving live detection of its quota.
+const REQUEST_SPACING_MS = 2000;
+let lastRequestAt = 0;
+async function throttle() {
+  const wait = lastRequestAt + REQUEST_SPACING_MS - Date.now();
+  if (wait > 0) await sleep(wait);
+  lastRequestAt = Date.now();
+}
+
 async function fetchWindow(day: string): Promise<string> {
   const path = `${CACHE}/${day}.csv`;
   if (existsSync(path)) return readFileSync(path, "utf8");
   const url = `https://firms.modaps.eosdis.nasa.gov/api/area/csv/${key}/${SOURCE}/${BBOX}/5/${day}`;
   for (let attempt = 0; attempt < 20; attempt += 1) {
+    await throttle();
     const res = await fetch(url);
     const body = await res.text();
     if (res.ok && body.startsWith("latitude")) {
       writeFileSync(path, body);
       return body;
     }
-    // FIRMS meters 5000 transactions per 10 minutes and answers 200 with a plain
-    // text refusal, so the quota has to be waited out rather than backed off from.
-    if (body.includes("Exceeding allowed transaction limit")) {
-      console.log(`  quota reached, waiting 60s (${day})`);
-      await sleep(60_000);
+    // FIRMS answers 200 with a plain-text refusal when the quota is spent, and
+    // reports a valid key as invalid once hard-throttled. Both must be waited out.
+    if (
+      body.includes("Exceeding allowed transaction limit") ||
+      body.includes("Invalid MAP_KEY")
+    ) {
+      console.log(`  throttled, waiting 120s (${day}): ${body.trim()}`);
+      await sleep(120_000);
       continue;
     }
     await sleep(3000 * (attempt + 1));

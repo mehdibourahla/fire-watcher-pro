@@ -2,7 +2,10 @@ import { readFileSync } from "node:fs";
 
 import { describe, expect, it } from "vitest";
 
-import { nearestSource } from "@/lib/ingest/persistent.server";
+import {
+  isPersistentCandidate,
+  nearestSource,
+} from "@/lib/ingest/persistent.server";
 import { cellCentre, cellKey, qualifies, siteIdFor } from "@/lib/persistent";
 
 describe("grid", () => {
@@ -59,6 +62,55 @@ describe("screen radius", () => {
 
   it("returns null when the registry is empty", () => {
     expect(nearestSource(35.81, -0.26, [])).toBeNull();
+  });
+});
+
+describe("online candidate detection", () => {
+  const day = 24 * 3600e3;
+  const now = Date.parse("2026-08-29T12:00:00Z");
+
+  it("flags a cluster live for weeks with flat radiative power", () => {
+    expect(
+      isPersistentCandidate(
+        {
+          firstMs: now - 21 * day,
+          lastMs: now,
+          frps: [2.1, 2.3, 2.0, 2.2, 2.4],
+        },
+        now,
+      ),
+    ).toBe(true);
+  });
+
+  it("leaves a long-burning fire with varying power alone", () => {
+    expect(
+      isPersistentCandidate(
+        { firstMs: now - 21 * day, lastMs: now, frps: [4, 55, 120, 18, 90] },
+        now,
+      ),
+    ).toBe(false);
+  });
+
+  it("leaves a young cluster alone however flat it looks", () => {
+    expect(
+      isPersistentCandidate(
+        { firstMs: now - 2 * day, lastMs: now, frps: [2.1, 2.2, 2.0] },
+        now,
+      ),
+    ).toBe(false);
+  });
+
+  it("leaves a stale cluster alone once detections stop arriving", () => {
+    expect(
+      isPersistentCandidate(
+        {
+          firstMs: now - 40 * day,
+          lastMs: now - 10 * day,
+          frps: [2.1, 2.2, 2.0, 2.3],
+        },
+        now,
+      ),
+    ).toBe(false);
   });
 });
 
