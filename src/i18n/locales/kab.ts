@@ -25,6 +25,126 @@ export const kab: Translation = {
     demoModeNote:
       "Isaduf n usaṭelit ur qqinen ara akka tura. Izwilen d wid n uskan.",
   },
+  survival: {
+    mode: "Askar n leslak",
+    online: "Yeqqen",
+    offline: "Ur yeqqin ara",
+    pill: "Di lxaṭer?",
+    enterTitle: "Aql-ak tura ɣer tama n tmessi?",
+    enterBody:
+      "Askar n leslak yeskan yiwet n tɣawsa ara txedmeḍ yal tikkelt, iḥerrez tamnaḍt-ik war aẓeṭṭa, iheggi amkan-ik i usiwel ɣer Wemmesten Aɣarim ɣef 14.",
+    enterFetching: "Yessalay amkan GPS · yeḥerrez takemmust war aẓeṭṭa…",
+    enterYes: "Ih — rmed askar n leslak",
+    enterCancel: "Sefsex",
+    enterFootnote:
+      "Armad ur yettxelliṣ acemma, ur yettazen acemma. Tzemreḍ ad teffɣeḍ melmi tebɣiḍ.",
+    exit: "Ffeɣ",
+    exitTitle: "Tuffɣa seg uskar n leslak?",
+    exitBody: "Takemmust war aẓeṭṭa ad teqqim teḥrez deg utilifun-a.",
+    exitYes: "Ffeɣ",
+    interTitle: "Timess tettwasentem ɣer tama n wemkan-ik",
+    interBody:
+      "Timess yettwasentmen s usaṭelit tella ɣef azal n {{km}} km seg utilifun-a. Nadhir yezmer ad yuɣal ɣer uskar n leslak: yiwet n tɣawsa yal tikkelt, iteddu war aẓeṭṭa.",
+    interBasedOn: "Yers ɣef",
+    interPosition: "amkan n yibenk-ik",
+    interObservation: "Tifin",
+    interSatellite: "asaṭelit · {{time}}",
+    interEnter: "Rmed askar n leslak",
+    interNotHere: "Ur lliɣ ara deg wemkan",
+    guidanceLabel: "Iwellihen izeɣwanen · ttwaqeblen uqbel",
+    guidanceSaved: "Iwellihen izeɣwanen · ḥerzen deg utilifun-a",
+    prepareTitle: "Heggi iman-ik i tuffɣa",
+    prepareBody:
+      "Siwel i Wemmesten Aɣarim ɣef 14 i yiwellihen. Jmeɛ iɣmisen, isafarn d waman. Ur nheṛ ara ɣer webbu.",
+    prepareNoInstruction:
+      "Ulac tuddsa tunṣibt i temnaḍt-ik ar tura. Wigi d iwellihen imatuten, uran ttwaqeblen uqbel.",
+    knows: "Ayen yeẓra Nadhir",
+    lastKnown: "Taneggarut yettwassnen — tezmer tuɣal d taqdimt",
+    fireObserved: "Timess tettwafen ɣef {{km}} km ɣer {{bearing}}",
+    seenAgo: "tettwafen {{time}}",
+    closer: "teqreb ugar seg uɛeddi yezrin",
+    bySatellite: "asaṭelit",
+    wind: "Aḍu {{kmh}} km/s si {{bearing}}",
+    windToward: "yesuḍ si tmessi ɣur-k",
+    noFreshData:
+      "Ulac tifin tamaynut ɣer tama-k. Ayagi yemmal Nadhir ur iwala acemma — mačči ulac kra.",
+    noPosition:
+      "Amkan ur yettwassen ara. Sireg asideg akken ad teddu tkarḍa SOS d yisallen.",
+    sinceCheck:
+      "Seg tikkelt taneggarut ({{time}}): {{fires}} n tifin · {{reports}} n yilɣa",
+    sos: "SOS",
+    sosCall: "Siwel i Wemmesten Aɣarim 14",
+    sosFree: "asiwel baṭel · d abrid kan yettwaɛassen ass-a",
+    sosPosition: "Amkan-ik — ɣer-it i uxeddam",
+    sosCommune: "Taɣiwant",
+    sosNearest: "Amkan iqerben",
+    sosNearestValue: "{{km}} km si {{place}}",
+    sosCoords: "Timsisiyin",
+    sosQueueNote:
+      "Ma yecceḍ usiwel, SOS-ik ad yettwaḥrez deg utilifun-a, ad yettwazen mi d-yuɣal uẓeṭṭa. Nadhir yeskles-it maca ulac win i t-yettɛassan — kemmel siwel i 14.",
+    sosQueued: "SOS yettwaḥrez {{time}} — ur yettwazen ara, ulac amsekles yettwaɛassen.",
+    checkinTitle: "Sers lexbaṛ",
+    checkinIntro:
+      "Ini i twacult-ik anda telliḍ, seg utilifun-ik. Ur ḥwaǧen ara asnas — izen yettaweḍ d SMS neɣ WhatsApp.",
+    checkinOk: "Mmel aql-i akken ilaq",
+    checkinOkSub: "yettazen addad-ik d wemkan-ik tura",
+    checkinAssist: "Mmel ḥwaǧeɣ tallalt",
+    checkinAssistSub: "yessutur i twacult ad siwlen i 14 fell-ak s wemkan-ik",
+    checkinPreview: "Taskant n yizen",
+    checkin: {
+      msgOk:
+        "Aql-i akken ilaq. Ɣer tama n {{place}}, {{time}}. Timsisiyin: {{coords}}. Yettwazen si Nadhir.",
+      msgAssist:
+        "Ḥwaǧeɣ tallalt. Ɣer tama n {{place}}, {{time}}. Timsisiyin: {{coords}}. Siwlet i Wemmesten Aɣarim 14 fell-i. Yettwazen si Nadhir.",
+    },
+    checkinSend: "Azen s SMS / WhatsApp",
+    checkinNote:
+      "Asers n lexbaṛ yeskles kan belli taqeffalt-a tettwasenned deg wakud-nni — ulac wayeḍ.",
+    areasTitle: "Tallunin tildayin ɣer tama-k",
+    areasIntro:
+      "Seg yisefka n tkarḍa kan — ur ttwasenqdent ara. Nadhir ur yeẓri ara addad-nsent tura. Sexdem tiseqqar ddaw-a; tidbal zemrent ad sbeddent imukan unṣiben.",
+    areasUnverified: "isefka n tkarḍa — ur ttwasenqden ara",
+    areasCriteria: "D acu yerran tallunt tildayt telha ugar",
+    areasCriteria1: "Beɛd ɣef yisekla, izeɣwan d wayen irennun times",
+    areasCriteria2: "Akal aquran neɣ agudrunan, simmal meqqer simmal yelha",
+    areasCriteria3: "Akal adday — times tettali iɣallen s tazzla",
+    areasCriteria4: "Yettwakcam war aɛeddi deg webbu",
+    areasRefugeNote:
+      "Iwellihen ttwaqeblen uqbel · ma sbedden-t tidbal amkan, ad d-iban da d amezwaru",
+    areasEmpty:
+      "Ulac tallunin tildayin i d-yulin i temnaḍt-ik. Tiseqqar n ufella teddunt i yal akal ameqqran ildin.",
+    areaType: {
+      stadium: "annar",
+      pitch: "annar n waddal",
+      schoolyard: "afrag n uɣerbaz",
+      parking: "amkan n tkeṛṛusin",
+      square: "tazniqt tazayezt",
+      beach: "aftis",
+    },
+    offlineBanner:
+      "Ulac aẓeṭṭa. Skanen-d isefka iḥerzen — asenqed aneggaru {{time}}. Addad yezmer yembeddal.",
+    packSaved:
+      "Takemmust war aẓeṭṭa teḥrez {{time}} — amkan, tallunin, iwellihen, uṭṭunen",
+    report: "Mmel",
+    reportFire: "Times dagi",
+    reportSmoke: "Abbu aquran",
+    reportRoadBlocked: "Abrid yeqqen",
+    reportPersonTrapped: "Amdan yettwaḥbes",
+    zoneAlert: "Timess tettwasentem ɣef {{km}} km si temnaḍt-ik {{place}}",
+    zoneElsewhere: "Aql-ak waqila deg wemkan-nniḍen — ilɣa kan.",
+    zoneView: "Wali timess",
+    zoneImHere: "Aql-i deg wemkan",
+    dir: {
+      n: "ugafa",
+      ne: "ugafa-agmuḍ",
+      e: "ugmuḍ",
+      se: "unẓul-agmuḍ",
+      s: "unẓul",
+      sw: "unẓul-ataram",
+      w: "utaram",
+      nw: "ugafa-ataram",
+    },
+  },
   nav: {
     settings: "Iɣewwaṛen",
     map: "Takarḍa srid",
