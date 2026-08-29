@@ -35,22 +35,25 @@ const db = createClient(url, key, {
 const DET_COLUMNS =
   "id, source, sensor, detected_at, lat, lon, confidence_raw, frp_mw, cluster_id";
 
+type Paged<T> = {
+  range: (
+    a: number,
+    b: number,
+  ) => Promise<{ data: T[] | null; error: { message: string } | null }>;
+};
+
+// refine runs after select(): .is() lives on the filter builder, not the query builder
 async function page<T>(
   table: string,
   select: string,
-  refine: (q: ReturnType<typeof db.from>) => unknown = (q) => q,
+  refine: (q: Paged<T>) => Paged<T> = (q) => q,
 ): Promise<T[]> {
   const out: T[] = [];
   for (let from = 0; ; from += 1000) {
-    const q = refine(db.from(table)) as {
-      select: (s: string) => {
-        range: (
-          a: number,
-          b: number,
-        ) => Promise<{ data: T[] | null; error: { message: string } | null }>;
-      };
-    };
-    const { data, error } = await q.select(select).range(from, from + 999);
+    const base = (
+      db.from(table) as unknown as { select: (s: string) => Paged<T> }
+    ).select(select);
+    const { data, error } = await refine(base).range(from, from + 999);
     if (error) throw new Error(error.message);
     out.push(...(data ?? []));
     if (!data || data.length < 1000) break;
@@ -67,12 +70,14 @@ if (!sources.length) {
 }
 
 const dets = await page<Det>("detections", DET_COLUMNS, (q) =>
-  (q as unknown as { is: (c: string, v: null) => unknown }).is(
+  (q as unknown as { is: (c: string, v: null) => Paged<Det> }).is(
     "fp_reason",
     null,
   ),
 );
 
+// every live cluster is recomputed from surviving detections, so the script is
+// idempotent and repairs a partially applied run rather than leaving stale counts
 const screened = new Set<string>();
 const affected = new Set<string>();
 const siteFor = new Map<string, string>();
@@ -104,9 +109,27 @@ for (const [reason, ids] of byReason) {
   }
 }
 
+// Derived from the database, not from `affected`: screening nulls cluster_id, so a
+// cluster emptied by an earlier partial run is no longer reachable from detections.
+const live = await page<{ id: string; state: string }>(
+  "fire_clusters",
+  "id, state",
+  (q) =>
+    (q as unknown as { in: (c: string, v: string[]) => Paged<never> }).in(
+      "state",
+      ["active", "unconfirmed", "contained_guess"],
+    ) as unknown as Paged<{ id: string; state: string }>,
+);
+
+const current = await page<Det>("detections", DET_COLUMNS, (q) =>
+  (q as unknown as { is: (c: string, v: null) => Paged<Det> }).is(
+    "fp_reason",
+    null,
+  ),
+);
 const survivors = new Map<string, Det[]>();
-for (const d of dets) {
-  if (!d.cluster_id || screened.has(d.id)) continue;
+for (const d of current) {
+  if (!d.cluster_id) continue;
   const bucket = survivors.get(d.cluster_id);
   if (bucket) bucket.push(d);
   else survivors.set(d.cluster_id, [d]);
@@ -115,14 +138,14 @@ for (const d of dets) {
 let resolved = 0;
 let recomputed = 0;
 const now = Date.now();
-for (const clusterId of affected) {
+for (const { id: clusterId } of live) {
   const list = survivors.get(clusterId);
   if (!list?.length) {
     const { error } = await db
       .from("fire_clusters")
       .update({
         state: "extinguished",
-        resolution_reason: "persistent_source",
+        resolution_reason: "flare",
         resolved_at: new Date().toISOString(),
       })
       .eq("id", clusterId);
