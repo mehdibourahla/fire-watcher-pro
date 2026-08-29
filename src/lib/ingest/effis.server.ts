@@ -17,10 +17,12 @@ export const EFFIS_CLASSES = [
 
 export type EffisClass = (typeof EFFIS_CLASSES)[number]["key"];
 
-// Same watch area as FIRMS; ~0.035°/px oversamples ECMWF's 0.07° grid safely.
-export const EFFIS_BBOX = { west: -3.2, south: 33.2, east: 9.7, north: 37.6 };
-export const EFFIS_WIDTH = 369;
-export const EFFIS_HEIGHT = 126;
+/* All of Algeria, not the northern fire-watch strip: the Saharan communes are
+ * the ones whose local "Extreme" ratings most need the external comparison.
+ * ~0.035°/px oversamples ECMWF's 0.07° grid safely. */
+export const EFFIS_BBOX = { west: -8.7, south: 18.9, east: 12.0, north: 37.6 };
+export const EFFIS_WIDTH = 592;
+export const EFFIS_HEIGHT = 535;
 
 // The layer only answers WITHOUT a TIME parameter (dated requests return an
 // empty image), so each fetch is the current run, stamped with the fetch date.
