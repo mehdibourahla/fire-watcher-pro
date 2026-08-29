@@ -2,6 +2,9 @@
 -- http:// or internal target and read 300 bytes of the response back from the
 -- delivery log. Delivery re-checks this too; the constraint stops the row existing.
 alter table public.webhook_endpoints
+  drop constraint if exists webhook_endpoints_url_https;
+
+alter table public.webhook_endpoints
   add constraint webhook_endpoints_url_https
   check (
     url ~ '^https://[^/[:space:]]+'
