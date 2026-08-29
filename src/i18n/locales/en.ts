@@ -252,15 +252,17 @@ export const en = {
     communeCount: "{{count}} communes",
     groupWorst: "Highest commune level in this wilaya",
     effis: "EFFIS/GWIS (European fire authority) rates this commune: {{class}}",
+    effisMasked:
+      "EFFIS does not rate this commune's terrain (unvegetated land).",
     effisNone:
       "No EFFIS comparison yet — the European classification arrives with the daily refresh.",
     effisClass: {
-      very_low: "Very low",
       low: "Low",
       moderate: "Moderate",
       high: "High",
       very_high: "Very high",
       extreme: "Extreme",
+      very_extreme: "Very extreme",
     },
     guidance: {
       1: "Normal conditions. Fires stay easy to control. Still never leave a fire unattended.",

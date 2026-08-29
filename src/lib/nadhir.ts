@@ -86,7 +86,13 @@ export type EffisDanger = {
   commune_id: string;
   date: string;
   danger_class:
-    "very_low" | "low" | "moderate" | "high" | "very_high" | "extreme";
+    | "low"
+    | "moderate"
+    | "high"
+    | "very_high"
+    | "extreme"
+    | "very_extreme"
+    | "masked";
   created_at: string;
 };
 
@@ -315,7 +321,15 @@ export const adminUnitsQuery = queryOptions({
   queryKey: ["admin_units"],
   queryFn: () =>
     fetchAllPages<AdminUnit>((from, to) =>
-      supabase.from("admin_units").select("*").order("code").range(from, to),
+      supabase
+        .from("admin_units")
+        // never select *: geom/landcover/terrain hold megabytes per page and
+        // took the SSR Worker past its memory limit (2026-08-29 outage)
+        .select(
+          "id, level, code, name_ar, name_fr, name_en, name_kab, parent_id, lat, lon, forest_fraction, population",
+        )
+        .order("code")
+        .range(from, to),
     ),
 });
 

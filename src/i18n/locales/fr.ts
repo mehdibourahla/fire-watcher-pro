@@ -259,15 +259,17 @@ export const fr: Translation = {
     communeCount: "{{count}} communes",
     groupWorst: "Niveau de la commune la plus exposée de la wilaya",
     effis: "EFFIS/GWIS (autorité européenne) classe cette commune : {{class}}",
+    effisMasked:
+      "EFFIS n'évalue pas le terrain de cette commune (zone non végétalisée).",
     effisNone:
       "Pas encore de comparaison EFFIS — la classification européenne arrive avec le rafraîchissement quotidien.",
     effisClass: {
-      very_low: "Très faible",
       low: "Faible",
       moderate: "Modéré",
       high: "Élevé",
       very_high: "Très élevé",
       extreme: "Extrême",
+      very_extreme: "Très extrême",
     },
     guidance: {
       1: "Conditions normales. Les feux restent faciles à maîtriser. Ne laissez jamais un feu sans surveillance.",
