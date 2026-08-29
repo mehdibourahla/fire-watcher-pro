@@ -33,7 +33,9 @@ describe("sos queue", () => {
   it("treats corrupt storage as an empty queue", () => {
     const storage = memoryStorage({ "nadhir.sos.queue": "{not json" });
     expect(loadSosQueue(storage)).toEqual([]);
-    expect(() => enqueueSos(storage, { lat: 1, lon: 2, note: null })).not.toThrow();
+    expect(() =>
+      enqueueSos(storage, { lat: 1, lon: 2, note: null }),
+    ).not.toThrow();
     expect(loadSosQueue(storage)).toHaveLength(1);
   });
 });

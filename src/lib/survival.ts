@@ -90,7 +90,11 @@ export function positionCard(
     if (km < nearestKm) {
       nearestKm = km;
       // bearing runs place -> user: "2 km south of the village" locates the caller.
-      nearest = { name: s.name, km, bearing: bearingBetween(s.lat, s.lon, lat, lon) };
+      nearest = {
+        name: s.name,
+        km,
+        bearing: bearingBetween(s.lat, s.lon, lat, lon),
+      };
     }
   }
   if (nearestKm > NEARBY_KM) nearest = null;

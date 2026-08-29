@@ -76,7 +76,12 @@ describe("nearestThreat", () => {
   it("picks the nearest live cluster and ignores ended ones", () => {
     const near = cluster({ id: "near", lat: 36.51, lon: 4.0 });
     const far = cluster({ id: "far", lat: 37.5, lon: 5.0 });
-    const dead = cluster({ id: "dead", lat: 36.5, lon: 4.0, state: "extinguished" });
+    const dead = cluster({
+      id: "dead",
+      lat: 36.5,
+      lon: 4.0,
+      state: "extinguished",
+    });
     const threat = nearestThreat(36.5, 4.0, [far, dead, near]);
     expect(threat?.cluster.id).toBe("near");
     expect(threat!.km).toBeLessThan(2);
@@ -97,7 +102,11 @@ describe("nearestThreat", () => {
 
   it("flags closing when spread bearing points at the user", () => {
     const towardUser = cluster({ lat: 36.5, lon: 3.9, spread_bearing_deg: 90 });
-    const awayFromUser = cluster({ lat: 36.5, lon: 3.9, spread_bearing_deg: 270 });
+    const awayFromUser = cluster({
+      lat: 36.5,
+      lon: 3.9,
+      spread_bearing_deg: 270,
+    });
     const unknown = cluster({ lat: 36.5, lon: 3.9 });
     expect(nearestThreat(36.5, 4.0, [towardUser])!.closing).toBe(true);
     expect(nearestThreat(36.5, 4.0, [awayFromUser])!.closing).toBe(false);
@@ -111,7 +120,13 @@ describe("nearestThreat", () => {
 
 describe("positionCard", () => {
   it("names the nearest commune, its wilaya and the nearest settlement", () => {
-    const card = positionCard(36.521, 4.052, [wilaya, commune], [settlement], "fr");
+    const card = positionCard(
+      36.521,
+      4.052,
+      [wilaya, commune],
+      [settlement],
+      "fr",
+    );
     expect(card.commune).toBe("Aït Bouadou");
     expect(card.wilaya).toBe("Tizi Ouzou");
     expect(card.nearest?.name).toBe("Aït Bouadou village");
@@ -120,7 +135,13 @@ describe("positionCard", () => {
   });
 
   it("gives the user's offset from the settlement, not the reverse", () => {
-    const card = positionCard(36.52, 4.05, [wilaya, commune], [settlement], "fr");
+    const card = positionCard(
+      36.52,
+      4.05,
+      [wilaya, commune],
+      [settlement],
+      "fr",
+    );
     expect(card.nearest!.bearing).toBeGreaterThan(150);
     expect(card.nearest!.bearing).toBeLessThan(210);
   });
@@ -141,10 +162,22 @@ describe("positionCard", () => {
 describe("checkInMessage", () => {
   const t = (k: string, o?: Record<string, unknown>) =>
     `${k}|${JSON.stringify(o ?? {})}`;
-  const card = positionCard(36.521, 4.052, [wilaya, commune], [settlement], "en");
+  const card = positionCard(
+    36.521,
+    4.052,
+    [wilaya, commune],
+    [settlement],
+    "en",
+  );
 
   it("builds the OK message with place, coords and time", () => {
-    const msg = checkInMessage({ kind: "ok", name: "Mehdi", card, time: "20:48", t });
+    const msg = checkInMessage({
+      kind: "ok",
+      name: "Mehdi",
+      card,
+      time: "20:48",
+      t,
+    });
     expect(msg.startsWith("Mehdi: ")).toBe(true);
     expect(msg).toContain("survival.checkin.msgOk");
     expect(msg).toContain("36.5210 N · 4.0520 E");
@@ -152,14 +185,26 @@ describe("checkInMessage", () => {
   });
 
   it("uses the assist key for the assistance state", () => {
-    const msg = checkInMessage({ kind: "assist", name: null, card, time: "20:48", t });
+    const msg = checkInMessage({
+      kind: "assist",
+      name: null,
+      card,
+      time: "20:48",
+      t,
+    });
     expect(msg).toContain("survival.checkin.msgAssist");
     expect(msg.startsWith("survival.")).toBe(true);
   });
 
   it("falls back to bare coordinates when no place is known", () => {
     const remote = positionCard(28.0, 1.0, [], [], "en");
-    const msg = checkInMessage({ kind: "ok", name: null, card: remote, time: "20:48", t });
+    const msg = checkInMessage({
+      kind: "ok",
+      name: null,
+      card: remote,
+      time: "20:48",
+      t,
+    });
     expect(msg).toContain("28.0000 N · 1.0000 E");
   });
 });

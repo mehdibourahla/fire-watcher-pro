@@ -110,7 +110,9 @@ const rows = payload.elements.flatMap((el) => {
   ];
 });
 
-console.log(`Overpass gave ${payload.elements.length} elements, ${rows.length} usable`);
+console.log(
+  `Overpass gave ${payload.elements.length} elements, ${rows.length} usable`,
+);
 
 for (let i = 0; i < rows.length; i += 500) {
   const { error } = await db

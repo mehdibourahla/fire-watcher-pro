@@ -4,12 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { fetchAllPages } from "@/lib/paginate";
 
 export type OpenAreaType =
-  | "stadium"
-  | "pitch"
-  | "schoolyard"
-  | "parking"
-  | "square"
-  | "beach";
+  "stadium" | "pitch" | "schoolyard" | "parking" | "square" | "beach";
 
 export type OpenArea = {
   id: string;
@@ -50,10 +45,7 @@ export const hazardReportsQuery = queryOptions({
     const { data, error } = await supabase
       .from("hazard_reports")
       .select("*")
-      .gte(
-        "observed_at",
-        new Date(Date.now() - 24 * 3600 * 1000).toISOString(),
-      )
+      .gte("observed_at", new Date(Date.now() - 24 * 3600 * 1000).toISOString())
       .order("observed_at", { ascending: false })
       .limit(500);
     if (error) throw new Error(error.message);
