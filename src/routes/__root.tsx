@@ -11,6 +11,8 @@ import {
 import { useEffect, useMemo, type ReactNode } from "react";
 import { I18nextProvider } from "react-i18next";
 
+import { TooltipProvider } from "@/components/ui/tooltip";
+
 import appCss from "../styles.css?url";
 import {
   initLocale,
@@ -180,20 +182,22 @@ function RootComponent() {
   return (
     <I18nextProvider i18n={i18nInstance}>
       <QueryClientProvider client={queryClient}>
-        <div className="flex min-h-screen flex-col">
-          <AlertNotifier />
-          {survival ? null : <SiteHeader />}
-          <main className="flex-1">
-            {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-            <Outlet />
-          </main>
-          {survival ? null : (
-            <>
-              <SiteFooter />
-              <BottomTabs />
-            </>
-          )}
-        </div>
+        <TooltipProvider delayDuration={200}>
+          <div className="flex min-h-screen flex-col">
+            <AlertNotifier />
+            {survival ? null : <SiteHeader />}
+            <main className="flex-1">
+              {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+              <Outlet />
+            </main>
+            {survival ? null : (
+              <>
+                <SiteFooter />
+                <BottomTabs />
+              </>
+            )}
+          </div>
+        </TooltipProvider>
       </QueryClientProvider>
     </I18nextProvider>
   );
