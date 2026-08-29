@@ -421,7 +421,7 @@ function LiveMapPage() {
           ) : (
             <div className="divide-y divide-border">
               {fireGroups.groups.map(({ wilaya, fires }) => (
-                <details key={wilaya.id} open>
+                <details key={wilaya.id}>
                   <summary className="flex cursor-pointer list-none items-center gap-2 bg-muted/50 px-3 py-2 [&::-webkit-details-marker]:hidden">
                     <ChevronDown
                       aria-hidden
@@ -440,7 +440,7 @@ function LiveMapPage() {
                 </details>
               ))}
               {fireGroups.unassigned.length > 0 ? (
-                <details open>
+                <details>
                   <summary className="flex cursor-pointer list-none items-center gap-2 bg-muted/50 px-3 py-2 [&::-webkit-details-marker]:hidden">
                     <ChevronDown
                       aria-hidden

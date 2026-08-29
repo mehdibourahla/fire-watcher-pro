@@ -97,16 +97,22 @@ are the whole contract; the layer only serves its current run, so each row is st
 the fetch date; and a palette change on their side degrades the source loudly instead of
 mis-classifying (the run errors when zero communes match).
 
-### 2.3 Five communes are missing; wilaya El Aricha (63) has none
+### 2.3 Commune-to-wilaya assignment diverges from the 2026 law
 
-Official Algeria (Loi 26-06, April 2026) counts 69 wilayas and **1541** communes;
-`admin_units` holds **1536**, and El Aricha is the one wilaya with zero communes attached —
-the `data/geo` OSM extract predates the 2026 reorganization's commune reassignment. Fixing
-it means refreshing `data/geo` from OSM (if the new boundaries exist there yet) or patching
-the five communes in by hand from the official list, then `bun run seed:geo`.
+`admin_units` holds **1536** communes against the official **1541**, but the honest finding
+is wider than five missing rows: per-wilaya counts differ from post-Loi-26-06 lists in
+**27 wilayas, in both directions** (e.g. Bou Saâda holds 23 communes here vs 13 officially;
+M'Sila 24 vs 34; El Aricha has zero). The OSM extract in `data/geo` encodes a different
+post-2026 reassignment than the law's, and the secondary datasets disagree with each other
+(a widely used community dataset gives El Aricha 8 communes; the Journal Officiel gives 4).
+Reconciliation therefore needs the Journal Officiel itself (Loi 26-06, JORADP
+F2026025.pdf) as the authority — build the canonical commune→wilaya table from it, diff
+against `admin_units`, then correct `data/geo` and reseed. Until then, wilaya groupings in
+the UI show OSM's opinion of the assignment, not necessarily the law's.
 
-Reproduce: `select count(*) from admin_units where level='commune';` and compare
-`select id from admin_units where level='wilaya'` against `distinct parent_id`.
+Reproduce: fetch any 1541-commune reference list and compare per-wilaya counts against
+`select w.code, count(*) from admin_units c join admin_units w on w.id = c.parent_id
+where c.level='commune' group by 1;`
 
 ## 3. Product surface
 
