@@ -89,6 +89,9 @@ type Acc = {
 };
 const cells = new Map<string, Acc>();
 const observationDays = new Set<string>();
+// A 5-day window opened on 31 December spans into the next year, which that year's
+// first window also covers, so the same detection arrives twice in leap years.
+const seen = new Set<string>();
 
 const all = [...windows()];
 for (const [i, day] of all.entries()) {
@@ -100,6 +103,7 @@ for (const [i, day] of all.entries()) {
   const iType = head.indexOf("type");
   const iDate = head.indexOf("acq_date");
   const iFrp = head.indexOf("frp");
+  const iTime = head.indexOf("acq_time");
   if (iType < 0)
     throw new Error(`${day}: archive returned no 'type' column; wrong product`);
   for (const line of lines.slice(1)) {
@@ -111,6 +115,9 @@ for (const [i, day] of all.entries()) {
     if (!Number.isFinite(lat) || !Number.isFinite(lon) || type === "3")
       continue;
     const date = p[iDate]!;
+    const uid = `${p[iLat]},${p[iLon]},${date},${p[iTime]}`;
+    if (seen.has(uid)) continue;
+    seen.add(uid);
     observationDays.add(date);
     const k = cellKey(lat, lon).join(",");
     let acc = cells.get(k);

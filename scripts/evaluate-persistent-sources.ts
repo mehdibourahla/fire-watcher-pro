@@ -20,6 +20,8 @@ const train = new Map<
   { static: number; fire: number; days: Set<string> }
 >();
 const test: Det[] = [];
+// leap-year windows overlap the next January, delivering the same detection twice
+const seen = new Set<string>();
 
 for (const file of readdirSync(CACHE).sort()) {
   const lines = readFileSync(`${CACHE}/${file}`, "utf8").split("\n");
@@ -39,6 +41,9 @@ for (const file of readdirSync(CACHE).sort()) {
     if (!Number.isFinite(lat) || !Number.isFinite(lon) || type === "3")
       continue;
     const date = p[iDate]!;
+    const uid = `${p[iLat]},${p[iLon]},${date},${p[iTime]}`;
+    if (seen.has(uid)) continue;
+    seen.add(uid);
     if (date < SPLIT) {
       const k = cellKey(lat, lon).join(",");
       let acc = train.get(k);

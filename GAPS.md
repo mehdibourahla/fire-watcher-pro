@@ -128,9 +128,9 @@ where c.level='commune' group by 1;`
 - **Persistent industrial sources are screened** since 2026-08-29. NASA's science-processed
   archive labels 76.8% of Algeria's 1.1M detections (2016–2025) as `type=2` static land
   sources — gas flares, refineries, power plants — and the NRT feeds Nadhir ingests carry no
-  such label, so a registry of 568 grid cells in 157 sites is learned offline and applied at
+  such label, so a registry of 567 grid cells in 158 sites is learned offline and applied at
   ingest (`src/lib/ingest/persistent.server.ts`, `data/flares/`). Held out on 2024–25 inside
-  the ingest box, it removes **98.4%** of alerting-size false events (1326 → 21) and loses
+  the ingest box, it removes **98.4%** of alerting-size false events (1319 → 21) and loses
   **5.5%** of real ones (181 → 171); the losses are almost all inside the Arzew and Skikda
   complexes, peak FRP 19.3 MW. Residual: ~0.9 false alerting events per month and ~5 genuine
   low-intensity events a year. On the live database this resolved 17 clusters as `flare`,

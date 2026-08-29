@@ -37,7 +37,7 @@ Restricted to Nadhir's own ingest box (`AREA`, `src/lib/ingest/firms.server.ts:6
 the held-out period 2024–25, and clustered with Nadhir's own fusion parameters (3 km,
 24 h), events large enough to alert on (≥5 detections):
 
-- **181 real fire events. 1326 false ones. 88% of Nadhir's alertable "fires" are flares.**
+- **181 real fire events. 1319 false ones. 88% of Nadhir's alertable "fires" are flares.**
 
 The confidence model makes this worse rather than catching it:
 
@@ -72,7 +72,8 @@ stacks. A cell is registered when all three hold:
 | distinct active days                              | ≥ 5       | excludes one-off coincidence    |
 | total detections                                  | ≥ 10      | stability of the share estimate |
 
-568 cells grouped into 157 sites nationwide, 120 inside the ingest box.
+567 cells grouped into 158 sites nationwide, 124 inside the ingest box. Within that box
+the registry screens 58.4% of all archive detections.
 
 The 0.65 floor was fitted on the full-year archive, not chosen. At 0.70 the Skikda
 cells sit at 0.64–0.69 static share and escape the registry, leaking 120 false alerting
@@ -140,7 +141,7 @@ the ingest box.
 |                                                 | without screen | with screen                   |
 | ----------------------------------------------- | -------------- | ----------------------------- |
 | real fire events, alerting size (≥5 detections) | 181            | **171 kept — 10 lost (5.5%)** |
-| false events, alerting size                     | 1326           | **21 remain (98.4% removed)** |
+| false events, alerting size                     | 1319           | **21 remain (98.4% removed)** |
 
 The 10 lost events were inspected individually. Eight are inside the Arzew/Bethioua and
 Skikda industrial corridors (Aïn El Bia ×3, Chehairia, Douar Araba, Mersat El Hadjadj,
