@@ -273,6 +273,7 @@ function HistoryPage() {
           <div className="mt-4 grid gap-2.5 sm:grid-cols-3">
             <StatCard label={t("history.totalFires")} value={stats.total} />
             <StatCard
+              explain={t("explain.area")}
               label={t("history.burnedArea")}
               value={`${Math.round(stats.area).toLocaleString()} ${t("common.ha")}`}
             />

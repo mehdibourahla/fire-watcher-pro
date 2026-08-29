@@ -231,6 +231,25 @@ export const en = {
     extinguished: "Extinguished",
     false_positive: "False positive",
   },
+  explain: {
+    fwi: "Fire Weather Index: how fast a fire would spread and how hard it would be to control, computed from temperature, humidity, wind and recent rain.",
+    dangerLevel:
+      "Danger level 1\u20135, mapped from the Fire Weather Index on the European EFFIS scale.",
+    notRated:
+      "Fire weather is still computed, but this commune has almost no burnable vegetation, so no danger rating is shown.",
+    area: "Estimated burned area from the size and count of satellite detections \u2014 an approximation, not a measured perimeter.",
+    frp: "Peak Fire Radiative Power: the strongest heat output measured by satellite, in megawatts.",
+    detections: "Number of satellite heat detections grouped into this fire.",
+    confidence:
+      "How likely this is a real fire, combining sensor agreement, persistence and known false-alarm sources.",
+    firstSeen:
+      "Time of the first satellite detection. A fire can start before the first satellite pass.",
+    lastSeen:
+      "Most recent satellite detection. Fires can keep burning between satellite passes.",
+    wind: "Current wind at the fire from the weather model. Fires spread fastest downwind.",
+    sources: "Satellite systems that detected this fire.",
+    nearest: "Distance to the nearest known settlement.",
+  },
   risk: {
     metaTitle: "Fire danger forecast — Nadhir Algeria",
     metaDescription:

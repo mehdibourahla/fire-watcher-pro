@@ -163,6 +163,7 @@ function FireDetail() {
 
         <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
           <StatCard
+            explain={t("explain.area")}
             label={t("fire.area")}
             value={
               cluster.est_area_ha == null
@@ -171,6 +172,7 @@ function FireDetail() {
             }
           />
           <StatCard
+            explain={t("explain.frp")}
             label={t("fire.peakFrp")}
             value={
               cluster.max_frp_mw == null
@@ -179,22 +181,27 @@ function FireDetail() {
             }
           />
           <StatCard
+            explain={t("explain.detections")}
             label={t("fire.detectionCount")}
             value={cluster.detection_count}
           />
           <StatCard
+            explain={t("explain.confidence")}
             label={t("fire.confidence")}
             value={`${Math.round(cluster.confidence * 100)}%`}
           />
           <StatCard
+            explain={t("explain.firstSeen")}
             label={t("fire.firstSeen")}
             value={algiersTime(cluster.first_detected_at)}
           />
           <StatCard
+            explain={t("explain.lastSeen")}
             label={t("fire.lastSeen")}
             value={relativeTime(cluster.last_detected_at, locale)}
           />
           <StatCard
+            explain={t("explain.wind")}
             label={t("fire.wind")}
             value={
               cluster.wind_speed_kmh == null
@@ -204,6 +211,7 @@ function FireDetail() {
             sub={bearingLabel(cluster.wind_dir_deg)}
           />
           <StatCard
+            explain={t("explain.sources")}
             label={t("map.sources")}
             value={cluster.sources.join(", ").toUpperCase()}
           />

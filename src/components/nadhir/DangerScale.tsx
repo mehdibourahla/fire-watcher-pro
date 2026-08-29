@@ -67,10 +67,20 @@ export function DangerScale({
   return (
     <div className={cn("flex flex-col gap-2", className)}>
       <div className="flex items-baseline gap-2.5">
-        <span className={cn("font-display tabular leading-none", s.value)}>
+        <span
+          title={
+            fwi === undefined || fwi === null
+              ? t("explain.dangerLevel")
+              : t("explain.fwi")
+          }
+          className={cn("font-display tabular leading-none", s.value)}
+        >
           {fwi === undefined || fwi === null ? current : Math.round(fwi)}
         </span>
-        <span className="flex items-center gap-1.5">
+        <span
+          className="flex items-center gap-1.5"
+          title={t("explain.dangerLevel")}
+        >
           <Icon
             aria-hidden
             className={s.icon}
