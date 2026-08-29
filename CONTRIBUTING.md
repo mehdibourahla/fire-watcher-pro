@@ -25,14 +25,40 @@ bunx tsc --noEmit && bun run test && bun run lint
 
 CI runs exactly those three on every PR, with no secrets, so fork PRs are first-class.
 
+## The full stack locally (auth, ingest, migrations)
+
+The live project's secrets never travel — for server-side work you run your own complete
+stack instead. With [Docker and the Supabase CLI](https://supabase.com/docs/guides/local-development):
+
+```sh
+supabase start          # local Postgres + auth + storage; prints local URL and keys
+supabase db push --local
+SUPABASE_URL=http://127.0.0.1:54321 SUPABASE_SERVICE_ROLE_KEY=<printed key> bun run seed:geo
+```
+
+Point `.env.local` at the printed local URL and keys. Everything the local stack prints —
+including its `service_role` key — is a documented constant, worthless outside your
+machine. Outbound email lands in the local test inbox (`supabase status` shows the URL),
+so account signup and login are fully testable locally, which the live project cannot do
+yet. Add your own FIRMS/EUMETSAT keys and any string as `NADHIR_CRON_SECRET` to exercise
+ingestion end to end.
+
+## Migrations
+
+Write the migration file (see the ledger traps in `GAPS.md` §5), test it against your
+local stack, and open the PR. On merge, CI applies it to the live database **before**
+deploying the code — so migrations must be additive during the deploy window: new tables
+and new columns with defaults are fine; a rename or drop needs a two-step release
+(add-and-migrate first, remove later). You never need the production database password.
+
 ## What needs a credential — and whose
 
 - **Ingestion work** (FIRMS, EUMETSAT): register your **own** free keys
   ([FIRMS](https://firms.modaps.eosdis.nasa.gov/api/), [EUMETSAT](https://eoportal.eumetsat.int/)).
   Project keys are never shared.
-- **Migrations, seeds, deploys**: operator work. Deploys happen automatically from CI on
-  merge to `main`; migrations and seeds run only against the live project by an operator.
-  You write the migration file and the PR; you never need the database password.
+- **Deploys and live migrations**: fully automatic — CI applies pending migrations and
+  deploys on every merge to `main` (secrets live in the `production` environment). Only
+  live _seeds_ and ad-hoc database surgery remain operator work.
 
 ## Access tiers
 
