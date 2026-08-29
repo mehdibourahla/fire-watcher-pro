@@ -107,3 +107,35 @@ describe("report photo upload", () => {
     expect(fn).not.toMatch(/\.upload\(\s*path,\s*file\b/);
   });
 });
+
+describe("APP2 segments", () => {
+  const jpeg = (app2Body: string) =>
+    new Uint8Array([
+      0xff,
+      0xd8,
+      ...segment(0xe2, ascii(app2Body)),
+      ...segment(0xda, [0x00, 0x01]),
+      0x12,
+      0x34,
+      0xff,
+      0xd9,
+    ]);
+
+  it("keeps a real ICC profile", () => {
+    const out = stripImageMetadata(
+      jpeg("ICC_PROFILE\0colour data"),
+      "image/jpeg",
+    );
+    expect(Buffer.from(out).includes("ICC_PROFILE")).toBe(true);
+  });
+
+  it("drops MPF, whose embedded image carries its own GPS", () => {
+    const out = stripImageMetadata(
+      jpeg("MPF\0second image with GPS 36.7N 3.0E"),
+      "image/jpeg",
+    );
+    const text = Buffer.from(out).toString("latin1");
+    expect(text).not.toContain("MPF");
+    expect(text).not.toContain("GPS");
+  });
+});

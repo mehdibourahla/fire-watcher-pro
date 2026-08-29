@@ -98,8 +98,11 @@ wired at all. `/status` correctly reports it unavailable rather than pretending.
   `alerts.kind` CHECK constraint widened before it can be inserted.
 - **Citizen reports** strip Exif before upload (`src/lib/image-metadata.ts`), which also
   narrows accepted photos to JPEG and PNG — anything else is refused rather than stored
-  unsanitised. Captcha and antivirus scanning are still missing. Currently 0 reports, so
-  those are gaps to close before promoting the feature, not a live exposure.
+  unsanitised. The strip runs **in the browser**, so it protects a reporter from leaking their
+  own GPS but is not a control against someone who uploads to Storage without it; the bucket
+  enforces the size and mime limits server-side, nothing more. Captcha and antivirus scanning
+  are still missing. Currently 0 reports, so those are gaps to close before promoting the
+  feature, not a live exposure.
 - **Admin console** has no cluster resolve (US-6), no broadcast, and no audit log.
 - **Public API** has no WebSocket and no tiles. What exists is `/api/public/v1/fires`
   (with `?format=geojson`), `/api/public/v1/risk` and `/api/public/v1/stats`; the risk

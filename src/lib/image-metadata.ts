@@ -15,8 +15,19 @@ function assemble(
   return out;
 }
 
-/** Keeps JFIF (APP0) and the ICC profile (APP2); every other APPn carries Exif,
- *  XMP or IPTC, which is where the reporter's GPS and device identity live. */
+const ICC_MARKER = "ICC_PROFILE\0";
+
+// APP2 carries ICC profiles but also MPF, whose embedded second image keeps its own
+// Exif and GPS, so the segment is kept on its payload identifier, not its marker.
+function isIccProfile(bytes: Uint8Array, payloadAt: number): boolean {
+  for (let k = 0; k < ICC_MARKER.length; k += 1) {
+    if (bytes[payloadAt + k] !== ICC_MARKER.charCodeAt(k)) return false;
+  }
+  return true;
+}
+
+/** Keeps JFIF (APP0) and a real ICC profile (APP2); every other APPn carries Exif,
+ *  XMP, IPTC or MPF, which is where the reporter's GPS and device identity live. */
 function stripJpeg(bytes: Uint8Array): Uint8Array<ArrayBuffer> {
   const keep: [number, number][] = [[0, 2]];
   let i = 2;
@@ -32,8 +43,10 @@ function stripJpeg(bytes: Uint8Array): Uint8Array<ArrayBuffer> {
       break;
     }
     const length = (bytes[i + 2]! << 8) | bytes[i + 3]!;
+    const isApp = marker >= 0xe1 && marker <= 0xef;
     const drop =
-      marker === 0xfe || (marker >= 0xe1 && marker <= 0xef && marker !== 0xe2);
+      marker === 0xfe ||
+      (isApp && !(marker === 0xe2 && isIccProfile(bytes, i + 4)));
     if (!drop) keep.push([i, i + 2 + length]);
     i += 2 + length;
   }
