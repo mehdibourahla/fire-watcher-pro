@@ -13,7 +13,7 @@ honest status page. Treat §1 as the distance between those two things.
 
 ## 1. Blocking a real warning service
 
-### 1.1 The danger scale lacks a fuel mask and an arid-zone presentation
+### 1.1 The danger scale needs an arid-zone presentation (fuel mask shipped)
 
 An earlier version of this section said the scale "carries no information" because 68.8% of
 communes read Extreme with none at Low. That predates the noon-LST input fix and was
@@ -121,8 +121,10 @@ originally claimed, all verified live on 2026-08-29:
 - **Raw FWI is available programmatically.** GetFeatureInfo on layer `ecmwf007.query` with
   `info_format=text/html` returns FWI, FFMC, DMC, DC, ISI, BUI and the danger/anomaly/
   ranking indices as numbers. Earlier checks missed it because text/plain and GML return
-  empty attributes and a continental bbox returns an empty body. Switching the ingest to
-  this layer would supersede the palette decode entirely.
+  empty attributes and a continental bbox returns an empty body. A wholesale switch was
+  considered and rejected: per-commune point queries mean 1,536 daily requests against
+  JRC's free WMS versus one GetMap; the layer serves the cold-start guard and future
+  spot-calibration instead.
 - **The palette labels were shifted one class.** The legend's six classes start at Low —
   there is no very_low, and the top class is Very Extreme. Fixed in `effis.server.ts`;
   the mislabeled 2026-08-29 rows were deleted by migration. White pixels are EFFIS
