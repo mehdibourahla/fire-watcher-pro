@@ -58,7 +58,9 @@ human.
 
 - Deployed to Cloudflare Workers as `nadhir` — <https://nadhir.app> and `www`. The
   `workers.dev` hostname is off: declaring `routes` sets `workers_dev` false.
-  Ship with `bun run build && bunx wrangler deploy`. Requires the Workers **Paid** plan
+  Every push to `main` deploys through the CI `deploy` job (the `production` GitHub
+  environment holds `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`); manual fallback
+  is `bun run build && bunx wrangler deploy`. Requires the Workers **Paid** plan
   (active): React SSR exceeds the free plan's 10ms CPU budget, so pages 503 there while the
   JSON API still answers.
 - Daily FWI refresh runs in GitHub Actions (`.github/workflows/risk-refresh.yml`), not
