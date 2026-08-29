@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 
 import { dangerLevelKey } from "@/lib/nadhir";
+import { Explain } from "@/components/nadhir/Explain";
 import { cn } from "@/lib/utils";
 
 import {
@@ -67,27 +68,27 @@ export function DangerScale({
   return (
     <div className={cn("flex flex-col gap-2", className)}>
       <div className="flex items-baseline gap-2.5">
-        <span
-          title={
+        <Explain
+          text={
             fwi === undefined || fwi === null
               ? t("explain.dangerLevel")
               : t("explain.fwi")
           }
-          className={cn("font-display tabular leading-none", s.value)}
         >
-          {fwi === undefined || fwi === null ? current : Math.round(fwi)}
-        </span>
-        <span
-          className="flex items-center gap-1.5"
-          title={t("explain.dangerLevel")}
-        >
-          <Icon
-            aria-hidden
-            className={s.icon}
-            style={{ color: riskSolid(current) }}
-          />
-          <span className={cn("font-medium", s.name)}>{name}</span>
-        </span>
+          <span className={cn("font-display tabular leading-none", s.value)}>
+            {fwi === undefined || fwi === null ? current : Math.round(fwi)}
+          </span>
+        </Explain>
+        <Explain text={t("explain.dangerLevel")}>
+          <span className="flex items-center gap-1.5">
+            <Icon
+              aria-hidden
+              className={s.icon}
+              style={{ color: riskSolid(current) }}
+            />
+            <span className={cn("font-medium", s.name)}>{name}</span>
+          </span>
+        </Explain>
         {fwi === undefined || fwi === null ? null : (
           <span className="text-xs text-muted-foreground">{t("risk.fwi")}</span>
         )}

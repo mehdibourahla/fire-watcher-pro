@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import type { MapLayers } from "@/components/FireMap";
 import { MapCanvas } from "@/components/MapCanvas";
 import { DangerScale } from "@/components/nadhir/DangerScale";
+import { Explain } from "@/components/nadhir/Explain";
 import { DetailSheet } from "@/components/nadhir/DetailSheet";
 import { LayerToggle } from "@/components/nadhir/LayerToggle";
 import { riskSolid } from "@/components/nadhir/risk-visuals";
@@ -288,14 +289,18 @@ function LiveMapPage() {
           </span>
         </span>
         <span className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
-          <span className="tabular" title={t("explain.area")}>
-            {cluster.est_area_ha == null
-              ? "—"
-              : `${Math.round(cluster.est_area_ha)} ${t("common.ha")}`}
-          </span>
-          <span className="tabular" title={t("explain.detections")}>
-            {cluster.detection_count} {t("map.detections")}
-          </span>
+          <Explain text={t("explain.area")}>
+            <span className="tabular">
+              {cluster.est_area_ha == null
+                ? "—"
+                : `${Math.round(cluster.est_area_ha)} ${t("common.ha")}`}
+            </span>
+          </Explain>
+          <Explain text={t("explain.detections")}>
+            <span className="tabular">
+              {cluster.detection_count} {t("map.detections")}
+            </span>
+          </Explain>
           {settlement && cluster.nearest_settlement_km !== null ? (
             <span className="tabular">
               {settlement.name} · {cluster.nearest_settlement_km.toFixed(1)}{" "}
@@ -628,38 +633,48 @@ function ClusterDetail({
       ) : null}
 
       <dl className="grid grid-cols-2 gap-2 text-sm">
-        <div className="card p-2.5" title={t("explain.area")}>
-          <dt className="text-xs text-muted-foreground">{t("fire.area")}</dt>
-          <dd className="tabular font-medium">
-            {cluster.est_area_ha == null
-              ? "—"
-              : `${Math.round(cluster.est_area_ha)} ${t("common.ha")}`}
-          </dd>
-        </div>
-        <div className="card p-2.5" title={t("explain.detections")}>
-          <dt className="text-xs text-muted-foreground">
-            {t("fire.detectionCount")}
-          </dt>
-          <dd className="tabular font-medium">{cluster.detection_count}</dd>
-        </div>
-        <div className="card p-2.5" title={t("explain.frp")}>
-          <dt className="text-xs text-muted-foreground">{t("fire.peakFrp")}</dt>
-          <dd className="tabular font-medium">
-            {cluster.max_frp_mw == null
-              ? "—"
-              : `${Math.round(cluster.max_frp_mw)} ${t("common.mw")}`}
-          </dd>
-        </div>
-        <div className="card p-2.5" title={t("explain.confidence")}>
-          <dt className="text-xs text-muted-foreground">
-            {t("fire.confidence")}
-          </dt>
-          <dd className="font-medium">
-            <span className="tabular">
-              {Math.round(cluster.confidence * 100)}%
-            </span>
-          </dd>
-        </div>
+        <Explain text={t("explain.area")}>
+          <div className="card p-2.5">
+            <dt className="text-xs text-muted-foreground">{t("fire.area")}</dt>
+            <dd className="tabular font-medium">
+              {cluster.est_area_ha == null
+                ? "—"
+                : `${Math.round(cluster.est_area_ha)} ${t("common.ha")}`}
+            </dd>
+          </div>
+        </Explain>
+        <Explain text={t("explain.detections")}>
+          <div className="card p-2.5">
+            <dt className="text-xs text-muted-foreground">
+              {t("fire.detectionCount")}
+            </dt>
+            <dd className="tabular font-medium">{cluster.detection_count}</dd>
+          </div>
+        </Explain>
+        <Explain text={t("explain.frp")}>
+          <div className="card p-2.5">
+            <dt className="text-xs text-muted-foreground">
+              {t("fire.peakFrp")}
+            </dt>
+            <dd className="tabular font-medium">
+              {cluster.max_frp_mw == null
+                ? "—"
+                : `${Math.round(cluster.max_frp_mw)} ${t("common.mw")}`}
+            </dd>
+          </div>
+        </Explain>
+        <Explain text={t("explain.confidence")}>
+          <div className="card p-2.5">
+            <dt className="text-xs text-muted-foreground">
+              {t("fire.confidence")}
+            </dt>
+            <dd className="font-medium">
+              <span className="tabular">
+                {Math.round(cluster.confidence * 100)}%
+              </span>
+            </dd>
+          </div>
+        </Explain>
       </dl>
 
       <Link
