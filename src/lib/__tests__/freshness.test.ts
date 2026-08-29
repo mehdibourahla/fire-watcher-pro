@@ -26,6 +26,21 @@ describe("sourceStale", () => {
     expect(sourceStale(source({ last_ok_at: null }), NOW)).toBe(true);
   });
 
+  it("does not flag the geo seed inside its monthly cadence", () => {
+    expect(
+      sourceStale(
+        source({ name: "geo", last_ok_at: "2026-08-01T00:00:00Z" }),
+        NOW,
+      ),
+    ).toBe(false);
+    expect(
+      sourceStale(
+        source({ name: "geo", last_ok_at: "2026-06-01T00:00:00Z" }),
+        NOW,
+      ),
+    ).toBe(true);
+  });
+
   it("gives the daily FWI a 30-hour window", () => {
     expect(
       sourceStale(

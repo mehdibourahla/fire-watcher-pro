@@ -5,10 +5,12 @@ import type { DataSource } from "@/lib/nadhir";
 export const SOURCE_MAX_AGE_MIN: Record<string, number> = {
   firms: 60,
   fci: 60,
-  geo: 60,
   openmeteo: 60,
   local_fwi: 30 * 60,
   effis: 30 * 60,
+  // geo is reference data: last_ok_at is the seed date, reseeded ~monthly,
+  // never bumped by pipeline runs — a pipeline-cadence window false-alarms.
+  geo: 45 * 24 * 60,
 };
 
 export function sourceStale(
