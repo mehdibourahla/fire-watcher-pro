@@ -153,6 +153,11 @@ function RootComponent() {
     syncClientLocale();
   }, []);
 
+  useEffect(() => {
+    if (import.meta.env.PROD && "serviceWorker" in navigator)
+      void navigator.serviceWorker.register("/sw.js").catch(() => undefined);
+  }, []);
+
   return (
     <I18nextProvider i18n={i18nInstance}>
       <QueryClientProvider client={queryClient}>
