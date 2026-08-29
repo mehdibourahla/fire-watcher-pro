@@ -11,6 +11,8 @@ import { RiskLegend } from "@/components/SiteChrome";
 import type { Locale } from "@/i18n";
 import {
   adminUnitsQuery,
+  effisDangerQuery,
+  relativeTime,
   riskForecastsQuery,
   unitName,
   type AdminUnit,
@@ -57,6 +59,7 @@ function ForecastPage() {
 
   const forecasts = useQuery(riskForecastsQuery);
   const units = useQuery(adminUnitsQuery);
+  const effis = useQuery(effisDangerQuery);
 
   const rows = useMemo<Row[]>(() => {
     const communes = (units.data ?? []).filter((u) => u.level === "commune");
@@ -115,6 +118,26 @@ function ForecastPage() {
             guidance
             className="mt-4"
           />
+
+          {(() => {
+            const row = effis.data?.get(featured.commune.id);
+            return (
+              <p className="mt-3 border-t border-border pt-3 text-sm text-muted-foreground">
+                {row ? (
+                  <>
+                    {t("risk.effis", {
+                      class: t(`risk.effisClass.${row.danger_class}`),
+                    })}{" "}
+                    <span className="tabular text-xs">
+                      ({relativeTime(row.created_at, locale)})
+                    </span>
+                  </>
+                ) : (
+                  t("risk.effisNone")
+                )}
+              </p>
+            );
+          })()}
 
           <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-6">
             {HORIZONS.map((h) => {

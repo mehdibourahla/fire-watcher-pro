@@ -254,6 +254,17 @@ export const fr: Translation = {
     high: "Élevé",
     very_high: "Très élevé",
     extreme: "Extrême",
+    effis: "EFFIS/GWIS (autorité européenne) classe cette commune : {{class}}",
+    effisNone:
+      "Pas encore de comparaison EFFIS — la classification européenne arrive avec le rafraîchissement quotidien.",
+    effisClass: {
+      very_low: "Très faible",
+      low: "Faible",
+      moderate: "Modéré",
+      high: "Élevé",
+      very_high: "Très élevé",
+      extreme: "Extrême",
+    },
     guidance: {
       1: "Conditions normales. Les feux restent faciles à maîtriser. Ne laissez jamais un feu sans surveillance.",
       2: "La végétation sèche s'enflamme. Évitez de brûler déchets ou chaumes et gardez de l'eau à portée de main.",

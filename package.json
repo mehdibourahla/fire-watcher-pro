@@ -63,6 +63,7 @@
     "input-otp": "^1.4.2",
     "lucide-react": "^0.575.0",
     "maplibre-gl": "^6.6.0",
+    "pngjs": "^7.0.0",
     "react": "^19.2.0",
     "react-day-picker": "^9.14.0",
     "react-dom": "^19.2.0",
@@ -81,6 +82,7 @@
   "devDependencies": {
     "@eslint/js": "^9.32.0",
     "@types/node": "^22.16.5",
+    "@types/pngjs": "^6.0.5",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^5.2.0",

@@ -249,6 +249,17 @@ export const kab: Translation = {
     high: "Ɛlay",
     very_high: "Ɛlay aṭas",
     extreme: "Amtawi",
+    effis: "EFFIS/GWIS (tadbelt tuṛufit) tsemma taɣiwant-a: {{class}}",
+    effisNone:
+      "Ulac aserwes EFFIS ar tura — asmil uṛufi yettas-d s uleqqem n yal ass.",
+    effisClass: {
+      very_low: "Meẓẓi aṭas",
+      low: "Meẓẓi",
+      moderate: "Alemmas",
+      high: "Ɛlay",
+      very_high: "Ɛlay aṭas",
+      extreme: "Amtawi",
+    },
     guidance: {
       1: "Tigniyin timagdazin. Timessi ttwaḥebbsent s wudem afessas. Ur ttaǧǧa ara times war aɛessi.",
       2: "Imɣan iquranen ttɣellin s times. Ur seṛɣ ara iɛekkaren, sedd aman ɣur-k.",

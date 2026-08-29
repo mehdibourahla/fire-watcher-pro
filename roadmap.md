@@ -17,7 +17,7 @@ Seed and ops credentials live in `~/.config/nadhir/`, never in this repo.
 | Open-Meteo (weather + local FWI + winds)      | connected                                                                              |
 | OpenStreetMap (admin boundaries, settlements) | seeded via `bun run seed:geo`                                                          |
 | EUMETSAT MTG FCI                              | credentials valid; **feed health only** — netCDF is not decoded, no detections written |
-| EFFIS / GWIS                                  | **not connected**; `/status` reports it as unavailable                                 |
+| EFFIS / GWIS                                  | connected — daily danger classes per commune from the EFFIS WMS (`effis_danger`)       |
 
 ## Phases
 

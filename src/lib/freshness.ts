@@ -8,6 +8,7 @@ export const SOURCE_MAX_AGE_MIN: Record<string, number> = {
   geo: 60,
   openmeteo: 60,
   local_fwi: 30 * 60,
+  effis: 30 * 60,
 };
 
 export function sourceStale(

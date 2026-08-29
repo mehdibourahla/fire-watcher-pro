@@ -18,7 +18,7 @@ zone. The interface ships in Arabic (default, RTL), French, English and Kabyle.
 | Open-Meteo (weather, fire-weather index, winds) | connected                                                                                                                             |
 | OpenStreetMap (admin boundaries, settlements)   | seeded from `data/geo/`, ODbL                                                                                                         |
 | EUMETSAT MTG FCI                                | credentials valid, **feed health only** — the granules are netCDF, which the edge runtime cannot decode, so no detections are written |
-| EFFIS / GWIS                                    | **not connected**; `/status` reports it unavailable                                                                                   |
+| EFFIS / GWIS                                    | connected — daily danger-class comparison sampled from the EFFIS WMS (no raw FWI values are published, so classes are the contract)   |
 
 Geography is 69 wilayas, 1536 communes and 10257 settlements, taken from OpenStreetMap via
 Overpass rather than geoBoundaries or GADM — those have incomplete Algerian ADM2 coverage.

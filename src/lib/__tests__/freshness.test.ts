@@ -45,8 +45,11 @@ describe("sourceStale", () => {
     expect(
       sourceStale(source({ status: "unavailable", last_ok_at: null }), NOW),
     ).toBe(false);
-    expect(sourceStale(source({ name: "effis", last_ok_at: null }), NOW)).toBe(
-      false,
-    );
+    expect(
+      sourceStale(
+        source({ name: "some_future_source", last_ok_at: null }),
+        NOW,
+      ),
+    ).toBe(false);
   });
 });
