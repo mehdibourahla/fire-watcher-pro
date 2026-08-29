@@ -55,7 +55,9 @@ export const Route = createFileRoute("/api/public/v1/fires")({
           )
           .order("last_detected_at", { ascending: false })
           .range(offset, offset + limit - 1);
+        // false_positive means "this was not a fire"; it is served only on request
         if (state) query = query.eq("state", state);
+        else query = query.neq("state", "false_positive");
         if (since)
           query = query.gte("last_detected_at", new Date(since).toISOString());
 

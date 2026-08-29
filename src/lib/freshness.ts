@@ -5,6 +5,7 @@ import type { DataSource } from "@/lib/nadhir";
 export const SOURCE_MAX_AGE_MIN: Record<string, number> = {
   firms: 60,
   fci: 60,
+  screen: 60,
   openmeteo: 60,
   local_fwi: 30 * 60,
   effis: 30 * 60,

@@ -143,8 +143,10 @@ for (const { id: clusterId } of live) {
   if (!list?.length) {
     const { error } = await db
       .from("fire_clusters")
+      // false_positive, not extinguished: a flare never went out, and
+      // "extinguished" would file it in the public fire archive as a real fire
       .update({
-        state: "extinguished",
+        state: "false_positive",
         resolution_reason: "flare",
         resolved_at: new Date().toISOString(),
       })

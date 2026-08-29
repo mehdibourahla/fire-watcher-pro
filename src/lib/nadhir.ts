@@ -299,6 +299,7 @@ export const historyClustersQuery = queryOptions({
       const { data, error } = await supabase
         .from("fire_clusters")
         .select("*")
+        .neq("state", "false_positive")
         .order("first_detected_at", { ascending: false })
         .range(i * page, i * page + page - 1);
       if (error) throw new Error(error.message);

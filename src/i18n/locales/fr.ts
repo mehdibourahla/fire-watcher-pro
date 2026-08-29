@@ -218,8 +218,8 @@ export const fr: Translation = {
     peakFrp: "Puissance radiative max",
     detectionCount: "Détections",
     wind: "Vent",
-    spreading:
-      "Propagation vers {{bearing}} — localité la plus proche {{settlement}}",
+    windToward:
+      "Le vent souffle vers {{bearing}} — {{settlement}} se trouve dans cette direction",
     timeline: "Chronologie des détections",
     nearest: "Localités les plus proches",
     settlement: "Localité",

@@ -1,3 +1,5 @@
+import { bearingBetween, haversineKm } from "@/lib/nadhir";
+
 /** Spec 8.3: an unconfirmed cluster must never raise an alert. */
 export const ALERTING_STATES = ["active"];
 export const LIVE_STATES = ["active", "unconfirmed", "contained_guess"];
@@ -43,4 +45,35 @@ export function inQuietHours(
   return start < end
     ? hour >= start && hour < end
     : hour >= start || hour < end;
+}
+
+/**
+ * The settlement the wind is actually blowing toward, or null. Shared with the
+ * alert engine so the map and R3 cannot disagree about what "downwind" means.
+ */
+export function downwindSettlement<
+  T extends { lat: number; lon: number; name: string },
+>(
+  fire: { lat: number; lon: number },
+  spreadBearing: number | null,
+  settlements: T[],
+): T | null {
+  if (spreadBearing === null) return null;
+  let best: T | null = null;
+  let bestKm = Infinity;
+  for (const s of settlements) {
+    if (
+      !downwindOf(
+        spreadBearing,
+        bearingBetween(fire.lat, fire.lon, s.lat, s.lon),
+      )
+    )
+      continue;
+    const km = haversineKm(fire.lat, fire.lon, s.lat, s.lon);
+    if (km < bestKm) {
+      bestKm = km;
+      best = s;
+    }
+  }
+  return best;
 }

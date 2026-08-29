@@ -9,6 +9,7 @@ import { StatCard } from "@/components/nadhir/StatCard";
 import { EmptyState, Skeleton } from "@/components/nadhir/states";
 import { EmergencyNumbers } from "@/components/SiteChrome";
 import type { Locale } from "@/i18n";
+import { downwindSettlement } from "@/lib/alerts-rules";
 import {
   adminUnitsQuery,
   algiersTime,
@@ -102,7 +103,13 @@ function FireDetail() {
     .sort((a, b) => a.km - b.km)
     .slice(0, 5);
 
-  const downwind = nearby[0];
+  // named only when the wind actually blows toward it: the nearest settlement is
+  // frequently upwind, and an emergency banner pointing the wrong way misdirects
+  const downwind = downwindSettlement(
+    cluster,
+    cluster.spread_bearing_deg,
+    (settlements.data ?? []).map((s) => ({ ...s, name: s.name })),
+  );
 
   return (
     <div className="mx-auto grid max-w-[1400px] gap-4 px-4 py-5 lg:grid-cols-[1fr_400px]">
@@ -138,9 +145,9 @@ function FireDetail() {
             }}
           >
             <Wind aria-hidden className="size-4 shrink-0" />
-            {t("fire.spreading", {
+            {t("fire.windToward", {
               bearing: bearingLabel(cluster.spread_bearing_deg),
-              settlement: downwind.settlement.name,
+              settlement: downwind.name,
             })}
           </p>
         ) : null}
