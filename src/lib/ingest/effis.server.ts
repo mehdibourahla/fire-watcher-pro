@@ -57,7 +57,9 @@ export function parseFeatureInfoDc(html: string): number | null {
  * Ingesting it would poison the comparator with a low-everywhere day. */
 export function isColdStart(dcs: number[], month: number): boolean {
   if (month < 5 || month > 10) return false;
-  if (dcs.length === 0) return false;
+  // one sentinel can be a fetch fluke or a local storm; two independent
+  // Mediterranean points at initialization DC in the dry season cannot
+  if (dcs.length < 2) return false;
   return dcs.every((dc) => dc < 100);
 }
 

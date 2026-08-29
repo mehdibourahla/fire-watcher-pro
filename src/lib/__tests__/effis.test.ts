@@ -68,8 +68,13 @@ describe("cold-start guard", () => {
     expect(isColdStart([17.3, 17.5, 16.4], 1)).toBe(false);
   });
 
-  it("is inconclusive with no readable sentinel", () => {
+  it("is inconclusive with fewer than two readable sentinels", () => {
     expect(isColdStart([], 8)).toBe(false);
+    expect(isColdStart([17.3], 8)).toBe(false);
+  });
+
+  it("still flags with two of three sentinels readable", () => {
+    expect(isColdStart([17.3, 16.4], 8)).toBe(true);
   });
 });
 
