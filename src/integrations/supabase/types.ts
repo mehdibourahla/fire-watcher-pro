@@ -215,6 +215,7 @@ export type Database = {
           commune_id: string | null;
           created_at: string;
           id: string;
+          kind: string;
           lat: number;
           lon: number;
           moderation_note: string | null;
@@ -234,6 +235,7 @@ export type Database = {
           commune_id?: string | null;
           created_at?: string;
           id?: string;
+          kind?: string;
           lat: number;
           lon: number;
           moderation_note?: string | null;
@@ -253,6 +255,7 @@ export type Database = {
           commune_id?: string | null;
           created_at?: string;
           id?: string;
+          kind?: string;
           lat?: number;
           lon?: number;
           moderation_note?: string | null;
@@ -600,6 +603,50 @@ export type Database = {
         };
         Relationships: [];
       };
+      open_areas: {
+        Row: {
+          area_type: string;
+          commune_id: string | null;
+          created_at: string;
+          id: string;
+          lat: number;
+          lon: number;
+          name: string;
+          name_ar: string | null;
+          source: string;
+        };
+        Insert: {
+          area_type: string;
+          commune_id?: string | null;
+          created_at?: string;
+          id?: string;
+          lat: number;
+          lon: number;
+          name: string;
+          name_ar?: string | null;
+          source?: string;
+        };
+        Update: {
+          area_type?: string;
+          commune_id?: string | null;
+          created_at?: string;
+          id?: string;
+          lat?: number;
+          lon?: number;
+          name?: string;
+          name_ar?: string | null;
+          source?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "open_areas_commune_id_fkey";
+            columns: ["commune_id"];
+            isOneToOne: false;
+            referencedRelation: "admin_units";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       profiles: {
         Row: {
           alert_email: boolean;
@@ -911,7 +958,19 @@ export type Database = {
       };
     };
     Views: {
-      [_ in never]: never;
+      hazard_reports: {
+        Row: {
+          created_at: string | null;
+          id: string | null;
+          kind: string | null;
+          lat: number | null;
+          lon: number | null;
+          observed_at: string | null;
+          sighting: string | null;
+          status: string | null;
+        };
+        Relationships: [];
+      };
     };
     Functions: {
       consume_rate_limit: {
