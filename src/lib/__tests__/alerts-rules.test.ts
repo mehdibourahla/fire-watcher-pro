@@ -5,6 +5,7 @@ import {
   MIN_CONFIDENCE,
   compass,
   downwindOf,
+  downwindSettlement,
   inQuietHours,
 } from "@/lib/alerts-rules";
 
@@ -75,5 +76,30 @@ describe("compass", () => {
     expect(compass(180)).toBe("S");
     expect(compass(359)).toBe("N");
     expect(compass(-90)).toBe("W");
+  });
+});
+
+describe("downwindSettlement", () => {
+  const fire = { lat: 36.0, lon: 6.0 };
+  const north = { id: "n", name: "North", lat: 36.2, lon: 6.0 };
+  const south = { id: "s", name: "South", lat: 35.8, lon: 6.0 };
+
+  it("names a settlement the wind is actually blowing toward", () => {
+    expect(downwindSettlement(fire, 0, [south, north])?.name).toBe("North");
+  });
+
+  it("ignores a nearer settlement that lies upwind", () => {
+    const veryNearSouth = { id: "s2", name: "NearSouth", lat: 35.99, lon: 6.0 };
+    expect(downwindSettlement(fire, 0, [veryNearSouth, north])?.name).toBe(
+      "North",
+    );
+  });
+
+  it("returns null when nothing lies downwind", () => {
+    expect(downwindSettlement(fire, 0, [south])).toBeNull();
+  });
+
+  it("returns null without a bearing", () => {
+    expect(downwindSettlement(fire, null, [north])).toBeNull();
   });
 });

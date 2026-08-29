@@ -1,6 +1,7 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { fetchAllPages } from "@/lib/paginate";
 
+import { dailyFromHourly, type HourlyBlock } from "./noon-weather";
 import {
   FWI_START,
   computeFwi,
@@ -18,6 +19,8 @@ const RETRY_LIMIT = 5;
 const RETRY_BASE_MS = 2000;
 const INTER_BATCH_MS = 1200;
 const STALE_STATE_DAYS = 60;
+// bump when the weather inputs change so stored codes are rebuilt, not resumed
+const FWI_INPUTS = "noon_lst";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -30,7 +33,8 @@ export type DailyBlock = {
   precipitation_sum: number[];
 };
 
-type OpenMeteoResponse = { daily?: DailyBlock } | Array<{ daily?: DailyBlock }>;
+type OpenMeteoResponse =
+  { hourly?: HourlyBlock } | Array<{ hourly?: HourlyBlock }>;
 
 export type RiskRun = {
   communes: number;
@@ -47,13 +51,17 @@ async function fetchDaily(
   const url = new URL("https://api.open-meteo.com/v1/forecast");
   url.searchParams.set("latitude", lats.join(","));
   url.searchParams.set("longitude", lons.join(","));
+  // CFFDRS is defined on the noon LST observation, not the day's extremes, so the
+  // hourly series is fetched and reduced in dailyFromHourly. Daily aggregates put
+  // the index on a hotter, drier, windier day than the one that was observed.
   url.searchParams.set(
-    "daily",
-    "temperature_2m_max,relative_humidity_2m_min,wind_speed_10m_max,wind_direction_10m_dominant,precipitation_sum",
+    "hourly",
+    "temperature_2m,relative_humidity_2m,wind_speed_10m,wind_direction_10m,precipitation",
   );
+  // an extra past day supplies the 24h-to-noon rainfall for the first day used
   // DC has a ~52-day time constant, so a short spin-up leaves the drought codes
   // far below reality; 92 days of observed weather converges them each run.
-  url.searchParams.set("past_days", String(pastDays));
+  url.searchParams.set("past_days", String(pastDays + 1));
   url.searchParams.set("forecast_days", String(HORIZON_DAYS));
   url.searchParams.set("timezone", "Africa/Algiers");
 
@@ -65,7 +73,10 @@ async function fetchDaily(
     if (res.ok) {
       const json = (await res.json()) as OpenMeteoResponse;
       const list = Array.isArray(json) ? json : [json];
-      return lats.map((_, i) => list[i]?.daily ?? null);
+      return lats.map((_, i) => {
+        const hourly = list[i]?.hourly;
+        return hourly ? dailyFromHourly(hourly) : null;
+      });
     }
     lastStatus = res.status;
     if (res.status !== 429 && res.status < 500) break;
@@ -182,6 +193,7 @@ export async function refreshRiskForecasts(): Promise<RiskRun> {
       supabaseAdmin
         .from("fwi_state")
         .select("commune_id, date, ffmc, dmc, dc")
+        .eq("inputs", FWI_INPUTS)
         .order("date", { ascending: false })
         .range(from, to),
   )) {
@@ -234,9 +246,10 @@ export async function refreshRiskForecasts(): Promise<RiskRun> {
         throw new Error(`risk_forecasts upsert failed: ${error.message}`);
     }
     for (let i = 0; i < states.length; i += 500) {
-      const { error } = await supabaseAdmin
-        .from("fwi_state")
-        .upsert(states.slice(i, i + 500), { onConflict: "commune_id,date" });
+      const { error } = await supabaseAdmin.from("fwi_state").upsert(
+        states.slice(i, i + 500).map((st) => ({ ...st, inputs: FWI_INPUTS })),
+        { onConflict: "commune_id,date" },
+      );
       if (error) throw new Error(`fwi_state upsert failed: ${error.message}`);
     }
   };
@@ -282,7 +295,13 @@ export async function refreshRiskForecasts(): Promise<RiskRun> {
           resume,
         );
         if (carried) nextState.push({ commune_id: commune.id, ...carried });
-        days.forEach((day, horizon) => {
+        // derived from the date, not the array index: a dropped day would otherwise
+        // shift every horizon and label a forecast with the wrong day
+        days.forEach((day) => {
+          const horizon = Math.round(
+            (Date.parse(`${day.date}T00:00:00Z`) - todayMs) / 86400000,
+          );
+          if (horizon < 0 || horizon >= HORIZON_DAYS) return;
           rows.push({
             commune_id: commune.id,
             forecast_date: day.date,

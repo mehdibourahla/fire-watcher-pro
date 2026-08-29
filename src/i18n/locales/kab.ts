@@ -214,7 +214,7 @@ export const kab: Translation = {
     peakFrp: "Tazmert tafellayt",
     detectionCount: "Tifin",
     wind: "Aḍu",
-    spreading: "Yezzuzur ɣer {{bearing}} — taddart tiqerbant {{settlement}}",
+    windToward: "Aḍu ibbriḥ ɣer {{bearing}} — {{settlement}} yella deg ubrid-a",
     timeline: "Aḍris n tifin",
     nearest: "Tuddar iqerben",
     settlement: "Taddart",

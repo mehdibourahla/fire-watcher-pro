@@ -30,6 +30,7 @@ export const Route = createFileRoute("/api/public/v1/stats")({
             publicSupabase()
               .from("fire_clusters")
               .select("state, wilaya_id, last_detected_at")
+              .neq("state", "false_positive")
               .gte("last_detected_at", since)
               .order("last_detected_at", { ascending: false })
               .range(from, to),

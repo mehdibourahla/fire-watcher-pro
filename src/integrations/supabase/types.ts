@@ -584,6 +584,7 @@ export type Database = {
           dc: number;
           dmc: number;
           ffmc: number;
+          inputs: string;
           updated_at: string;
         };
         Insert: {
@@ -592,6 +593,7 @@ export type Database = {
           dc: number;
           dmc: number;
           ffmc: number;
+          inputs?: string;
           updated_at?: string;
         };
         Update: {
@@ -600,6 +602,7 @@ export type Database = {
           dc?: number;
           dmc?: number;
           ffmc?: number;
+          inputs?: string;
           updated_at?: string;
         };
         Relationships: [

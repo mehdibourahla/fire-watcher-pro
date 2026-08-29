@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { sourceStale } from "@/lib/freshness";
+import { SOURCE_MAX_AGE_MIN, sourceStale } from "@/lib/freshness";
 
 const NOW = new Date("2026-08-29T12:00:00Z").getTime();
 
@@ -66,5 +66,14 @@ describe("sourceStale", () => {
         NOW,
       ),
     ).toBe(false);
+  });
+});
+
+describe("every pipeline source has a staleness window", () => {
+  // a source with no window is never flagged, so a dead stage stays green forever
+  it("covers each stage the detection pipeline writes", () => {
+    for (const name of ["firms", "fci", "screen", "openmeteo"]) {
+      expect(SOURCE_MAX_AGE_MIN[name]).toBeGreaterThan(0);
+    }
   });
 });

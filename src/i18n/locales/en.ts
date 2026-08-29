@@ -211,8 +211,8 @@ export const en = {
     peakFrp: "Peak radiative power",
     detectionCount: "Detections",
     wind: "Wind",
-    spreading:
-      "Spreading toward {{bearing}} — nearest settlement {{settlement}}",
+    windToward:
+      "Wind is blowing toward {{bearing}} — {{settlement}} lies in that direction",
     timeline: "Detection timeline",
     nearest: "Nearest settlements",
     settlement: "Settlement",

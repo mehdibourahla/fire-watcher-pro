@@ -212,7 +212,8 @@ export const ar: Translation = {
     peakFrp: "أقصى قدرة إشعاعية",
     detectionCount: "عمليات الرصد",
     wind: "الرياح",
-    spreading: "ينتشر نحو {{bearing}} — أقرب تجمع {{settlement}}",
+    windToward:
+      "الرياح تهب باتجاه {{bearing}} — {{settlement}} يقع في هذا الاتجاه",
     timeline: "تسلسل الرصد",
     nearest: "أقرب التجمعات السكانية",
     settlement: "التجمع",
