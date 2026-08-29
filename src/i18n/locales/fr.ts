@@ -174,8 +174,9 @@ export const fr: Translation = {
   },
   map: {
     nearPlace: "près de {{place}}",
-    showAll: "Afficher les {{count}} incendies",
-    showLess: "Afficher moins",
+    searchFires: "Rechercher un feu par lieu ou wilaya",
+    unassigned: "Hors wilayas d'Algérie",
+    fireCount: "{{count}} feux",
     unverifiedHint:
       "Les détections non vérifiées apparaissent automatiquement à partir du zoom 9.",
     title: "Carte des feux en direct",

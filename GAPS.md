@@ -97,6 +97,17 @@ are the whole contract; the layer only serves its current run, so each row is st
 the fetch date; and a palette change on their side degrades the source loudly instead of
 mis-classifying (the run errors when zero communes match).
 
+### 2.3 Five communes are missing; wilaya El Aricha (63) has none
+
+Official Algeria (Loi 26-06, April 2026) counts 69 wilayas and **1541** communes;
+`admin_units` holds **1536**, and El Aricha is the one wilaya with zero communes attached —
+the `data/geo` OSM extract predates the 2026 reorganization's commune reassignment. Fixing
+it means refreshing `data/geo` from OSM (if the new boundaries exist there yet) or patching
+the five communes in by hand from the official list, then `bun run seed:geo`.
+
+Reproduce: `select count(*) from admin_units where level='commune';` and compare
+`select id from admin_units where level='wilaya'` against `distinct parent_id`.
+
 ## 3. Product surface
 
 - **Alert rules R2 (growth) and R5 (all-clear)** are unimplemented. R5 additionally needs the
