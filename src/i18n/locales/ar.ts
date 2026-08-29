@@ -170,8 +170,9 @@ export const ar: Translation = {
   },
   map: {
     nearPlace: "قرب {{place}}",
-    showAll: "عرض كل الحرائق ({{count}})",
-    showLess: "عرض أقل",
+    searchFires: "ابحث عن حريق بالمكان أو الولاية",
+    unassigned: "خارج ولايات الجزائر",
+    fireCount: "{{count}} حرائق",
     unverifiedHint:
       "تظهر الرصدات غير المؤكدة تلقائيًا ابتداءً من مستوى التكبير 9.",
     title: "خريطة الحرائق المباشرة",

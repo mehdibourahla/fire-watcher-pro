@@ -172,8 +172,9 @@ export const kab: Translation = {
   },
   map: {
     nearPlace: "ɣer tama n {{place}}",
-    showAll: "Sken akk {{count}} n times",
-    showLess: "Sken drus",
+    searchFires: "Nadi times s wemkan neɣ tawilayt",
+    unassigned: "Beṛṛa n twilayin n Lezzayer",
+    fireCount: "{{count}} n tmes",
     unverifiedHint:
       "Tifin ur nettwasenqden ara ttbanent s wudem awurman seg zoom 9.",
     title: "Takarḍa n tmessi srid",

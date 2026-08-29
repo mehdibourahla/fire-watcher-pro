@@ -170,8 +170,9 @@ export const en = {
   },
   map: {
     nearPlace: "near {{place}}",
-    showAll: "Show all {{count}} fires",
-    showLess: "Show fewer",
+    searchFires: "Search fires by place or wilaya",
+    unassigned: "Outside Algeria's wilayas",
+    fireCount: "{{count}} fires",
     unverifiedHint: "Unverified detections appear automatically from zoom 9.",
     title: "Live fire map",
     metaTitle: "Nadhir — Live wildfire map for Algeria",

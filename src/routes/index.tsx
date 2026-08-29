@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Flame, LifeBuoy } from "lucide-react";
+import { ChevronDown, Flame, LifeBuoy, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -30,6 +30,7 @@ import {
   riskForecastsQuery,
   settlementsQuery,
   placeLabel,
+  unitName,
   type FireCluster,
 } from "@/lib/nadhir";
 import {
@@ -68,8 +69,6 @@ export const Route = createFileRoute("/")({
   component: LiveMapPage,
 });
 
-const LIST_PAGE = 20;
-
 function stateRank(c: FireCluster) {
   return c.state === "active" ? 0 : c.state === "contained_guess" ? 1 : 2;
 }
@@ -82,7 +81,7 @@ function LiveMapPage() {
     fires: true,
     unverified: false,
   });
-  const [showAll, setShowAll] = useState(false);
+  const [railSearch, setRailSearch] = useState("");
 
   const clusters = useQuery(clustersQuery);
   const units = useQuery(adminUnitsQuery);
@@ -180,12 +179,134 @@ function LiveMapPage() {
     [live],
   );
 
-  const visible = showAll ? sorted : sorted.slice(0, LIST_PAGE);
-
   const labelFor = (cluster: FireCluster) =>
     placeLabel(cluster, units.data ?? [], settlements.data ?? [], locale);
 
+  const wilayaById = useMemo(
+    () =>
+      new Map(
+        (units.data ?? [])
+          .filter((u) => u.level === "wilaya")
+          .map((u) => [u.id, u]),
+      ),
+    [units.data],
+  );
+
+  const railQ = railSearch.trim().toLowerCase();
+
+  const searched = useMemo(() => {
+    if (!railQ) return sorted;
+    return sorted.filter((c) => {
+      const wilaya = c.wilaya_id ? wilayaById.get(c.wilaya_id) : undefined;
+      const settlement = c.nearest_settlement_id
+        ? settlementById.get(c.nearest_settlement_id)
+        : undefined;
+      return [
+        labelFor(c).name,
+        wilaya ? unitName(wilaya, locale) : null,
+        wilaya?.name_ar,
+        wilaya?.name_fr,
+        wilaya?.name_en,
+        settlement?.name,
+      ]
+        .filter(Boolean)
+        .some((n) => n!.toLowerCase().includes(railQ));
+    });
+    // labelFor closes over the same query data listed here.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    sorted,
+    railQ,
+    wilayaById,
+    settlementById,
+    locale,
+    units.data,
+    settlements.data,
+  ]);
+
+  const fireGroups = useMemo(() => {
+    const byWilaya = new Map<string, FireCluster[]>();
+    const unassigned: FireCluster[] = [];
+    for (const c of sorted) {
+      const w = c.wilaya_id ? wilayaById.get(c.wilaya_id) : undefined;
+      if (!w) {
+        unassigned.push(c);
+        continue;
+      }
+      const list = byWilaya.get(w.id);
+      if (list) list.push(c);
+      else byWilaya.set(w.id, [c]);
+    }
+    const active = (fires: FireCluster[]) =>
+      fires.filter((f) => f.state === "active").length;
+    const groups = [...byWilaya.entries()].map(([id, fires]) => ({
+      wilaya: wilayaById.get(id)!,
+      fires,
+    }));
+    groups.sort(
+      (a, b) =>
+        active(b.fires) - active(a.fires) || b.fires.length - a.fires.length,
+    );
+    return { groups, unassigned };
+  }, [sorted, wilayaById]);
+
   const selectedCluster = live.find((c) => c.short_id === selected) ?? null;
+
+  const renderFire = (cluster: FireCluster) => {
+    const place = labelFor(cluster);
+    const settlement = cluster.nearest_settlement_id
+      ? settlementById.get(cluster.nearest_settlement_id)
+      : undefined;
+    return (
+      <button
+        key={cluster.id}
+        type="button"
+        onClick={() => setSelected(cluster.short_id)}
+        aria-pressed={selected === cluster.short_id}
+        className={`flex w-full flex-col gap-1.5 p-3 text-start transition-colors hover:bg-muted ${
+          selected === cluster.short_id ? "bg-muted" : ""
+        }`}
+      >
+        <span className="flex items-center justify-between gap-2">
+          <span className="flex items-center gap-2 font-medium">
+            <span
+              aria-hidden
+              className="size-2.5 shrink-0 rounded-full"
+              style={{
+                backgroundColor: riskSolid(cluster.state === "active" ? 4 : 3),
+                boxShadow: "0 0 0 1.5px var(--mark-ring)",
+              }}
+            />
+            {place.approximate
+              ? t("map.nearPlace", { place: place.name })
+              : place.name}
+          </span>
+          <span className="text-xs text-muted-foreground">
+            {t(`state.${cluster.state}`)}
+          </span>
+        </span>
+        <span className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
+          <span className="tabular">
+            {Math.round(cluster.est_area_ha ?? 0)} {t("common.ha")}
+          </span>
+          <span className="tabular">
+            {cluster.detection_count} {t("map.detections")}
+          </span>
+          {settlement && cluster.nearest_settlement_km !== null ? (
+            <span className="tabular">
+              {settlement.name} · {cluster.nearest_settlement_km.toFixed(1)}{" "}
+              {t("common.km")}
+            </span>
+          ) : null}
+        </span>
+        <span className="text-xs text-muted-foreground">
+          {t("map.lastPass", {
+            time: relativeTime(cluster.last_detected_at, locale),
+          })}
+        </span>
+      </button>
+    );
+  };
 
   return (
     <div className="mx-auto flex max-w-[1600px] flex-col gap-4 p-4 lg:h-[calc(100vh-3.5rem)] lg:flex-row">
@@ -261,7 +382,24 @@ function LiveMapPage() {
 
         {degraded ? <DegradedBanner /> : null}
 
-        <section className="card divide-y divide-border">
+        {sorted.length > 0 ? (
+          <div className="relative">
+            <Search
+              aria-hidden
+              className="pointer-events-none absolute top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+              style={{ insetInlineStart: "0.75rem" }}
+            />
+            <input
+              value={railSearch}
+              onChange={(e) => setRailSearch(e.target.value)}
+              placeholder={t("map.searchFires")}
+              aria-label={t("map.searchFires")}
+              className="w-full rounded-lg border border-border bg-surface py-2 pe-3 ps-9 text-sm outline-none focus:ring-2 focus:ring-ring"
+            />
+          </div>
+        ) : null}
+
+        <section className="card">
           {clusters.isLoading ? (
             <SkeletonList rows={3} className="p-3" />
           ) : sorted.length === 0 ? (
@@ -272,77 +410,60 @@ function LiveMapPage() {
               })}
               className="border-0"
             />
+          ) : railQ ? (
+            searched.length === 0 ? (
+              <EmptyState title={t("risk.noResults")} className="border-0" />
+            ) : (
+              <div className="divide-y divide-border">
+                {searched.map((cluster) => renderFire(cluster))}
+              </div>
+            )
           ) : (
-            visible.map((cluster) => {
-              const place = labelFor(cluster);
-              const settlement = cluster.nearest_settlement_id
-                ? settlementById.get(cluster.nearest_settlement_id)
-                : undefined;
-              return (
-                <button
-                  key={cluster.id}
-                  type="button"
-                  onClick={() => setSelected(cluster.short_id)}
-                  aria-pressed={selected === cluster.short_id}
-                  className={`flex w-full flex-col gap-1.5 p-3 text-start transition-colors hover:bg-muted ${
-                    selected === cluster.short_id ? "bg-muted" : ""
-                  }`}
-                >
-                  <span className="flex items-center justify-between gap-2">
-                    <span className="flex items-center gap-2 font-medium">
-                      <span
-                        aria-hidden
-                        className="size-2.5 shrink-0 rounded-full"
-                        style={{
-                          backgroundColor: riskSolid(
-                            cluster.state === "active" ? 4 : 3,
-                          ),
-                          boxShadow: "0 0 0 1.5px var(--mark-ring)",
-                        }}
-                      />
-                      {place.approximate
-                        ? t("map.nearPlace", { place: place.name })
-                        : place.name}
+            <div className="divide-y divide-border">
+              {fireGroups.groups.map(({ wilaya, fires }) => (
+                <details key={wilaya.id} open>
+                  <summary className="flex cursor-pointer list-none items-center gap-2 bg-muted/50 px-3 py-2 [&::-webkit-details-marker]:hidden">
+                    <ChevronDown
+                      aria-hidden
+                      className="size-3.5 shrink-0 text-muted-foreground"
+                    />
+                    <span className="flex-1 text-sm font-semibold">
+                      {unitName(wilaya, locale)}
                     </span>
-                    <span className="text-xs text-muted-foreground">
-                      {t(`state.${cluster.state}`)}
+                    <span className="tabular text-xs text-muted-foreground">
+                      {t("map.fireCount", { count: fires.length })}
                     </span>
-                  </span>
-                  <span className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
-                    <span className="tabular">
-                      {Math.round(cluster.est_area_ha ?? 0)} {t("common.ha")}
+                  </summary>
+                  <div className="divide-y divide-border">
+                    {fires.map((cluster) => renderFire(cluster))}
+                  </div>
+                </details>
+              ))}
+              {fireGroups.unassigned.length > 0 ? (
+                <details open>
+                  <summary className="flex cursor-pointer list-none items-center gap-2 bg-muted/50 px-3 py-2 [&::-webkit-details-marker]:hidden">
+                    <ChevronDown
+                      aria-hidden
+                      className="size-3.5 shrink-0 text-muted-foreground"
+                    />
+                    <span className="flex-1 text-sm font-semibold">
+                      {t("map.unassigned")}
                     </span>
-                    <span className="tabular">
-                      {cluster.detection_count} {t("map.detections")}
+                    <span className="tabular text-xs text-muted-foreground">
+                      {t("map.fireCount", {
+                        count: fireGroups.unassigned.length,
+                      })}
                     </span>
-                    {settlement && cluster.nearest_settlement_km !== null ? (
-                      <span className="tabular">
-                        {settlement.name} ·{" "}
-                        {cluster.nearest_settlement_km.toFixed(1)}{" "}
-                        {t("common.km")}
-                      </span>
-                    ) : null}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {t("map.lastPass", {
-                      time: relativeTime(cluster.last_detected_at, locale),
-                    })}
-                  </span>
-                </button>
-              );
-            })
+                  </summary>
+                  <div className="divide-y divide-border">
+                    {fireGroups.unassigned.map((cluster) =>
+                      renderFire(cluster),
+                    )}
+                  </div>
+                </details>
+              ) : null}
+            </div>
           )}
-          {sorted.length > LIST_PAGE ? (
-            <button
-              type="button"
-              onClick={() => setShowAll((v) => !v)}
-              className="w-full p-3 text-sm font-medium text-primary hover:bg-muted"
-            >
-              {showAll
-                ? t("map.showLess")
-                : t("map.showAll", { count: sorted.length })}
-            </button>
-          ) : null}
         </section>
 
         <EmergencyNumbers />
