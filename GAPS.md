@@ -102,7 +102,7 @@ All **1536 communes** now carry WorldCover 2021 class fractions (`landcover`),
 Commune polygons were seeded from Overpass into `admin_units.geom` (join by `ref:ONS`,
 1536/1537). The §9.3 wind bump has 250 eligible communes (was 13); 168 communes fall under
 the 5% burnable-cover fuel mask. Verified against an independent benchmark at Tizi Ouzou
-(tree 0.499 vs 0.431, mean slope 7.7° vs 6.0°, p90 19.9° vs 18.9°).
+(tree 0.499 vs 0.431, mean slope 7.7° vs 6.0°, p90 18.9° vs 19.9°).
 
 Remaining, stated rather than hidden: wilaya rows are not enriched (the model reads commune
 values only); WorldCover is frozen at 2021, so a commune that burned since is still modelled
