@@ -43,26 +43,10 @@ Seed and ops credentials live in `~/.config/nadhir/`, never in this repo.
 
 ## Known gaps
 
-**Blocking a real warning service**
-
-- Danger-scale calibration. CFFDRS is faithful to Van Wagner (±0.01, tested) but
-  in Algeria's arid regime most communes read "Extreme". Needs recalibrated §9.1
-  thresholds, a northern-only scale, or EFFIS as the authority.
-- FCI fast path. Decoding netCDF is not possible in the edge runtime; the §1.4
-  sub-5-minute detection target depends on it.
-
-**Not started**
-
-- Alert rules R2 (growth) and R5 (all-clear); R5 needs the `alerts.kind` CHECK widened.
-- Push/SMS/Telegram/email delivery. A Firebase service account exists but is unwired.
-  The CAP object they must render is in place (`cap_alerts`, `src/lib/cap.ts`): every fire
-  alert now links to one CAP 1.2 warning carrying all four languages. Signing, approval
-  chains and Cell Broadcast remain institutional work, deliberately out of scope.
-- `forest_fraction` is 0 everywhere — needs ESA WorldCover. The §9.3 wind bump is
-  implemented but never fires until this is populated.
-- Citizen reports: no EXIF stripping, captcha, or AV scan.
-- Admin console: no cluster resolve (US-6), broadcast, or audit log.
-- Public API: no WebSocket or tiles.
+The full, evidence-checked list lives in [GAPS.md](GAPS.md) — kept there rather than duplicated
+here so the two cannot drift. Headline blockers: the danger scale reads Extreme for 68.8% of
+communes and Low for none, registration cannot complete without SMTP, and no alert reaches a
+human.
 
 ## Operations
 

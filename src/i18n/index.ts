@@ -23,6 +23,14 @@ export const LOCALE_LABELS: Record<Locale, string> = {
   kab: "Taqbaylit",
 };
 
+// four full labels overflow a 390px header, so narrow screens show codes instead
+export const LOCALE_SHORT_LABELS: Record<Locale, string> = {
+  ar: "AR",
+  fr: "FR",
+  en: "EN",
+  kab: "KAB",
+};
+
 export const STORAGE_KEY = "nadhir.locale";
 
 if (!i18n.isInitialized) {

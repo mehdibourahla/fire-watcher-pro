@@ -116,7 +116,7 @@ function ForecastPage() {
             className="mt-4"
           />
 
-          <div className="mt-5 grid grid-cols-3 gap-2 sm:grid-cols-6">
+          <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-6">
             {HORIZONS.map((h) => {
               const day = featured.days[h];
               return (

@@ -139,22 +139,41 @@ that workflow is the fastest way to fill `fwi_state` for a new commune set.
 
 ## Known limitations
 
-- **The danger scale is not calibrated for Algeria.** The CFFDRS implementation is faithful
-  to Van Wagner's published case to ±0.01 and is tested against it, but applied to an arid
-  regime it was not designed for, most communes read "Extreme". Recalibrated thresholds, a
-  northern-only scale, or deferring to EFFIS are the open options. The numbers are correct
-  and the interpretation is wrong — do not "fix" the arithmetic.
-- **No sub-5-minute detection.** That target depends on the geostationary FCI fast path,
-  which is blocked on netCDF decoding in the edge runtime.
-- **`forest_fraction` is 0 everywhere.** It needs ESA WorldCover; until then the wind bump in
-  the risk model is implemented but never fires.
-- Alert rules for growth and all-clear are not implemented; push, SMS, Telegram and email
-  delivery are unwired.
-- Citizen reports have no EXIF stripping, captcha, or antivirus scan.
+Nadhir is a working data platform with an honest status page; it is **not yet a safe warning
+service**. The full, evidence-checked list is in **[GAPS.md](GAPS.md)** — start there if you
+want to contribute. The blockers that matter most:
+
+- **The danger scale is not calibrated for Algeria.** Today 68.8% of communes read "Extreme"
+  and none read "Low". The CFFDRS maths is verified against Van Wagner to ±0.01; the
+  thresholds are borrowed from a boreal regime. Do not "fix" the arithmetic.
+- **Nobody can register.** Sign-up needs a confirmation email and no SMTP is configured, so it
+  falls back to a 2-emails/hour sender. `auth.users` is 0. Login and RLS themselves work.
+- **No alert reaches a human.** Alerts are computed and stored; push, SMS, email and Telegram
+  are all unwired.
+- **Cross-border fires are watched but coarsely placed.** Detections in the Moroccan and
+  Tunisian border strips are ingested and shown with coordinates rather than an Algerian
+  commune name, but nothing yet says which country they are in.
+- **No sub-5-minute detection.** The geostationary FCI feed is polled for health only — its
+  netCDF granules cannot be decoded in the edge runtime, so it writes no detections.
+
+## Contributing
+
+Issues and pull requests are welcome. [GAPS.md](GAPS.md) lists every known gap with the file
+to start from and a rough sense of difficulty; the "Where to start" table at the end maps
+interests to tasks. Genuinely small first contributions: add the missing `LICENSE` file, run
+`bun run format` (1681 formatting errors, zero real code errors), or add CI that runs the
+existing test suite.
+
+Before changing anything that decides what a user is told, read `ORIGINAL-SPEC.md` for the
+intended model. It is authoritative except on the wilaya count — Algeria has 69, not the 58
+the spec lists.
 
 ## Licence
 
 The application declares its code AGPL-3.0 and its derived data CC-BY 4.0, with attribution
 to "Nadhir — NASA FIRMS, Open-Meteo". Source data stays under the licences of NASA FIRMS,
-EUMETSAT, Copernicus, Open-Meteo and OpenStreetMap. No `LICENSE` file has been added to the
-repository yet, so that declaration currently lives only in the app's own terms pages.
+EUMETSAT, Copernicus, Open-Meteo and OpenStreetMap.
+
+**There is no `LICENSE` file in this repository yet**, so that declaration currently has no
+legal force and the code is not safely reusable. Adding one is tracked in
+[GAPS.md](GAPS.md#41-there-is-no-license-file).
