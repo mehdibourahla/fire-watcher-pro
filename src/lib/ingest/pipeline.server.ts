@@ -4,6 +4,7 @@ import { ingestEffis, type EffisRun } from "./effis.server";
 import { ingestEumetsat } from "./eumetsat.server";
 import { ingestFirms } from "./firms.server";
 import { fuseDetections } from "./fusion.server";
+import { screenPersistentSources } from "./persistent.server";
 import { enrichClusterWinds, refreshRiskForecasts } from "./weather.server";
 
 type RunOutcome = {
@@ -93,6 +94,23 @@ export async function runDetectionPipeline(): Promise<PipelineResult> {
     eumetsat.error ??
       `${eumetsat.sensor} granule ${eumetsat.ageMinutes} min old (${eumetsat.granules} in window)`,
   );
+
+  // must precede fusion: fusion only clusters detections whose fp_reason is null
+  const screenStartedAt = new Date().toISOString();
+  try {
+    const screen = await screenPersistentSources();
+    await recordRun("screen", screenStartedAt, {
+      status: "ok",
+      recordsIn: screen.screened,
+      recordsNew: screen.screened,
+    });
+  } catch (error) {
+    await recordRun("screen", screenStartedAt, {
+      status: "failed",
+      error: error instanceof Error ? error.message : "screen failed",
+    });
+    throw error;
+  }
 
   const fusionStartedAt = new Date().toISOString();
   let fusion: PipelineResult["fusion"] = null;

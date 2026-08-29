@@ -14,6 +14,7 @@
     "test:watch": "vitest",
     "seed:geo": "bun run scripts/seed-geo.ts",
     "seed:open-areas": "bun run scripts/seed-open-areas.ts",
+    "build:sources": "bun run scripts/build-persistent-sources.ts",
     "bootstrap:fwi": "bash scripts/bootstrap-fwi.sh"
   },
   "overrides": {

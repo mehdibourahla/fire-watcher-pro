@@ -14,3 +14,4 @@ dist
 
 # agent worktrees are separate git repos, never part of this one
 .claude/worktrees/
+.cache/

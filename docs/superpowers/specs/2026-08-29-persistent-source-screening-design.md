@@ -23,11 +23,11 @@ Measured 2026-08-29 from 10 fire seasons of FIRMS `VIIRS_SNPP_SP` (2016–2025, 
 NASA classifies every detection in the science-processed archive with a `type` field.
 For Algeria:
 
-| type | detections | share |
-| ---- | ---------- | ----- |
-| 0 — presumed vegetation fire | 47,872 | 31.3% |
+| type                             | detections  | share     |
+| -------------------------------- | ----------- | --------- |
+| 0 — presumed vegetation fire     | 47,872      | 31.3%     |
 | **2 — other static land source** | **104,176** | **68.1%** |
-| 3 — offshore | 892 | 0.6% |
+| 3 — offshore                     | 892         | 0.6%      |
 
 **68% of Algerian fire detections are classified by NASA itself as static land
 sources** — gas flares and industrial plant. The physics corroborates it: type=2 is 78%
@@ -50,7 +50,7 @@ permanent flare maximises. A flare saturates both terms and scores ~0.82 (observ
 DZRQFCM at 0.82). A genuine new single-detection wildfire scores ~0.40. `MIN_CONFIDENCE
 = 0.6` sits between them, so **flares clear the alerting bar and new wildfires do not.**
 Several sit within `SETTLEMENT_EMERGENCY_KM` of a settlement, so under rule R3 they would
-raise *emergency* alerts. This is latent only because `zones` is empty.
+raise _emergency_ alerts. This is latent only because `zones` is empty.
 
 ## Why a location registry, and not the label directly
 
@@ -66,11 +66,11 @@ So: learn the locations from the labelled archive, screen the live feed by locat
 Grid **0.01°** (~1.1 km), matching VIIRS geolocation scatter without merging adjacent
 stacks. A cell is registered when all three hold:
 
-| criterion | threshold | purpose |
-| --------- | --------- | ------- |
-| share of its archive detections labelled `type=2` | ≥ 0.70 | the discriminator |
-| distinct active days | ≥ 5 | excludes one-off coincidence |
-| total detections | ≥ 10 | stability of the share estimate |
+| criterion                                         | threshold | purpose                         |
+| ------------------------------------------------- | --------- | ------------------------------- |
+| share of its archive detections labelled `type=2` | ≥ 0.70    | the discriminator               |
+| distinct active days                              | ≥ 5       | excludes one-off coincidence    |
+| total detections                                  | ≥ 10      | stability of the share estimate |
 
 523 cells nationwide, 118 inside the ingest box.
 
@@ -114,10 +114,10 @@ its existing `.is("fp_reason", null)` filter does the rest.
 There is no escalation exemption, and that is a deliberate reversal of the earlier draft.
 Both candidate exemptions were measured and both cost more than they returned:
 
-| exemption | real events recovered | false events added |
-| --------- | --------------------- | ------------------ |
-| FRP > 3× cell p90 and > 25 MW | 0 of 157 | +2 |
-| ≥3 non-registry detections within 5 km, ±3 h | 1 of 157 | +10 |
+| exemption                                    | real events recovered | false events added |
+| -------------------------------------------- | --------------------- | ------------------ |
+| FRP > 3× cell p90 and > 25 MW                | 0 of 157              | +2                 |
+| ≥3 non-registry detections within 5 km, ±3 h | 1 of 157              | +10                |
 
 The protection they were meant to provide is already structural. The registry is 118
 cells inside the ingest box; a large fire spans terrain far beyond it, screening is
@@ -132,10 +132,10 @@ Temporal holdout: registry trained on 2016–2023, evaluated on 2024–25, score
 NASA's `type` label, at the event level using Nadhir's own clustering parameters, inside
 the ingest box.
 
-| | without screen | with screen |
-| --- | --- | --- |
-| real fire events, alerting size (≥5 detections) | 157 | **150 kept — 7 lost (4.5%)** |
-| false events, alerting size | 801 | **19 remain (97.6% removed)** |
+|                                                 | without screen | with screen                   |
+| ----------------------------------------------- | -------------- | ----------------------------- |
+| real fire events, alerting size (≥5 detections) | 157            | **150 kept — 7 lost (4.5%)**  |
+| false events, alerting size                     | 801            | **19 remain (97.6% removed)** |
 
 The 7 lost events were inspected individually. Five are inside the Arzew and Skikda
 refinery complexes themselves (Aïn El Bia ×3, Mersat El Hadjadj, Skikda) — industrial
