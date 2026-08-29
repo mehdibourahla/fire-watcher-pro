@@ -95,13 +95,22 @@ minutes. Fixing it means decoding netCDF somewhere that is not a Worker.
 
 ## 2. Data quality
 
-### 2.1 `forest_fraction` is effectively unpopulated
+### 2.1 Land cover and terrain — populated 2026-08-30
 
-Only **13 of 1536 communes** and 10 of 69 wilayas have a non-zero value (max 0.72). The §9.3
-wind bump in the risk model is implemented but reads 0 for 99% of the country, so it almost
-never fires. Populating it needs ESA WorldCover land-cover data joined to commune geometry.
+All **1536 communes** now carry WorldCover 2021 class fractions (`landcover`),
+`forest_fraction` from tree cover, and Copernicus DEM slope/aspect stats (`terrain`).
+Commune polygons were seeded from Overpass into `admin_units.geom` (join by `ref:ONS`,
+1536/1537). The §9.3 wind bump has 250 eligible communes (was 13); 168 communes fall under
+the 5% burnable-cover fuel mask. Verified against an independent benchmark at Tizi Ouzou
+(tree 0.499 vs 0.431, mean slope 7.7° vs 6.0°, p90 19.9° vs 18.9°).
 
-Reproduce: `select level, count(*) filter (where coalesce(forest_fraction,0)>0), count(*) from admin_units group by level;`
+Remaining, stated rather than hidden: wilaya rows are not enriched (the model reads commune
+values only); WorldCover is frozen at 2021, so a commune that burned since is still modelled
+as vegetated — Impact Observatory's annual product is the refresh path; `terrain` has no
+reader in the risk model yet, stored so the raster pass is not run twice.
+
+Re-run: `bun run seed:polygons`, `bun run enrich:zonal`.
+Reproduce: `select count(*) filter (where landcover is not null) from admin_units where level='commune';`
 
 ### 2.2 EFFIS / GWIS is connected for danger classes only
 
