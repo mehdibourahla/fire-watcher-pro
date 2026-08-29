@@ -172,7 +172,7 @@ const BEARINGS = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
 
 export function bearingLabel(deg: number | null) {
   if (deg === null || Number.isNaN(deg)) return "—";
-  return BEARINGS[Math.round((((deg % 360) + 360) % 360) / 45) % 8];
+  return BEARINGS[Math.round((((deg % 360) + 360) % 360) / 45) % 8] ?? "—";
 }
 
 export function haversineKm(

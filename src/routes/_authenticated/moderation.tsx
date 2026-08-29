@@ -181,6 +181,21 @@ function QueueCard({
   return (
     <li className="rounded-lg border border-border p-4">
       <div className="flex flex-wrap items-center gap-2 text-sm">
+        {report.kind !== "sighting" ? (
+          <span
+            className="rounded-full px-2 py-0.5 text-xs font-semibold"
+            style={{
+              backgroundColor: "var(--emergency-surface)",
+              color: "var(--emergency)",
+            }}
+          >
+            {t(
+              report.kind === "road_blocked"
+                ? "survival.reportRoadBlocked"
+                : "survival.reportPersonTrapped",
+            )}
+          </span>
+        ) : null}
         <span className="font-medium">
           {t(
             `reports.sighting${report.sighting.charAt(0).toUpperCase()}${report.sighting.slice(1)}`,

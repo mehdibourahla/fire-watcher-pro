@@ -12,12 +12,24 @@ import {
   myReportsQuery,
   myRolesQuery,
   type CitizenReport,
+  type ReportKind,
   type Sighting,
   uploadReportPhoto,
   type SizeHint,
 } from "@/lib/reports";
 
+type ReportSearch = { kind?: "sighting" | "smoke" | ReportKind };
+
 export const Route = createFileRoute("/_authenticated/report")({
+  validateSearch: (search: Record<string, unknown>): ReportSearch => {
+    const kind = search["kind"];
+    return kind === "sighting" ||
+      kind === "smoke" ||
+      kind === "road_blocked" ||
+      kind === "person_trapped"
+      ? { kind }
+      : {};
+  },
   head: () => ({
     meta: [
       { title: "Report a wildfire — Nadhir" },
@@ -44,6 +56,11 @@ const SIZES: SizeHint[] = ["small", "medium", "large"];
 function ReportPage() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language as Locale;
+  const search = Route.useSearch();
+  const hazardKind: ReportKind =
+    search.kind === "road_blocked" || search.kind === "person_trapped"
+      ? search.kind
+      : "sighting";
   const qc = useQueryClient();
   const units = useQuery(adminUnitsQuery);
   const mine = useQuery(myReportsQuery);
@@ -55,7 +72,15 @@ function ReportPage() {
   const [lat, setLat] = useState("36.60");
   const [lon, setLon] = useState("4.05");
   const [communeId, setCommuneId] = useState("");
-  const [sighting, setSighting] = useState<Sighting>("smoke");
+  const [sighting, setSighting] = useState<Sighting>(() =>
+    search.kind === "sighting"
+      ? "flames"
+      : search.kind === "smoke"
+        ? "smoke"
+        : hazardKind !== "sighting"
+          ? "other"
+          : "smoke",
+  );
   const [size, setSize] = useState<SizeHint>("small");
   const [note, setNote] = useState("");
   const [photo, setPhoto] = useState("");
@@ -71,6 +96,7 @@ function ReportPage() {
   const submit = useMutation({
     mutationFn: () =>
       createReport({
+        kind: hazardKind,
         lat: Number(lat),
         lon: Number(lon),
         sighting,
@@ -192,6 +218,22 @@ function ReportPage() {
             </p>
           ) : null}
         </fieldset>
+
+        {hazardKind !== "sighting" ? (
+          <p
+            className="rounded-md px-3 py-2 text-sm font-medium"
+            style={{
+              backgroundColor: "var(--emergency-surface)",
+              color: "var(--emergency)",
+            }}
+          >
+            {t(
+              hazardKind === "road_blocked"
+                ? "survival.reportRoadBlocked"
+                : "survival.reportPersonTrapped",
+            )}
+          </p>
+        ) : null}
 
         <fieldset className="space-y-2">
           <legend className="text-sm font-medium">
@@ -381,6 +423,21 @@ export function ReportRow({
   return (
     <li className="rounded-lg border border-border p-3">
       <div className="flex flex-wrap items-center gap-2 text-sm">
+        {report.kind !== "sighting" ? (
+          <span
+            className="rounded-full px-2 py-0.5 text-xs font-semibold"
+            style={{
+              backgroundColor: "var(--emergency-surface)",
+              color: "var(--emergency)",
+            }}
+          >
+            {t(
+              report.kind === "road_blocked"
+                ? "survival.reportRoadBlocked"
+                : "survival.reportPersonTrapped",
+            )}
+          </span>
+        ) : null}
         <span className="font-medium">
           {t(
             `reports.sighting${report.sighting.charAt(0).toUpperCase()}${report.sighting.slice(1)}`,

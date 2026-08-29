@@ -25,6 +25,128 @@ export const fr: Translation = {
     demoModeNote:
       "Les flux satellites en direct ne sont pas encore connectés. Les chiffres affichés proviennent d'un scénario de démonstration.",
   },
+  survival: {
+    mode: "Mode survie",
+    online: "En ligne",
+    offline: "Hors ligne",
+    pill: "En danger ?",
+    enterTitle: "Êtes-vous près d'un feu en ce moment ?",
+    enterBody:
+      "Le mode survie montre une seule chose à faire à la fois, garde votre zone enregistrée hors ligne et prépare votre position pour un appel à la Protection Civile au 14.",
+    enterFetching:
+      "Localisation GPS en cours · enregistrement du pack hors ligne…",
+    enterYes: "Oui — activer le mode survie",
+    enterCancel: "Annuler",
+    enterFootnote:
+      "L'activation ne coûte rien et n'envoie rien. Vous pouvez quitter à tout moment.",
+    exit: "Quitter",
+    exitTitle: "Quitter le mode survie ?",
+    exitBody: "Votre pack hors ligne reste enregistré sur ce téléphone.",
+    exitYes: "Quitter",
+    interTitle: "Feu confirmé près de votre position",
+    interBody:
+      "Un feu confirmé par satellite se trouve à environ {{km}} km de ce téléphone. Nadhir peut passer en mode survie : une seule chose à faire à la fois, fonctionne sans réseau.",
+    interBasedOn: "Basé sur",
+    interPosition: "la position de votre appareil",
+    interObservation: "Observation",
+    interSatellite: "satellite · {{time}}",
+    interEnter: "Activer le mode survie",
+    interNotHere: "Je ne suis pas sur place",
+    guidanceLabel: "Consignes permanentes · pré-approuvées",
+    guidanceSaved: "Consignes permanentes · enregistrées sur ce téléphone",
+    prepareTitle: "Préparez-vous à partir",
+    prepareBody:
+      "Appelez la Protection Civile au 14 pour les consignes. Rassemblez papiers, médicaments et eau. Ne conduisez jamais vers la fumée.",
+    prepareNoInstruction:
+      "Aucune instruction officielle pour votre zone pour l'instant. Ce sont des consignes générales, rédigées et approuvées à l'avance.",
+    knows: "Ce que Nadhir sait",
+    lastKnown: "Dernier état connu — peut être dépassé",
+    fireObserved: "Feu observé à {{km}} km, direction {{bearing}}",
+    seenAgo: "vu {{time}}",
+    closer: "plus proche qu'au passage précédent",
+    bySatellite: "satellite",
+    wind: "Vent {{kmh}} km/h du secteur {{bearing}}",
+    windToward: "souffle du feu vers vous",
+    noFreshData:
+      "Aucune observation récente près de vous. Cela signifie que Nadhir n'a rien vu — pas qu'il n'y a rien.",
+    noPosition:
+      "Position inconnue. Autorisez la localisation pour alimenter les faits et la carte SOS.",
+    sinceCheck:
+      "Depuis votre dernière consultation ({{time}}) : {{fires}} observation(s) · {{reports}} signalement(s)",
+    sos: "SOS",
+    sosCall: "Appeler la Protection Civile 14",
+    sosFree: "appel gratuit · seul canal surveillé aujourd'hui",
+    sosPosition: "Votre position — lisez-la à l'opérateur",
+    sosCommune: "Commune",
+    sosNearest: "Lieu le plus proche",
+    sosNearestValue: "{{km}} km de {{place}}",
+    sosCoords: "Coordonnées",
+    sosQueueNote:
+      "Si l'appel échoue, votre SOS n'est enregistré que sur ce téléphone. Aucun service de secours ne le reçoit ni ne le surveille pour l'instant — continuez d'appeler le 14.",
+    sosQueued:
+      "SOS enregistré {{time}} — non envoyé, aucun récepteur surveillé n'existe encore.",
+    checkinTitle: "Donner des nouvelles",
+    checkinIntro:
+      "Dites à votre famille où vous êtes, depuis votre propre téléphone. Aucune application requise — le message arrive par SMS ou WhatsApp.",
+    checkinOk: "Signaler que je vais bien",
+    checkinOkSub: "envoie votre état et votre position maintenant",
+    checkinAssist: "Signaler que j'ai besoin d'aide",
+    checkinAssistSub:
+      "demande à votre famille d'appeler le 14 pour vous avec votre position",
+    checkinPreview: "Aperçu du message",
+    checkin: {
+      msgOk:
+        "Je vais bien. Près de {{place}}, {{time}}. Coordonnées : {{coords}}. Envoyé depuis Nadhir.",
+      msgAssist:
+        "J'ai besoin d'aide. Près de {{place}}, {{time}}. Coordonnées : {{coords}}. Appelez la Protection Civile au 14 pour moi. Envoyé depuis Nadhir.",
+    },
+    checkinSend: "Envoyer par SMS / WhatsApp",
+    checkinNote:
+      "Un pointage indique seulement que ce bouton a été touché à ce moment — rien de plus.",
+    areasTitle: "Espaces ouverts autour de vous",
+    areasIntro:
+      "Données cartographiques uniquement — non vérifiées. Nadhir ne connaît pas leur état actuel. Jugez avec les critères ci-dessous ; les autorités peuvent désigner des refuges officiels.",
+    areasUnverified: "donnée cartographique — non vérifiée",
+    areasCriteria: "Ce qui rend un espace ouvert plus sûr",
+    areasCriteria1: "Loin des arbres, des broussailles et de tout ce qui brûle",
+    areasCriteria2: "Sol goudronné ou nu, le plus grand possible",
+    areasCriteria3: "En contrebas — le feu monte vite les pentes",
+    areasCriteria4: "Accessible sans traverser la fumée",
+    areasRefugeNote:
+      "Consignes pré-approuvées · si les autorités désignent un refuge, il apparaît ici en premier",
+    areasEmpty:
+      "Aucun espace ouvert n'est encore chargé pour votre région. Les critères ci-dessus valent pour tout grand terrain dégagé.",
+    areaType: {
+      stadium: "stade",
+      pitch: "terrain de sport",
+      schoolyard: "cour d'école",
+      parking: "parking",
+      square: "place publique",
+      beach: "plage",
+    },
+    offlineBanner:
+      "Pas de réseau. Données enregistrées — dernière vérification {{time}}. La situation peut avoir changé.",
+    packSaved:
+      "Pack hors ligne enregistré {{time}} — position, espaces ouverts, consignes, numéros",
+    report: "Signaler",
+    reportFire: "Feu ici",
+    reportSmoke: "Fumée épaisse",
+    reportRoadBlocked: "Route coupée",
+    reportPersonTrapped: "Personne bloquée",
+    zoneElsewhere: "Vous semblez être ailleurs — alertes seulement.",
+    zoneView: "Voir le feu",
+    zoneImHere: "Je suis sur place",
+    dir: {
+      n: "nord",
+      ne: "nord-est",
+      e: "est",
+      se: "sud-est",
+      s: "sud",
+      sw: "sud-ouest",
+      w: "ouest",
+      nw: "nord-ouest",
+    },
+  },
   nav: {
     settings: "Réglages",
     map: "Carte en direct",

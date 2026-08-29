@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { Flame, LifeBuoy } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { MapLayers } from "@/components/FireMap";
@@ -17,6 +18,7 @@ import {
   RiskLegend,
 } from "@/components/SiteChrome";
 import type { Locale } from "@/i18n";
+import { alertsQuery } from "@/lib/alerts";
 import {
   LIVE_STATES,
   adminUnitsQuery,
@@ -29,6 +31,12 @@ import {
   placeLabel,
   type FireCluster,
 } from "@/lib/nadhir";
+import {
+  SURVIVAL_ACTIVE_KEY,
+  SURVIVAL_AUTO_KM,
+  SURVIVAL_DISMISS_KEY,
+  nearestThreat,
+} from "@/lib/survival";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -80,6 +88,59 @@ function LiveMapPage() {
   const risk = useQuery(riskForecastsQuery);
   const settlements = useQuery(settlementsQuery);
   const sources = useQuery(dataSourcesQuery);
+  const alerts = useQuery({ ...alertsQuery, retry: false });
+  const navigate = useNavigate();
+
+  const [interstitial, setInterstitial] = useState<{
+    km: number;
+    seen: string;
+  } | null>(null);
+
+  useEffect(() => {
+    const data = clusters.data;
+    if (!data || typeof navigator === "undefined") return;
+    if (!("permissions" in navigator) || !("geolocation" in navigator)) return;
+    if (localStorage.getItem(SURVIVAL_ACTIVE_KEY)) return;
+    if (sessionStorage.getItem(SURVIVAL_DISMISS_KEY)) return;
+    let cancelled = false;
+    // Only an already-granted permission is used: the map never prompts for location.
+    void navigator.permissions
+      .query({ name: "geolocation" })
+      .then((status) => {
+        if (cancelled || status.state !== "granted") return;
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            if (cancelled) return;
+            const threat = nearestThreat(
+              pos.coords.latitude,
+              pos.coords.longitude,
+              data,
+            );
+            if (
+              threat &&
+              threat.cluster.state === "active" &&
+              threat.km <= SURVIVAL_AUTO_KM
+            )
+              setInterstitial({
+                km: threat.km,
+                seen: threat.cluster.last_detected_at,
+              });
+          },
+          () => undefined,
+          { timeout: 10000, maximumAge: 300000 },
+        );
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [clusters.data]);
+
+  const zoneAlert = useMemo(
+    () =>
+      (alerts.data ?? []).find((a) => a.kind === "fire" && !a.read_at) ?? null,
+    [alerts.data],
+  );
 
   const live = useMemo(
     () => (clusters.data ?? []).filter((c) => LIVE_STATES.includes(c.state)),
@@ -126,6 +187,51 @@ function LiveMapPage() {
   return (
     <div className="mx-auto flex max-w-[1600px] flex-col gap-4 p-4 lg:h-[calc(100vh-3.5rem)] lg:flex-row">
       <aside className="order-2 flex w-full shrink-0 flex-col gap-3 lg:order-1 lg:w-[360px] lg:overflow-y-auto">
+        {zoneAlert ? (
+          <section
+            className="flex flex-col gap-2 rounded-xl border p-3"
+            style={{
+              backgroundColor: "var(--emergency-surface)",
+              borderColor: "var(--emergency)",
+            }}
+          >
+            <p
+              className="text-sm font-semibold"
+              style={{ color: "var(--emergency)" }}
+            >
+              {zoneAlert.title}
+            </p>
+            <p className="text-xs" style={{ color: "var(--emergency)" }}>
+              {t("survival.zoneElsewhere")}
+            </p>
+            <div className="flex gap-2">
+              {zoneAlert.payload?.short_id ? (
+                <Link
+                  to="/fire/$id"
+                  params={{ id: zoneAlert.payload.short_id }}
+                  className="flex-1 rounded-full py-1.5 text-center text-xs font-bold"
+                  style={{
+                    backgroundColor: "var(--emergency)",
+                    color: "var(--surface)",
+                  }}
+                >
+                  {t("survival.zoneView")}
+                </Link>
+              ) : null}
+              <Link
+                to="/survival"
+                className="flex-1 rounded-full border py-1.5 text-center text-xs font-bold"
+                style={{
+                  borderColor: "var(--emergency)",
+                  color: "var(--emergency)",
+                }}
+              >
+                {t("survival.zoneImHere")}
+              </Link>
+            </div>
+          </section>
+        ) : null}
+
         <section className="card p-4">
           <h1 className="text-base">{t("map.todayIn")}</h1>
           <div className="mt-3 flex items-start justify-between gap-4">
@@ -247,6 +353,14 @@ function LiveMapPage() {
           layers={layers}
         />
         <LayerToggle layers={layers} onChange={setLayers} />
+        <Link
+          to="/survival"
+          className="absolute bottom-4 end-3 z-10 flex items-center gap-2 rounded-full border-2 bg-surface px-4 py-2.5 text-sm font-bold shadow-lg"
+          style={{ borderColor: "var(--emergency)", color: "var(--emergency)" }}
+        >
+          <LifeBuoy aria-hidden className="size-4" />
+          {t("survival.pill")}
+        </Link>
         <DetailSheet open={!!selectedCluster} onClose={() => setSelected(null)}>
           {selectedCluster ? (
             <ClusterDetail
@@ -268,6 +382,80 @@ function LiveMapPage() {
           ) : null}
         </DetailSheet>
       </section>
+
+      {interstitial ? (
+        <div className="fixed inset-0 z-50 flex flex-col bg-surface">
+          <div
+            className="h-1.5"
+            style={{ backgroundColor: "var(--emergency)" }}
+          />
+          <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center gap-4 px-6">
+            <span
+              className="flex size-16 items-center justify-center rounded-full"
+              style={{ backgroundColor: "var(--emergency-surface)" }}
+            >
+              <Flame
+                aria-hidden
+                className="size-8"
+                style={{ color: "var(--emergency)" }}
+              />
+            </span>
+            <h2 className="font-display text-3xl leading-tight">
+              {t("survival.interTitle")}
+            </h2>
+            <p className="text-[15px] leading-relaxed">
+              {t("survival.interBody", { km: interstitial.km.toFixed(1) })}
+            </p>
+            <dl className="card flex flex-col gap-1.5 p-3 text-xs">
+              <div className="flex justify-between">
+                <dt className="text-muted-foreground">
+                  {t("survival.interBasedOn")}
+                </dt>
+                <dd className="font-semibold">{t("survival.interPosition")}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-muted-foreground">
+                  {t("survival.interObservation")}
+                </dt>
+                <dd className="font-semibold">
+                  {t("survival.interSatellite", {
+                    time: relativeTime(interstitial.seen, locale),
+                  })}
+                </dd>
+              </div>
+            </dl>
+          </div>
+          <div className="mx-auto flex w-full max-w-md flex-col gap-2.5 px-6 pb-8">
+            <button
+              type="button"
+              onClick={() => {
+                localStorage.setItem(
+                  SURVIVAL_ACTIVE_KEY,
+                  new Date().toISOString(),
+                );
+                void navigate({ to: "/survival" });
+              }}
+              className="flex h-14 items-center justify-center gap-2 rounded-xl text-base font-bold"
+              style={{
+                backgroundColor: "var(--emergency)",
+                color: "var(--surface)",
+              }}
+            >
+              {t("survival.interEnter")}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                sessionStorage.setItem(SURVIVAL_DISMISS_KEY, "1");
+                setInterstitial(null);
+              }}
+              className="flex h-12 items-center justify-center rounded-xl border border-border text-sm font-semibold text-muted-foreground"
+            >
+              {t("survival.interNotHere")}
+            </button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
