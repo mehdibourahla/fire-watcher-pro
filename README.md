@@ -37,7 +37,7 @@ assumes it.
 
 ```sh
 bun install
-cp .env.example .env.local   # then fill in the Supabase values
+cp .env.example .env.local   # ships working public values — nothing to fill
 bun run dev                  # http://localhost:8080
 ```
 
@@ -158,9 +158,10 @@ want to contribute. The blockers that matter most:
 
 ## Contributing
 
-Issues and pull requests are welcome. [GAPS.md](GAPS.md) lists every known gap with the file
-to start from and a rough sense of difficulty; the "Where to start" table at the end maps
-interests to tasks.
+Issues and pull requests are welcome — [CONTRIBUTING.md](CONTRIBUTING.md) has the
+two-minute no-secrets setup and the access tiers. [GAPS.md](GAPS.md) lists every known gap
+with the file to start from and a rough sense of difficulty; the "Where to start" table at
+the end maps interests to tasks.
 
 CI runs `tsc --noEmit`, the test suite and eslint on every pull request, and `main` requires a
 reviewed pull request — pushes straight to it are blocked. Run `bun run format` before opening
