@@ -51,8 +51,13 @@ describe("pixelFor", () => {
     expect(p!.y).toBeLessThan(EFFIS_HEIGHT - 1);
   });
 
-  it("returns null outside the watch area", () => {
-    expect(pixelFor(20.0, 4.0)).toBeNull();
+  it("covers the deep-Sahara communes the calibration question is about", () => {
+    expect(pixelFor(27.87, -0.29)).not.toBeNull();
+    expect(pixelFor(19.57, 5.77)).not.toBeNull();
+  });
+
+  it("returns null outside Algeria's bounds", () => {
+    expect(pixelFor(15.0, 4.0)).toBeNull();
     expect(pixelFor(36.5, 20.0)).toBeNull();
   });
 });
