@@ -6,6 +6,7 @@ type Props = {
   label: string;
   value: ReactNode;
   sub?: ReactNode;
+  explain?: string;
   tone?: "default" | "emergency";
   className?: string;
 };
@@ -14,12 +15,14 @@ export function StatCard({
   label,
   value,
   sub,
+  explain,
   tone = "default",
   className,
 }: Props) {
   const emergency = tone === "emergency";
   return (
     <div
+      title={explain}
       className={cn("card flex flex-col gap-1 p-3.5", className)}
       style={
         emergency

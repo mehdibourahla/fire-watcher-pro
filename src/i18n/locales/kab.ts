@@ -233,6 +233,25 @@ export const kab: Translation = {
     extinguished: "Yexsi",
     false_positive: "Alɣu n ẓẓur",
   },
+  explain: {
+    fwi: "Amatar n tegnawt n tmes: arured n uzuzzer d wugur n usenqed, yettwaḥseb seg uzɣal, tadawt n ugama, aḍu d ugeffur aneggaru.",
+    dangerLevel:
+      "Aswir n umihi 1–5, yekka-d seg umatar FWI s usellum uṛufi EFFIS.",
+    notRated:
+      "Tagnawt n tmes tettwaḥseb, maca taɣiwant-a drus deg-s yimɣan i yettarɣen, ihi ur d-yettwaskan ara uswir.",
+    area: "Tajumma yerɣan tettwaqder seg teɣzi d umḍan n twaliyin n usatilit — d aqdar kan, mačči d ayen yettwaktalen.",
+    frp: "Tazmert tafellayt n tmes yettwaktalen seg usatilit, s umigawatt.",
+    detections: "Amḍan n twaliyin n uzɣal n usatilit yeddukklen deg tmes-a.",
+    confidence:
+      "Amur n tidet n tmes-a, s usdukkel n yisenqaden, tazzayert d yiɣbula n yiɣelliyen ur nelli ara.",
+    firstSeen:
+      "Akud n twali tamezwarut n usatilit. Times tezmer ad tebdu uqbel.",
+    lastSeen:
+      "Tawali taneggarut n usatilit. Times tezmer ad tkemmel gar snat n twaliyin.",
+    wind: "Aḍu amiran ɣef tmes seg umedya n tegnawt. Times tettazzal s abrid n waḍu.",
+    sources: "Inagrawen n yisatiliten i iwalan times-a.",
+    nearest: "Tamsafit ɣer tmezduɣt tqerben yettwassnen.",
+  },
   risk: {
     metaTitle: "Asmenyaf n uɣilif n tmessi — Nadhir Lezzayer",
     metaDescription:

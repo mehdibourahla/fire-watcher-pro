@@ -312,7 +312,10 @@ function CommuneRow({
           );
         })}
       </span>
-      <span className="tabular text-sm text-muted-foreground">
+      <span
+        className="tabular text-sm text-muted-foreground"
+        title={t("explain.fwi")}
+      >
         {t("risk.fwi")} {row.days[0] ? row.days[0].fwi.toFixed(0) : "—"}
       </span>
     </button>

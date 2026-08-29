@@ -288,12 +288,12 @@ function LiveMapPage() {
           </span>
         </span>
         <span className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
-          <span className="tabular">
+          <span className="tabular" title={t("explain.area")}>
             {cluster.est_area_ha == null
               ? "—"
               : `${Math.round(cluster.est_area_ha)} ${t("common.ha")}`}
           </span>
-          <span className="tabular">
+          <span className="tabular" title={t("explain.detections")}>
             {cluster.detection_count} {t("map.detections")}
           </span>
           {settlement && cluster.nearest_settlement_km !== null ? (
@@ -628,7 +628,7 @@ function ClusterDetail({
       ) : null}
 
       <dl className="grid grid-cols-2 gap-2 text-sm">
-        <div className="card p-2.5">
+        <div className="card p-2.5" title={t("explain.area")}>
           <dt className="text-xs text-muted-foreground">{t("fire.area")}</dt>
           <dd className="tabular font-medium">
             {cluster.est_area_ha == null
@@ -636,13 +636,13 @@ function ClusterDetail({
               : `${Math.round(cluster.est_area_ha)} ${t("common.ha")}`}
           </dd>
         </div>
-        <div className="card p-2.5">
+        <div className="card p-2.5" title={t("explain.detections")}>
           <dt className="text-xs text-muted-foreground">
             {t("fire.detectionCount")}
           </dt>
           <dd className="tabular font-medium">{cluster.detection_count}</dd>
         </div>
-        <div className="card p-2.5">
+        <div className="card p-2.5" title={t("explain.frp")}>
           <dt className="text-xs text-muted-foreground">{t("fire.peakFrp")}</dt>
           <dd className="tabular font-medium">
             {cluster.max_frp_mw == null
@@ -650,7 +650,7 @@ function ClusterDetail({
               : `${Math.round(cluster.max_frp_mw)} ${t("common.mw")}`}
           </dd>
         </div>
-        <div className="card p-2.5">
+        <div className="card p-2.5" title={t("explain.confidence")}>
           <dt className="text-xs text-muted-foreground">
             {t("fire.confidence")}
           </dt>

@@ -238,6 +238,26 @@ export const fr: Translation = {
     extinguished: "Éteint",
     false_positive: "Fausse alerte",
   },
+  explain: {
+    fwi: "Indice For\u00eat-M\u00e9t\u00e9o (FWI) : vitesse de propagation et difficult\u00e9 de contr\u00f4le attendues, calcul\u00e9es \u00e0 partir de la temp\u00e9rature, de l'humidit\u00e9, du vent et des pluies r\u00e9centes.",
+    dangerLevel:
+      "Niveau de danger 1 \u00e0 5, d\u00e9riv\u00e9 du FWI selon l'\u00e9chelle europ\u00e9enne EFFIS.",
+    notRated:
+      "La m\u00e9t\u00e9o du feu est calcul\u00e9e, mais cette commune n'a presque aucune v\u00e9g\u00e9tation combustible : aucun niveau n'est affich\u00e9.",
+    area: "Surface br\u00fbl\u00e9e estim\u00e9e d'apr\u00e8s la taille et le nombre de d\u00e9tections satellite \u2014 une approximation, pas un p\u00e9rim\u00e8tre mesur\u00e9.",
+    frp: "Puissance radiative maximale du feu, mesur\u00e9e par satellite, en m\u00e9gawatts.",
+    detections:
+      "Nombre de d\u00e9tections thermiques satellite regroup\u00e9es dans ce feu.",
+    confidence:
+      "Probabilit\u00e9 qu'il s'agisse d'un vrai feu, combinant l'accord des capteurs, la persistance et les sources connues de fausses alertes.",
+    firstSeen:
+      "Heure de la premi\u00e8re d\u00e9tection satellite. Un feu peut d\u00e9marrer avant le premier passage.",
+    lastSeen:
+      "D\u00e9tection satellite la plus r\u00e9cente. Un feu peut continuer entre deux passages.",
+    wind: "Vent actuel sur le feu selon le mod\u00e8le m\u00e9t\u00e9o. Le feu se propage surtout sous le vent.",
+    sources: "Syst\u00e8mes satellites ayant d\u00e9tect\u00e9 ce feu.",
+    nearest: "Distance au lieu habit\u00e9 connu le plus proche.",
+  },
   risk: {
     metaTitle: "Prévision du danger d'incendie — Nadhir Algérie",
     metaDescription:

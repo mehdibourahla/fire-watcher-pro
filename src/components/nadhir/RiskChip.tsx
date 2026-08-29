@@ -26,6 +26,7 @@ export function RiskChip({
   if (fuelLimited)
     return (
       <span
+        title={t("explain.notRated")}
         className={cn(
           "inline-flex items-center rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground",
           className,
@@ -37,6 +38,7 @@ export function RiskChip({
 
   return (
     <span
+      title={t("explain.dangerLevel")}
       className={cn(
         "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium",
         className,
