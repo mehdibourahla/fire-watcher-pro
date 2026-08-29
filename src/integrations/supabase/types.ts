@@ -76,6 +76,7 @@ export type Database = {
       alerts: {
         Row: {
           body: string
+          cap_alert_id: string | null
           cluster_id: string | null
           commune_id: string | null
           created_at: string
@@ -94,6 +95,7 @@ export type Database = {
         }
         Insert: {
           body: string
+          cap_alert_id?: string | null
           cluster_id?: string | null
           commune_id?: string | null
           created_at?: string
@@ -112,6 +114,7 @@ export type Database = {
         }
         Update: {
           body?: string
+          cap_alert_id?: string | null
           cluster_id?: string | null
           commune_id?: string | null
           created_at?: string
@@ -129,6 +132,13 @@ export type Database = {
           zone_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "alerts_cap_alert_id_fkey"
+            columns: ["cap_alert_id"]
+            isOneToOne: false
+            referencedRelation: "cap_alerts"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "alerts_cluster_id_fkey"
             columns: ["cluster_id"]
@@ -148,6 +158,53 @@ export type Database = {
             columns: ["zone_id"]
             isOneToOne: false
             referencedRelation: "zones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cap_alerts: {
+        Row: {
+          cluster_id: string | null
+          created_at: string
+          id: string
+          identifier: string
+          info: Json
+          msg_type: string
+          scope: string
+          sender: string
+          sent: string
+          status: string
+        }
+        Insert: {
+          cluster_id?: string | null
+          created_at?: string
+          id?: string
+          identifier: string
+          info: Json
+          msg_type: string
+          scope: string
+          sender: string
+          sent: string
+          status: string
+        }
+        Update: {
+          cluster_id?: string | null
+          created_at?: string
+          id?: string
+          identifier?: string
+          info?: Json
+          msg_type?: string
+          scope?: string
+          sender?: string
+          sent?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cap_alerts_cluster_id_fkey"
+            columns: ["cluster_id"]
+            isOneToOne: false
+            referencedRelation: "fire_clusters"
             referencedColumns: ["id"]
           },
         ]

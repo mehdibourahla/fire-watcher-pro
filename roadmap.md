@@ -37,6 +37,9 @@ Seed and ops credentials live in `~/.config/nadhir/`, never in this repo.
 - [x] FWI state persistence (`fwi_state`) so runs advance instead of re-fetching history
 - [x] Cross-border watch strips into Morocco and Tunisia; fires outside Algeria keep their
       coordinates instead of borrowing the nearest Algerian commune name
+- [x] Exif stripped from citizen report photos before upload (JPEG and PNG only)
+- [x] Public API: GeoJSON on `/fires`, plus `/stats`
+- [x] CAP 1.2 alert object (`cap_alerts`) — **migration not yet applied to the live project**
 
 ## Known gaps
 
@@ -52,11 +55,9 @@ Seed and ops credentials live in `~/.config/nadhir/`, never in this repo.
 
 - Alert rules R2 (growth) and R5 (all-clear); R5 needs the `alerts.kind` CHECK widened.
 - Push/SMS/Telegram/email delivery. A Firebase service account exists but is unwired.
-  Decided: model the alert as a CAP object first (`event`, `severity`, `urgency`,
-  `certainty`, `effective`/`expires`, area, `instruction`, language) and make each channel a
-  renderer over it. While zero channels exist that is one table and a serializer; after
-  four channels ship it is four rewrites plus a backfill of everything already sent.
-  Object model only — signing, approval chains and Cell Broadcast are institutional work.
+  The CAP object they must render is in place (`cap_alerts`, `src/lib/cap.ts`): every fire
+  alert now links to one CAP 1.2 warning carrying all four languages. Signing, approval
+  chains and Cell Broadcast remain institutional work, deliberately out of scope.
 - `forest_fraction` is 0 everywhere — needs ESA WorldCover. The §9.3 wind bump is
   implemented but never fires until this is populated.
 - Citizen reports: no EXIF stripping, captcha, or AV scan.
