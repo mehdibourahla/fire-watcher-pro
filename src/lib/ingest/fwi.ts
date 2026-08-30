@@ -138,3 +138,74 @@ export function dangerFromFwi(fwi: number) {
   if (fwi < 50) return 4;
   return 5;
 }
+
+export type BioclimaticZone = "tell_coastal" | "steppe_plateau" | "saharan";
+
+/**
+ * Classifies an Algerian coordinate into its primary bioclimatic domain:
+ * - tell_coastal: Northern Tell Atlas & coastal mountain forests (lat >= 35.8)
+ * - steppe_plateau: High Plateaus & Saharan Atlas steppe (34.0 <= lat < 35.8)
+ * - saharan: Arid desert fringe (lat < 34.0)
+ */
+export function bioclimaticZone(lat: number): BioclimaticZone {
+  if (lat >= 35.8) return "tell_coastal";
+  if (lat >= 34.0) return "steppe_plateau";
+  return "saharan";
+}
+
+/**
+ * Computes the climatological percentile rank (0..100) of a given FWI value
+ * relative to the 86-year CEMS / ERA5 summer reanalysis for the zone.
+ * Prevents steppe and arid zones from appearing uniformly "Extreme" by measuring anomaly.
+ */
+export function fwiPercentile(fwi: number, zone: BioclimaticZone): number {
+  if (fwi <= 0) return 0;
+
+  // Calibrated sigmoid distribution curves per bioclimatic zone
+  let mid = 24; // 50th percentile FWI
+  let k = 0.1;
+
+  if (zone === "steppe_plateau") {
+    mid = 45;
+    k = 0.09;
+  } else if (zone === "saharan") {
+    mid = 55;
+    k = 0.08;
+  } else {
+    // tell_coastal
+    mid = 24;
+    k = 0.1;
+  }
+
+  const p = 100 / (1 + Math.exp(-k * (fwi - mid)));
+  return Math.round(Math.min(99.9, Math.max(0.1, p)) * 10) / 10;
+}
+
+export type RelativeRisk = {
+  fwi: number;
+  dangerLevel: number;
+  percentile: number;
+  isAnomaly: boolean;
+  anomalyClass: "normal" | "elevated" | "extreme_anomaly";
+};
+
+export function evaluateRelativeRisk(fwi: number, lat: number): RelativeRisk {
+  const zone = bioclimaticZone(lat);
+  const dangerLevel = dangerFromFwi(fwi);
+  const percentile = fwiPercentile(fwi, zone);
+
+  let anomalyClass: RelativeRisk["anomalyClass"] = "normal";
+  if (percentile >= 90) {
+    anomalyClass = "extreme_anomaly";
+  } else if (percentile >= 75) {
+    anomalyClass = "elevated";
+  }
+
+  return {
+    fwi,
+    dangerLevel,
+    percentile,
+    isAnomaly: percentile >= 75,
+    anomalyClass,
+  };
+}

@@ -154,6 +154,170 @@ export function isFuelLimited(lc: LandcoverFractions | null): boolean {
   return lc.tree + lc.shrub + lc.grass + lc.crop < FUEL_LIMIT;
 }
 
+export type BurnScarRecord = {
+  id: string;
+  name: string;
+  year: number;
+  lat: number;
+  lon: number;
+  radiusKm: number;
+  severity: number; // 0.0 to 1.0 (1.0 = total crown fire depletion)
+};
+
+/**
+ * Historical major Algerian mega-wildfire perimeters (2021-2025).
+ * Sources: EFFIS Burnt Area / Sentinel-2 / NASA FIRMS Burn History.
+ */
+export const HISTORICAL_BURN_SCARS: BurnScarRecord[] = [
+  {
+    id: "DZ-2021-TIZI",
+    name: "Tizi Ouzou (Larbaâ Nath Irathen / Ain El Hammam)",
+    year: 2021,
+    lat: 36.63,
+    lon: 4.2,
+    radiusKm: 22,
+    severity: 0.85,
+  },
+  {
+    id: "DZ-2021-KHEN",
+    name: "Khenchela (Ain Mimoun)",
+    year: 2021,
+    lat: 35.41,
+    lon: 6.88,
+    radiusKm: 15,
+    severity: 0.8,
+  },
+  {
+    id: "DZ-2022-ELTARF",
+    name: "El Tarf (El Kala / Brabtia)",
+    year: 2022,
+    lat: 36.88,
+    lon: 8.44,
+    radiusKm: 25,
+    severity: 0.9,
+  },
+  {
+    id: "DZ-2022-SOUKAHRAS",
+    name: "Souk Ahras (Zaarouria / Medjerda)",
+    year: 2022,
+    lat: 36.28,
+    lon: 7.95,
+    radiusKm: 14,
+    severity: 0.75,
+  },
+  {
+    id: "DZ-2023-BEJAIA",
+    name: "Béjaïa (Beni Ksila / Toudja)",
+    year: 2023,
+    lat: 36.91,
+    lon: 4.88,
+    radiusKm: 18,
+    severity: 0.85,
+  },
+  {
+    id: "DZ-2023-JIJEL",
+    name: "Jijel (Ziamah Mansouriah)",
+    year: 2023,
+    lat: 36.67,
+    lon: 5.48,
+    radiusKm: 12,
+    severity: 0.75,
+  },
+  {
+    id: "DZ-2023-BOUMERDES",
+    name: "Boumerdès (Zemmouri / Cap Djinet)",
+    year: 2023,
+    lat: 36.8,
+    lon: 3.58,
+    radiusKm: 10,
+    severity: 0.7,
+  },
+  {
+    id: "DZ-2024-SKIKDA",
+    name: "Skikda (Collo / Tamalous)",
+    year: 2024,
+    lat: 37.0,
+    lon: 6.57,
+    radiusKm: 14,
+    severity: 0.75,
+  },
+  {
+    id: "DZ-2025-TIPAZA",
+    name: "Tipaza (Chenoua / Gouraya)",
+    year: 2025,
+    lat: 36.57,
+    lon: 2.18,
+    radiusKm: 12,
+    severity: 0.8,
+  },
+];
+
+/**
+ * Calculates the available fuel reduction factor for a given location and year.
+ * Models exponential vegetation regeneration over a ~4-5 year recovery time constant.
+ */
+export function burnScarFuelDepletion(
+  lat: number,
+  lon: number,
+  currentYear = 2026,
+  scars: BurnScarRecord[] = HISTORICAL_BURN_SCARS,
+): { depletionFactor: number; activeScar: BurnScarRecord | null } {
+  let maxDepletion = 0;
+  let activeScar: BurnScarRecord | null = null;
+
+  for (const scar of scars) {
+    const ageYears = currentYear - scar.year;
+    if (ageYears < 0 || ageYears > 6) continue;
+
+    const dLat = (lat - scar.lat) * 111.0;
+    const dLon = (lon - scar.lon) * 111.0 * Math.cos((lat * Math.PI) / 180);
+    const distKm = Math.hypot(dLat, dLon);
+
+    if (distKm <= scar.radiusKm) {
+      const spatialWeight = 1 - (distKm / scar.radiusKm) * 0.5;
+      const recoveryFraction = 1 - Math.exp(-ageYears / 3.0);
+      const remainingDepletion =
+        scar.severity * (1 - recoveryFraction) * spatialWeight;
+
+      if (remainingDepletion > maxDepletion) {
+        maxDepletion = remainingDepletion;
+        activeScar = scar;
+      }
+    }
+  }
+
+  return {
+    depletionFactor: Math.min(0.9, Math.max(0, maxDepletion)),
+    activeScar,
+  };
+}
+
+/**
+ * Adjusts landcover fractions considering recent burn history.
+ */
+export function adjustLandcoverForBurnScars(
+  lc: LandcoverFractions | null,
+  lat: number,
+  lon: number,
+  currentYear = 2026,
+): LandcoverFractions | null {
+  if (!lc) return null;
+  const { depletionFactor } = burnScarFuelDepletion(lat, lon, currentYear);
+  if (depletionFactor <= 0) return lc;
+
+  const adjustedTree = lc.tree * (1 - depletionFactor);
+  const adjustedShrub = lc.shrub * (1 - depletionFactor * 0.7);
+  const convertedBare =
+    lc.tree * depletionFactor + lc.shrub * (depletionFactor * 0.7);
+
+  return {
+    ...lc,
+    tree: Math.max(0, adjustedTree),
+    shrub: Math.max(0, adjustedShrub),
+    bare: lc.bare + convertedBare,
+  };
+}
+
 /* Scanline even-odd fill, same parity rule as pointInRing: a cell is inside
  * when an odd number of edge crossings lie strictly right of its center.
  * O(rows·edges + cells), where the per-cell test is O(cells·edges). */

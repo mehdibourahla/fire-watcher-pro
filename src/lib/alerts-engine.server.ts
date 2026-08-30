@@ -456,16 +456,23 @@ export async function evaluateAlerts(userId?: string): Promise<AlertRun> {
   if (error) throw new Error(error.message);
 
   let delivered = { sent: 0, failed: 0 };
+  let telegramDelivered = { sent: 0, failed: 0 };
+
   if (inserted?.length) {
     const { dispatchWebhooks } = await import("@/lib/webhooks.server");
+    const { dispatchTelegramAlerts } = await import("@/lib/telegram.server");
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     delivered = await dispatchWebhooks(inserted as any);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    telegramDelivered = await dispatchTelegramAlerts(inserted as any);
   }
 
   return {
     evaluated: zones.length,
     created: inserted?.length ?? 0,
     suppressed,
-    ...delivered,
+    sent: delivered.sent + telegramDelivered.sent,
+    failed: delivered.failed + telegramDelivered.failed,
   };
 }

@@ -3275,7 +3275,7 @@
       "name_kab": "Zzubiriya",
       "lat": 36.066285,
       "lon": 2.855405,
-      "wilaya_code": "26"
+      "wilaya_code": "67"
     },
     {
       "code": "2647",
@@ -3418,7 +3418,7 @@
       "name_kab": "Ben Cikaw",
       "lat": 36.191031,
       "lon": 2.838594,
-      "wilaya_code": "26"
+      "wilaya_code": "67"
     },
     {
       "code": "2602",
@@ -3440,7 +3440,7 @@
       "name_kab": "Wlad Brahim",
       "lat": 36.220009,
       "lon": 2.951711,
-      "wilaya_code": "26"
+      "wilaya_code": "67"
     },
     {
       "code": "2607",
@@ -3462,7 +3462,7 @@
       "name_kab": "Beɛṭa",
       "lat": 36.372016,
       "lon": 3.130166,
-      "wilaya_code": "26"
+      "wilaya_code": "67"
     },
     {
       "code": "2626",
@@ -4375,7 +4375,7 @@
       "name_kab": "Meɣrawa",
       "lat": 36.382557,
       "lon": 3.536551,
-      "wilaya_code": "26"
+      "wilaya_code": "67"
     },
     {
       "code": "2650",
@@ -8929,7 +8929,7 @@
       "name_kab": "Fesdis",
       "lat": 35.618038,
       "lon": 6.237392,
-      "wilaya_code": "05"
+      "wilaya_code": "60"
     },
     {
       "code": "0537",
@@ -9149,7 +9149,7 @@
       "name_kab": "Tamerwant",
       "lat": 35.639596,
       "lon": 5.885639,
-      "wilaya_code": "05"
+      "wilaya_code": "60"
     },
     {
       "code": "0546",
@@ -10084,7 +10084,7 @@
       "name_kab": "Ighzer n Waman",
       "lat": 35.668943,
       "lon": 6.020347,
-      "wilaya_code": "05"
+      "wilaya_code": "60"
     },
     {
       "code": "0554",
@@ -10161,7 +10161,7 @@
       "name_kab": "Ɛuyun Lɛaṣafir",
       "lat": 35.546294,
       "lon": 6.338303,
-      "wilaya_code": "05"
+      "wilaya_code": "60"
     },
     {
       "code": "0531",
@@ -10194,7 +10194,7 @@
       "name_kab": "Ɛin Yagut",
       "lat": 35.786611,
       "lon": 6.406725,
-      "wilaya_code": "05"
+      "wilaya_code": "60"
     },
     {
       "code": "0550",
@@ -11162,7 +11162,7 @@
       "name_kab": "Ɛin Ccuhada",
       "lat": 34.222524,
       "lon": 2.575617,
-      "wilaya_code": "17"
+      "wilaya_code": "65"
     },
     {
       "code": "1730",
@@ -11206,7 +11206,7 @@
       "name_kab": "Ɛin Wessara",
       "lat": 35.496471,
       "lon": 2.863948,
-      "wilaya_code": "65"
+      "wilaya_code": "66"
     },
     {
       "code": "1732",
@@ -11228,7 +11228,7 @@
       "name_kab": "Beni Yeɛqub",
       "lat": 34.476818,
       "lon": 2.838395,
-      "wilaya_code": "17"
+      "wilaya_code": "66"
     },
     {
       "code": "1708",
@@ -11250,7 +11250,7 @@
       "name_kab": "Bwirat Lḥeddab",
       "lat": 35.215438,
       "lon": 3.091426,
-      "wilaya_code": "65"
+      "wilaya_code": "66"
     },
     {
       "code": "1726",
@@ -11316,7 +11316,7 @@
       "name_kab": "Lgedid",
       "lat": 34.665608,
       "lon": 2.575586,
-      "wilaya_code": "17"
+      "wilaya_code": "65"
     },
     {
       "code": "1714",
@@ -11327,7 +11327,7 @@
       "name_kab": "El Idrisiya",
       "lat": 34.418465,
       "lon": 2.521712,
-      "wilaya_code": "17"
+      "wilaya_code": "65"
     },
     {
       "code": "1711",
@@ -11349,7 +11349,7 @@
       "name_kab": "Fiḍ Lbuṭma",
       "lat": 34.47444,
       "lon": 3.748654,
-      "wilaya_code": "66"
+      "wilaya_code": "65"
     },
     {
       "code": "1721",
@@ -11393,7 +11393,7 @@
       "name_kab": "Ḥasi Beḥbaḥ",
       "lat": 34.996272,
       "lon": 2.930356,
-      "wilaya_code": "17"
+      "wilaya_code": "66"
     },
     {
       "code": "1716",
@@ -11404,7 +11404,7 @@
       "name_kab": "Ḥasi Lɛec",
       "lat": 35.0779,
       "lon": 3.265097,
-      "wilaya_code": "17"
+      "wilaya_code": "65"
     },
     {
       "code": "1733",
@@ -11426,7 +11426,7 @@
       "name_kab": "Mliliḥa",
       "lat": 34.718954,
       "lon": 3.644718,
-      "wilaya_code": "17"
+      "wilaya_code": "65"
     },
     {
       "code": "1717",
@@ -11503,7 +11503,7 @@
       "name_kab": "Sidi Leɛǧal",
       "lat": 35.382188,
       "lon": 2.459942,
-      "wilaya_code": "65"
+      "wilaya_code": "66"
     },
     {
       "code": "1736",
@@ -11525,7 +11525,7 @@
       "name_kab": "Zekkar",
       "lat": 34.465142,
       "lon": 3.347686,
-      "wilaya_code": "17"
+      "wilaya_code": "66"
     },
     {
       "code": "1728",
@@ -11536,7 +11536,7 @@
       "name_kab": "Zaɛfṛan",
       "lat": 34.793683,
       "lon": 2.779979,
-      "wilaya_code": "17"
+      "wilaya_code": "65"
     },
     {
       "code": "3209",
@@ -11569,7 +11569,7 @@
       "name_kab": "Buɛlam",
       "lat": 33.693915,
       "lon": 1.52902,
-      "wilaya_code": "32"
+      "wilaya_code": "69"
     },
     {
       "code": "3210",
@@ -11602,7 +11602,7 @@
       "name_kab": "Burzina",
       "lat": 32.539233,
       "lon": 1.589627,
-      "wilaya_code": "32"
+      "wilaya_code": "69"
     },
     {
       "code": "3217",
@@ -11679,7 +11679,7 @@
       "name_kab": "Ɣessul",
       "lat": 33.492156,
       "lon": 1.202905,
-      "wilaya_code": "32"
+      "wilaya_code": "69"
     },
     {
       "code": "3212",
@@ -11723,7 +11723,7 @@
       "name_kab": "Rugaṣa",
       "lat": 34.035522,
       "lon": 0.775739,
-      "wilaya_code": "32"
+      "wilaya_code": "69"
     },
     {
       "code": "3218",
@@ -11767,7 +11767,7 @@
       "name_kab": "Stiten",
       "lat": 33.832112,
       "lon": 1.19668,
-      "wilaya_code": "32"
+      "wilaya_code": "69"
     },
     {
       "code": "3220",
@@ -13450,7 +13450,7 @@
       "name_kab": "Ɛin Kermes",
       "lat": 34.929799,
       "lon": 1.070001,
-      "wilaya_code": "14"
+      "wilaya_code": "64"
     },
     {
       "code": "1440",
@@ -13494,7 +13494,7 @@
       "name_kab": "Ǧbilet Ruṣfa",
       "lat": 34.846116,
       "lon": 0.820519,
-      "wilaya_code": "14"
+      "wilaya_code": "64"
     },
     {
       "code": "1424",
@@ -13560,7 +13560,7 @@
       "name_kab": "Madna",
       "lat": 34.747348,
       "lon": 0.883001,
-      "wilaya_code": "14"
+      "wilaya_code": "64"
     },
     {
       "code": "1415",
@@ -13582,7 +13582,7 @@
       "name_kab": "Mecreɛ Ṣṣfa",
       "lat": 35.374431,
       "lon": 1.062594,
-      "wilaya_code": "14"
+      "wilaya_code": "64"
     },
     {
       "code": "1408",
@@ -13736,7 +13736,7 @@
       "name_kab": "Sidi Bexti",
       "lat": 35.236638,
       "lon": 0.985806,
-      "wilaya_code": "14"
+      "wilaya_code": "64"
     },
     {
       "code": "1423",
@@ -13846,7 +13846,7 @@
       "name_kab": "Ɛin Maḍi",
       "lat": 33.352441,
       "lon": 2.494719,
-      "wilaya_code": "03"
+      "wilaya_code": "59"
     },
     {
       "code": "0311",
@@ -13901,7 +13901,7 @@
       "name_kab": "Lɛessafiya",
       "lat": 33.902964,
       "lon": 3.065801,
-      "wilaya_code": "03"
+      "wilaya_code": "59"
     },
     {
       "code": "0314",
@@ -13956,7 +13956,7 @@
       "name_kab": "Ḥasi Dellaɛa",
       "lat": 33.395208,
       "lon": 3.818191,
-      "wilaya_code": "03"
+      "wilaya_code": "59"
     },
     {
       "code": "0306",
@@ -13967,7 +13967,7 @@
       "name_kab": "Ḥasi Rmel",
       "lat": 33.140173,
       "lon": 3.328125,
-      "wilaya_code": "03"
+      "wilaya_code": "59"
     },
     {
       "code": "0309",
@@ -13989,7 +13989,7 @@
       "name_kab": "Qṣer Lḥiran",
       "lat": 33.701321,
       "lon": 3.20646,
-      "wilaya_code": "03"
+      "wilaya_code": "59"
     },
     {
       "code": "0301",
@@ -14121,7 +14121,7 @@
       "name_kab": "Belɛaybiya",
       "lat": 35.569028,
       "lon": 5.208696,
-      "wilaya_code": "28"
+      "wilaya_code": "68"
     },
     {
       "code": "2845",
@@ -14176,7 +14176,7 @@
       "name_kab": "Buṭi Ssayeḥ",
       "lat": 35.67597,
       "lon": 3.603245,
-      "wilaya_code": "28"
+      "wilaya_code": "68"
     },
     {
       "code": "2809",
@@ -14198,7 +14198,7 @@
       "name_kab": "Dehahna",
       "lat": 35.73296,
       "lon": 5.034015,
-      "wilaya_code": "28"
+      "wilaya_code": "68"
     },
     {
       "code": "2827",
@@ -14231,7 +14231,7 @@
       "name_kab": "Ḥemmam Ḍḍelɛa",
       "lat": 35.930855,
       "lon": 4.342516,
-      "wilaya_code": "28"
+      "wilaya_code": "68"
     },
     {
       "code": "2832",
@@ -14308,7 +14308,7 @@
       "name_kab": "Mɛarif",
       "lat": 35.360236,
       "lon": 4.304031,
-      "wilaya_code": "28"
+      "wilaya_code": "68"
     },
     {
       "code": "2811",
@@ -14385,7 +14385,7 @@
       "name_kab": "Wlad Maḍi",
       "lat": 35.523234,
       "lon": 4.549764,
-      "wilaya_code": "28"
+      "wilaya_code": "68"
     },
     {
       "code": "2828",
@@ -14396,7 +14396,7 @@
       "name_kab": "Wlad Menṣur",
       "lat": 35.731414,
       "lon": 4.401645,
-      "wilaya_code": "28"
+      "wilaya_code": "68"
     },
     {
       "code": "2821",
@@ -14451,7 +14451,7 @@
       "name_kab": "Sidi Heǧres",
       "lat": 35.701393,
       "lon": 4.076756,
-      "wilaya_code": "28"
+      "wilaya_code": "68"
     },
     {
       "code": "2840",
@@ -15144,7 +15144,7 @@
       "name_kab": "Beǧen",
       "lat": 35.338568,
       "lon": 7.497983,
-      "wilaya_code": "12"
+      "wilaya_code": "62"
     },
     {
       "code": "1217",
@@ -15221,7 +15221,7 @@
       "name_kab": "Criɛa",
       "lat": 35.247546,
       "lon": 7.777355,
-      "wilaya_code": "12"
+      "wilaya_code": "62"
     },
     {
       "code": "1205",
@@ -15254,7 +15254,7 @@
       "name_kab": "Lekwif",
       "lat": 35.496192,
       "lon": 8.264669,
-      "wilaya_code": "12"
+      "wilaya_code": "62"
     },
     {
       "code": "1220",
@@ -15276,7 +15276,7 @@
       "name_kab": "Lemriǧ",
       "lat": 35.823842,
       "lon": 8.192259,
-      "wilaya_code": "12"
+      "wilaya_code": "62"
     },
     {
       "code": "1227",
@@ -15386,7 +15386,7 @@
       "name_kab": "Um Ɛli",
       "lat": 35.08551,
       "lon": 8.305752,
-      "wilaya_code": "12"
+      "wilaya_code": "62"
     },
     {
       "code": "1207",
@@ -15397,7 +15397,7 @@
       "name_kab": "Sefṣaf Lwesra",
       "lat": 34.930451,
       "lon": 8.193449,
-      "wilaya_code": "12"
+      "wilaya_code": "62"
     },
     {
       "code": "1204",
@@ -16640,7 +16640,7 @@
       "name_kab": "Beni Behdel",
       "lat": 34.709023,
       "lon": -1.499999,
-      "wilaya_code": "13"
+      "wilaya_code": "63"
     },
     {
       "code": "1338",
@@ -16695,7 +16695,7 @@
       "name_kab": "Beni Sennus",
       "lat": 34.624741,
       "lon": -1.573607,
-      "wilaya_code": "13"
+      "wilaya_code": "63"
     },
     {
       "code": "1347",
@@ -16816,7 +16816,7 @@
       "name_kab": "Msirdet Lfewwaga",
       "lat": 35.018836,
       "lon": -2.091354,
-      "wilaya_code": "13"
+      "wilaya_code": "63"
     },
     {
       "code": "1327",
@@ -16992,7 +16992,7 @@
       "name_kab": "Zennata",
       "lat": 34.989934,
       "lon": -1.475656,
-      "wilaya_code": "13"
+      "wilaya_code": "63"
     },
     {
       "code": "1332",

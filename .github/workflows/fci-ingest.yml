@@ -1,0 +1,39 @@
+name: EUMETSAT MTG FCI Active Fire Ingest
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: fci-ingest
+  cancel-in-progress: false
+
+jobs:
+  ingest-fci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install NetCDF dependencies
+        run: |
+          sudo apt-get update && sudo apt-get install -y libnetcdf-dev libhdf5-dev
+          pip install -r scripts/fci-worker/requirements.txt
+
+      - name: Run EUMETSAT FCI Decoder & Ingest
+        env:
+          EUMETSAT_CONSUMER_KEY: ${{ secrets.EUMETSAT_CONSUMER_KEY }}
+          EUMETSAT_CONSUMER_SECRET: ${{ secrets.EUMETSAT_CONSUMER_SECRET }}
+          NADHIR_APP_URL: ${{ secrets.NADHIR_APP_URL || 'https://nadhir.app' }}
+          NADHIR_CRON_SECRET: ${{ secrets.NADHIR_CRON_SECRET }}
+        run: |
+          python scripts/fci-worker/fci_ingest.py

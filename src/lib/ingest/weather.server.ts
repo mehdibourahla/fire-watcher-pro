@@ -327,16 +327,50 @@ export async function refreshRiskForecasts(): Promise<RiskRun> {
   return { communes: communes.length, rows: written, requests };
 }
 
-/** Attach current wind to live clusters so the spread arrow is real. */
+import { effectiveSpreadVector } from "@/lib/alerts-rules";
+
+/** Attach current wind and terrain-adjusted spread vector to live clusters. */
 export async function enrichClusterWinds(): Promise<number> {
   const { data: clusters } = await supabaseAdmin
     .from("fire_clusters")
-    .select("id, lat, lon")
+    .select("id, lat, lon, commune_id")
     .in("state", ["active", "unconfirmed", "contained_guess"])
     .gte("last_detected_at", new Date(Date.now() - 24 * 3600_000).toISOString())
     .order("last_detected_at", { ascending: false })
     .limit(100);
   if (!clusters?.length) return 0;
+
+  const communeIds = [
+    ...new Set(clusters.map((c) => c.commune_id).filter(Boolean)),
+  ] as string[];
+  const terrainByCommune = new Map<
+    string,
+    {
+      mean_slope_deg?: number;
+      p90_slope_deg?: number;
+      pct_above_20_deg?: number;
+      south_facing_pct?: number;
+    }
+  >();
+  if (communeIds.length) {
+    const { data: adminData } = await supabaseAdmin
+      .from("admin_units")
+      .select("id, terrain")
+      .in("id", communeIds);
+    for (const row of adminData ?? []) {
+      if (row.terrain) {
+        terrainByCommune.set(
+          row.id,
+          row.terrain as {
+            mean_slope_deg?: number;
+            p90_slope_deg?: number;
+            pct_above_20_deg?: number;
+            south_facing_pct?: number;
+          },
+        );
+      }
+    }
+  }
 
   const url = new URL("https://api.open-meteo.com/v1/forecast");
   url.searchParams.set("latitude", clusters.map((c) => c.lat).join(","));
@@ -365,16 +399,25 @@ export async function enrichClusterWinds(): Promise<number> {
 
   for (let i = 0; i < updates.length; i += 10) {
     await Promise.all(
-      updates.slice(i, i + 10).map(({ cluster, current }) =>
-        supabaseAdmin
+      updates.slice(i, i + 10).map(({ cluster, current }) => {
+        const terrain = cluster.commune_id
+          ? terrainByCommune.get(cluster.commune_id)
+          : null;
+        const vector = effectiveSpreadVector(
+          current.wind_speed_10m,
+          current.wind_direction_10m,
+          terrain,
+        );
+
+        return supabaseAdmin
           .from("fire_clusters")
           .update({
             wind_speed_kmh: current.wind_speed_10m,
             wind_dir_deg: current.wind_direction_10m,
-            spread_bearing_deg: (current.wind_direction_10m + 180) % 360,
+            spread_bearing_deg: vector.effectiveBearingDeg,
           })
-          .eq("id", cluster.id),
-      ),
+          .eq("id", cluster.id);
+      }),
     );
   }
   return updates.length;

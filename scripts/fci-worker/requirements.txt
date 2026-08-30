@@ -1,0 +1,5 @@
+requests>=2.31.0
+netCDF4>=1.6.5
+xarray>=2024.1.0
+numpy>=1.26.0
+h5netcdf>=1.3.0
