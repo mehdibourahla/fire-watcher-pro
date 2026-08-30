@@ -554,5 +554,23 @@
         "El Meharra"
       ]
     }
+  ],
+  "name_mappings": {
+    "Benacer Benchohra": "0303 Bennasser Benchohra",
+    "Khangat Sidi Nadji": "0733 Khenguet Sidi Nadji",
+    "Gourrigueur": "1216 Guorriguer",
+    "Mezghenna": "2611 Mezerana",
+    "Eddouair": "2645 Tlatet Eddouair",
+    "Medjebar": "2662 Moudjbar",
+    "El Ogla El Melha": "1215 Ogla Melha",
+    "Bouira Lahdab": "1709 Bouirat El Hedab",
+    "Sidi Amar (Art. 36)": "3218 Sidi Ameur",
+    "El Kheïther": "3211 El Kheiter",
+    "Menaâ (Art. 52 bis 19)": "OPEN"
+  },
+  "open_items": [
+    "Menaâ (Art. 52 bis 19): no M'Sila-region commune of this name exists in admin_units; only Batna's 0506 Menaa (itself listed under Art. 9). Candidate for the 1541-vs-1537 shortfall.",
+    "2839 Ouled Atia (Bou Saâda) appears in admin_units but in no law list.",
+    "admin_units holds 1537 communes against the law's 1541; the remaining missing rows are unidentified."
   ]
 }

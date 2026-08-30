@@ -448,7 +448,7 @@
       "code": "49",
       "name_ar": "تيميمون",
       "name_fr": "Timimoune",
-      "name_en": "Timimoun Province",
+      "name_en": "Timimoun",
       "name_kab": "Tawilayt n Timimun",
       "lat": 30.024473,
       "lon": 0.848598
@@ -591,8 +591,8 @@
     {
       "code": "63",
       "name_ar": "العريشة",
-      "name_fr": "Wilaya d'El Aricha",
-      "name_en": "El Aricha Province",
+      "name_fr": "El Aricha",
+      "name_en": "El Aricha",
       "name_kab": null,
       "lat": 34.410295,
       "lon": -1.362192
@@ -600,8 +600,8 @@
     {
       "code": "69",
       "name_ar": "الأبيض سيدي الشيخ",
-      "name_fr": "Wilaya d'El Abiodh Sidi Cheikh",
-      "name_en": "El Abiodh Sidi Cheikh Province",
+      "name_fr": "El Abiodh Sidi Cheikh",
+      "name_en": "El Abiodh Sidi Cheikh",
       "name_kab": null,
       "lat": 32.18907,
       "lon": 0.701969
@@ -609,17 +609,17 @@
     {
       "code": "68",
       "name_ar": "بوسعادة",
-      "name_fr": "Wilaya de Bou Saâda",
-      "name_en": "Bou Saâda Province",
+      "name_fr": "Bou Saâda",
+      "name_en": "Bou Saâda",
       "name_kab": null,
       "lat": 34.909049,
       "lon": 4.285565
     },
     {
       "code": "67",
-      "name_ar": "ولاية قصر البخاري",
-      "name_fr": "Wilaya de Ksar El Boukhari",
-      "name_en": "Ksar El Boukhari Province",
+      "name_ar": "قصر البخاري",
+      "name_fr": "Ksar El Boukhari",
+      "name_en": "Ksar El Boukhari",
       "name_kab": null,
       "lat": 35.772022,
       "lon": 2.581835
@@ -16662,7 +16662,7 @@
       "name_kab": "Beni Xellad",
       "lat": 35.182557,
       "lon": -1.555535,
-      "wilaya_code": "46"
+      "wilaya_code": "13"
     },
     {
       "code": "1336",
@@ -16717,7 +16717,7 @@
       "name_kab": "Lgur",
       "lat": 34.551855,
       "lon": -1.031623,
-      "wilaya_code": "13"
+      "wilaya_code": "63"
     },
     {
       "code": "1319",
@@ -17003,7 +17003,7 @@
       "name_kab": "Leɛrica",
       "lat": 34.393666,
       "lon": -1.203564,
-      "wilaya_code": "13"
+      "wilaya_code": "63"
     },
     {
       "code": "1343",
@@ -17014,7 +17014,7 @@
       "name_kab": "Lebwihi",
       "lat": 34.303559,
       "lon": -1.548687,
-      "wilaya_code": "13"
+      "wilaya_code": "63"
     },
     {
       "code": "1341",
@@ -17025,7 +17025,7 @@
       "name_kab": "Sidi Ǧilali",
       "lat": 34.416,
       "lon": -1.471407,
-      "wilaya_code": "13"
+      "wilaya_code": "63"
     },
     {
       "code": "2928",
