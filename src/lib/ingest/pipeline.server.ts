@@ -3,6 +3,7 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { ingestEffis, type EffisRun } from "./effis.server";
 import { ingestEumetsat } from "./eumetsat.server";
 import { ingestFirms } from "./firms.server";
+import { ingestOnm } from "./onm.server";
 import { fuseDetections } from "./fusion.server";
 import {
   flagPersistentCandidates,
@@ -96,6 +97,21 @@ export async function runDetectionPipeline(): Promise<PipelineResult> {
     !eumetsat.error && (eumetsat.ageMinutes ?? 999) < 180,
     eumetsat.error ??
       `${eumetsat.sensor} granule ${eumetsat.ageMinutes} min old (${eumetsat.granules} in window)`,
+  );
+
+  const onmStartedAt = new Date().toISOString();
+  const onm = await ingestOnm();
+  await recordRun("onm", onmStartedAt, {
+    status: onm.error ? "failed" : "ok",
+    recordsIn: onm.fetched,
+    recordsNew: onm.stored,
+    ...(onm.error ? { error: onm.error } : {}),
+  });
+  await markSource(
+    "onm",
+    !onm.error,
+    onm.error ??
+      `${onm.stored} vigilance warnings relayed (${onm.unmatched} unmatched wilaya names)`,
   );
 
   // must precede fusion: fusion only clusters detections whose fp_reason is null

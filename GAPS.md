@@ -178,6 +178,13 @@ where c.level='commune' group by 1;`
   including Arzew and Skikda, which the confidence model had scored at 0.82 — above the 0.6
   alerting bar, while a genuine new wildfire scores ~0.40.
   Reproduce: `bun run evaluate:sources`.
+- **ONM vigilance is relayed** since 2026-08-30: the met office's CAP warnings
+  (CC BY 4.0, WMO-registered authority) ingest every pipeline run into
+  `onm_vigilance` and display verbatim per wilaya on the forecast page. Honest
+  limits: ONM publishes no wildfire event type (heat and wind are the
+  fire-relevant channels); titles are English-only in the feed (the per-warning
+  CAP XML carries FR/EN, not Arabic); publication cadence is unproven, so the
+  freshness window is 24h and a quiet weather day is not a dead feed.
 - **Admin console** has no cluster resolve (US-6), no broadcast, and no audit log.
 - **Survival mode** (`/survival`) ships with deliberate limits, each stated in the UI
   rather than papered over: the SOS queue is **local-only** — no server inbox exists

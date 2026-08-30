@@ -282,6 +282,7 @@ export const fr: Translation = {
     fuelLimited: "Non évalué — végétation combustible négligeable",
     effisMasked:
       "EFFIS n'évalue pas le terrain de cette commune (zone non végétalisée).",
+    onmLabel: "Vigilance officielle ONM",
     effisNone:
       "Pas encore de comparaison EFFIS — la classification européenne arrive avec le rafraîchissement quotidien.",
     effisClass: {

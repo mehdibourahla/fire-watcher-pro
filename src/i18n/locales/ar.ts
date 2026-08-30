@@ -273,6 +273,7 @@ export const ar: Translation = {
     effis: "‏EFFIS/GWIS (المرجع الأوروبي) يصنف هذه البلدية: {{class}}",
     fuelLimited: "غير مقيَّم — الغطاء النباتي القابل للاشتعال شبه منعدم",
     effisMasked: "لا يصنف EFFIS أراضي هذه البلدية (منطقة بلا غطاء نباتي).",
+    onmLabel: "تحذير رسمي من الأرصاد الجوية (ONM)",
     effisNone:
       "لا مقارنة من EFFIS بعد — يصل التصنيف الأوروبي مع التحديث اليومي.",
     effisClass: {

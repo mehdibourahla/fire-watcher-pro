@@ -274,6 +274,7 @@ export const en = {
     fuelLimited: "Not rated — negligible burnable vegetation",
     effisMasked:
       "EFFIS does not rate this commune's terrain (unvegetated land).",
+    onmLabel: "Official ONM warning",
     effisNone:
       "No EFFIS comparison yet — the European classification arrives with the daily refresh.",
     effisClass: {

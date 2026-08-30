@@ -1,0 +1,104 @@
+<?xml version="1.0" ?>
+<?xml-stylesheet type="text/xsl" href="cap-atom-viewer.xsl"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:cap="urn:oasis:names:tc:emergency:cap:1.2">
+  <id>urn:oid:2.49.0.1.12.0</id>
+  <title>Weather Alerts by National Meteorological Office - Algeria</title>
+  <link rel="self" type="application/atom+xml" href="https://ametvigilance.meteo.dz/rss/rss_meteo_dz.xml"/>
+  <updated>2026-08-30T15:54:23Z</updated>
+  <author>
+    <name>National Meteorological Office - Algeria</name>
+  </author>
+  <rights>Copyright, National Meteorological Office. Licensed under CC BY 4.0.</rights>
+  <entry>
+    <id>urn:oid:2.49.0.1.12.0.2026.8.30.15.54.22.25497</id>
+    <title>Rain Moderate warning for the wilaya: SIDI-BEL-ABBÈS</title>
+    <published>2026-08-30T15:54:22Z</published>
+    <updated>2026-08-30T15:54:22Z</updated>
+    <author>
+      <name>National Meteorological Office - Algeria</name>
+    </author>
+    <link type="application/cap+xml" href="https://ametvigilance.meteo.dz/CAPs/2026.8.30.15.54.22.25497.xml"/>
+    <cap:sent>2026-08-30T15:54:22Z</cap:sent>
+    <cap:status>Actual</cap:status>
+    <cap:msgType>Alert</cap:msgType>
+    <cap:scope>Public</cap:scope>
+    <cap:urgency>Immediate</cap:urgency>
+    <cap:severity>Moderate</cap:severity>
+    <cap:certainty>Observed</cap:certainty>
+    <cap:effective>2026-08-30T15:54:22Z</cap:effective>
+    <cap:onset>2026-08-30T18:00:00Z</cap:onset>
+    <cap:expires>2026-08-31T00:00:00Z</cap:expires>
+    <cap:area>
+      <cap:areaDesc>SIDI-BEL-ABBÈS</cap:areaDesc>
+    </cap:area>
+  </entry>
+<entry>
+    <id>urn:oid:2.49.0.1.12.0.2026.8.30.15.54.22.46014</id>
+    <title>Thunderstorm Moderate warning for the wilaya: SIDI-BEL-ABBÈS</title>
+    <published>2026-08-30T15:54:22Z</published>
+    <updated>2026-08-30T15:54:22Z</updated>
+    <author>
+      <name>National Meteorological Office - Algeria</name>
+    </author>
+    <link type="application/cap+xml" href="https://ametvigilance.meteo.dz/CAPs/2026.8.30.15.54.22.46014.xml"/>
+    <cap:sent>2026-08-30T15:54:22Z</cap:sent>
+    <cap:status>Actual</cap:status>
+    <cap:msgType>Alert</cap:msgType>
+    <cap:scope>Public</cap:scope>
+    <cap:urgency>Immediate</cap:urgency>
+    <cap:severity>Moderate</cap:severity>
+    <cap:certainty>Observed</cap:certainty>
+    <cap:effective>2026-08-30T15:54:22Z</cap:effective>
+    <cap:onset>2026-08-30T18:00:00Z</cap:onset>
+    <cap:expires>2026-08-31T00:00:00Z</cap:expires>
+    <cap:area>
+      <cap:areaDesc>SIDI-BEL-ABBÈS</cap:areaDesc>
+    </cap:area>
+  </entry>
+<entry>
+    <id>urn:oid:2.49.0.1.12.0.2026.8.30.15.54.22.58308</id>
+    <title>Rain Moderate warning for the wilaya: SOUK-AHRAS</title>
+    <published>2026-08-30T15:54:22Z</published>
+    <updated>2026-08-30T15:54:22Z</updated>
+    <author>
+      <name>National Meteorological Office - Algeria</name>
+    </author>
+    <link type="application/cap+xml" href="https://ametvigilance.meteo.dz/CAPs/2026.8.30.15.54.22.58308.xml"/>
+    <cap:sent>2026-08-30T15:54:22Z</cap:sent>
+    <cap:status>Actual</cap:status>
+    <cap:msgType>Alert</cap:msgType>
+    <cap:scope>Public</cap:scope>
+    <cap:urgency>Immediate</cap:urgency>
+    <cap:severity>Moderate</cap:severity>
+    <cap:certainty>Observed</cap:certainty>
+    <cap:effective>2026-08-30T15:54:22Z</cap:effective>
+    <cap:onset>2026-08-30T18:00:00Z</cap:onset>
+    <cap:expires>2026-08-31T00:00:00Z</cap:expires>
+    <cap:area>
+      <cap:areaDesc>SOUK-AHRAS</cap:areaDesc>
+    </cap:area>
+  </entry>
+<entry>
+    <id>urn:oid:2.49.0.1.12.0.2026.8.30.15.54.22.68726</id>
+    <title>Thunderstorm Moderate warning for the wilaya: SOUK-AHRAS</title>
+    <published>2026-08-30T15:54:22Z</published>
+    <updated>2026-08-30T15:54:22Z</updated>
+    <author>
+      <name>National Meteorological Office - Algeria</name>
+    </author>
+    <link type="application/cap+xml" href="https://ametvigilance.meteo.dz/CAPs/2026.8.30.15.54.22.68726.xml"/>
+    <cap:sent>2026-08-30T15:54:22Z</cap:sent>
+    <cap:status>Actual</cap:status>
+    <cap:msgType>Alert</cap:msgType>
+    <cap:scope>Public</cap:scope>
+    <cap:urgency>Immediate</cap:urgency>
+    <cap:severity>Moderate</cap:severity>
+    <cap:certainty>Observed</cap:certainty>
+    <cap:effective>2026-08-30T15:54:22Z</cap:effective>
+    <cap:onset>2026-08-30T18:00:00Z</cap:onset>
+    <cap:expires>2026-08-31T00:00:00Z</cap:expires>
+    <cap:area>
+      <cap:areaDesc>SOUK-AHRAS</cap:areaDesc>
+    </cap:area>
+  </entry>
+</feed>

@@ -9,6 +9,8 @@ export const SOURCE_MAX_AGE_MIN: Record<string, number> = {
   openmeteo: 60,
   local_fwi: 30 * 60,
   effis: 30 * 60,
+  // ONM publishes irregularly; a quiet weather day is not a dead feed
+  onm: 24 * 60,
   // geo is reference data: last_ok_at is the seed date, reseeded ~monthly,
   // never bumped by pipeline runs — a pipeline-cadence window false-alarms.
   geo: 45 * 24 * 60,

@@ -275,6 +275,7 @@ export const kab: Translation = {
     effis: "EFFIS/GWIS (tadbelt tuṛufit) tsemma taɣiwant-a: {{class}}",
     fuelLimited: "Ur yettwasemma ara — drus n yimɣan i yettarɣen",
     effisMasked: "EFFIS ur isemma ara akal n taɣiwant-a (akal war imɣan).",
+    onmLabel: "Alɣu unṣib n ONM",
     effisNone:
       "Ulac aserwes EFFIS ar tura — asmil uṛufi yettas-d s uleqqem n yal ass.",
     effisClass: {
