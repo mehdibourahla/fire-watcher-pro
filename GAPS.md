@@ -144,21 +144,20 @@ The layer only serves its current run, so each row is stamped with the fetch dat
 palette change on their side still degrades the source loudly (the run errors when zero
 communes match).
 
-### 2.3 Commune-to-wilaya assignment diverges from the 2026 law
+### 2.3 Commune-to-wilaya assignment — reconciled with Loi 26-06 (2026-08-30)
 
-The authority is now in the repo: Loi 26-06 (JORADP N° 25, 5 avril 2026, F2026025.pdf)
-is transcribed article-by-article into `data/geo/loi-26-06.json` — 404 communes across
-10 redefined mother wilayas and the 11 new wilayas (Art. 52 bis 10–20), every list
-matching the law's own declared counts. `bun run scripts/audit-loi-26-06.ts` diffs it
-read-only against `admin_units`: as of 2026-08-30, 389 assignments already agree,
-7 candidate misfilings (El Aricha's four communes still under Tlemcen; Beni Khellad
-under Aïn Témouchent; Sidi Amar under Saïda), 8 spelling variants awaiting resolution
-(each with nearest-name hints), 25 same-name ambiguities resolved by seat proximity.
+The law (JORADP N° 25, transcribed with citations in `data/geo/loi-26-06.json`) is now
+the applied authority: `bun run audit:loi` verifies 403 of the law's 404 listed
+assignments against the live `admin_units`, zero misfiled. Five re-parents were applied
+with article citations (El Aricha's four communes out of Tlemcen per Art. 52 bis 14;
+Beni Khellad out of Aïn Témouchent per Art. 17) and mirrored in `data/geo/algeria-admin.json`
+so reseeds agree; ten spelling variants are pinned in the law file's `name_mappings`
+(each code verified against the database), and the audit consumes them.
 
-Do NOT auto-apply the audit: commune names repeat across wilayas (the law itself lists
-a Menaa in both Batna and Bou Saâda), so each correction needs the diff read by a human
-before re-parenting. Also pending: four new-wilaya rows carry a "Wilaya de…" name
-prefix the other seven lack.
+Still open, stated in the law file's `open_items`: Bou Saâda's "Menaâ" (Art. 52 bis 19)
+has no counterpart commune in the database; `2839 Ouled Atia` exists here but in no law
+list; and `admin_units` holds 1537 communes against the law's 1541 — the missing rows
+are unidentified and need the Arabic original or ONS tables to name.
 
 ## 3. Product surface
 

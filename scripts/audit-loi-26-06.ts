@@ -93,6 +93,32 @@ for (const lw of law.wilayas) {
     continue;
   }
   for (const name of lw.communes) {
+    const mapped =
+      law.name_mappings?.[`${name} (${lw.article})`] ??
+      law.name_mappings?.[name];
+    if (mapped === "OPEN") {
+      console.log(
+        `.. ${lw.seat}: "${name}" is a documented open item (${lw.article})`,
+      );
+      continue;
+    }
+    if (mapped) {
+      const code = mapped.split(" ")[0]!;
+      const c = communes.find((x) => x.code === code);
+      if (!c) {
+        console.log(`!! mapping "${name}" -> ${mapped}: code not found`);
+        continue;
+      }
+      const cur = c.parent_id ? wilayaById.get(c.parent_id) : null;
+      if (cur?.id === wilaya.id) ok += 1;
+      else {
+        misfiled += 1;
+        console.log(
+          `-> ${c.code} ${c.name_fr}: ${cur?.name_fr ?? "(none)"} => ${wilaya.name_fr} (${lw.article}, mapped)`,
+        );
+      }
+      continue;
+    }
     let candidates = communes.filter((c) => norm(c.name_fr) === norm(name));
     let fuzzy = false;
     if (!candidates.length) {
