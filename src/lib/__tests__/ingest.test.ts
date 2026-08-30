@@ -31,11 +31,18 @@ describe("emitted literals satisfy the DB CHECK constraints", () => {
     expect(allowed("detections", "source")).toContain(emitted);
   });
 
-  it("the eumetsat worker writes no detections at all", () => {
-    // its granules are netCDF it cannot decode, so any row it wrote would be a
-    // fabricated fire at the bounding-box centroid
-    const src = read("src/lib/ingest/eumetsat.server.ts");
-    expect(src).not.toMatch(/from\("detections"\)/);
+  it("detections.source — fci ingest", () => {
+    const emitted = /source: "([^"]+)"/.exec(
+      read("src/lib/ingest/fci.server.ts"),
+    )?.[1];
+    expect(allowed("detections", "source")).toContain(emitted);
+  });
+
+  it("the fci ingest refuses a run whose features all fall outside the watch box", () => {
+    // the WFS bbox is lat-first; a silently wrong axis order returns plausible
+    // fires in the wrong hemisphere
+    const src = read("src/lib/ingest/fci.server.ts");
+    expect(src).toMatch(/outside the watch box/);
   });
 
   it("fusion attaches a commune only to fires inside Algeria", () => {

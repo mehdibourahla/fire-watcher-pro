@@ -12,6 +12,7 @@ import { RiskLegend } from "@/components/SiteChrome";
 import type { Locale } from "@/i18n";
 import {
   adminUnitsQuery,
+  onmVigilanceQuery,
   effisDangerQuery,
   relativeTime,
   riskForecastsQuery,
@@ -65,6 +66,7 @@ function ForecastPage() {
   const forecasts = useQuery(riskForecastsQuery);
   const units = useQuery(adminUnitsQuery);
   const effis = useQuery(effisDangerQuery);
+  const onm = useQuery({ ...onmVigilanceQuery, retry: false });
 
   const rows = useMemo<Row[]>(() => {
     const communes = (units.data ?? []).filter((u) => u.level === "commune");
@@ -153,6 +155,22 @@ function ForecastPage() {
               {t("risk.fuelLimited")}
             </p>
           ) : null}
+
+          {(onm.data ?? [])
+            .filter((w) => w.wilaya_id === featured.commune.parent_id)
+            .slice(0, 3)
+            .map((w) => (
+              <p
+                key={w.cap_id}
+                className="mt-3 border-t border-border pt-3 text-sm"
+              >
+                <span className="font-medium">{t("risk.onmLabel")}:</span>{" "}
+                {w.title}{" "}
+                <span className="tabular text-xs text-muted-foreground">
+                  ({relativeTime(w.sent, locale)})
+                </span>
+              </p>
+            ))}
 
           {(() => {
             const row = effis.data?.get(featured.commune.id);

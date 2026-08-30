@@ -3,6 +3,7 @@ import { fetchAllPages } from "@/lib/paginate";
 
 import { isFuelLimited, type LandcoverFractions } from "@/lib/zonal";
 
+import { algiersToday } from "./algiers-date";
 import { dailyFromHourly, type HourlyBlock } from "./noon-weather";
 import {
   FWI_START,
@@ -203,7 +204,7 @@ export async function refreshRiskForecasts(): Promise<RiskRun> {
     if (!stored.has(row.commune_id)) stored.set(row.commune_id, row);
   }
 
-  const todayMs = Date.parse(new Date().toISOString().slice(0, 10));
+  const todayMs = Date.parse(algiersToday());
   const daysSince = (date: string) =>
     Math.round((todayMs - Date.parse(date)) / 86400000);
 

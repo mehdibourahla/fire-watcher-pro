@@ -83,15 +83,21 @@ it. The `cap_alerts` migration was applied to the live project on 2026-08-29
 
 Start at: `src/lib/alerts-engine.server.ts`, `src/lib/cap.ts`.
 
-### 1.4 No sub-5-minute detection
+### 1.4 Geostationary detection — wired 2026-08-30, ~30–40 min latency
 
-The spec's §1.4 target depends on the geostationary EUMETSAT MTG FCI feed. Credentials are valid and
-the feed is polled for health, but the granules are netCDF and the edge runtime cannot decode
-them, so **no FCI detection is ever written**. A test pins this behaviour in
-`src/lib/__tests__/ingest.test.ts` so it cannot regress silently.
+MTG FCI detections now ingest every 10 minutes from EUMETSAT's public WFS
+(`mtg_fd:frp` on view.eumetsat.int — the same product the Data Store serves as
+netCDF, pre-decoded to GeoJSON points, anonymous). `src/lib/ingest/fci.server.ts`
+replaced the old catalogue-liveness poll; end-to-end latency is the feed's ~25 min
+plus the 10-minute cron. The spec's sub-5-minute target is not met and cannot be
+from this feed; it would need the Data Store push subscription plus a decode worker.
 
-Detection latency is therefore whatever the polar-orbiting satellites give — hours, not
-minutes. Fixing it means decoding netCDF somewhere that is not a Worker.
+Guards, stated: the layer serves a months-deep archive, so the fetch is time-filtered
+server-side; the CQL BBOX is lat-first, and a run whose features all fall outside the
+watch box errors instead of ingesting the wrong hemisphere. Flare screening applies
+unchanged (cell membership is cadence-free); the offline registry thresholds were
+derived from ~4 looks/day and must be re-derived before FCI detections are ever fed
+into registry *learning* — today they are not.
 
 ## 2. Data quality
 
@@ -177,6 +183,13 @@ prefix the other seven lack.
   including Arzew and Skikda, which the confidence model had scored at 0.82 — above the 0.6
   alerting bar, while a genuine new wildfire scores ~0.40.
   Reproduce: `bun run evaluate:sources`.
+- **ONM vigilance is relayed** since 2026-08-30: the met office's CAP warnings
+  (CC BY 4.0, WMO-registered authority) ingest every pipeline run into
+  `onm_vigilance` and display verbatim per wilaya on the forecast page. Honest
+  limits: ONM publishes no wildfire event type (heat and wind are the
+  fire-relevant channels); titles are English-only in the feed (the per-warning
+  CAP XML carries FR/EN, not Arabic); publication cadence is unproven, so the
+  freshness window is 24h and a quiet weather day is not a dead feed.
 - **Admin console** has no cluster resolve (US-6), no broadcast, and no audit log.
 - **Survival mode** (`/survival`) ships with deliberate limits, each stated in the UI
   rather than papered over: the SOS queue is **local-only** — no server inbox exists

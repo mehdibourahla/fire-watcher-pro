@@ -672,6 +672,57 @@ export type Database = {
         };
         Relationships: [];
       };
+      onm_vigilance: {
+        Row: {
+          area_desc: string;
+          cap_id: string;
+          cap_url: string | null;
+          certainty: string;
+          created_at: string;
+          event: string;
+          expires: string | null;
+          id: string;
+          onset: string | null;
+          sent: string;
+          severity: string;
+          title: string;
+          urgency: string;
+          wilaya_id: string | null;
+        };
+        Insert: {
+          area_desc: string;
+          cap_id: string;
+          cap_url?: string | null;
+          certainty: string;
+          created_at?: string;
+          event: string;
+          expires?: string | null;
+          id?: string;
+          onset?: string | null;
+          sent: string;
+          severity: string;
+          title: string;
+          urgency: string;
+          wilaya_id?: string | null;
+        };
+        Update: {
+          area_desc?: string;
+          cap_id?: string;
+          cap_url?: string | null;
+          certainty?: string;
+          created_at?: string;
+          event?: string;
+          expires?: string | null;
+          id?: string;
+          onset?: string | null;
+          sent?: string;
+          severity?: string;
+          title?: string;
+          urgency?: string;
+          wilaya_id?: string | null;
+        };
+        Relationships: [];
+      };
       open_areas: {
         Row: {
           area_type: string;
