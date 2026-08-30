@@ -146,20 +146,19 @@ communes match).
 
 ### 2.3 Commune-to-wilaya assignment diverges from the 2026 law
 
-`admin_units` holds **1536** communes against the official **1541**, but the honest finding
-is wider than five missing rows: per-wilaya counts differ from post-Loi-26-06 lists in
-**27 wilayas, in both directions** (e.g. Bou Saâda holds 23 communes here vs 13 officially;
-M'Sila 24 vs 34; El Aricha has zero). The OSM extract in `data/geo` encodes a different
-post-2026 reassignment than the law's, and the secondary datasets disagree with each other
-(a widely used community dataset gives El Aricha 8 communes; the Journal Officiel gives 4).
-Reconciliation therefore needs the Journal Officiel itself (Loi 26-06, JORADP
-F2026025.pdf) as the authority — build the canonical commune→wilaya table from it, diff
-against `admin_units`, then correct `data/geo` and reseed. Until then, wilaya groupings in
-the UI show OSM's opinion of the assignment, not necessarily the law's.
+The authority is now in the repo: Loi 26-06 (JORADP N° 25, 5 avril 2026, F2026025.pdf)
+is transcribed article-by-article into `data/geo/loi-26-06.json` — 404 communes across
+10 redefined mother wilayas and the 11 new wilayas (Art. 52 bis 10–20), every list
+matching the law's own declared counts. `bun run scripts/audit-loi-26-06.ts` diffs it
+read-only against `admin_units`: as of 2026-08-30, 389 assignments already agree,
+7 candidate misfilings (El Aricha's four communes still under Tlemcen; Beni Khellad
+under Aïn Témouchent; Sidi Amar under Saïda), 8 spelling variants awaiting resolution
+(each with nearest-name hints), 25 same-name ambiguities resolved by seat proximity.
 
-Reproduce: fetch any 1541-commune reference list and compare per-wilaya counts against
-`select w.code, count(*) from admin_units c join admin_units w on w.id = c.parent_id
-where c.level='commune' group by 1;`
+Do NOT auto-apply the audit: commune names repeat across wilayas (the law itself lists
+a Menaa in both Batna and Bou Saâda), so each correction needs the diff read by a human
+before re-parenting. Also pending: four new-wilaya rows carry a "Wilaya de…" name
+prefix the other seven lack.
 
 ## 3. Product surface
 
