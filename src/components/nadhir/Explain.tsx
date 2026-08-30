@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 
 import {
   Tooltip,
@@ -13,10 +13,15 @@ export function Explain({
   text?: string | undefined;
   children: ReactNode;
 }) {
+  // Radix tooltips never open on touch; a tap toggle is the only way the
+  // mobile audience sees the explainer
+  const [open, setOpen] = useState(false);
   if (!text) return <>{children}</>;
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>{children}</TooltipTrigger>
+    <Tooltip open={open} onOpenChange={setOpen}>
+      <TooltipTrigger asChild onClick={() => setOpen((o) => !o)}>
+        {children}
+      </TooltipTrigger>
       <TooltipContent className="max-w-64 border border-border bg-popover px-3 py-2 text-start text-xs leading-relaxed text-popover-foreground shadow-md">
         {text}
       </TooltipContent>

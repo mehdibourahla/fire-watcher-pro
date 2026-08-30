@@ -283,7 +283,7 @@ export const fr: Translation = {
     effisMasked:
       "EFFIS n'évalue pas le terrain de cette commune (zone non végétalisée).",
     effisNone:
-      "Pas encore de comparaison EFFIS — la classification européenne arrive avec le rafraîchissement quotidien.",
+      "Pas de comparaison EFFIS exploitable pour le moment — le produit européen est récupéré chaque jour et refusé quand son calcul échoue à nos contrôles de qualité.",
     effisClass: {
       low: "Faible",
       moderate: "Modéré",

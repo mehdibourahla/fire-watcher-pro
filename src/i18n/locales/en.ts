@@ -275,7 +275,7 @@ export const en = {
     effisMasked:
       "EFFIS does not rate this commune's terrain (unvegetated land).",
     effisNone:
-      "No EFFIS comparison yet — the European classification arrives with the daily refresh.",
+      "No usable EFFIS comparison right now — the European product is fetched daily and refused when its run fails our quality checks.",
     effisClass: {
       low: "Low",
       moderate: "Moderate",
