@@ -33,6 +33,7 @@ import { Route as SurvivalAreasRouteImport } from './routes/survival/areas'
 import { Route as SurvivalCheckinRouteImport } from './routes/survival/checkin'
 import { Route as SurvivalSosRouteImport } from './routes/survival/sos'
 import { Route as ApiPublicCronAlertsRouteImport } from './routes/api/public/cron/alerts'
+import { Route as ApiPublicCronFciRouteImport } from './routes/api/public/cron/fci'
 import { Route as ApiPublicCronIngestRouteImport } from './routes/api/public/cron/ingest'
 import { Route as ApiPublicCronRiskRouteImport } from './routes/api/public/cron/risk'
 import { Route as ApiPublicV1IndexRouteImport } from './routes/api/public/v1/index'
@@ -160,6 +161,11 @@ const ApiPublicCronAlertsRoute = ApiPublicCronAlertsRouteImport.update({
   path: '/api/public/cron/alerts',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCronFciRoute = ApiPublicCronFciRouteImport.update({
+  id: '/api/public/cron/fci',
+  path: '/api/public/cron/fci',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicCronIngestRoute = ApiPublicCronIngestRouteImport.update({
   id: '/api/public/cron/ingest',
   path: '/api/public/cron/ingest',
@@ -220,6 +226,7 @@ export interface FileRoutesByFullPath {
   '/survival/sos': typeof SurvivalSosRoute
   '/survival/': typeof SurvivalIndexRoute
   '/api/public/cron/alerts': typeof ApiPublicCronAlertsRoute
+  '/api/public/cron/fci': typeof ApiPublicCronFciRoute
   '/api/public/cron/ingest': typeof ApiPublicCronIngestRoute
   '/api/public/cron/risk': typeof ApiPublicCronRiskRoute
   '/api/public/v1/fires': typeof ApiPublicV1FiresRoute
@@ -251,6 +258,7 @@ export interface FileRoutesByTo {
   '/survival/sos': typeof SurvivalSosRoute
   '/survival': typeof SurvivalIndexRoute
   '/api/public/cron/alerts': typeof ApiPublicCronAlertsRoute
+  '/api/public/cron/fci': typeof ApiPublicCronFciRoute
   '/api/public/cron/ingest': typeof ApiPublicCronIngestRoute
   '/api/public/cron/risk': typeof ApiPublicCronRiskRoute
   '/api/public/v1/fires': typeof ApiPublicV1FiresRoute
@@ -285,6 +293,7 @@ export interface FileRoutesById {
   '/survival/sos': typeof SurvivalSosRoute
   '/survival/': typeof SurvivalIndexRoute
   '/api/public/cron/alerts': typeof ApiPublicCronAlertsRoute
+  '/api/public/cron/fci': typeof ApiPublicCronFciRoute
   '/api/public/cron/ingest': typeof ApiPublicCronIngestRoute
   '/api/public/cron/risk': typeof ApiPublicCronRiskRoute
   '/api/public/v1/fires': typeof ApiPublicV1FiresRoute
@@ -319,6 +328,7 @@ export interface FileRouteTypes {
     | '/survival/sos'
     | '/survival/'
     | '/api/public/cron/alerts'
+    | '/api/public/cron/fci'
     | '/api/public/cron/ingest'
     | '/api/public/cron/risk'
     | '/api/public/v1/fires'
@@ -350,6 +360,7 @@ export interface FileRouteTypes {
     | '/survival/sos'
     | '/survival'
     | '/api/public/cron/alerts'
+    | '/api/public/cron/fci'
     | '/api/public/cron/ingest'
     | '/api/public/cron/risk'
     | '/api/public/v1/fires'
@@ -383,6 +394,7 @@ export interface FileRouteTypes {
     | '/survival/sos'
     | '/survival/'
     | '/api/public/cron/alerts'
+    | '/api/public/cron/fci'
     | '/api/public/cron/ingest'
     | '/api/public/cron/risk'
     | '/api/public/v1/fires'
@@ -406,6 +418,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   FireIdRoute: typeof FireIdRoute
   ApiPublicCronAlertsRoute: typeof ApiPublicCronAlertsRoute
+  ApiPublicCronFciRoute: typeof ApiPublicCronFciRoute
   ApiPublicCronIngestRoute: typeof ApiPublicCronIngestRoute
   ApiPublicCronRiskRoute: typeof ApiPublicCronRiskRoute
   ApiPublicV1FiresRoute: typeof ApiPublicV1FiresRoute
@@ -585,6 +598,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronAlertsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron/fci': {
+      id: '/api/public/cron/fci'
+      path: '/api/public/cron/fci'
+      fullPath: '/api/public/cron/fci'
+      preLoaderRoute: typeof ApiPublicCronFciRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/cron/ingest': {
       id: '/api/public/cron/ingest'
       path: '/api/public/cron/ingest'
@@ -692,6 +712,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   FireIdRoute: FireIdRoute,
   ApiPublicCronAlertsRoute: ApiPublicCronAlertsRoute,
+  ApiPublicCronFciRoute: ApiPublicCronFciRoute,
   ApiPublicCronIngestRoute: ApiPublicCronIngestRoute,
   ApiPublicCronRiskRoute: ApiPublicCronRiskRoute,
   ApiPublicV1FiresRoute: ApiPublicV1FiresRoute,
