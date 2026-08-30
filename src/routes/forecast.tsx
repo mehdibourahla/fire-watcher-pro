@@ -165,7 +165,7 @@ function ForecastPage() {
                 className="mt-3 border-t border-border pt-3 text-sm"
               >
                 <span className="font-medium">{t("risk.onmLabel")}:</span>{" "}
-                {w.title}{" "}
+                {locale === "fr" && w.headline_fr ? w.headline_fr : w.title}{" "}
                 <span className="tabular text-xs text-muted-foreground">
                   ({relativeTime(w.sent, locale)})
                 </span>

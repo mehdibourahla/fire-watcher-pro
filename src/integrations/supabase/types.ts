@@ -675,6 +675,9 @@ export type Database = {
       onm_vigilance: {
         Row: {
           area_desc: string;
+          headline_fr: string | null;
+          instruction_fr: string | null;
+          polygon: Json | null;
           cap_id: string;
           cap_url: string | null;
           certainty: string;
@@ -692,6 +695,9 @@ export type Database = {
         Insert: {
           area_desc: string;
           cap_id: string;
+          headline_fr?: string | null;
+          instruction_fr?: string | null;
+          polygon?: Json | null;
           cap_url?: string | null;
           certainty: string;
           created_at?: string;
@@ -708,6 +714,9 @@ export type Database = {
         Update: {
           area_desc?: string;
           cap_id?: string;
+          headline_fr?: string | null;
+          instruction_fr?: string | null;
+          polygon?: Json | null;
           cap_url?: string | null;
           certainty?: string;
           created_at?: string;

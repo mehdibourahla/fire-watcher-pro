@@ -70,10 +70,75 @@ export function matchWilaya<T extends { name_fr: string }>(
   return wilayas.find((w) => normalizeName(w.name_fr) === target) ?? null;
 }
 
+export type CapDetail = {
+  headline_fr: string | null;
+  instruction_fr: string | null;
+  polygon: [number, number][] | null;
+};
+
+const BOILERPLATE = "No additional information.";
+
+export function parseCapDetail(xml: string): CapDetail | null {
+  if (!xml.includes("urn:oasis:names:tc:emergency:cap:1.2")) return null;
+  const headline = tag(xml, "headline");
+  const instruction = tag(xml, "instruction");
+  const rawPolygon = tag(xml, "polygon");
+  const polygon = rawPolygon
+    ? rawPolygon
+        .trim()
+        .split(/\s+/)
+        .map((pair): [number, number] | null => {
+          const [lat, lon] = pair.split(",").map(Number);
+          return Number.isFinite(lat) && Number.isFinite(lon)
+            ? [lon!, lat!]
+            : null;
+        })
+        .filter((pt): pt is [number, number] => pt !== null)
+    : null;
+  return {
+    headline_fr: headline,
+    instruction_fr:
+      instruction && instruction !== BOILERPLATE ? instruction : null,
+    polygon: polygon?.length ? polygon : null,
+  };
+}
+
+const DETAIL_BATCH = 20;
+
+async function backfillCapDetails(): Promise<number> {
+  const { data, error } = await supabaseAdmin
+    .from("onm_vigilance")
+    .select("id, cap_url")
+    .is("headline_fr", null)
+    .not("cap_url", "is", null)
+    .order("sent", { ascending: false })
+    .limit(DETAIL_BATCH);
+  if (error || !data?.length) return 0;
+
+  let filled = 0;
+  for (const row of data) {
+    const res = await fetch(row.cap_url!).catch(() => null);
+    if (!res?.ok) continue;
+    const detail = parseCapDetail(await res.text());
+    if (!detail?.headline_fr) continue;
+    const { error: upErr } = await supabaseAdmin
+      .from("onm_vigilance")
+      .update({
+        headline_fr: detail.headline_fr,
+        instruction_fr: detail.instruction_fr,
+        polygon: detail.polygon,
+      })
+      .eq("id", row.id);
+    if (!upErr) filled += 1;
+  }
+  return filled;
+}
+
 export type OnmRun = {
   fetched: number;
   stored: number;
   unmatched: number;
+  detailed?: number;
   error?: string;
 };
 
@@ -138,5 +203,6 @@ export async function ingestOnm(): Promise<OnmRun> {
       };
   }
 
-  return { fetched: entries.length, stored: rows.length, unmatched };
+  const detailed = await backfillCapDetails();
+  return { fetched: entries.length, stored: rows.length, unmatched, detailed };
 }

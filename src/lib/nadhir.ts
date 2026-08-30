@@ -357,6 +357,7 @@ export type OnmVigilance = {
   area_desc: string;
   cap_url: string | null;
   wilaya_id: string | null;
+  headline_fr: string | null;
 };
 
 export const onmVigilanceQuery = queryOptions({
@@ -366,7 +367,7 @@ export const onmVigilanceQuery = queryOptions({
       await supabase
         .from("onm_vigilance")
         .select(
-          "id, cap_id, title, event, severity, urgency, certainty, onset, expires, sent, area_desc, cap_url, wilaya_id",
+          "id, cap_id, title, event, severity, urgency, certainty, onset, expires, sent, area_desc, cap_url, wilaya_id, headline_fr",
         )
         .gt("expires", new Date().toISOString())
         .order("sent", { ascending: false })
