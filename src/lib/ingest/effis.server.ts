@@ -2,6 +2,8 @@ import { PNG } from "pngjs";
 
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
+import { algiersToday } from "./algiers-date";
+
 /* Colors and labels verified against the ecmwf007.fwi GetLegendGraphic on
  * 2026-08-29: six classes starting at Low — the layer has no very_low. White is
  * EFFIS declining to rate unvegetated land, recorded as masked rather than
@@ -119,7 +121,8 @@ export type EffisRun = {
 };
 
 export async function ingestEffis(): Promise<EffisRun> {
-  const month = new Date().getUTCMonth() + 1;
+  const runDate = algiersToday();
+  const month = Number(runDate.slice(5, 7));
   const dcs = await fetchSentinelDcs();
   if (isColdStart(dcs, month))
     return {
@@ -152,7 +155,7 @@ export async function ingestEffis(): Promise<EffisRun> {
     if ((data ?? []).length < 1000) break;
   }
 
-  const date = new Date().toISOString().slice(0, 10);
+  const date = runDate;
   const rows: { commune_id: string; date: string; danger_class: EffisClass }[] =
     [];
   for (const c of communes) {
