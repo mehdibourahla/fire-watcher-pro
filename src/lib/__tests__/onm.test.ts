@@ -6,6 +6,7 @@ import { describe, expect, it } from "vitest";
 import {
   matchWilaya,
   normalizeName,
+  parseCapDetail,
   parseOnmFeed,
 } from "@/lib/ingest/onm.server";
 
@@ -67,5 +68,29 @@ describe("matchWilaya", () => {
     expect(matchWilaya("MSILA", [{ id: "m", name_fr: "M'Sila" }])?.id).toBe(
       "m",
     );
+  });
+});
+
+describe("parseCapDetail", () => {
+  const capXml = readFileSync(
+    join(__dirname, "fixtures", "onm-cap-sample.xml"),
+    "utf8",
+  );
+
+  it("extracts the French headline and the area polygon", () => {
+    const d = parseCapDetail(capXml)!;
+    expect(d.headline_fr).toBe(
+      "Avertissement de PLUIE Modéré pour la wilaya : SIDI-BEL-ABBÈS",
+    );
+    expect(d.polygon!.length).toBeGreaterThan(50);
+    expect(d.polygon![0]).toEqual([-1.00398, 35.090229]);
+  });
+
+  it("drops the boilerplate no-information instruction", () => {
+    expect(parseCapDetail(capXml)!.instruction_fr).toBeNull();
+  });
+
+  it("returns null for a non-CAP body", () => {
+    expect(parseCapDetail("<html>404</html>")).toBeNull();
   });
 });
