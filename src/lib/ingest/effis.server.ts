@@ -121,7 +121,8 @@ export type EffisRun = {
 };
 
 export async function ingestEffis(): Promise<EffisRun> {
-  const month = new Date().getUTCMonth() + 1;
+  const runDate = algiersToday();
+  const month = Number(runDate.slice(5, 7));
   const dcs = await fetchSentinelDcs();
   if (isColdStart(dcs, month))
     return {
@@ -154,7 +155,7 @@ export async function ingestEffis(): Promise<EffisRun> {
     if ((data ?? []).length < 1000) break;
   }
 
-  const date = algiersToday();
+  const date = runDate;
   const rows: { commune_id: string; date: string; danger_class: EffisClass }[] =
     [];
   for (const c of communes) {
