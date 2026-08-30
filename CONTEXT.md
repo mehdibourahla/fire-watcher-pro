@@ -41,7 +41,9 @@ _Avoid_: AMBER (user-facing), emergency broadcast (implies state authority)
 
 **Subscription**:
 An accountless registration to receive Broadcast Alerts for chosen communes —
-a push endpoint or channel membership plus an area, no email and no identity.
+a push registration plus an area, no email and no identity. Commune-scoped and
+push-only; joining a wilaya Telegram channel is coarser channel membership,
+not a Subscription.
 Distinct from a Zone, which belongs to an authenticated user and carries
 personal rules (radius, quiet hours, thresholds). A Subscription has no owner
 to notify about anything else and must never accrete personal data.

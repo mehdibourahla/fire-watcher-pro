@@ -96,17 +96,26 @@ Slices, in dependency order:
       ~15 km polygon ring, updates extend pure-downwind; lifecycle initial →
       update → observation-honest end ("no detections for N h", never all-clear);
       per-commune daily rate limit, global kill-switch, append-only audit log.
+      Lifecycle in CAP terms: msgType Alert for the initial, Update/Cancel with
+      fresh identifiers chained via references — never reuse an identifier, the
+      cap_alerts unique-identifier upsert would silently drop the update.
 - [ ] A2 FCM integration: connect the existing Firebase service account; publish
       to `v1.commune.<code>.<lang>` notification-type topics (4 langs, from the
       CAP object); deep links to the fire page.
-- [ ] A3 Web subscription UI: accountless — pick communes + language, FCM web
-      SDK subscribes the device client-side; no per-subscriber server state.
+- [ ] A3 Web subscription UI: accountless — pick communes + language; client
+      gets an FCM registration token and calls the backend topic-subscribe
+      endpoint (ADR-0004), re-invoked on token refresh; no durable per-subscriber
+      server state.
 - [ ] A4 Telegram channels: per-wilaya public channels; one message per channel
       per alert, CAP-rendered, cluster-deduped, HTML-escaped, severity floor.
-- [ ] A5 In-app surface: active-broadcast banner for subscribed communes;
-      emergency-severity broadcast triggers the existing Survival interstitial.
-- [ ] A6 Admin: manual attributed authority relay (phone-call case), kill-switch
-      UI, audit log view. Closes part of GAPS §3.
+- [ ] A5 In-app surface: active-broadcast banner for subscribed communes, read
+      from the public broadcast table (AlertNotifier and the alerts table are
+      authenticated-only and cannot serve accountless subscribers); an
+      emergency-severity broadcast only OFFERS Survival Mode through the existing
+      proximity-gated interstitial (device location within SURVIVAL_AUTO_KM) —
+      commune-wide delivery must never itself trigger Survival entry.
+- [ ] A6 Admin: manual relay of attributed authority warnings (phone-call
+      case), kill-switch UI, audit log view. Closes part of GAPS §3.
 - [ ] A7 Status honesty: `broadcast` source row + freshness; delivery metrics
       by topic count, never per-person (Subscriptions stay anonymous).
 
