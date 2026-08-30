@@ -76,3 +76,40 @@ human.
 - Scheduler URL is a vault secret `nadhir_app_url`; the cron function raises if unset.
 - Secrets needed by the deployed app: `FIRMS_MAP_KEY`, `EUMETSAT_CONSUMER_KEY/SECRET`,
   `NADHIR_CRON_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`.
+
+## Epic: Broadcast Alerts (codename AMBER — never user-facing)
+
+Decisions from the 2026-08-30 discovery session; glossary in CONTEXT.md
+(Broadcast Alert, Subscription), architecture in ADR-0004.
+
+**What it is.** Nadhir-originated Information pushed to every subscriber of an
+area, seconds after a fire confirms — plus authority warnings relayed verbatim
+alongside. Never an Instruction; danger levels never broadcast (same rule as
+Survival Mode entry). Delivery fans out at the platform (FCM commune topics +
+Telegram wilaya channels), one CAP object per alert, O(areas) sends — the same
+topics serve the future native mobile apps unchanged.
+
+Slices, in dependency order:
+
+- [ ] A1 CAP → broadcast publisher: trigger on confirmed clusters (≥0.6, severity
+      by settlement proximity) and ONM Severe+; targeting = containing commune +
+      ~15 km polygon ring, updates extend pure-downwind; lifecycle initial →
+      update → observation-honest end ("no detections for N h", never all-clear);
+      per-commune daily rate limit, global kill-switch, append-only audit log.
+- [ ] A2 FCM integration: connect the existing Firebase service account; publish
+      to `v1.commune.<code>.<lang>` notification-type topics (4 langs, from the
+      CAP object); deep links to the fire page.
+- [ ] A3 Web subscription UI: accountless — pick communes + language, FCM web
+      SDK subscribes the device client-side; no per-subscriber server state.
+- [ ] A4 Telegram channels: per-wilaya public channels; one message per channel
+      per alert, CAP-rendered, cluster-deduped, HTML-escaped, severity floor.
+- [ ] A5 In-app surface: active-broadcast banner for subscribed communes;
+      emergency-severity broadcast triggers the existing Survival interstitial.
+- [ ] A6 Admin: manual attributed authority relay (phone-call case), kill-switch
+      UI, audit log view. Closes part of GAPS §3.
+- [ ] A7 Status honesty: `broadcast` source row + freshness; delivery metrics
+      by topic count, never per-person (Subscriptions stay anonymous).
+
+Owner actions gating the epic: Firebase service account key into deploy secrets
+(exists per GAPS §1.3, unconnected); Telegram bot + channel creation; later
+SMS/email providers (per-recipient queues enter only then).

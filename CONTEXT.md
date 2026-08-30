@@ -28,6 +28,25 @@ with zero fresh data: no screen in it may assume a recent observation exists.
 _Avoid_: emergency mode, Guardian (internal/docs name for the survival layer — never
 user-facing; the app transforms without introducing a second brand)
 
+### Alerting
+
+**Broadcast Alert**:
+Nadhir-originated Information about a fire or danger condition, pushed to every
+subscriber of an area across all wired channels. Carries Nadhir's own voice and
+timestamps; never an Instruction. Authority warnings (e.g. ONM vigilance) are
+relayed verbatim alongside, clearly attributed, never merged into Nadhir's text.
+"AMBER" is the epic's internal codename only — never user-facing, same rule as
+Guardian.
+_Avoid_: AMBER (user-facing), emergency broadcast (implies state authority)
+
+**Subscription**:
+An accountless registration to receive Broadcast Alerts for chosen communes —
+a push endpoint or channel membership plus an area, no email and no identity.
+Distinct from a Zone, which belongs to an authenticated user and carries
+personal rules (radius, quiet hours, thresholds). A Subscription has no owner
+to notify about anything else and must never accrete personal data.
+_Avoid_: anonymous zone, device registration
+
 ### Reporting
 
 **Hazard Report**:
