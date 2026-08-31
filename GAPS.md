@@ -178,7 +178,9 @@ M2 replaces the direct HTTP cron pipelines with durable per-contract `source_job
 lease per contract. Supabase and Cloudflare independently enqueue the same normalized slots;
 short jobs run on the Worker, while FWI and EFFIS have separate GitHub consumers. Attempts and
 retry windows are bounded, expired leases are recovered, missing intervals become `source_gaps`,
-and replay accepts only a recorded gap UUID. A five-minute GitHub watchdog queries Supabase
+and exact interval replay accepts only a recorded FIRMS or FCI gap UUID inside provider
+retention. Terminal gaps for other contracts are marked unrecoverable rather than pretending
+they can be reconstructed. A five-minute GitHub watchdog queries Supabase
 directly, so the Worker is not its own monitor. Its failures report breached database evidence,
 not an inferred Worker crash. Queue, lease, gap, run, and replay internals remain service-role-only.
 This implementation is locally verified but not yet deployed; production observation is still
@@ -287,12 +289,12 @@ real boundary, so the effective policy is 6. Captcha is disabled, which combined
 
 ### 4.3 Test coverage is narrow
 
-325 tests across 38 files cover the FWI maths, FWI state advancement, alert rule evaluation, geo
+330 tests across 39 files cover the FWI maths, FWI state advancement, alert rule evaluation, geo
 seeding, i18n key parity, ingest guards, the cross-border watch area, place labelling, Exif
 stripping, CAP construction, the public API helpers, the webhook URL guard, and the
 persistent-source grid, registration criteria, screen radius and drift heuristic. Source-run
 classification, public-status serialization, shared health summarization, job execution,
-scheduling, watchdog, and replay are included. Separate 39- and 47-assertion pgTAP suites cover
+scheduling, watchdog, and replay are included. Separate 39- and 60-assertion pgTAP suites cover
 the reliability and execution schemas, grants, state transitions, leases, gaps, and replay.
 Most older RLS policies, route handlers end to end, and UI behavior still have no
 coverage. Fusion remains the weakest spot: both its commune attribution and its `fp_reason` filter —

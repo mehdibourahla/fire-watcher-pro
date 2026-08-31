@@ -1358,6 +1358,8 @@ export type Database = {
           overlap_minutes: number;
           owner: string;
           parser_version: string;
+          replay_capability: string;
+          replay_window_minutes: number | null;
           retry_base_seconds: number;
           retry_window_minutes: number;
           runbook_url: string | null;
@@ -1388,6 +1390,8 @@ export type Database = {
           overlap_minutes?: number;
           owner: string;
           parser_version: string;
+          replay_capability?: string;
+          replay_window_minutes?: number | null;
           retry_base_seconds?: number;
           retry_window_minutes?: number;
           runbook_url?: string | null;
@@ -1418,6 +1422,8 @@ export type Database = {
           overlap_minutes?: number;
           owner?: string;
           parser_version?: string;
+          replay_capability?: string;
+          replay_window_minutes?: number | null;
           retry_base_seconds?: number;
           retry_window_minutes?: number;
           runbook_url?: string | null;
@@ -2192,7 +2198,7 @@ export type Database = {
       };
       enqueue_source_replay: {
         Args: { _gap_id: string; _requested_at?: string };
-        Returns: string;
+        Returns: string | null;
       };
       has_role: {
         Args: {
@@ -2226,6 +2232,10 @@ export type Database = {
           _validated_at: string | null;
         };
         Returns: string;
+      };
+      source_contract_is_backfilling: {
+        Args: { _contract_key: string };
+        Returns: boolean;
       };
       vote_on_idea: {
         Args: { _idea: string; _value: number; _voter: string };

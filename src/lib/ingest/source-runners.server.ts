@@ -2,6 +2,7 @@ import { evaluateAlerts } from "@/lib/alerts-engine.server";
 import {
   retryDispositionForReason,
   type ClaimedSourceJob,
+  type SourceReplayInterval,
   type SourceJobResult,
 } from "@/lib/source-jobs";
 import {
@@ -109,12 +110,20 @@ function coveredInterval(job: ClaimedSourceJob, succeeded: boolean) {
     : {};
 }
 
+function replayInterval(
+  job: ClaimedSourceJob,
+): SourceReplayInterval | undefined {
+  return job.trigger_kind === "replay"
+    ? { dataFrom: job.data_from, dataThrough: job.data_through }
+    : undefined;
+}
+
 export function createSourceRunners(
   dependencies: SourceRunnerDependencies,
 ): SourceRunnerRegistry {
   return {
     firms: async (job) => {
-      const run = await dependencies.ingestFirms();
+      const run = await dependencies.ingestFirms(replayInterval(job));
       const health = adapterHealth({ accepted: run.fetched, error: run.error });
       return {
         ...baseReport(job),
@@ -129,14 +138,19 @@ export function createSourceRunners(
       };
     },
     fci: async (job) => {
-      const run = await dependencies.ingestFci();
+      const run = await dependencies.ingestFci(replayInterval(job));
       const accepted = Math.max(run.fetched - run.outside, 0);
       const health = adapterHealth({ accepted, error: run.error });
       return {
         ...baseReport(job),
         ...health,
         upstreamPublishedAt: run.latestSlot,
-        dataThrough: health.outcome === "succeeded" ? run.latestSlot : null,
+        dataFrom:
+          health.outcome === "succeeded" ? (run.dataFrom ?? null) : null,
+        dataThrough:
+          health.outcome === "succeeded"
+            ? (run.dataThrough ?? run.latestSlot)
+            : null,
         recordsSeen: run.fetched,
         recordsInserted: run.inserted,
         recordsRejected: run.outside,

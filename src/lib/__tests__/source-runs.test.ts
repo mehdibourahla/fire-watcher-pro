@@ -13,6 +13,7 @@ describe("publicReasonForError", () => {
   it.each([
     ["FIRMS_MAP_KEY missing", "credentials_missing"],
     ["TELEGRAM_BOT_TOKEN not configured", "credentials_missing"],
+    ["provider licence expired", "licence_invalid"],
     ["FCI WFS 503", "upstream_unreachable"],
     ["network fetch failed", "upstream_unreachable"],
     [

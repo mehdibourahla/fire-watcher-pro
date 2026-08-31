@@ -16,11 +16,63 @@ alter table public.source_contracts
   add column retry_window_minutes integer not null default 30
     check (retry_window_minutes > 0),
   add column overlap_minutes integer not null default 0
-    check (overlap_minutes >= 0);
+    check (overlap_minutes >= 0),
+  add column replay_capability text not null default 'none'
+    check (replay_capability in ('none', 'interval')),
+  add column replay_window_minutes integer
+    check (
+      (replay_capability = 'none' and replay_window_minutes is null)
+      or (replay_capability = 'interval' and replay_window_minutes > 0)
+    );
+
+alter table public.source_checkpoints
+  drop constraint source_checkpoints_last_public_reason_code_check,
+  add constraint source_checkpoints_last_public_reason_code_check check (
+    last_public_reason_code is null
+    or last_public_reason_code in (
+      'credentials_missing',
+      'licence_invalid',
+      'upstream_unreachable',
+      'schema_invalid',
+      'data_delayed',
+      'coverage_partial',
+      'dependency_failed',
+      'delivery_failed',
+      'disabled',
+      'internal_error'
+    )
+  );
+
+alter table public.source_runs
+  drop constraint source_runs_public_reason_code_check,
+  add constraint source_runs_public_reason_code_check check (
+    public_reason_code is null
+    or public_reason_code in (
+      'credentials_missing',
+      'licence_invalid',
+      'upstream_unreachable',
+      'schema_invalid',
+      'data_delayed',
+      'coverage_partial',
+      'dependency_failed',
+      'delivery_failed',
+      'disabled',
+      'internal_error'
+    )
+  );
 
 update public.source_contracts
 set schedule_enabled = false
 where key = 'geo';
+
+update public.source_contracts
+set
+  replay_capability = 'interval',
+  replay_window_minutes = case key
+    when 'firms' then 14400
+    when 'fci' then 129600
+  end
+where key in ('firms', 'fci');
 
 update public.source_contracts
 set
@@ -101,6 +153,7 @@ create table public.source_gaps (
     public_reason_code is null
     or public_reason_code in (
       'credentials_missing',
+      'licence_invalid',
       'upstream_unreachable',
       'schema_invalid',
       'data_delayed',
@@ -160,6 +213,7 @@ create table public.source_jobs (
     last_public_reason_code is null
     or last_public_reason_code in (
       'credentials_missing',
+      'licence_invalid',
       'upstream_unreachable',
       'schema_invalid',
       'data_delayed',
@@ -777,8 +831,11 @@ declare
   _lease public.source_job_leases%rowtype;
   _run_id uuid;
   _gap_id uuid;
+  _replay_capability text;
   _delay_seconds integer;
   _next_available_at timestamptz;
+  _will_retry boolean;
+  _gap_state text;
 begin
   select * into _job
   from public.source_jobs
@@ -869,6 +926,23 @@ begin
         and state in ('open', 'replaying');
     end if;
   else
+    select replay_capability into _replay_capability
+    from public.source_contracts
+    where key = _job.contract_key;
+
+    _delay_seconds := least(
+      _job.retry_base_seconds * power(2, greatest(_attempt - 1, 0))::integer,
+      3600
+    ) + mod(abs(hashtext(_job.id::text || ':' || _attempt::text)), _job.retry_base_seconds);
+    _next_available_at := _finished_at + make_interval(secs => _delay_seconds);
+    _will_retry := coalesce(_retryable, false)
+      and _attempt < _job.max_attempts
+      and _next_available_at < _job.retry_until;
+    _gap_state := case
+      when _will_retry or _replay_capability = 'interval' then 'open'
+      else 'unrecoverable'
+    end;
+
     insert into public.source_gaps (
       contract_key,
       data_from,
@@ -882,7 +956,7 @@ begin
       _job.contract_key,
       _job.data_from,
       _job.data_through,
-      'open',
+      _gap_state,
       _public_reason_code,
       _finished_at,
       _finished_at
@@ -891,22 +965,15 @@ begin
     set
       state = case
         when public.source_gaps.state = 'resolved' then 'resolved'
-        else 'open'
+        else excluded.state
       end,
       public_reason_code = excluded.public_reason_code,
       updated_at = excluded.updated_at
     returning id into _gap_id;
 
     _gap_id := coalesce(_job.gap_id, _gap_id);
-    _delay_seconds := least(
-      _job.retry_base_seconds * power(2, greatest(_attempt - 1, 0))::integer,
-      3600
-    ) + mod(abs(hashtext(_job.id::text || ':' || _attempt::text)), _job.retry_base_seconds);
-    _next_available_at := _finished_at + make_interval(secs => _delay_seconds);
 
-    if coalesce(_retryable, false)
-      and _attempt < _job.max_attempts
-      and _next_available_at < _job.retry_until then
+    if _will_retry then
       update public.source_jobs
       set
         state = 'retry_wait',
@@ -1008,13 +1075,34 @@ begin
   if _gap.id is null then
     raise exception 'unknown source gap';
   end if;
-  if _gap.state <> 'open' then
-    raise exception 'source gap is not open';
-  end if;
 
   select * into _contract
   from public.source_contracts
   where key = _gap.contract_key;
+
+  if _contract.replay_capability <> 'interval' then
+    raise exception 'source gap is not replayable';
+  end if;
+  if _gap.state <> 'open' then
+    raise exception 'source gap is not open';
+  end if;
+  if _gap.data_from < _requested_at
+    - make_interval(mins => _contract.replay_window_minutes) then
+    update public.source_gaps
+    set
+      state = 'unrecoverable',
+      updated_at = _requested_at
+    where id = _gap.id;
+    return null;
+  end if;
+  if exists (
+    select 1
+    from public.source_jobs
+    where gap_id = _gap.id
+      and state in ('queued', 'running', 'retry_wait')
+  ) then
+    raise exception 'source gap already has active work';
+  end if;
 
   _replay_count := _gap.replay_count + 1;
 
@@ -1063,6 +1151,28 @@ begin
 end;
 $$;
 
+create or replace function public.source_contract_is_backfilling(
+  _contract_key text
+)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select exists (
+    select 1
+    from public.source_gaps as gap
+    where gap.contract_key = _contract_key
+      and gap.state = 'replaying'
+  )
+$$;
+
+revoke all on function public.source_contract_is_backfilling(text)
+  from public;
+grant execute on function public.source_contract_is_backfilling(text)
+  to anon, authenticated, service_role;
+
 create or replace view public.source_health
 with (security_invoker = true)
 as
@@ -1085,12 +1195,7 @@ with facts as (
     checkpoint.fallback_contract_key,
     checkpoint.last_public_reason_code as public_reason_code,
     checkpoint.consecutive_failures,
-    exists (
-      select 1
-      from public.source_gaps as gap
-      where gap.contract_key = contract.key
-        and gap.state = 'replaying'
-    ) as is_backfilling,
+    public.source_contract_is_backfilling(contract.key) as is_backfilling,
     case contract.freshness_basis
       when 'last_success_at' then checkpoint.last_success_at
       when 'upstream_published_at' then checkpoint.upstream_published_at

@@ -83,10 +83,11 @@ waits on the Firebase and Telegram runtime secrets.
   every minute. Cloudflare consumes short jobs; expired leases are recovered in Postgres.
 - Daily FWI and EFFIS use separate GitHub Actions consumers in
   `.github/workflows/risk-refresh.yml` because they are CPU-bound.
-- `.github/workflows/source-watchdog.yml` checks queue delay, expired leases, missing runs,
-  and open gaps through Supabase every five minutes without depending on the Worker host.
+- `.github/workflows/source-watchdog.yml` checks queue delay, expired leases, and missing runs
+  through Supabase every five minutes without depending on the Worker host.
 - `bun run seed:geo --prune` — reseed geography from `data/geo/` (monthly, idempotent).
-- Recorded gaps replay only by UUID through `bun run replay:source -- <gap-uuid>`.
+- FIRMS and FCI gaps replay exact retained intervals only by UUID through
+  `bun run replay:source -- <gap-uuid>`; unsupported terminal gaps are unrecoverable.
 - Secrets needed by the deployed app: `FIRMS_MAP_KEY`, `EUMETSAT_CONSUMER_KEY/SECRET`,
   `NADHIR_CRON_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`, `FIREBASE_SERVICE_ACCOUNT`,
   `TELEGRAM_BOT_TOKEN` (the last two pending — delivery reports degraded until set).

@@ -173,6 +173,26 @@ describe("source runner registry", () => {
     expect(JSON.stringify(result.publicReasonCode)).not.toContain("private");
   });
 
+  it("passes the recorded interval to replay-capable source adapters", async () => {
+    const deps = dependencies();
+    const replayInterval = {
+      dataFrom: "2026-08-31T19:50:00.000Z",
+      dataThrough: "2026-08-31T20:00:00.000Z",
+    };
+
+    await createSourceRunners(deps).firms({
+      ...job("firms"),
+      trigger_kind: "replay",
+    });
+    await createSourceRunners(deps).fci({
+      ...job("fci"),
+      trigger_kind: "replay",
+    });
+
+    expect(deps.ingestFirms).toHaveBeenCalledWith(replayInterval);
+    expect(deps.ingestFci).toHaveBeenCalledWith(replayInterval);
+  });
+
   it("does not let an optional wind failure call or block another runner", async () => {
     const deps = dependencies();
     vi.mocked(deps.enrichClusterWinds).mockRejectedValue(

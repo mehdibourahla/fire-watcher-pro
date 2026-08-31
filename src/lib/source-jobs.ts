@@ -11,6 +11,11 @@ export type SourceJobState =
   "queued" | "running" | "retry_wait" | "succeeded" | "failed";
 export type RetryDisposition = "none" | "transient" | "permanent";
 
+export type SourceReplayInterval = {
+  dataFrom: string;
+  dataThrough: string;
+};
+
 type SourceJobRow = Database["public"]["Tables"]["source_jobs"]["Row"];
 
 export type SourceJob = Omit<
@@ -36,6 +41,7 @@ export function retryDispositionForReason(
 ): Exclude<RetryDisposition, "none"> {
   switch (reason) {
     case "credentials_missing":
+    case "licence_invalid":
     case "schema_invalid":
     case "disabled":
       return "permanent";

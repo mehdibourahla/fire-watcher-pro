@@ -8,6 +8,7 @@ export type SourceCoverageStatus = "complete" | "partial" | "unknown";
 
 export type PublicSourceReason =
   | "credentials_missing"
+  | "licence_invalid"
   | "upstream_unreachable"
   | "schema_invalid"
   | "data_delayed"
@@ -42,6 +43,9 @@ export type SourceRunReport = {
 
 export function publicReasonForError(error: string): PublicSourceReason {
   const message = error.toLowerCase();
+
+  if (message.includes("licence") || message.includes("license"))
+    return "licence_invalid";
 
   if (
     message.includes("missing") ||

@@ -40,6 +40,7 @@ const claimedJob: ClaimedSourceJob = {
 describe("retryDispositionForReason", () => {
   it.each([
     ["credentials_missing", "permanent"],
+    ["licence_invalid", "permanent"],
     ["schema_invalid", "permanent"],
     ["disabled", "permanent"],
     ["upstream_unreachable", "transient"],

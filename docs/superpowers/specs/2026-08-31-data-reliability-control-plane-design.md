@@ -226,7 +226,9 @@ area product whose valid date advances.
   keys for idempotency.
 - Snapshot products rebuild a complete staging snapshot; they do not patch the currently
   published snapshot in place.
-- Replays use the same adapter and validation path as scheduled runs.
+- Exact replays use the same adapter and validation path as scheduled runs, but are enabled only
+  where the provider can supply the requested historical interval. Unsupported or expired gaps
+  are marked unrecoverable rather than silently substituting current data.
 
 The direct cron endpoints are removed. A GitHub Actions watchdog reads the run ledger and queue
 without using the application host. It reports breached database evidence without inferring that

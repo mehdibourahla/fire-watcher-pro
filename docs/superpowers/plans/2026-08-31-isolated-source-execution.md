@@ -599,7 +599,7 @@ Document:
 - Postgres leases serialize one job per contract, not the whole pipeline;
 - FWI and EFFIS use separate GitHub consumers;
 - watchdog failures mean database evidence breached a contract, not an inferred Worker crash;
-- replay accepts only a recorded gap ID;
+- replay accepts only a retained FIRMS or FCI gap ID; unsupported terminal gaps are unrecoverable;
 - direct `/api/public/cron/*` endpoints no longer exist;
 - queue/gap/run internals remain private.
 

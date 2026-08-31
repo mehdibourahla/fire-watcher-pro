@@ -8,6 +8,12 @@ select has_table('public', 'source_jobs', 'source job queue exists');
 select has_table('public', 'source_job_leases', 'per-contract leases exist');
 select has_table('public', 'source_gaps', 'source gaps exist');
 select has_view('public', 'source_watchdog', 'watchdog projection exists');
+select has_column(
+  'public',
+  'source_contracts',
+  'replay_capability',
+  'contracts declare whether exact interval replay is supported'
+);
 
 select has_function(
   'public',
@@ -489,6 +495,31 @@ select is(
   'a permanent failure becomes terminal immediately'
 );
 
+create temporary table licence_job as
+select pg_temp.enqueue_test_job(
+  'fci',
+  'pgtap:licence-permanent',
+  '2026-08-31 21:15:00+00'
+) as id;
+select * from public.claim_source_job(
+  'pgtap-licence-permanent',
+  'cloudflare',
+  'fci',
+  '2026-08-31 21:15:01+00'
+);
+select is(
+  pg_temp.finish_test_job(
+    (select id from licence_job),
+    'pgtap-licence-permanent',
+    '2026-08-31 21:15:02+00',
+    'failed',
+    'licence_invalid',
+    false
+  ),
+  'failed',
+  'a licence failure is accepted as permanent evidence'
+);
+
 create temporary table exhausted_job as
 select pg_temp.enqueue_test_job(
   'onm',
@@ -513,6 +544,72 @@ select is(
   ),
   'failed',
   'max attempts stop a transient retry'
+);
+select is(
+  (
+    select state
+    from public.source_gaps
+    where contract_key = 'onm'
+      and data_through = '2026-08-31 21:20:00+00'
+  ),
+  'unrecoverable',
+  'a terminal failure becomes unrecoverable when the provider has no interval replay'
+);
+select throws_ok(
+  format(
+    $$select public.enqueue_source_replay(%L::uuid, '2026-08-31 21:21:00+00')$$,
+    (
+      select id
+      from public.source_gaps
+      where contract_key = 'onm'
+        and data_through = '2026-08-31 21:20:00+00'
+    )
+  ),
+  'P0001',
+  'source gap is not replayable',
+  'operator replay rejects a contract without exact interval support'
+);
+
+insert into public.source_gaps (
+  contract_key,
+  data_from,
+  data_through,
+  state,
+  public_reason_code,
+  detected_at,
+  updated_at
+)
+values (
+  'fci',
+  '2026-05-01 00:00:00+00',
+  '2026-05-01 00:10:00+00',
+  'open',
+  'upstream_unreachable',
+  '2026-05-01 00:10:00+00',
+  '2026-05-01 00:10:00+00'
+);
+select is(
+  public.enqueue_source_replay(
+    (
+      select id
+      from public.source_gaps
+      where contract_key = 'fci'
+        and data_from = '2026-05-01 00:00:00+00'
+    ),
+    '2026-08-31 22:00:00+00'
+  ),
+  null,
+  'operator replay refuses an interval outside provider retention'
+);
+select is(
+  (
+    select state
+    from public.source_gaps
+    where contract_key = 'fci'
+      and data_from = '2026-05-01 00:00:00+00'
+  ),
+  'unrecoverable',
+  'an expired replay interval is durably marked unrecoverable'
 );
 
 create temporary table deadline_job as
@@ -692,6 +789,64 @@ select is(
   ),
   0,
   'the watchdog cannot expose diagnostics, payloads, URLs, or credentials'
+);
+
+create function pg_temp.read_source_health_as_anon()
+returns integer
+language plpgsql
+as $$
+declare
+  _count integer;
+begin
+  execute 'set local role anon';
+  execute 'select count(*) from public.source_health' into _count;
+  execute 'reset role';
+  return _count;
+exception when others then
+  execute 'reset role';
+  raise;
+end;
+$$;
+select lives_ok(
+  'select pg_temp.read_source_health_as_anon()',
+  'anon can query sanitized health while gap rows remain private'
+);
+
+select has_index(
+  'public',
+  'detections',
+  'detections_natural_key_key',
+  'detection replay is idempotent by natural key'
+);
+select has_index(
+  'public',
+  'risk_forecasts',
+  'risk_forecasts_commune_id_forecast_date_horizon_days_source_key',
+  'risk replay is idempotent by commune, date, horizon, and source'
+);
+select has_index(
+  'public',
+  'alerts',
+  'alerts_user_id_dedupe_key_key',
+  'alert replay is idempotent by user and decision key'
+);
+select has_index(
+  'public',
+  'onm_vigilance',
+  'onm_vigilance_cap_id_key',
+  'ONM replay is idempotent by CAP identifier'
+);
+select has_index(
+  'public',
+  'broadcasts',
+  'idx_broadcasts_onm_once',
+  'ONM broadcast replay is idempotent'
+);
+select has_index(
+  'public',
+  'broadcasts',
+  'idx_broadcasts_authority_once',
+  'authority broadcast replay is idempotent'
 );
 
 select * from finish();

@@ -1,5 +1,6 @@
 import { isInWatchArea } from "./geo";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import type { SourceReplayInterval } from "@/lib/source-jobs";
 
 /** Northern Algeria plus the watched border strips: west,south,east,north.
  * Saharan gas flares south of this line are permanent thermal anomalies, not wildfires. */
@@ -91,7 +92,9 @@ export type FirmsRun = {
   error?: string;
 };
 
-export async function ingestFirms(dayRange = 1): Promise<FirmsRun> {
+export async function ingestFirms(
+  interval?: SourceReplayInterval,
+): Promise<FirmsRun> {
   const key = process.env["FIRMS_MAP_KEY"];
   if (!key)
     return {
@@ -101,6 +104,24 @@ export async function ingestFirms(dayRange = 1): Promise<FirmsRun> {
       error: "FIRMS_MAP_KEY missing",
     };
 
+  const fromMs = interval ? Date.parse(interval.dataFrom) : null;
+  const throughMs = interval ? Date.parse(interval.dataThrough) : null;
+  if (
+    interval &&
+    (!Number.isFinite(fromMs) ||
+      !Number.isFinite(throughMs) ||
+      fromMs! >= throughMs! ||
+      fromMs! < Date.now() - 10 * 86400_000)
+  )
+    return {
+      fetched: 0,
+      inserted: 0,
+      feeds: [],
+      error: "FIRMS replay interval is invalid or outside provider history",
+    };
+  const dayRange = interval
+    ? Math.max(1, Math.min(10, Math.ceil((Date.now() - fromMs!) / 86400_000)))
+    : 1;
   const all: FirmsRow[] = [];
   const feeds: string[] = [];
   for (const feed of FEEDS) {
@@ -109,7 +130,11 @@ export async function ingestFirms(dayRange = 1): Promise<FirmsRun> {
       const res = await fetch(url);
       const text = await res.text();
       if (!res.ok || text.startsWith("Invalid")) continue;
-      const mapped = mapFirmsRows(parseCsv(text), feed.sensor);
+      const mapped = mapFirmsRows(parseCsv(text), feed.sensor).filter((row) => {
+        if (!interval) return true;
+        const detectedAt = Date.parse(row.detected_at);
+        return detectedAt >= fromMs! && detectedAt <= throughMs!;
+      });
       all.push(...mapped);
       feeds.push(`${feed.sensor}:${mapped.length}`);
     } catch {
@@ -126,7 +151,18 @@ export async function ingestFirms(dayRange = 1): Promise<FirmsRun> {
       feeds,
       error: "all FIRMS feeds failed or returned invalid data",
     };
-  if (all.length === 0) return { fetched: 0, inserted: 0, feeds };
+  if (all.length === 0)
+    return {
+      fetched: 0,
+      inserted: 0,
+      feeds,
+      ...(interval === undefined
+        ? {}
+        : {
+            dataFrom: interval.dataFrom,
+            dataThrough: interval.dataThrough,
+          }),
+    };
 
   // de-duplicate within the batch, then upsert on the natural key
   const unique = new Map(all.map((r) => [r.natural_key, r]));
@@ -145,8 +181,8 @@ export async function ingestFirms(dayRange = 1): Promise<FirmsRun> {
     inserted += count ?? 0;
   }
   const detectedAt = rows.map((row) => row.detected_at).sort();
-  const dataFrom = detectedAt[0];
-  const dataThrough = detectedAt.at(-1);
+  const dataFrom = interval?.dataFrom ?? detectedAt[0];
+  const dataThrough = interval?.dataThrough ?? detectedAt.at(-1);
   return {
     fetched: rows.length,
     inserted,

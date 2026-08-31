@@ -102,9 +102,10 @@ contract slots. A unique contract/slot key makes duplicate triggers harmless. Cl
 dispatches bounded one-job Worker requests; expired leases are recovered in Postgres. An
 independent GitHub Actions watchdog reads the private queue view every five minutes. A watchdog
 failure means the database has evidence of a breached contract—such as a late job, expired lease,
-missing run, or open gap—not that it has inferred which process failed. Retries are bounded by
-each contract's attempt count and usefulness window. Gaps are recorded durably and can be
-replayed only by ID through `bun run replay:source -- <gap-uuid>`.
+or missing run—not that it has inferred which process failed. Retries are bounded by each
+contract's attempt count and usefulness window. Gaps are recorded durably. FIRMS and FCI gaps
+inside their provider retention windows can be replayed exactly, only by ID, through
+`bun run replay:source -- <gap-uuid>`; terminal gaps for other contracts are marked unrecoverable.
 
 A public read API is exposed at `/api/public/v1/fires`, `/api/public/v1/risk`,
 `/api/public/v1/stats` and `/api/public/v1/status`. The status endpoint is the same sanitized,
