@@ -1,10 +1,12 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import {
+  fcmMessagesForAuthority,
   fcmMessagesForFire,
   fcmMessagesForOnm,
   type FcmMessage,
 } from "@/lib/fcm";
 import {
+  telegramAuthorityHtml,
   telegramFireHtml,
   telegramOnmHtml,
   telegramSeverityAllowed,
@@ -32,6 +34,7 @@ type PendingRow = {
   cluster_id: string | null;
   cap_alert_id: string | null;
   onm_vigilance_id: string | null;
+  authority_warning_id: string | null;
 };
 
 type CapText = { language: string; headline: string; description: string };
@@ -43,6 +46,7 @@ type DeliveryContext = {
     string,
     { title: string; headline_fr: string | null; sent: string }
   >;
+  authorityById: Map<string, { source: string; body: string }>;
 };
 
 async function markSource(ok: boolean, note: string) {
@@ -64,7 +68,7 @@ async function pendingRows(channelColumn: string): Promise<PendingRow[]> {
   const { data, error } = await supabaseAdmin
     .from("broadcasts")
     .select(
-      "id, kind, severity, commune_codes, cluster_id, cap_alert_id, onm_vigilance_id",
+      "id, kind, severity, commune_codes, cluster_id, cap_alert_id, onm_vigilance_id, authority_warning_id",
     )
     .is(channelColumn, null)
     .gte("created_at", windowStart)
@@ -78,6 +82,7 @@ async function loadContext(rows: PendingRow[]): Promise<DeliveryContext> {
     infoByCap: new Map(),
     shortIdByCluster: new Map(),
     onmById: new Map(),
+    authorityById: new Map(),
   };
 
   const capIds = rows
@@ -115,6 +120,17 @@ async function loadContext(rows: PendingRow[]): Promise<DeliveryContext> {
     for (const row of data ?? []) context.onmById.set(row.id, row);
   }
 
+  const authorityIds = rows
+    .map((p) => p.authority_warning_id)
+    .filter((id): id is string => id !== null);
+  if (authorityIds.length) {
+    const { data } = await supabaseAdmin
+      .from("authority_warnings")
+      .select("id, source, body")
+      .in("id", authorityIds);
+    for (const row of data ?? []) context.authorityById.set(row.id, row);
+  }
+
   return context;
 }
 
@@ -150,6 +166,19 @@ function fcmMessagesFor(
       title: onm.title,
       headlineFr: onm.headline_fr,
       sent: onm.sent,
+    });
+  }
+  if (row.kind === "authority") {
+    const warning = row.authority_warning_id
+      ? context.authorityById.get(row.authority_warning_id)
+      : null;
+    if (!warning) return null;
+    return fcmMessagesForAuthority({
+      broadcastId: row.id,
+      severity: row.severity,
+      communeCodes: row.commune_codes,
+      source: warning.source,
+      body: warning.body,
     });
   }
   return null;
@@ -214,6 +243,16 @@ function telegramHtmlFor(
       title: onm.title,
       headlineFr: onm.headline_fr,
       severity: row.severity,
+    });
+  }
+  if (row.kind === "authority") {
+    const warning = row.authority_warning_id
+      ? context.authorityById.get(row.authority_warning_id)
+      : null;
+    if (!warning) return null;
+    return telegramAuthorityHtml({
+      source: warning.source,
+      body: warning.body,
     });
   }
   return null;

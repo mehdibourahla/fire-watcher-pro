@@ -89,3 +89,24 @@ export function fcmMessagesForOnm(args: {
       );
   return out;
 }
+
+export function fcmMessagesForAuthority(args: {
+  broadcastId: string;
+  severity: string;
+  communeCodes: string[];
+  source: string;
+  body: string;
+}): FcmMessage[] {
+  const data = {
+    broadcast_id: args.broadcastId,
+    severity: args.severity,
+    kind: "authority",
+  };
+  const out: FcmMessage[] = [];
+  for (const code of args.communeCodes)
+    for (const lang of FCM_LANGS)
+      out.push(
+        message(fcmTopic(code, lang), args.source, args.body, APP_URL, data),
+      );
+  return out;
+}

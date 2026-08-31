@@ -21,6 +21,7 @@ import { Route as StatusRouteImport } from './routes/status'
 import { Route as SurvivalRouteRouteImport } from './routes/survival/route'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedAlertsRouteImport } from './routes/_authenticated/alerts'
+import { Route as AuthenticatedBroadcastsRouteImport } from './routes/_authenticated/broadcasts'
 import { Route as AuthenticatedModerationRouteImport } from './routes/_authenticated/moderation'
 import { Route as AuthenticatedReportRouteImport } from './routes/_authenticated/report'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
@@ -99,6 +100,11 @@ const TermsRoute = TermsRouteImport.update({
 const AuthenticatedAlertsRoute = AuthenticatedAlertsRouteImport.update({
   id: '/alerts',
   path: '/alerts',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedBroadcastsRoute = AuthenticatedBroadcastsRouteImport.update({
+  id: '/broadcasts',
+  path: '/broadcasts',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedModerationRoute = AuthenticatedModerationRouteImport.update({
@@ -214,6 +220,7 @@ export interface FileRoutesByFullPath {
   '/status': typeof StatusRoute
   '/terms': typeof TermsRoute
   '/alerts': typeof AuthenticatedAlertsRoute
+  '/broadcasts': typeof AuthenticatedBroadcastsRoute
   '/moderation': typeof AuthenticatedModerationRoute
   '/report': typeof AuthenticatedReportRoute
   '/settings': typeof AuthenticatedSettingsRoute
@@ -246,6 +253,7 @@ export interface FileRoutesByTo {
   '/status': typeof StatusRoute
   '/terms': typeof TermsRoute
   '/alerts': typeof AuthenticatedAlertsRoute
+  '/broadcasts': typeof AuthenticatedBroadcastsRoute
   '/moderation': typeof AuthenticatedModerationRoute
   '/report': typeof AuthenticatedReportRoute
   '/settings': typeof AuthenticatedSettingsRoute
@@ -281,6 +289,7 @@ export interface FileRoutesById {
   '/status': typeof StatusRoute
   '/terms': typeof TermsRoute
   '/_authenticated/alerts': typeof AuthenticatedAlertsRoute
+  '/_authenticated/broadcasts': typeof AuthenticatedBroadcastsRoute
   '/_authenticated/moderation': typeof AuthenticatedModerationRoute
   '/_authenticated/report': typeof AuthenticatedReportRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
@@ -316,6 +325,7 @@ export interface FileRouteTypes {
     | '/status'
     | '/terms'
     | '/alerts'
+    | '/broadcasts'
     | '/moderation'
     | '/report'
     | '/settings'
@@ -348,6 +358,7 @@ export interface FileRouteTypes {
     | '/status'
     | '/terms'
     | '/alerts'
+    | '/broadcasts'
     | '/moderation'
     | '/report'
     | '/settings'
@@ -382,6 +393,7 @@ export interface FileRouteTypes {
     | '/status'
     | '/terms'
     | '/_authenticated/alerts'
+    | '/_authenticated/broadcasts'
     | '/_authenticated/moderation'
     | '/_authenticated/report'
     | '/_authenticated/settings'
@@ -512,6 +524,13 @@ declare module '@tanstack/react-router' {
       path: '/alerts'
       fullPath: '/alerts'
       preLoaderRoute: typeof AuthenticatedAlertsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/broadcasts': {
+      id: '/_authenticated/broadcasts'
+      path: '/broadcasts'
+      fullPath: '/broadcasts'
+      preLoaderRoute: typeof AuthenticatedBroadcastsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/moderation': {
@@ -659,6 +678,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAlertsRoute: typeof AuthenticatedAlertsRoute
+  AuthenticatedBroadcastsRoute: typeof AuthenticatedBroadcastsRoute
   AuthenticatedModerationRoute: typeof AuthenticatedModerationRoute
   AuthenticatedReportRoute: typeof AuthenticatedReportRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
@@ -669,6 +689,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAlertsRoute: AuthenticatedAlertsRoute,
+  AuthenticatedBroadcastsRoute: AuthenticatedBroadcastsRoute,
   AuthenticatedModerationRoute: AuthenticatedModerationRoute,
   AuthenticatedReportRoute: AuthenticatedReportRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,

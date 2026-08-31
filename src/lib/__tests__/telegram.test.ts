@@ -60,3 +60,15 @@ describe("telegramOnmHtml", () => {
     ).toContain("Wind Severe warning");
   });
 });
+
+describe("telegramAuthorityHtml", () => {
+  it("attributes the named authority and escapes the body", async () => {
+    const { telegramAuthorityHtml } = await import("@/lib/telegram");
+    const html = telegramAuthorityHtml({
+      source: "Protection Civile <Wilaya>",
+      body: "Consigne & détail",
+    });
+    expect(html).toContain("Protection Civile &lt;Wilaya&gt;");
+    expect(html).toContain("Consigne &amp; détail");
+  });
+});

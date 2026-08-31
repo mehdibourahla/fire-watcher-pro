@@ -189,7 +189,9 @@ are unidentified and need the Arabic original or ONS tables to name.
   fire-relevant channels); titles are English-only in the feed (the per-warning
   CAP XML carries FR/EN, not Arabic); publication cadence is unproven, so the
   freshness window is 24h and a quiet weather day is not a dead feed.
-- **Admin console** has no cluster resolve (US-6), no broadcast, and no audit log.
+- **Admin console** has no cluster resolve (US-6). Broadcast controls exist since
+  2026-08-30 (`/broadcasts`): kill-switch, append-only audit view, and manual relay
+  of attributed authority warnings (the phone-call case).
 - **Survival mode** (`/survival`) ships with deliberate limits, each stated in the UI
   rather than papered over: the SOS queue is **local-only** — no server inbox exists
   because nobody would monitor it (§1.3), and the copy says so; quick hazard reports

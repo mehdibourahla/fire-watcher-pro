@@ -140,8 +140,9 @@ export async function publishBroadcasts(): Promise<BroadcastRun> {
   }
   const clusters = [...byId.values()];
   if (!clusters.length) {
-    const onm = await relayOnmWarnings();
-    return { published: onm, suppressed: 0 };
+    const relayed =
+      (await relayOnmWarnings()) + (await relayAuthorityWarnings());
+    return { published: relayed, suppressed: 0 };
   }
 
   const units = await fetchAllPages<Unit & { level: string }>((from, to) =>
@@ -378,7 +379,81 @@ export async function publishBroadcasts(): Promise<BroadcastRun> {
   }
 
   published += await relayOnmWarnings();
+  published += await relayAuthorityWarnings();
   return { published, suppressed };
+}
+
+async function relayAuthorityWarnings(): Promise<number> {
+  const { data: warnings, error } = await supabaseAdmin
+    .from("authority_warnings")
+    .select("id, severity, wilaya_id, commune_codes");
+  if (error) throw new Error(error.message);
+  if (!warnings?.length) return 0;
+
+  const { data: existing, error: existingError } = await supabaseAdmin
+    .from("broadcasts")
+    .select("authority_warning_id")
+    .eq("kind", "authority")
+    .in(
+      "authority_warning_id",
+      warnings.map((w) => w.id),
+    );
+  if (existingError) throw new Error(existingError.message);
+  const done = new Set((existing ?? []).map((b) => b.authority_warning_id));
+  const pending = warnings.filter((w) => !done.has(w.id));
+  if (!pending.length) return 0;
+
+  const communes = await fetchAllPages<{
+    code: string;
+    parent_id: string | null;
+  }>((from, to) =>
+    supabaseAdmin
+      .from("admin_units")
+      .select("code, parent_id")
+      .eq("level", "commune")
+      .range(from, to),
+  );
+  const codesByWilaya = new Map<string, string[]>();
+  for (const c of communes) {
+    if (!c.parent_id) continue;
+    const bucket = codesByWilaya.get(c.parent_id) ?? [];
+    bucket.push(c.code);
+    codesByWilaya.set(c.parent_id, bucket);
+  }
+
+  let published = 0;
+  for (const warning of pending) {
+    const codes = warning.commune_codes?.length
+      ? warning.commune_codes
+      : warning.wilaya_id
+        ? (codesByWilaya.get(warning.wilaya_id) ?? [])
+        : [];
+    if (!codes.length) continue;
+    const severity = warning.severity as "Extreme" | "Severe";
+    const { error: insertError } = await supabaseAdmin
+      .from("broadcasts")
+      .insert({
+        kind: "authority",
+        phase: "initial",
+        authority_warning_id: warning.id,
+        severity,
+        commune_codes: codes,
+      });
+    if (insertError)
+      throw new Error(
+        `authority broadcast insert failed: ${insertError.message}`,
+      );
+    published += 1;
+    await auditRow({
+      action: "published",
+      reason: "authority_relay",
+      kind: "authority",
+      severity,
+      commune_codes: codes,
+      payload: { authority_warning_id: warning.id },
+    });
+  }
+  return published;
 }
 
 async function relayOnmWarnings(): Promise<number> {

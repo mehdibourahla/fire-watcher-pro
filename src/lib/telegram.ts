@@ -36,3 +36,10 @@ export function telegramOnmHtml(args: {
     `<a href="${APP_URL}/forecast">${APP_URL}/forecast</a>`,
   ].join("\n\n");
 }
+
+export function telegramAuthorityHtml(args: {
+  source: string;
+  body: string;
+}): string {
+  return [`<b>${esc(args.source)}</b>`, esc(args.body)].join("\n\n");
+}

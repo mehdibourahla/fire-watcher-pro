@@ -193,6 +193,50 @@ export type Database = {
           },
         ];
       };
+      authority_warnings: {
+        Row: {
+          body: string;
+          commune_codes: string[] | null;
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          received_via: string;
+          severity: string;
+          source: string;
+          wilaya_id: string | null;
+        };
+        Insert: {
+          body: string;
+          commune_codes?: string[] | null;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          received_via: string;
+          severity: string;
+          source: string;
+          wilaya_id?: string | null;
+        };
+        Update: {
+          body?: string;
+          commune_codes?: string[] | null;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          received_via?: string;
+          severity?: string;
+          source?: string;
+          wilaya_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "authority_warnings_wilaya_id_fkey";
+            columns: ["wilaya_id"];
+            isOneToOne: false;
+            referencedRelation: "admin_units";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       broadcast_audit: {
         Row: {
           action: string;
@@ -255,6 +299,7 @@ export type Database = {
       };
       broadcasts: {
         Row: {
+          authority_warning_id: string | null;
           cap_alert_id: string | null;
           cluster_id: string | null;
           commune_codes: string[];
@@ -270,6 +315,7 @@ export type Database = {
           telegram_delivered_at: string | null;
         };
         Insert: {
+          authority_warning_id?: string | null;
           cap_alert_id?: string | null;
           cluster_id?: string | null;
           commune_codes: string[];
@@ -283,6 +329,7 @@ export type Database = {
           severity: string;
         };
         Update: {
+          authority_warning_id?: string | null;
           cap_alert_id?: string | null;
           cluster_id?: string | null;
           commune_codes?: string[];
@@ -298,6 +345,13 @@ export type Database = {
           telegram_delivered_at?: string | null;
         };
         Relationships: [
+          {
+            foreignKeyName: "broadcasts_authority_warning_id_fkey";
+            columns: ["authority_warning_id"];
+            isOneToOne: false;
+            referencedRelation: "authority_warnings";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "broadcasts_cap_alert_id_fkey";
             columns: ["cap_alert_id"];

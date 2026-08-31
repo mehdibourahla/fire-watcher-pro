@@ -117,3 +117,24 @@ describe("fcmMessagesForOnm", () => {
     );
   });
 });
+
+describe("fcmMessagesForAuthority", () => {
+  it("relays verbatim with the named authority as attribution", async () => {
+    const { fcmMessagesForAuthority } = await import("@/lib/fcm");
+    const messages = fcmMessagesForAuthority({
+      broadcastId: "b-3",
+      severity: "Severe",
+      communeCodes: ["1503"],
+      source: "Protection Civile",
+      body: "Évacuation préventive du douar X ordonnée.",
+    });
+    expect(messages).toHaveLength(4);
+    for (const m of messages) {
+      expect(m.notification.title).toBe("Protection Civile");
+      expect(m.notification.body).toBe(
+        "Évacuation préventive du douar X ordonnée.",
+      );
+      expect(m.data.kind).toBe("authority");
+    }
+  });
+});
