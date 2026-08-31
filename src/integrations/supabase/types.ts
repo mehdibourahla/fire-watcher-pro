@@ -193,8 +193,127 @@ export type Database = {
           },
         ];
       };
+      broadcast_audit: {
+        Row: {
+          action: string;
+          at: string;
+          cluster_id: string | null;
+          commune_codes: string[] | null;
+          id: string;
+          kind: string | null;
+          onm_vigilance_id: string | null;
+          payload: Json | null;
+          phase: string | null;
+          reason: string;
+          severity: string | null;
+        };
+        Insert: {
+          action: string;
+          at?: string;
+          cluster_id?: string | null;
+          commune_codes?: string[] | null;
+          id?: string;
+          kind?: string | null;
+          onm_vigilance_id?: string | null;
+          payload?: Json | null;
+          phase?: string | null;
+          reason: string;
+          severity?: string | null;
+        };
+        Update: {
+          action?: string;
+          at?: string;
+          cluster_id?: string | null;
+          commune_codes?: string[] | null;
+          id?: string;
+          kind?: string | null;
+          onm_vigilance_id?: string | null;
+          payload?: Json | null;
+          phase?: string | null;
+          reason?: string;
+          severity?: string | null;
+        };
+        Relationships: [];
+      };
+      broadcast_settings: {
+        Row: {
+          enabled: boolean;
+          id: boolean;
+          updated_at: string;
+        };
+        Insert: {
+          enabled?: boolean;
+          id?: boolean;
+          updated_at?: string;
+        };
+        Update: {
+          enabled?: boolean;
+          id?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      broadcasts: {
+        Row: {
+          cap_alert_id: string | null;
+          cluster_id: string | null;
+          commune_codes: string[];
+          created_at: string;
+          id: string;
+          kind: string;
+          onm_vigilance_id: string | null;
+          phase: string;
+          severity: string;
+        };
+        Insert: {
+          cap_alert_id?: string | null;
+          cluster_id?: string | null;
+          commune_codes: string[];
+          created_at?: string;
+          id?: string;
+          kind: string;
+          onm_vigilance_id?: string | null;
+          phase?: string;
+          severity: string;
+        };
+        Update: {
+          cap_alert_id?: string | null;
+          cluster_id?: string | null;
+          commune_codes?: string[];
+          created_at?: string;
+          id?: string;
+          kind?: string;
+          onm_vigilance_id?: string | null;
+          phase?: string;
+          severity?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "broadcasts_cap_alert_id_fkey";
+            columns: ["cap_alert_id"];
+            isOneToOne: false;
+            referencedRelation: "cap_alerts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "broadcasts_cluster_id_fkey";
+            columns: ["cluster_id"];
+            isOneToOne: false;
+            referencedRelation: "fire_clusters";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "broadcasts_onm_vigilance_id_fkey";
+            columns: ["onm_vigilance_id"];
+            isOneToOne: false;
+            referencedRelation: "onm_vigilance";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       cap_alerts: {
         Row: {
+          cap_references: string | null;
           cluster_id: string | null;
           created_at: string;
           id: string;
@@ -207,6 +326,7 @@ export type Database = {
           status: string;
         };
         Insert: {
+          cap_references?: string | null;
           cluster_id?: string | null;
           created_at?: string;
           id?: string;
@@ -219,6 +339,7 @@ export type Database = {
           status: string;
         };
         Update: {
+          cap_references?: string | null;
           cluster_id?: string | null;
           created_at?: string;
           id?: string;
