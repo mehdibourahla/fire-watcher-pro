@@ -5,6 +5,11 @@ import { authenticateSchedulerRequest } from "@/lib/cron-auth.server";
 export const Route = createFileRoute("/api/public/cron/risk")({
   server: {
     handlers: {
+      ANY: async () => {
+        const { postOnlyMethodNotAllowed } =
+          await import("@/lib/post-only.server");
+        return postOnlyMethodNotAllowed();
+      },
       POST: async ({ request }) => {
         const unauthorized = await authenticateSchedulerRequest(request);
         if (unauthorized) return unauthorized;
