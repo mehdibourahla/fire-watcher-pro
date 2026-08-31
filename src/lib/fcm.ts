@@ -66,7 +66,6 @@ export function fcmMessagesForOnm(args: {
   communeCodes: string[];
   title: string;
   headlineFr: string | null;
-  sent: string;
 }): FcmMessage[] {
   const data = {
     broadcast_id: args.broadcastId,

@@ -19,7 +19,6 @@ describe("telegramFireHtml", () => {
     headline: "Incendie confirmé — Azazga <test> & Fréha",
     description: "Un incendie brûle près d'Azazga.",
     shortId: "DZ7K4A",
-    severity: "Extreme",
   });
 
   it("escapes CAP text so a place name cannot inject markup", () => {
@@ -42,7 +41,6 @@ describe("telegramOnmHtml", () => {
   const html = telegramOnmHtml({
     title: "Rain Extreme warning for the wilaya: Tizi Ouzou",
     headlineFr: "Pluies <fortes> attendues",
-    severity: "Extreme",
   });
 
   it("relays verbatim, escaped, with ONM attribution", () => {
@@ -55,7 +53,6 @@ describe("telegramOnmHtml", () => {
       telegramOnmHtml({
         title: "Wind Severe warning",
         headlineFr: null,
-        severity: "Severe",
       }),
     ).toContain("Wind Severe warning");
   });

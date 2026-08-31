@@ -42,10 +42,7 @@ type CapText = { language: string; headline: string; description: string };
 type DeliveryContext = {
   infoByCap: Map<string, CapText[]>;
   shortIdByCluster: Map<string, string>;
-  onmById: Map<
-    string,
-    { title: string; headline_fr: string | null; sent: string }
-  >;
+  onmById: Map<string, { title: string; headline_fr: string | null }>;
   authorityById: Map<string, { source: string; body: string }>;
 };
 
@@ -115,7 +112,7 @@ async function loadContext(rows: PendingRow[]): Promise<DeliveryContext> {
   if (onmIds.length) {
     const { data } = await supabaseAdmin
       .from("onm_vigilance")
-      .select("id, title, headline_fr, sent")
+      .select("id, title, headline_fr")
       .in("id", onmIds);
     for (const row of data ?? []) context.onmById.set(row.id, row);
   }
@@ -165,7 +162,6 @@ function fcmMessagesFor(
       communeCodes: row.commune_codes,
       title: onm.title,
       headlineFr: onm.headline_fr,
-      sent: onm.sent,
     });
   }
   if (row.kind === "authority") {
@@ -231,7 +227,6 @@ function telegramHtmlFor(
       headline: fr.headline,
       description: fr.description,
       shortId,
-      severity: row.severity,
     });
   }
   if (row.kind === "onm") {
@@ -242,7 +237,6 @@ function telegramHtmlFor(
     return telegramOnmHtml({
       title: onm.title,
       headlineFr: onm.headline_fr,
-      severity: row.severity,
     });
   }
   if (row.kind === "authority") {

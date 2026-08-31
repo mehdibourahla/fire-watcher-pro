@@ -85,7 +85,6 @@ describe("fcmMessagesForOnm", () => {
     communeCodes: ["1503"],
     title: "Rain Extreme warning for the wilaya: Tizi Ouzou",
     headlineFr: "Pluies torrentielles attendues",
-    sent: "2026-08-30T10:00:00Z",
   });
 
   it("relays verbatim with attribution to every language topic", () => {
@@ -104,7 +103,6 @@ describe("fcmMessagesForOnm", () => {
       communeCodes: ["1503"],
       title: "Wind Severe warning for the wilaya: Bejaia",
       headlineFr: null,
-      sent: "2026-08-30T10:00:00Z",
     });
     expect(bare[0]!.notification.body).toBe(
       "Wind Severe warning for the wilaya: Bejaia",

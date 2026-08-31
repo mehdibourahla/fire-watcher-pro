@@ -1,5 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
-import { queryOptions } from "@tanstack/react-query";
+import { queryOptions, useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { Flame, Megaphone } from "lucide-react";
 import { useTranslation } from "react-i18next";

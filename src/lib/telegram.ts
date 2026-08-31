@@ -16,7 +16,6 @@ export function telegramFireHtml(args: {
   headline: string;
   description: string;
   shortId: string;
-  severity: string;
 }): string {
   return [
     `<b>${esc(args.headline)}</b>`,
@@ -28,7 +27,6 @@ export function telegramFireHtml(args: {
 export function telegramOnmHtml(args: {
   title: string;
   headlineFr: string | null;
-  severity: string;
 }): string {
   return [
     "<b>ONM · Météo Algérie</b>",
