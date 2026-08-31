@@ -35,6 +35,7 @@ import { Route as SurvivalAreasRouteImport } from './routes/survival/areas'
 import { Route as SurvivalCheckinRouteImport } from './routes/survival/checkin'
 import { Route as SurvivalSosRouteImport } from './routes/survival/sos'
 import { Route as ContributeLanguageLocaleRouteImport } from './routes/contribute_.language.$locale'
+import { Route as ApiInternalSourceJobsRunRouteImport } from './routes/api/internal/source-jobs/run'
 import { Route as ApiPublicContributeIdeaRouteImport } from './routes/api/public/contribute/idea'
 import { Route as ApiPublicContributeMyTranslationsRouteImport } from './routes/api/public/contribute/my-translations'
 import { Route as ApiPublicContributeTranslationRouteImport } from './routes/api/public/contribute/translation'
@@ -180,6 +181,12 @@ const ContributeLanguageLocaleRoute =
     path: '/contribute/language/$locale',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiInternalSourceJobsRunRoute =
+  ApiInternalSourceJobsRunRouteImport.update({
+    id: '/api/internal/source-jobs/run',
+    path: '/api/internal/source-jobs/run',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicContributeIdeaRoute = ApiPublicContributeIdeaRouteImport.update({
   id: '/api/public/contribute/idea',
   path: '/api/public/contribute/idea',
@@ -279,6 +286,7 @@ export interface FileRoutesByFullPath {
   '/survival/sos': typeof SurvivalSosRoute
   '/survival/': typeof SurvivalIndexRoute
   '/contribute/language/$locale': typeof ContributeLanguageLocaleRoute
+  '/api/internal/source-jobs/run': typeof ApiInternalSourceJobsRunRoute
   '/api/public/contribute/idea': typeof ApiPublicContributeIdeaRoute
   '/api/public/contribute/my-translations': typeof ApiPublicContributeMyTranslationsRoute
   '/api/public/contribute/translation': typeof ApiPublicContributeTranslationRoute
@@ -319,6 +327,7 @@ export interface FileRoutesByTo {
   '/survival/sos': typeof SurvivalSosRoute
   '/survival': typeof SurvivalIndexRoute
   '/contribute/language/$locale': typeof ContributeLanguageLocaleRoute
+  '/api/internal/source-jobs/run': typeof ApiInternalSourceJobsRunRoute
   '/api/public/contribute/idea': typeof ApiPublicContributeIdeaRoute
   '/api/public/contribute/my-translations': typeof ApiPublicContributeMyTranslationsRoute
   '/api/public/contribute/translation': typeof ApiPublicContributeTranslationRoute
@@ -362,6 +371,7 @@ export interface FileRoutesById {
   '/survival/sos': typeof SurvivalSosRoute
   '/survival/': typeof SurvivalIndexRoute
   '/contribute_/language/$locale': typeof ContributeLanguageLocaleRoute
+  '/api/internal/source-jobs/run': typeof ApiInternalSourceJobsRunRoute
   '/api/public/contribute/idea': typeof ApiPublicContributeIdeaRoute
   '/api/public/contribute/my-translations': typeof ApiPublicContributeMyTranslationsRoute
   '/api/public/contribute/translation': typeof ApiPublicContributeTranslationRoute
@@ -405,6 +415,7 @@ export interface FileRouteTypes {
     | '/survival/sos'
     | '/survival/'
     | '/contribute/language/$locale'
+    | '/api/internal/source-jobs/run'
     | '/api/public/contribute/idea'
     | '/api/public/contribute/my-translations'
     | '/api/public/contribute/translation'
@@ -445,6 +456,7 @@ export interface FileRouteTypes {
     | '/survival/sos'
     | '/survival'
     | '/contribute/language/$locale'
+    | '/api/internal/source-jobs/run'
     | '/api/public/contribute/idea'
     | '/api/public/contribute/my-translations'
     | '/api/public/contribute/translation'
@@ -487,6 +499,7 @@ export interface FileRouteTypes {
     | '/survival/sos'
     | '/survival/'
     | '/contribute_/language/$locale'
+    | '/api/internal/source-jobs/run'
     | '/api/public/contribute/idea'
     | '/api/public/contribute/my-translations'
     | '/api/public/contribute/translation'
@@ -518,6 +531,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   FireIdRoute: typeof FireIdRoute
   ContributeLanguageLocaleRoute: typeof ContributeLanguageLocaleRoute
+  ApiInternalSourceJobsRunRoute: typeof ApiInternalSourceJobsRunRoute
   ApiPublicContributeIdeaRoute: typeof ApiPublicContributeIdeaRoute
   ApiPublicContributeMyTranslationsRoute: typeof ApiPublicContributeMyTranslationsRoute
   ApiPublicContributeTranslationRoute: typeof ApiPublicContributeTranslationRoute
@@ -718,6 +732,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContributeLanguageLocaleRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/internal/source-jobs/run': {
+      id: '/api/internal/source-jobs/run'
+      path: '/api/internal/source-jobs/run'
+      fullPath: '/api/internal/source-jobs/run'
+      preLoaderRoute: typeof ApiInternalSourceJobsRunRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/contribute/idea': {
       id: '/api/public/contribute/idea'
       path: '/api/public/contribute/idea'
@@ -877,6 +898,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   FireIdRoute: FireIdRoute,
   ContributeLanguageLocaleRoute: ContributeLanguageLocaleRoute,
+  ApiInternalSourceJobsRunRoute: ApiInternalSourceJobsRunRoute,
   ApiPublicContributeIdeaRoute: ApiPublicContributeIdeaRoute,
   ApiPublicContributeMyTranslationsRoute:
     ApiPublicContributeMyTranslationsRoute,
