@@ -707,6 +707,11 @@ set search_path = ''
 as $$
 declare
   _candidate record;
+  _expired public.source_jobs%rowtype;
+  _expired_attempt integer;
+  _expired_gap_id uuid;
+  _expired_gap_state text;
+  _expired_reason text;
   _obsolete public.source_jobs%rowtype;
   _obsolete_attempt integer;
   _affected integer;
@@ -717,6 +722,107 @@ begin
   if _execution_target not in ('cloudflare', 'github') then
     raise exception 'invalid execution target';
   end if;
+
+  -- Retry windows describe whether the interval is still useful, not merely
+  -- when another attempt may begin. Once the window closes, audit the missed
+  -- attempt and preserve a replayable or explicitly unrecoverable gap.
+  for _expired in
+    select job.*
+    from public.source_jobs as job
+    where job.execution_target = _execution_target
+      and (_contract_key is null or job.contract_key = _contract_key)
+      and job.state in ('queued', 'retry_wait')
+      and job.retry_until <= _now
+    order by job.contract_key, job.scheduled_for, job.id
+    for update of job skip locked
+  loop
+    _expired_attempt := least(
+      _expired.attempt_count + 1,
+      _expired.max_attempts
+    );
+    _expired_reason := coalesce(
+      _expired.last_public_reason_code,
+      'data_delayed'
+    );
+
+    update public.source_jobs
+    set
+      state = 'failed',
+      attempt_count = _expired_attempt,
+      started_at = coalesce(started_at, _now),
+      finished_at = _now,
+      last_error_at = _now,
+      last_public_reason_code = _expired_reason,
+      updated_at = _now
+    where id = _expired.id;
+
+    perform private.record_source_run(
+      _contract_key => _expired.contract_key,
+      _trigger_kind => _expired.trigger_kind,
+      _idempotency_key => 'job:' || _expired.id::text
+        || ':attempt:' || _expired_attempt::text,
+      _scheduled_for => _expired.scheduled_for,
+      _started_at => _now,
+      _finished_at => _now,
+      _outcome => 'failed',
+      _upstream_published_at => null,
+      _data_from => null,
+      _data_through => null,
+      _validated_at => null,
+      _published_at => null,
+      _records_seen => 0,
+      _records_inserted => 0,
+      _records_updated => 0,
+      _records_rejected => 0,
+      _records_expected => null,
+      _coverage_status => 'unknown',
+      _quality_checks => '{"usefulness_window_expired":true}'::jsonb,
+      _public_reason_code => _expired_reason,
+      _private_diagnostic => 'source job usefulness window expired',
+      _job_id => _expired.id,
+      _attempt => _expired_attempt
+    );
+
+    select case
+      when contract.replay_capability = 'interval' then 'open'
+      else 'unrecoverable'
+    end
+    into _expired_gap_state
+    from public.source_contracts as contract
+    where contract.key = _expired.contract_key;
+
+    insert into public.source_gaps (
+      contract_key,
+      data_from,
+      data_through,
+      state,
+      public_reason_code,
+      detected_at,
+      updated_at
+    )
+    values (
+      _expired.contract_key,
+      _expired.data_from,
+      _expired.data_through,
+      _expired_gap_state,
+      _expired_reason,
+      _now,
+      _now
+    )
+    on conflict (contract_key, data_from, data_through) do update
+    set
+      state = case
+        when public.source_gaps.state = 'resolved' then 'resolved'
+        else excluded.state
+      end,
+      public_reason_code = excluded.public_reason_code,
+      updated_at = excluded.updated_at
+    returning id into _expired_gap_id;
+
+    update public.source_jobs
+    set gap_id = coalesce(gap_id, _expired_gap_id)
+    where id = _expired.id;
+  end loop;
 
   -- A current-only adapter must never run today's payload while claiming an
   -- older interval. Audit every superseded slot, preserve its gap, then claim
@@ -823,6 +929,7 @@ begin
       and (_contract_key is null or job.contract_key = _contract_key)
       and job.state in ('queued', 'retry_wait')
       and job.available_at <= _now
+      and job.retry_until > _now
       and job.attempt_count < job.max_attempts
       and contract.enabled
       and not exists (
@@ -907,6 +1014,27 @@ begin
     return;
   end loop;
 end;
+$$;
+
+create or replace function public.source_job_queue_has_pending(
+  _execution_target text,
+  _contract_key text default null,
+  _now timestamptz default now()
+)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select exists (
+    select 1
+    from public.source_jobs as job
+    where job.execution_target = _execution_target
+      and (_contract_key is null or job.contract_key = _contract_key)
+      and job.state in ('queued', 'running', 'retry_wait')
+      and job.retry_until > _now
+  );
 $$;
 
 create or replace function public.complete_source_job(
@@ -1448,6 +1576,11 @@ revoke all on function public.enqueue_due_source_jobs(timestamptz, text)
   from public, anon, authenticated;
 revoke all on function public.claim_source_job(text, text, text, timestamptz)
   from public, anon, authenticated;
+revoke all on function public.source_job_queue_has_pending(
+  text,
+  text,
+  timestamptz
+) from public, anon, authenticated;
 revoke all on function public.complete_source_job(
   uuid,
   text,
@@ -1479,6 +1612,11 @@ grant execute on function public.enqueue_due_source_jobs(timestamptz, text)
   to service_role;
 grant execute on function public.claim_source_job(text, text, text, timestamptz)
   to service_role;
+grant execute on function public.source_job_queue_has_pending(
+  text,
+  text,
+  timestamptz
+) to service_role;
 grant execute on function public.complete_source_job(
   uuid,
   text,

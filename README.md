@@ -107,7 +107,9 @@ contract's attempt count and usefulness window. Gaps are recorded durably. FIRMS
 inside their provider retention windows can be replayed exactly, only by ID, through
 `bun run replay:source -- <gap-uuid>`; terminal gaps for other contracts are marked unrecoverable.
 Current-only jobs never run a fresh payload against an old interval: older queued slots are
-audited as unrecoverable, and the FWI/EFFIS consumers drain through the newest useful job.
+audited as unrecoverable, and the FWI/EFFIS consumers drain through the newest useful job. A
+not-yet-available retry keeps its consumer polling; once its usefulness window closes, it is
+terminalized and audited instead of being executed late.
 
 A public read API is exposed at `/api/public/v1/fires`, `/api/public/v1/risk`,
 `/api/public/v1/stats` and `/api/public/v1/status`. The status endpoint is the same sanitized,

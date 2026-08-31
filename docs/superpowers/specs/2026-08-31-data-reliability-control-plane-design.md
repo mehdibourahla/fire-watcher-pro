@@ -232,6 +232,9 @@ area product whose valid date advances.
 - For current-only adapters, an older queued slot is audited as missed and unrecoverable when a
   newer useful slot exists; consumers drain to the newest slot instead of mislabelling current
   data with the old interval.
+- A future retry remains pending so a consumer cannot mistake backoff for a drained queue. A job
+  is never claimed after its usefulness deadline; expiry is audited and preserves either an open
+  replayable gap or an explicitly unrecoverable one.
 
 The direct cron endpoints are removed. A GitHub Actions watchdog reads the run ledger and queue
 without using the application host. It reports breached database evidence without inferring that

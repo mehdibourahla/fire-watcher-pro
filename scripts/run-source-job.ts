@@ -1,5 +1,7 @@
 import { executeNextSourceJob } from "../src/lib/ingest/source-executor.server";
+import { supabaseAdmin } from "../src/integrations/supabase/client.server";
 import { sourceJobCommandExitCode } from "../src/lib/source-job-command";
+import { sourceJobQueueHasPending } from "../src/lib/source-jobs.server";
 
 const valueAfter = (flag: string): string | undefined => {
   const index = process.argv.indexOf(flag);
@@ -23,5 +25,14 @@ const result = await executeNextSourceJob({
   contractKey: contract,
   workerId: `github:${process.env["GITHUB_RUN_ID"] ?? "local"}:${contract}`,
 });
-console.log(JSON.stringify(result));
-process.exitCode = sourceJobCommandExitCode(result);
+const commandResult = result.claimed
+  ? result
+  : {
+      ...result,
+      pending: await sourceJobQueueHasPending(supabaseAdmin, {
+        target,
+        contractKey: contract,
+      }),
+    };
+console.log(JSON.stringify(commandResult));
+process.exitCode = sourceJobCommandExitCode(commandResult);

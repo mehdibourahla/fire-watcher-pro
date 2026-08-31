@@ -2237,6 +2237,14 @@ export type Database = {
         Args: { _contract_key: string };
         Returns: boolean;
       };
+      source_job_queue_has_pending: {
+        Args: {
+          _contract_key?: string;
+          _execution_target: string;
+          _now?: string;
+        };
+        Returns: boolean;
+      };
       vote_on_idea: {
         Args: { _idea: string; _value: number; _voter: string };
         Returns: number;

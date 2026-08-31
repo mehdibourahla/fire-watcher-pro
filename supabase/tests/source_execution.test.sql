@@ -29,6 +29,12 @@ select has_function(
 );
 select has_function(
   'public',
+  'source_job_queue_has_pending',
+  array['text', 'text', 'timestamp with time zone'],
+  'pending queue inspection RPC exists'
+);
+select has_function(
+  'public',
   'complete_source_job',
   array[
     'uuid',
@@ -102,6 +108,16 @@ select ok(
   and not has_function_privilege(
     'authenticated',
     'public.claim_source_job(text,text,text,timestamp with time zone)',
+    'execute'
+  )
+  and not has_function_privilege(
+    'anon',
+    'public.source_job_queue_has_pending(text,text,timestamp with time zone)',
+    'execute'
+  )
+  and not has_function_privilege(
+    'authenticated',
+    'public.source_job_queue_has_pending(text,text,timestamp with time zone)',
     'execute'
   )
   and not has_function_privilege(
@@ -977,6 +993,123 @@ select is(
   ),
   'failed',
   'superseding an obsolete daily slot leaves an audited run'
+);
+
+update public.source_contracts
+set dependency_keys = '{}'
+where key = 'effis';
+insert into public.source_jobs (
+  contract_key,
+  contract_version,
+  trigger_kind,
+  idempotency_key,
+  scheduled_for,
+  data_from,
+  data_through,
+  execution_target,
+  state,
+  enqueued_by,
+  available_at,
+  attempt_count,
+  max_attempts,
+  retry_base_seconds,
+  retry_until,
+  last_error_at,
+  last_public_reason_code
+)
+select
+  contract.key,
+  contract.version,
+  'scheduled',
+  'pgtap:future-retry',
+  '2099-09-01 06:00:00+00',
+  '2099-08-31 06:00:00+00',
+  '2099-09-01 06:00:00+00',
+  'github',
+  'retry_wait',
+  array['database'],
+  '2099-09-01 06:05:00+00',
+  1,
+  contract.max_attempts,
+  contract.retry_base_seconds,
+  '2099-09-01 10:00:00+00',
+  '2099-09-01 06:00:30+00',
+  'upstream_unreachable'
+from public.source_contracts as contract
+where contract.key = 'effis';
+
+select is_empty(
+  $$
+    select * from public.claim_source_job(
+      'pgtap-future-retry',
+      'github',
+      'effis',
+      '2099-09-01 06:01:00+00'
+    )
+  $$,
+  'a retry is not claimed before its availability time'
+);
+select ok(
+  public.source_job_queue_has_pending(
+    'github',
+    'effis',
+    '2099-09-01 06:01:00+00'
+  ),
+  'a future retry keeps the GitHub consumer polling'
+);
+select is_empty(
+  $$
+    select * from public.claim_source_job(
+      'pgtap-expired-retry',
+      'github',
+      'effis',
+      '2099-09-01 10:00:01+00'
+    )
+  $$,
+  'a retry is never claimed after its usefulness window'
+);
+select is(
+  (
+    select state
+    from public.source_jobs
+    where idempotency_key = 'pgtap:future-retry'
+  ),
+  'failed',
+  'an expired retry becomes terminal'
+);
+select is(
+  (
+    select quality_checks ->> 'usefulness_window_expired'
+    from public.source_runs
+    where job_id = (
+      select id
+      from public.source_jobs
+      where idempotency_key = 'pgtap:future-retry'
+    )
+    order by attempt desc
+    limit 1
+  ),
+  'true',
+  'retry-window expiry leaves an explicit audited run'
+);
+select is(
+  (
+    select state
+    from public.source_gaps
+    where contract_key = 'effis'
+      and data_through = '2099-09-01 06:00:00+00'
+  ),
+  'unrecoverable',
+  'an expired current-only retry preserves an unrecoverable gap'
+);
+select isnt(
+  public.source_job_queue_has_pending(
+    'github',
+    'effis',
+    '2099-09-01 10:00:01+00'
+  ),
+  true,
+  'a terminalized retry no longer keeps the consumer alive'
 );
 
 insert into public.admin_units (

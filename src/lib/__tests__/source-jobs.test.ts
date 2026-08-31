@@ -9,6 +9,7 @@ import {
   claimSourceJob,
   completeSourceJob,
   enqueueDueSourceJobs,
+  sourceJobQueueHasPending,
 } from "@/lib/source-jobs.server";
 
 const claimedJob: ClaimedSourceJob = {
@@ -81,6 +82,26 @@ describe("source job RPC adapters", () => {
     await expect(
       claimSourceJob({ rpc }, { workerId: "worker-1", target: "cloudflare" }),
     ).resolves.toBeNull();
+  });
+
+  it("distinguishes a future retry from a drained queue", async () => {
+    const rpc = vi.fn().mockResolvedValue({ data: true, error: null });
+
+    await expect(
+      sourceJobQueueHasPending(
+        { rpc },
+        {
+          target: "github",
+          contractKey: "local_fwi",
+          now: "2026-08-31T20:00:01.000Z",
+        },
+      ),
+    ).resolves.toBe(true);
+    expect(rpc).toHaveBeenCalledWith("source_job_queue_has_pending", {
+      _execution_target: "github",
+      _contract_key: "local_fwi",
+      _now: "2026-08-31T20:00:01.000Z",
+    });
   });
 
   it("enqueues the independently observed scheduler minute", async () => {

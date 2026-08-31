@@ -1,7 +1,7 @@
 import type { SourceJobState } from "./source-jobs";
 
 export type SourceJobCommandResult =
-  | { claimed: false }
+  | { claimed: false; pending: boolean }
   | { claimed: true; contract: string; state: SourceJobState };
 
 /**
@@ -12,7 +12,7 @@ export type SourceJobCommandResult =
 export function sourceJobCommandExitCode(
   result: SourceJobCommandResult,
 ): 0 | 1 | 75 | 76 {
-  if (!result.claimed) return 0;
+  if (!result.claimed) return result.pending ? 75 : 0;
   if (result.state === "succeeded") return 76;
   if (result.state === "retry_wait") return 75;
   return 1;

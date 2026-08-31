@@ -28,8 +28,29 @@ type CompleteArgs = Omit<GeneratedCompleteArgs, NullableCompleteArg> & {
   [Key in NullableCompleteArg]: GeneratedCompleteArgs[Key] | null;
 };
 
-function rpcFailure(operation: "claim" | "enqueue" | "complete"): Error {
+function rpcFailure(
+  operation: "claim" | "enqueue" | "complete" | "inspect",
+): Error {
   return new Error(`Could not ${operation} source job`);
+}
+
+export async function sourceJobQueueHasPending(
+  client: SourceJobRpcClient,
+  input: {
+    target: SourceExecutionTarget;
+    contractKey?: string;
+    now?: string;
+  },
+): Promise<boolean> {
+  const { data, error } = await client.rpc("source_job_queue_has_pending", {
+    _execution_target: input.target,
+    ...(input.contractKey === undefined
+      ? {}
+      : { _contract_key: input.contractKey }),
+    ...(input.now === undefined ? {} : { _now: input.now }),
+  });
+  if (error) throw rpcFailure("inspect");
+  return data;
 }
 
 export async function claimSourceJob(
