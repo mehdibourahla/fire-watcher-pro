@@ -144,6 +144,8 @@ export const en = {
     },
   },
   nav: {
+    menu: "Menu",
+    contribute: "Contribute",
     settings: "Settings",
     map: "Live map",
     forecast: "Forecast",
@@ -338,6 +340,10 @@ export const en = {
     stale: "No successful run for {{time}} — the scheduler may be down.",
   },
   about: {
+    contributeTitle: "Nadhir is built by people who do not all write code",
+    contributeBody:
+      "Verified places, a language reviewed by someone who speaks it, one introduction to a wilaya directorate. Here is what is missing.",
+    contributeCta: "See what is missing",
     attribution: "Data: NASA FIRMS, Open-Meteo, OpenStreetMap — CC-BY 4.0",
     metaTitle: "About Nadhir — methodology & data",
     metaDescription:
@@ -496,6 +502,16 @@ export const en = {
     role_admin: "admin",
   },
   admin: {
+    tabReports: "Fire reports",
+    tabIdeas: "Suggestions",
+    publish: "Publish to board",
+    unpublish: "Remove from board",
+    spam: "Spam",
+    filterPublished: "Published",
+    filterSpam: "Spam",
+    contactLeft: "contact left",
+    noContact: "no contact",
+    ideasEmpty: "No suggestions to review.",
     title: "Moderation console",
     metaTitle: "Moderation console — Nadhir",
     metaDescription:
@@ -515,6 +531,153 @@ export const en = {
     reviewed: "Reviewed {{time}}",
     queueEmpty: "Nothing to review.",
     pendingCount: "{{count}} awaiting review",
+  },
+  contribute: {
+    statFuelSubDone:
+      "Every commune now carries land cover. This deficit closed.",
+    metaTitle: "Contribute to Nadhir",
+    metaDescription:
+      "What is missing from Nadhir today, and how to help — verifying places, reviewing Kabyle, recording guidance, opening institutional doors, and code.",
+    eyebrow: "Contribute",
+    title: "Nadhir needs more than code.",
+    lede: "A wildfire warning system fails on language, local truth and institutional trust long before it fails on software. Everything below is what is missing right now — counted from the live database, not written by hand.",
+    measuredAt: "Read from the live database · {{date}}",
+    unavailable: "Count unavailable",
+    statPlaces: "Places verified",
+    statPlacesSub: "Not one has been checked by a person standing in it.",
+    statPlacesSubSome: "{{done}} checked by someone on the ground.",
+    statFuel: "Communes with fuel data",
+    statFuelSub: "{{missing}} still missing — and this one is moving.",
+    statAlerts: "Alerts delivered",
+    statAlertsSub: "The engine computes them. No channel carries them.",
+    statLanguages: "Languages shipped",
+    statLanguagesSub: "Kabyle has never been read by a native speaker.",
+    lanesEyebrow: "Ways in",
+    lanesTitle: "Where you would actually help",
+    lanesLede:
+      "Ordered by how badly the project needs each one. Code sits near the bottom because that is the truth, not modesty.",
+    asks: "Asks of you: {{what}}",
+    localTitle: "Verify a place near you",
+    localDeficit: "0 of {{total}} checked",
+    localBody:
+      "Nadhir lists stadiums, schoolyards and clearings pulled from OpenStreetMap. Nobody has stood in one. Tell us whether it is paved, reachable, locked, or now a building site.",
+    localAsks: "an afternoon, a phone, and somewhere you already know",
+    localCta: "Verify a place",
+    languageTitle: "Read the Kabyle",
+    languageDeficit: "1 of 4 languages unreviewed",
+    languageBody:
+      "Taqbaylit ships in the app today, translated without a native reviewer. A wrong word in a warning costs trust before it costs anything else.",
+    languageAsks: "fluency, and an ear for register",
+    languageCta: "Review the strings",
+    audioTitle: "Record the guidance",
+    audioDeficit: "0 of 4 languages recorded",
+    audioBody:
+      "Standing Guidance exists as text. Anyone who cannot read it gets nothing. It has to be a human voice — synthesised speech is not acceptable here.",
+    audioAsks: "a quiet room and half an hour",
+    audioCta: "Record a track",
+    institutionalTitle: "Open an institutional door",
+    institutionalDeficit: "0 alerts reach anyone",
+    institutionalBody:
+      "The CAP warning object is built and no channel carries it. Protection Civile holds a registered alerting slot that nobody fills. One introduction outweighs a year of engineering.",
+    institutionalAsks: "a real contact, and the standing to use it",
+    institutionalCta: "Start that conversation",
+    scienceTitle: "Calibrate the danger scale",
+    scienceDeficit: "thresholds borrowed from Canada",
+    scienceBody:
+      "The index is Canadian, built for boreal forest and applied to an arid regime. Fixing it needs a fire scientist's judgement, not a patch to the arithmetic.",
+    scienceAsks: "fire science, or the statistics to argue thresholds",
+    scienceCta: "See the evidence",
+    researchTitle: "Research what we cannot see",
+    researchDeficit: "1 detection source",
+    researchBody:
+      "Every fire Nadhir has ever found came from a single provider. Finding new sources, and proving they actually cover Algeria, is desk work with real consequences.",
+    researchAsks: "patience with documentation, and scepticism",
+    researchCta: "Open questions",
+    coordinationTitle: "Keep the work moving",
+    coordinationDeficit: "no coordinator",
+    coordinationBody:
+      "Triage, milestones, release notes, chasing a stalled review. A project with contributors across four languages and nobody keeping order simply drifts.",
+    coordinationAsks: "organisation, and the habit of following up",
+    coordinationCta: "How work is tracked",
+    testingTitle: "Break it on a cheap phone",
+    testingDeficit: "untested in the field",
+    testingBody:
+      "Survival Mode has to work offline, on an old handset, somewhere with no signal. That has never been tested in a rural commune — only in a browser on a fast connection.",
+    testingAsks: "a phone that is not new, and bad reception",
+    testingCta: "What to test",
+    codeTitle: "If you write code",
+    codeBody:
+      "One section, because it is one lane among several. AGPL-3.0, and it runs without a single secret.",
+    codeRepo: "View the repository",
+    codeIssues: "Good first issues",
+    codeStep1: "Clone it and run it",
+    codeStep1Body:
+      "Install, copy the example environment file, start the dev server. The committed values are public by design, so nothing is gated behind a secret you have to ask for.",
+    codeStep2: "Pick something real",
+    codeStep2Body:
+      "Issues tagged good first issue, or anything in GAPS.md — which lists what is broken, each claim with the query that proves it.",
+    codeStep3: "Open a pull request",
+    codeStep3Body:
+      "Continuous integration runs types, tests and lint with no secrets at all, so a fork gets exactly the same green checks a maintainer does.",
+    codeStep4: "Four languages or none",
+    codeStep4Body:
+      "Every new string exists in Arabic, French, English and Kabyle. The test suite enforces key parity, so a missing one fails the build rather than shipping blank.",
+    boardEyebrow: "The board",
+    boardTitle: "What people have suggested",
+    boardLede:
+      "A person reads every submission before it appears here. Voting is a rough signal, not a ballot — it is not tied to an account.",
+    boardSorted: "Sorted by votes",
+    boardEmptyTitle: "Nothing published yet",
+    boardEmptyBody:
+      "Notes appear here once a maintainer has read them. If you have an idea, the box below is where it starts.",
+    voteUp: "Agree",
+    voteDown: "Disagree",
+    voted: "You voted",
+    voteNote:
+      "Votes are stored against your browser, not an account, so the count shows interest rather than a number of people.",
+    boxTitle: "This list is incomplete",
+    boxBody:
+      "It always will be. Project management, research, something nobody here has thought of — if you can help in a way that is not on this page, write it down.",
+    fieldLane: "Closest lane",
+    fieldMessage: "What would you do?",
+    fieldMessagePlaceholder:
+      "Be specific. “I can help” is harder to act on than “I drive between Jijel and Texenna every week and can check the clearings along that road.”",
+    fieldContact: "How to reach you",
+    fieldOptional: "optional",
+    fieldContactPlaceholder: "Email, or leave it blank",
+    fieldContactHelp:
+      "Only used to reply to you about this note. Never published on the board, never shared.",
+    counter: "{{count}} characters",
+    submit: "Send it",
+    submitting: "Sending…",
+    inboxNotice:
+      "Nothing reads this inbox in real time. A person reviews what arrives and publishes what is useful. Expect days, not minutes.",
+    errTooShort: "A few more words — enough for someone to act on it.",
+    errRateLimited: "That is several notes in a short time. Try again later.",
+    errFailed: "That did not send. Nothing was saved, so try again.",
+    sentTitle: "Recorded.",
+    sentBody:
+      "Your note is saved in the queue. Nothing reads this inbox in real time — a person reviews what arrives and publishes what is useful to the board. Expect days, not minutes.",
+    sentNoContact:
+      "If you left no contact, you will not hear back directly — watch the board instead, which is where published notes appear.",
+    sentAnother: "Write another",
+    rulesTitle: "Before you change what a person is told",
+    rulesBody:
+      "Nadhir states information in its own voice and relays instructions only from an authority. Every displayed fact carries its age. There is no evacuation routing, and “safe” is banned as a status label anywhere in the interface. These are not style preferences — they are the reason the project can be trusted at all.",
+    linkGlossary: "The glossary",
+    linkAdr2: "ADR-0002 · informing authorities",
+    linkAdr3: "ADR-0003 · no routing",
+    linkContributing: "CONTRIBUTING.md",
+    laneLocal: "Local knowledge",
+    laneLanguage: "Language",
+    laneAudio: "Recording",
+    laneInstitutional: "Institutional",
+    laneScience: "Fire science",
+    laneResearch: "Research",
+    laneCoordination: "Coordination",
+    laneTesting: "Testing",
+    laneCode: "Code",
+    laneOther: "Something else",
   },
   webhooks: {
     title: "Alert webhooks",

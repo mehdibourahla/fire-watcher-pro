@@ -5,6 +5,11 @@ import { useTranslation } from "react-i18next";
 
 import { ReportPhoto } from "@/components/ReportPhoto";
 import type { Locale } from "@/i18n";
+import {
+  ideaQueueQuery,
+  moderateIdea,
+  type IdeaStatus,
+} from "@/lib/contribute";
 import { clustersQuery, relativeTime } from "@/lib/nadhir";
 import {
   moderateReport,
@@ -49,6 +54,7 @@ function ModerationPage() {
   const queue = useQuery({ ...moderationQueueQuery, enabled: isModerator });
   const clusters = useQuery({ ...clustersQuery, enabled: isModerator });
   const [filter, setFilter] = useState<Filter>("pending");
+  const [tab, setTab] = useState<"reports" | "ideas">("reports");
 
   const mutate = useMutation({
     mutationFn: moderateReport,
@@ -103,7 +109,36 @@ function ModerationPage() {
         </Link>
       ) : null}
 
-      <div className="mt-4 flex flex-wrap gap-2">
+      <div className="mt-5 flex flex-wrap gap-2 border-b border-border pb-4">
+        <button
+          type="button"
+          onClick={() => setTab("reports")}
+          aria-pressed={tab === "reports"}
+          className={
+            tab === "reports"
+              ? "rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground"
+              : "rounded-md border border-border px-3 py-1.5 text-sm text-muted-foreground"
+          }
+        >
+          {t("admin.tabReports")}
+        </button>
+        <button
+          type="button"
+          onClick={() => setTab("ideas")}
+          aria-pressed={tab === "ideas"}
+          className={
+            tab === "ideas"
+              ? "rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground"
+              : "rounded-md border border-border px-3 py-1.5 text-sm text-muted-foreground"
+          }
+        >
+          {t("admin.tabIdeas")}
+        </button>
+      </div>
+
+      {tab === "ideas" ? <IdeaQueue locale={locale} /> : null}
+
+      <div hidden={tab !== "reports"} className="mt-4 flex flex-wrap gap-2">
         {FILTERS.map((f) => (
           <button
             key={f}
@@ -121,7 +156,7 @@ function ModerationPage() {
         ))}
       </div>
 
-      {queue.isLoading ? (
+      {tab !== "reports" ? null : queue.isLoading ? (
         <p className="mt-8 text-sm text-muted-foreground">
           {t("common.loading")}
         </p>
@@ -288,5 +323,136 @@ function QueueCard({
         ) : null}
       </div>
     </li>
+  );
+}
+
+function laneKey(lane: string) {
+  return `contribute.lane${lane.charAt(0).toUpperCase()}${lane.slice(1)}`;
+}
+
+function IdeaQueue({ locale }: { locale: Locale }) {
+  const { t } = useTranslation();
+  const qc = useQueryClient();
+  const queue = useQuery(ideaQueueQuery);
+  const [filter, setFilter] = useState<IdeaStatus>("pending");
+
+  const act = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: IdeaStatus }) =>
+      moderateIdea(id, status),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["contribution-ideas"] }),
+  });
+
+  const rows = (queue.data ?? []).filter((i) => i.status === filter);
+  const countOf = (s: IdeaStatus) =>
+    (queue.data ?? []).filter((i) => i.status === s).length;
+
+  const filters: { key: IdeaStatus; label: string }[] = [
+    { key: "pending", label: t("admin.filterPending") },
+    { key: "published", label: t("admin.filterPublished") },
+    { key: "rejected", label: t("admin.filterRejected") },
+    { key: "spam", label: t("admin.filterSpam") },
+  ];
+
+  return (
+    <section className="mt-4">
+      <div className="flex flex-wrap gap-2">
+        {filters.map((f) => (
+          <button
+            key={f.key}
+            type="button"
+            onClick={() => setFilter(f.key)}
+            aria-pressed={filter === f.key}
+            className={
+              filter === f.key
+                ? "rounded-full bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground"
+                : "rounded-full border border-border px-3 py-1.5 text-sm text-muted-foreground"
+            }
+          >
+            {f.label} ({countOf(f.key)})
+          </button>
+        ))}
+      </div>
+
+      {queue.isLoading ? (
+        <p className="mt-8 text-sm text-muted-foreground">
+          {t("common.loading")}
+        </p>
+      ) : rows.length === 0 ? (
+        <p className="mt-8 text-sm text-muted-foreground">
+          {t("admin.ideasEmpty")}
+        </p>
+      ) : (
+        <ul className="mt-6 space-y-3">
+          {rows.map((idea) => (
+            <li key={idea.id} className="card flex flex-col gap-3 p-4">
+              <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                <span className="rounded-md bg-[var(--accent-tint)] px-2 py-0.5 font-semibold uppercase tracking-wider text-[var(--accent)]">
+                  {t(laneKey(idea.lane))}
+                </span>
+                <span>{relativeTime(idea.created_at, locale)}</span>
+                <span aria-hidden>·</span>
+                <span>
+                  {idea.contact ? t("admin.contactLeft") : t("admin.noContact")}
+                </span>
+                <span aria-hidden>·</span>
+                <span>{idea.locale}</span>
+              </div>
+
+              <p className="whitespace-pre-line text-sm leading-relaxed">
+                {idea.message}
+              </p>
+
+              {idea.contact ? (
+                <p className="text-xs text-muted-foreground">{idea.contact}</p>
+              ) : null}
+
+              <div className="flex flex-wrap gap-2 border-t border-border pt-3">
+                {idea.status === "published" ? (
+                  <button
+                    type="button"
+                    disabled={act.isPending}
+                    onClick={() =>
+                      act.mutate({ id: idea.id, status: "pending" })
+                    }
+                    className="rounded-md border border-border px-3 py-1.5 text-xs disabled:opacity-50"
+                  >
+                    {t("admin.unpublish")}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={act.isPending}
+                    onClick={() =>
+                      act.mutate({ id: idea.id, status: "published" })
+                    }
+                    className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground disabled:opacity-50"
+                  >
+                    {t("admin.publish")}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  disabled={act.isPending}
+                  onClick={() =>
+                    act.mutate({ id: idea.id, status: "rejected" })
+                  }
+                  className="rounded-md border border-border px-3 py-1.5 text-xs text-[var(--emergency)] disabled:opacity-50"
+                >
+                  {t("admin.reject")}
+                </button>
+                <button
+                  type="button"
+                  disabled={act.isPending}
+                  onClick={() => act.mutate({ id: idea.id, status: "spam" })}
+                  className="rounded-md border border-border px-3 py-1.5 text-xs text-[var(--emergency)] disabled:opacity-50"
+                >
+                  {t("admin.spam")}
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }

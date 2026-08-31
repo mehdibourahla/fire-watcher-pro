@@ -193,9 +193,20 @@ are unidentified and need the Arabic original or ONS tables to name.
   fire-relevant channels); titles are English-only in the feed (the per-warning
   CAP XML carries FR/EN, not Arabic); publication cadence is unproven, so the
   freshness window is 24h and a quiet weather day is not a dead feed.
-- **Admin console** has no cluster resolve (US-6). Broadcast controls exist since
-  2026-08-30 (`/broadcasts`): kill-switch, append-only audit view, and manual relay
-  of attributed authority warnings (the phone-call case).
+- **Admin console** has no cluster resolve (US-6). It gained a **Suggestions** tab on
+  2026-08-30 for the `/contribute` idea board (nothing user-submitted reaches the public
+  board until a moderator publishes it), and broadcast controls at `/broadcasts`:
+  kill-switch, append-only audit view, and manual relay of attributed authority warnings
+  (the phone-call case).
+- **`/contribute` collects notes that nobody answers yet.** The box records a submission and
+  the copy says so — a person reviews it, expect days not minutes — but there is no reply
+  path. When the planned agent is wired in, its reply must state that it is an agent: a
+  project whose pitch is that every fact carries its source cannot have a bot signing as a
+  person. Voting is anonymous by necessity (§1.2 makes accounts unreachable) and keyed to a
+  `localStorage` value, so clearing storage earns another vote; the UI says the count shows
+  interest rather than a number of people. Open-area verification has a column
+  (`verified_at`) but no submission form — verifications arrive as free text in the idea box
+  and a maintainer transcribes them, so the headline deficit only moves by hand.
 - **Survival mode** (`/survival`) ships with deliberate limits, each stated in the UI
   rather than papered over: the SOS queue is **local-only** — no server inbox exists
   because nobody would monitor it (§1.3), and the copy says so; quick hazard reports
@@ -268,6 +279,16 @@ Things that cost real debugging time here, none of them obvious from the code.
   select that can exceed it. Reads only; `.in()` on update or delete is fine.
 - **One GitHub setting is not API-reachable**: Settings → Actions → fork pull request workflows.
   It should require approval for all outside collaborators.
+- **`REVOKE ... FROM PUBLIC` does not lock down a Postgres function here.** Supabase grants
+  EXECUTE on new public-schema functions to `anon` and `authenticated` through default
+  privileges, which a revoke from PUBLIC leaves untouched. `consume_rate_limit` was callable
+  by `anon` from 2026-08-28 until 2026-08-30 — enough to exhaust any caller's bucket. Revoke
+  from `anon, authenticated` by name, and check with
+  `select proname, proacl from pg_proc where proname = '<fn>'`.
+- **The CSP blocked the local-stack workflow this file documents.** `connect-src` allowed only
+  `https://*.supabase.co`, so a contributor following CONTRIBUTING.md's `supabase start`
+  instructions got a browser that silently refused every call to their own database.
+  `src/server.ts` now allows localhost origins in dev only.
 
 ## Where to start
 

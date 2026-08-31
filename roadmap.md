@@ -53,6 +53,14 @@ Seed and ops credentials live in `~/.config/nadhir/`, never in this repo.
       of alerting-size false fires for 5.5% of real ones. Spec:
       `docs/superpowers/specs/2026-08-29-persistent-source-screening-design.md`.
 
+- [x] P13 Contribute page — `/contribute` states what is missing rather than what is wanted:
+      four deficits read live from the database, eight contribution lanes ordered by need
+      with code eighth, and a moderated idea board with anonymous voting. Adds
+      `open_areas.verified_at` so the headline deficit is a real query and field
+      verification has somewhere to land. Submissions and votes run through rate-limited
+      server routes, so the tables carry no anon insert policy. Spec:
+      `docs/superpowers/specs/2026-08-30-contribute-page-design.md`.
+
 ## Known gaps
 
 The full, evidence-checked list lives in [GAPS.md](GAPS.md) — kept there rather than duplicated

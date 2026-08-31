@@ -12,31 +12,6 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5";
   };
-  graphql_public: {
-    Tables: {
-      [_ in never]: never;
-    };
-    Views: {
-      [_ in never]: never;
-    };
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json;
-          operationName?: string;
-          query?: string;
-          variables?: Json;
-        };
-        Returns: Json;
-      };
-    };
-    Enums: {
-      [_ in never]: never;
-    };
-    CompositeTypes: {
-      [_ in never]: never;
-    };
-  };
   public: {
     Tables: {
       admin_units: {
@@ -47,7 +22,6 @@ export type Database = {
           geom: Json | null;
           id: string;
           landcover: Json | null;
-          terrain: Json | null;
           lat: number;
           level: string;
           lon: number;
@@ -57,6 +31,7 @@ export type Database = {
           name_kab: string | null;
           parent_id: string | null;
           population: number | null;
+          terrain: Json | null;
         };
         Insert: {
           code: string;
@@ -65,7 +40,6 @@ export type Database = {
           geom?: Json | null;
           id?: string;
           landcover?: Json | null;
-          terrain?: Json | null;
           lat: number;
           level: string;
           lon: number;
@@ -75,6 +49,7 @@ export type Database = {
           name_kab?: string | null;
           parent_id?: string | null;
           population?: number | null;
+          terrain?: Json | null;
         };
         Update: {
           code?: string;
@@ -83,7 +58,6 @@ export type Database = {
           geom?: Json | null;
           id?: string;
           landcover?: Json | null;
-          terrain?: Json | null;
           lat?: number;
           level?: string;
           lon?: number;
@@ -93,6 +67,7 @@ export type Database = {
           name_kab?: string | null;
           parent_id?: string | null;
           population?: number | null;
+          terrain?: Json | null;
         };
         Relationships: [
           {
@@ -535,6 +510,77 @@ export type Database = {
           },
         ];
       };
+      contribution_idea_votes: {
+        Row: {
+          created_at: string;
+          idea_id: string;
+          value: number;
+          voter_key: string;
+        };
+        Insert: {
+          created_at?: string;
+          idea_id: string;
+          value: number;
+          voter_key: string;
+        };
+        Update: {
+          created_at?: string;
+          idea_id?: string;
+          value?: number;
+          voter_key?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "contribution_idea_votes_idea_id_fkey";
+            columns: ["idea_id"];
+            isOneToOne: false;
+            referencedRelation: "contribution_ideas";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      contribution_ideas: {
+        Row: {
+          contact: string | null;
+          created_at: string;
+          id: string;
+          lane: string;
+          locale: string;
+          message: string;
+          moderated_by: string | null;
+          moderation_note: string | null;
+          published_at: string | null;
+          score: number;
+          status: string;
+        };
+        Insert: {
+          contact?: string | null;
+          created_at?: string;
+          id?: string;
+          lane?: string;
+          locale?: string;
+          message: string;
+          moderated_by?: string | null;
+          moderation_note?: string | null;
+          published_at?: string | null;
+          score?: number;
+          status?: string;
+        };
+        Update: {
+          contact?: string | null;
+          created_at?: string;
+          id?: string;
+          lane?: string;
+          locale?: string;
+          message?: string;
+          moderated_by?: string | null;
+          moderation_note?: string | null;
+          published_at?: string | null;
+          score?: number;
+          status?: string;
+        };
+        Relationships: [];
+      };
       data_sources: {
         Row: {
           id: string;
@@ -860,17 +906,17 @@ export type Database = {
       onm_vigilance: {
         Row: {
           area_desc: string;
-          headline_fr: string | null;
-          instruction_fr: string | null;
-          polygon: Json | null;
           cap_id: string;
           cap_url: string | null;
           certainty: string;
           created_at: string;
           event: string;
           expires: string | null;
+          headline_fr: string | null;
           id: string;
+          instruction_fr: string | null;
           onset: string | null;
+          polygon: Json | null;
           sent: string;
           severity: string;
           title: string;
@@ -880,16 +926,16 @@ export type Database = {
         Insert: {
           area_desc: string;
           cap_id: string;
-          headline_fr?: string | null;
-          instruction_fr?: string | null;
-          polygon?: Json | null;
           cap_url?: string | null;
           certainty: string;
           created_at?: string;
           event: string;
           expires?: string | null;
+          headline_fr?: string | null;
           id?: string;
+          instruction_fr?: string | null;
           onset?: string | null;
+          polygon?: Json | null;
           sent: string;
           severity: string;
           title: string;
@@ -899,23 +945,31 @@ export type Database = {
         Update: {
           area_desc?: string;
           cap_id?: string;
-          headline_fr?: string | null;
-          instruction_fr?: string | null;
-          polygon?: Json | null;
           cap_url?: string | null;
           certainty?: string;
           created_at?: string;
           event?: string;
           expires?: string | null;
+          headline_fr?: string | null;
           id?: string;
+          instruction_fr?: string | null;
           onset?: string | null;
+          polygon?: Json | null;
           sent?: string;
           severity?: string;
           title?: string;
           urgency?: string;
           wilaya_id?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "onm_vigilance_wilaya_id_fkey";
+            columns: ["wilaya_id"];
+            isOneToOne: false;
+            referencedRelation: "admin_units";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       open_areas: {
         Row: {
@@ -930,6 +984,9 @@ export type Database = {
           osm_id: number | null;
           osm_type: string | null;
           source: string;
+          verified_at: string | null;
+          verified_by: string | null;
+          verified_note: string | null;
         };
         Insert: {
           area_type: string;
@@ -943,6 +1000,9 @@ export type Database = {
           osm_id?: number | null;
           osm_type?: string | null;
           source?: string;
+          verified_at?: string | null;
+          verified_by?: string | null;
+          verified_note?: string | null;
         };
         Update: {
           area_type?: string;
@@ -956,6 +1016,9 @@ export type Database = {
           osm_id?: number | null;
           osm_type?: string | null;
           source?: string;
+          verified_at?: string | null;
+          verified_by?: string | null;
+          verified_note?: string | null;
         };
         Relationships: [
           {
@@ -1072,8 +1135,8 @@ export type Database = {
           components: Json | null;
           created_at: string;
           danger_level: number;
-          fuel_limited: boolean;
           forecast_date: string;
+          fuel_limited: boolean;
           fwi: number;
           horizon_days: number;
           id: string;
@@ -1084,8 +1147,8 @@ export type Database = {
           components?: Json | null;
           created_at?: string;
           danger_level: number;
-          fuel_limited?: boolean;
           forecast_date: string;
+          fuel_limited?: boolean;
           fwi: number;
           horizon_days: number;
           id?: string;
@@ -1096,8 +1159,8 @@ export type Database = {
           components?: Json | null;
           created_at?: string;
           danger_level?: number;
-          fuel_limited?: boolean;
           forecast_date?: string;
+          fuel_limited?: boolean;
           fwi?: number;
           horizon_days?: number;
           id?: string;
@@ -1407,6 +1470,10 @@ export type Database = {
         };
         Returns: boolean;
       };
+      vote_on_idea: {
+        Args: { _idea: string; _value: number; _voter: string };
+        Returns: number;
+      };
     };
     Enums: {
       app_role: "admin" | "moderator" | "user";
@@ -1535,9 +1602,6 @@ export type CompositeTypes<
     : never;
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],

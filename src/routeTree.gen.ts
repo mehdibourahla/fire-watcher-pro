@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ContributeRouteImport } from './routes/contribute'
 import { Route as DevelopersRouteImport } from './routes/developers'
 import { Route as ForecastRouteImport } from './routes/forecast'
 import { Route as HistoryRouteImport } from './routes/history'
@@ -33,6 +34,8 @@ import { Route as SurvivalIndexRouteImport } from './routes/survival/index'
 import { Route as SurvivalAreasRouteImport } from './routes/survival/areas'
 import { Route as SurvivalCheckinRouteImport } from './routes/survival/checkin'
 import { Route as SurvivalSosRouteImport } from './routes/survival/sos'
+import { Route as ApiPublicContributeIdeaRouteImport } from './routes/api/public/contribute/idea'
+import { Route as ApiPublicContributeVoteRouteImport } from './routes/api/public/contribute/vote'
 import { Route as ApiPublicCronAlertsRouteImport } from './routes/api/public/cron/alerts'
 import { Route as ApiPublicCronIngestRouteImport } from './routes/api/public/cron/ingest'
 import { Route as ApiPublicCronRiskRouteImport } from './routes/api/public/cron/risk'
@@ -60,6 +63,11 @@ const AboutRoute = AboutRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContributeRoute = ContributeRouteImport.update({
+  id: '/contribute',
+  path: '/contribute',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DevelopersRoute = DevelopersRouteImport.update({
@@ -162,6 +170,16 @@ const SurvivalSosRoute = SurvivalSosRouteImport.update({
   path: '/sos',
   getParentRoute: () => SurvivalRouteRoute,
 } as any)
+const ApiPublicContributeIdeaRoute = ApiPublicContributeIdeaRouteImport.update({
+  id: '/api/public/contribute/idea',
+  path: '/api/public/contribute/idea',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicContributeVoteRoute = ApiPublicContributeVoteRouteImport.update({
+  id: '/api/public/contribute/vote',
+  path: '/api/public/contribute/vote',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicCronAlertsRoute = ApiPublicCronAlertsRouteImport.update({
   id: '/api/public/cron/alerts',
   path: '/api/public/cron/alerts',
@@ -213,6 +231,7 @@ export interface FileRoutesByFullPath {
   '/survival': typeof SurvivalRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
+  '/contribute': typeof ContributeRoute
   '/developers': typeof DevelopersRoute
   '/forecast': typeof ForecastRoute
   '/history': typeof HistoryRoute
@@ -232,6 +251,8 @@ export interface FileRoutesByFullPath {
   '/survival/checkin': typeof SurvivalCheckinRoute
   '/survival/sos': typeof SurvivalSosRoute
   '/survival/': typeof SurvivalIndexRoute
+  '/api/public/contribute/idea': typeof ApiPublicContributeIdeaRoute
+  '/api/public/contribute/vote': typeof ApiPublicContributeVoteRoute
   '/api/public/cron/alerts': typeof ApiPublicCronAlertsRoute
   '/api/public/cron/ingest': typeof ApiPublicCronIngestRoute
   '/api/public/cron/risk': typeof ApiPublicCronRiskRoute
@@ -246,6 +267,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
+  '/contribute': typeof ContributeRoute
   '/developers': typeof DevelopersRoute
   '/forecast': typeof ForecastRoute
   '/history': typeof HistoryRoute
@@ -265,6 +287,8 @@ export interface FileRoutesByTo {
   '/survival/checkin': typeof SurvivalCheckinRoute
   '/survival/sos': typeof SurvivalSosRoute
   '/survival': typeof SurvivalIndexRoute
+  '/api/public/contribute/idea': typeof ApiPublicContributeIdeaRoute
+  '/api/public/contribute/vote': typeof ApiPublicContributeVoteRoute
   '/api/public/cron/alerts': typeof ApiPublicCronAlertsRoute
   '/api/public/cron/ingest': typeof ApiPublicCronIngestRoute
   '/api/public/cron/risk': typeof ApiPublicCronRiskRoute
@@ -282,6 +306,7 @@ export interface FileRoutesById {
   '/survival': typeof SurvivalRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
+  '/contribute': typeof ContributeRoute
   '/developers': typeof DevelopersRoute
   '/forecast': typeof ForecastRoute
   '/history': typeof HistoryRoute
@@ -301,6 +326,8 @@ export interface FileRoutesById {
   '/survival/checkin': typeof SurvivalCheckinRoute
   '/survival/sos': typeof SurvivalSosRoute
   '/survival/': typeof SurvivalIndexRoute
+  '/api/public/contribute/idea': typeof ApiPublicContributeIdeaRoute
+  '/api/public/contribute/vote': typeof ApiPublicContributeVoteRoute
   '/api/public/cron/alerts': typeof ApiPublicCronAlertsRoute
   '/api/public/cron/ingest': typeof ApiPublicCronIngestRoute
   '/api/public/cron/risk': typeof ApiPublicCronRiskRoute
@@ -318,6 +345,7 @@ export interface FileRouteTypes {
     | '/survival'
     | '/about'
     | '/auth'
+    | '/contribute'
     | '/developers'
     | '/forecast'
     | '/history'
@@ -337,6 +365,8 @@ export interface FileRouteTypes {
     | '/survival/checkin'
     | '/survival/sos'
     | '/survival/'
+    | '/api/public/contribute/idea'
+    | '/api/public/contribute/vote'
     | '/api/public/cron/alerts'
     | '/api/public/cron/ingest'
     | '/api/public/cron/risk'
@@ -351,6 +381,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/auth'
+    | '/contribute'
     | '/developers'
     | '/forecast'
     | '/history'
@@ -370,6 +401,8 @@ export interface FileRouteTypes {
     | '/survival/checkin'
     | '/survival/sos'
     | '/survival'
+    | '/api/public/contribute/idea'
+    | '/api/public/contribute/vote'
     | '/api/public/cron/alerts'
     | '/api/public/cron/ingest'
     | '/api/public/cron/risk'
@@ -386,6 +419,7 @@ export interface FileRouteTypes {
     | '/survival'
     | '/about'
     | '/auth'
+    | '/contribute'
     | '/developers'
     | '/forecast'
     | '/history'
@@ -405,6 +439,8 @@ export interface FileRouteTypes {
     | '/survival/checkin'
     | '/survival/sos'
     | '/survival/'
+    | '/api/public/contribute/idea'
+    | '/api/public/contribute/vote'
     | '/api/public/cron/alerts'
     | '/api/public/cron/ingest'
     | '/api/public/cron/risk'
@@ -422,6 +458,7 @@ export interface RootRouteChildren {
   SurvivalRouteRoute: typeof SurvivalRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
   AuthRoute: typeof AuthRoute
+  ContributeRoute: typeof ContributeRoute
   DevelopersRoute: typeof DevelopersRoute
   ForecastRoute: typeof ForecastRoute
   HistoryRoute: typeof HistoryRoute
@@ -429,6 +466,8 @@ export interface RootRouteChildren {
   StatusRoute: typeof StatusRoute
   TermsRoute: typeof TermsRoute
   FireIdRoute: typeof FireIdRoute
+  ApiPublicContributeIdeaRoute: typeof ApiPublicContributeIdeaRoute
+  ApiPublicContributeVoteRoute: typeof ApiPublicContributeVoteRoute
   ApiPublicCronAlertsRoute: typeof ApiPublicCronAlertsRoute
   ApiPublicCronIngestRoute: typeof ApiPublicCronIngestRoute
   ApiPublicCronRiskRoute: typeof ApiPublicCronRiskRoute
@@ -468,6 +507,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contribute': {
+      id: '/contribute'
+      path: '/contribute'
+      fullPath: '/contribute'
+      preLoaderRoute: typeof ContributeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/developers': {
@@ -610,6 +656,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SurvivalSosRouteImport
       parentRoute: typeof SurvivalRouteRoute
     }
+    '/api/public/contribute/idea': {
+      id: '/api/public/contribute/idea'
+      path: '/api/public/contribute/idea'
+      fullPath: '/api/public/contribute/idea'
+      preLoaderRoute: typeof ApiPublicContributeIdeaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/contribute/vote': {
+      id: '/api/public/contribute/vote'
+      path: '/api/public/contribute/vote'
+      fullPath: '/api/public/contribute/vote'
+      preLoaderRoute: typeof ApiPublicContributeVoteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/cron/alerts': {
       id: '/api/public/cron/alerts'
       path: '/api/public/cron/alerts'
@@ -725,6 +785,7 @@ const rootRouteChildren: RootRouteChildren = {
   SurvivalRouteRoute: SurvivalRouteRouteWithChildren,
   AboutRoute: AboutRoute,
   AuthRoute: AuthRoute,
+  ContributeRoute: ContributeRoute,
   DevelopersRoute: DevelopersRoute,
   ForecastRoute: ForecastRoute,
   HistoryRoute: HistoryRoute,
@@ -732,6 +793,8 @@ const rootRouteChildren: RootRouteChildren = {
   StatusRoute: StatusRoute,
   TermsRoute: TermsRoute,
   FireIdRoute: FireIdRoute,
+  ApiPublicContributeIdeaRoute: ApiPublicContributeIdeaRoute,
+  ApiPublicContributeVoteRoute: ApiPublicContributeVoteRoute,
   ApiPublicCronAlertsRoute: ApiPublicCronAlertsRoute,
   ApiPublicCronIngestRoute: ApiPublicCronIngestRoute,
   ApiPublicCronRiskRoute: ApiPublicCronRiskRoute,
