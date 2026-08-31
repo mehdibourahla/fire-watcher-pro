@@ -712,8 +712,10 @@ declare
   _expired_gap_id uuid;
   _expired_gap_state text;
   _expired_reason text;
+  _maintenance_remaining integer := 25;
   _obsolete public.source_jobs%rowtype;
   _obsolete_attempt integer;
+  _obsolete_gap_id uuid;
   _affected integer;
 begin
   if length(coalesce(_worker_id, '')) not between 1 and 200 then
@@ -734,8 +736,10 @@ begin
       and job.state in ('queued', 'retry_wait')
       and job.retry_until <= _now
     order by job.contract_key, job.scheduled_for, job.id
+    limit _maintenance_remaining
     for update of job skip locked
   loop
+    _maintenance_remaining := _maintenance_remaining - 1;
     _expired_attempt := least(
       _expired.attempt_count + 1,
       _expired.max_attempts
@@ -784,7 +788,11 @@ begin
     );
 
     select case
-      when contract.replay_capability = 'interval' then 'open'
+      when contract.replay_capability = 'interval'
+        and contract.replay_window_minutes is not null
+        and _expired.data_through >= _now - make_interval(
+          mins => contract.replay_window_minutes
+        ) then 'open'
       else 'unrecoverable'
     end
     into _expired_gap_state
@@ -847,8 +855,10 @@ begin
           and newer.available_at <= _now
       )
     order by job.contract_key, job.scheduled_for, job.id
+    limit _maintenance_remaining
     for update of job skip locked
   loop
+    _maintenance_remaining := _maintenance_remaining - 1;
     _obsolete_attempt := _obsolete.attempt_count + 1;
 
     update public.source_jobs
@@ -914,7 +924,12 @@ begin
         else 'unrecoverable'
       end,
       public_reason_code = excluded.public_reason_code,
-      updated_at = excluded.updated_at;
+      updated_at = excluded.updated_at
+    returning id into _obsolete_gap_id;
+
+    update public.source_jobs
+    set gap_id = coalesce(gap_id, _obsolete_gap_id)
+    where id = _obsolete.id;
   end loop;
 
   for _candidate in
@@ -932,6 +947,18 @@ begin
       and job.retry_until > _now
       and job.attempt_count < job.max_attempts
       and contract.enabled
+      and not (
+        contract.replay_capability = 'none'
+        and job.trigger_kind = 'scheduled'
+        and exists (
+          select 1
+          from public.source_jobs as newer
+          where newer.contract_key = job.contract_key
+            and newer.trigger_kind = 'scheduled'
+            and newer.scheduled_for > job.scheduled_for
+            and newer.available_at <= _now
+        )
+      )
       and not exists (
         select 1
         from public.source_job_leases as lease
@@ -1033,7 +1060,6 @@ as $$
     where job.execution_target = _execution_target
       and (_contract_key is null or job.contract_key = _contract_key)
       and job.state in ('queued', 'running', 'retry_wait')
-      and job.retry_until > _now
   );
 $$;
 

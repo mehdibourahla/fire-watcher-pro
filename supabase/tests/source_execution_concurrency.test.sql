@@ -1,6 +1,6 @@
-create extension if not exists dblink with schema extensions;
-
 begin;
+
+create extension if not exists dblink with schema extensions;
 
 set local search_path = public, extensions;
 
@@ -393,5 +393,3 @@ select extensions.dblink_disconnect('claim_b');
 select * from finish();
 
 rollback;
-
-drop extension dblink;

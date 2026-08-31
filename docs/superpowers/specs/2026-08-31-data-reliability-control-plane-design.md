@@ -234,7 +234,8 @@ area product whose valid date advances.
   data with the old interval.
 - A future retry remains pending so a consumer cannot mistake backoff for a drained queue. A job
   is never claimed after its usefulness deadline; expiry is audited and preserves either an open
-  replayable gap or an explicitly unrecoverable one.
+  replayable gap still inside provider retention or an explicitly unrecoverable one. Expiry and
+  supersession maintenance is processed in bounded batches, and every terminal job links its gap.
 
 The direct cron endpoints are removed. A GitHub Actions watchdog reads the run ledger and queue
 without using the application host. It reports breached database evidence without inferring that

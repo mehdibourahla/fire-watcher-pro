@@ -186,7 +186,8 @@ not an inferred Worker crash. Queue, lease, gap, run, and replay internals remai
 Current-only backlog is explicit: an older queued slot is failed with an audited `data_delayed`
 run and unrecoverable gap before the consumer drains the newest useful slot.
 Consumers keep polling while a retry is pending, and an expired usefulness window is terminalized
-with an audited run plus a replayable or explicitly unrecoverable gap before any new claim.
+in bounded 25-row maintenance batches with an audited run plus a replayable or explicitly
+unrecoverable gap. Replayability also respects the provider's retention window.
 This implementation is locally verified but not yet deployed; production observation is still
 required before claiming operational reliability.
 
@@ -298,7 +299,7 @@ seeding, i18n key parity, ingest guards, the cross-border watch area, place labe
 stripping, CAP construction, the public API helpers, the webhook URL guard, and the
 persistent-source grid, registration criteria, screen radius and drift heuristic. Source-run
 classification, public-status serialization, shared health summarization, job execution,
-scheduling, watchdog, and replay are included. Separate 39- and 80-assertion pgTAP suites cover
+scheduling, watchdog, and replay are included. Separate 39- and 87-assertion pgTAP suites cover
 the reliability and execution schemas, grants, state transitions, leases, gaps, and replay; a
 10-assertion two-session suite exercises lease collisions and completion/recovery races.
 Most older RLS policies, route handlers end to end, and UI behavior still have no

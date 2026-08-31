@@ -941,7 +941,7 @@ select
   slot.scheduled_for,
   contract.max_attempts,
   contract.retry_base_seconds,
-  slot.scheduled_for + interval '4 hours'
+  '2099-09-02 10:00:00+00'::timestamptz
 from public.source_contracts as contract
 cross join (
   values
@@ -983,7 +983,7 @@ select is(
 );
 select is(
   (
-    select outcome
+    select quality_checks ->> 'obsolete_slot'
     from public.source_runs
     where job_id = (
       select id
@@ -991,8 +991,22 @@ select is(
       where idempotency_key = 'pgtap:daily-backlog:2099-08-30 06:00:00+00'
     )
   ),
-  'failed',
-  'superseding an obsolete daily slot leaves an audited run'
+  'true',
+  'superseding an unexpired daily slot uses the obsolete-slot audit path'
+);
+select is(
+  (
+    select job.gap_id
+    from public.source_jobs as job
+    where job.idempotency_key = 'pgtap:daily-backlog:2099-08-30 06:00:00+00'
+  ),
+  (
+    select gap.id
+    from public.source_gaps as gap
+    where gap.contract_key = 'local_fwi'
+      and gap.data_through = '2099-08-30 06:00:00+00'
+  ),
+  'the superseded job links to its unrecoverable gap'
 );
 
 update public.source_contracts
@@ -1110,6 +1124,160 @@ select isnt(
   ),
   true,
   'a terminalized retry no longer keeps the consumer alive'
+);
+
+insert into public.source_jobs (
+  contract_key,
+  contract_version,
+  trigger_kind,
+  idempotency_key,
+  scheduled_for,
+  data_from,
+  data_through,
+  execution_target,
+  state,
+  enqueued_by,
+  available_at,
+  attempt_count,
+  max_attempts,
+  retry_base_seconds,
+  retry_until,
+  last_error_at,
+  last_public_reason_code
+)
+select
+  contract.key,
+  contract.version,
+  'manual',
+  'pgtap:expired-fci-retention',
+  '2099-01-01 00:10:00+00',
+  '2099-01-01 00:00:00+00',
+  '2099-01-01 00:10:00+00',
+  'cloudflare',
+  'retry_wait',
+  array['manual'],
+  '2099-01-01 00:20:00+00',
+  1,
+  contract.max_attempts,
+  contract.retry_base_seconds,
+  '2099-01-01 01:00:00+00',
+  '2099-01-01 00:11:00+00',
+  'upstream_unreachable'
+from public.source_contracts as contract
+where contract.key = 'fci';
+select * from public.claim_source_job(
+  'pgtap-expired-fci-retention',
+  'cloudflare',
+  'fci',
+  '2099-05-01 00:00:00+00'
+);
+select is(
+  (
+    select state
+    from public.source_gaps
+    where contract_key = 'fci'
+      and data_through = '2099-01-01 00:10:00+00'
+  ),
+  'unrecoverable',
+  'an expired retry outside provider retention is not offered for replay'
+);
+
+insert into public.source_jobs (
+  contract_key,
+  contract_version,
+  trigger_kind,
+  idempotency_key,
+  scheduled_for,
+  data_from,
+  data_through,
+  execution_target,
+  enqueued_by,
+  available_at,
+  max_attempts,
+  retry_base_seconds,
+  retry_until
+)
+select
+  contract.key,
+  contract.version,
+  'manual',
+  'pgtap:expired-batch:' || fixture.ordinal::text,
+  fixture.scheduled_for,
+  fixture.scheduled_for - interval '1 minute',
+  fixture.scheduled_for,
+  'github',
+  array['manual'],
+  fixture.scheduled_for,
+  contract.max_attempts,
+  contract.retry_base_seconds,
+  '2100-01-02 00:00:00+00'
+from public.source_contracts as contract
+cross join lateral (
+  select
+    ordinal,
+    '2100-01-01 00:00:00+00'::timestamptz
+      + make_interval(mins => ordinal) as scheduled_for
+  from generate_series(1, 30) as ordinal
+) as fixture
+where contract.key = 'effis';
+select * from public.claim_source_job(
+  'pgtap-expired-batch-1',
+  'github',
+  'effis',
+  '2100-01-03 00:00:00+00'
+);
+select is(
+  (
+    select count(*)::integer
+    from public.source_jobs
+    where idempotency_key like 'pgtap:expired-batch:%'
+      and state = 'failed'
+  ),
+  25,
+  'one claim terminalizes at most one bounded maintenance batch'
+);
+select is(
+  (
+    select count(*)::integer
+    from public.source_jobs
+    where idempotency_key like 'pgtap:expired-batch:%'
+      and state = 'queued'
+  ),
+  5,
+  'overflow maintenance rows remain pending for the next claim'
+);
+select ok(
+  public.source_job_queue_has_pending(
+    'github',
+    'effis',
+    '2100-01-03 00:00:00+00'
+  ),
+  'bounded maintenance keeps the consumer polling until cleanup finishes'
+);
+select * from public.claim_source_job(
+  'pgtap-expired-batch-2',
+  'github',
+  'effis',
+  '2100-01-03 00:00:01+00'
+);
+select is(
+  (
+    select count(*)::integer
+    from public.source_jobs
+    where idempotency_key like 'pgtap:expired-batch:%'
+      and state = 'queued'
+  ),
+  0,
+  'the next claim finishes the remaining maintenance batch'
+);
+select isnt(
+  public.source_job_queue_has_pending(
+    'github',
+    'effis',
+    '2100-01-03 00:00:01+00'
+  ),
+  true,
+  'the consumer sees drained only after bounded maintenance finishes'
 );
 
 insert into public.admin_units (

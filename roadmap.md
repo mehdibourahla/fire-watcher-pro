@@ -85,7 +85,8 @@ waits on the Firebase and Telegram runtime secrets.
   `.github/workflows/risk-refresh.yml` because they are CPU-bound. Each consumer drains its
   contract; obsolete current-only slots are audited as unrecoverable instead of running fresh
   data against an old interval. Pending backoff keeps the consumer alive, while retries that
-  outlive their usefulness window are terminalized and audited before another claim.
+  outlive their usefulness window are terminalized and audited in bounded batches. Replay is
+  offered only while provider retention can still cover the gap.
 - `.github/workflows/source-watchdog.yml` checks queue delay, expired leases, and missing runs
   through Supabase every five minutes without depending on the Worker host.
 - `bun run seed:geo --prune` — reseed geography from `data/geo/` (monthly, idempotent).
