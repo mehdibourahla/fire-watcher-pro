@@ -163,7 +163,7 @@ has no counterpart commune in the database; `2839 Ouled Atia` exists here but in
 list; and `admin_units` holds 1537 communes against the law's 1541 — the missing rows
 are unidentified and need the Arabic original or ONS tables to name.
 
-### 2.4 Source reliability — truthful health shipped; execution and publication remain open
+### 2.4 Source reliability — truthful health and isolated execution built; publication remains open
 
 The first slice of the Data Reliability Control Plane replaces the two most dangerous health
 shortcuts. Freshness is no longer guessed in the browser from hard-coded intervals, and raw
@@ -174,13 +174,18 @@ the corresponding `source_checkpoints` row; and the `source_health` view derives
 watermarks. The status page, homepage signal and `/api/public/v1/status` consume that same
 sanitized projection. This is milestone M1A in `roadmap.md`.
 
+M2 replaces the direct HTTP cron pipelines with durable per-contract `source_jobs` and one active
+lease per contract. Supabase and Cloudflare independently enqueue the same normalized slots;
+short jobs run on the Worker, while FWI and EFFIS have separate GitHub consumers. Attempts and
+retry windows are bounded, expired leases are recovered, missing intervals become `source_gaps`,
+and replay accepts only a recorded gap UUID. A five-minute GitHub watchdog queries Supabase
+directly, so the Worker is not its own monitor. Its failures report breached database evidence,
+not an inferred Worker crash. Queue, lease, gap, run, and replay internals remain service-role-only.
+This implementation is locally verified but not yet deployed; production observation is still
+required before claiming operational reliability.
+
 What is deliberately still open:
 
-- **Scheduler response and isolated execution (M2).** `pg_cron` can enqueue a `pg_net` request
-  without proving the Worker completed it, and current stages still share one sequential request.
-  Queue leases, per-adapter runners, a second trigger and an independent watchdog are not built.
-- **Gap detection and replay (M2).** Checkpoints preserve watermarks and idempotency keys, but
-  there is no `source_gaps` registry, automatic replay cursor or operator replay workflow yet.
 - **Atomic FWI publication (M3).** The daily workflow records partial coverage honestly, but it
   can still update part of the current forecast set in place. A staged 9,216-row snapshot and one
   publication manifest must precede any new daily enrichment layer.
@@ -188,8 +193,9 @@ What is deliberately still open:
   Telegram and FCM attempts do not yet have independent durable queues, retries and backlog
   objectives. One channel succeeding must not erase evidence that another failed.
 
-The dormant `data_sources` and `ingest_runs` relations exist only for the one-release
-schema-before-code deploy window. The contract-release checklist in
+The dormant `data_sources` and `ingest_runs` relations exist only for the expand/contract deploy
+window. The inactive database HTTP helper and token table also remain until the queue-backed
+release completes its observation window. The contract-release checklist in
 `docs/superpowers/plans/2026-08-31-source-health-contract-cleanup.md` removes them after
 production evidence proves that no deployed code still uses them.
 
@@ -281,13 +287,14 @@ real boundary, so the effective policy is 6. Captcha is disabled, which combined
 
 ### 4.3 Test coverage is narrow
 
-284 tests across 32 files cover the FWI maths, FWI state advancement, alert rule evaluation, geo
+325 tests across 38 files cover the FWI maths, FWI state advancement, alert rule evaluation, geo
 seeding, i18n key parity, ingest guards, the cross-border watch area, place labelling, Exif
 stripping, CAP construction, the public API helpers, the webhook URL guard, and the
 persistent-source grid, registration criteria, screen radius and drift heuristic. Source-run
-classification, public-status serialization and shared health summarization are included; a
-separate 38-assertion pgTAP suite covers the reliability schema, grants, atomic checkpointing and
-derived states. Most older RLS policies, route handlers end to end, and UI behavior still have no
+classification, public-status serialization, shared health summarization, job execution,
+scheduling, watchdog, and replay are included. Separate 39- and 47-assertion pgTAP suites cover
+the reliability and execution schemas, grants, state transitions, leases, gaps, and replay.
+Most older RLS policies, route handlers end to end, and UI behavior still have no
 coverage. Fusion remains the weakest spot: both its commune attribution and its `fp_reason` filter —
 the one the whole screening design rests on — are guarded only by assertions over the source
 text, not by exercising the function. The screening thresholds are separately gated on a

@@ -4,6 +4,11 @@ Date: 2026-08-31
 Status: required follow-up release after M1A production observation
 Depends on: Data Reliability Control Plane M1A deployed database-first, then application
 
+Observed 2026-08-31: M1A is deployed at merge commit
+`9061c369e0b8a8f79144d54230033ad4f6be57c3`. Eight 10-minute contracts produced new successful
+scheduled runs. `local_fwi`, `effis`, and `geo` still had no qualifying non-migration run, so the
+entry gate is not satisfied and cleanup remains blocked.
+
 ## Goal
 
 Remove the one-release compatibility shim and obsolete `data_sources` / `ingest_runs`
@@ -49,7 +54,9 @@ trigger is still advancing a checkpoint, or if any deployed path queries an old 
    - drop `private.sync_legacy_source_checkpoint()`;
    - explicitly revoke any remaining privileges on `public.data_sources` and
      `public.ingest_runs` from `PUBLIC`, `anon`, `authenticated` and `service_role`;
-   - drop `public.data_sources` and `public.ingest_runs`.
+   - drop `public.data_sources` and `public.ingest_runs`;
+   - after the M2 queue and both enqueue triggers complete their own observation window, drop the
+     inactive `private.nadhir_cron_call(text)` helper and `public.internal_cron_token` table.
 4. Do not change or delete `source_runs` migrated history. Do not weaken RLS, view security,
    append-only grants or the recorder's execution grants.
 5. Regenerate `src/integrations/supabase/types.ts` from the rebuilt local database. Prove:

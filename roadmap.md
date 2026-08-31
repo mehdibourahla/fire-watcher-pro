@@ -1,7 +1,8 @@
 # Nadhir — build roadmap
 
 Stack adaptation: TanStack Start + React + Supabase (Postgres) replaces
-FastAPI/Celery/Redis. Ingestion runs as server routes + pg_cron jobs.
+FastAPI/Celery/Redis. Source work runs as isolated Postgres-backed jobs consumed by
+Cloudflare Workers and GitHub Actions.
 Geometry stored as lat/lon columns (ADR-001) instead of PostGIS.
 
 ## Live project
@@ -26,7 +27,7 @@ Seed and ops credentials live in `~/.config/nadhir/`, never in this repo.
 - [x] P3 Fire detail (timeline, wind, nearest settlements)
 - [x] P4 Forecast page (6-day outlook, commune search)
 - [x] P5 Accounts & zones (auth, zones CRUD, settings)
-- [x] P6 Alerting (zone rules, dedup fan-out, alerts feed, cron endpoint)
+- [x] P6 Alerting (zone rules, dedup fan-out, alerts feed, isolated evaluation job)
 - [x] P7 Ingestion workers; the original `ingest_runs` journal is superseded by the
       reliability-control-plane epic below
 - [x] P8 Fusion + risk engines (clustering, FSM, confidence, CFFDRS FWI)
@@ -78,11 +79,14 @@ waits on the Firebase and Telegram runtime secrets.
   is `bun run build && bunx wrangler deploy`. Requires the Workers **Paid** plan
   (active): React SSR exceeds the free plan's 10ms CPU budget, so pages 503 there while the
   JSON API still answers.
-- Daily FWI refresh runs in GitHub Actions (`.github/workflows/risk-refresh.yml`), not
-  `pg_cron` — it is minutes of CPU-bound work. The `nadhir-risk` cron job is unscheduled;
-  `nadhir-ingest` and `nadhir-alerts` still run in the database.
+- Supabase cron and Cloudflare cron independently enqueue the same normalized source slots
+  every minute. Cloudflare consumes short jobs; expired leases are recovered in Postgres.
+- Daily FWI and EFFIS use separate GitHub Actions consumers in
+  `.github/workflows/risk-refresh.yml` because they are CPU-bound.
+- `.github/workflows/source-watchdog.yml` checks queue delay, expired leases, missing runs,
+  and open gaps through Supabase every five minutes without depending on the Worker host.
 - `bun run seed:geo --prune` — reseed geography from `data/geo/` (monthly, idempotent).
-- Scheduler URL is a vault secret `nadhir_app_url`; the cron function raises if unset.
+- Recorded gaps replay only by UUID through `bun run replay:source -- <gap-uuid>`.
 - Secrets needed by the deployed app: `FIRMS_MAP_KEY`, `EUMETSAT_CONSUMER_KEY/SECRET`,
   `NADHIR_CRON_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`, `FIREBASE_SERVICE_ACCOUNT`,
   `TELEGRAM_BOT_TOKEN` (the last two pending — delivery reports degraded until set).
@@ -147,8 +151,10 @@ Slices, in dependency order:
       from every current pipeline stage, four-language status UI, and the sanitized
       `/api/public/v1/status` endpoint. The legacy `data_sources` and `ingest_runs` relations
       remain dormant for one expand/contract deploy window; their removal is the next release.
-- [ ] M2 Isolated execution: per-contract queue jobs and leases, bounded retries, recorded
-      gaps, idempotent replay, Cloudflare plus database triggers, and an independent watchdog.
+- [x] M2 Isolated execution: per-contract queue jobs and leases, bounded retries, recorded
+      gaps, ID-only replay, Cloudflare plus database triggers, independent GitHub consumers
+      for FWI/EFFIS, and an out-of-band watchdog. The old direct cron endpoints and combined
+      pipeline are removed. Production rollout and its observation window remain operator gates.
 - [ ] M3 Atomic daily risk: stage a complete 1,536-commune × 6-horizon snapshot, publish one
       manifest transactionally, and block risk alerts from stale or partial products.
 - [ ] M4 Delivery reliability: separate FCM and Telegram attempts, retry each independently,
