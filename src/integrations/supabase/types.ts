@@ -1249,6 +1249,57 @@ export type Database = {
           },
         ];
       };
+      translation_suggestions: {
+        Row: {
+          created_at: string;
+          current_text: string;
+          id: string;
+          key_path: string;
+          locale: string;
+          moderated_by: string | null;
+          moderation_note: string | null;
+          note: string | null;
+          reviewer_key: string;
+          reviewer_name: string | null;
+          source_text: string;
+          status: string;
+          suggestion: string | null;
+          verdict: string;
+        };
+        Insert: {
+          created_at?: string;
+          current_text: string;
+          id?: string;
+          key_path: string;
+          locale: string;
+          moderated_by?: string | null;
+          moderation_note?: string | null;
+          note?: string | null;
+          reviewer_key: string;
+          reviewer_name?: string | null;
+          source_text: string;
+          status?: string;
+          suggestion?: string | null;
+          verdict: string;
+        };
+        Update: {
+          created_at?: string;
+          current_text?: string;
+          id?: string;
+          key_path?: string;
+          locale?: string;
+          moderated_by?: string | null;
+          moderation_note?: string | null;
+          note?: string | null;
+          reviewer_key?: string;
+          reviewer_name?: string | null;
+          source_text?: string;
+          status?: string;
+          suggestion?: string | null;
+          verdict?: string;
+        };
+        Relationships: [];
+      };
       user_roles: {
         Row: {
           created_at: string;

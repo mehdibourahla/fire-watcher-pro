@@ -22,7 +22,8 @@
     "seed:sources": "bun run scripts/seed-persistent-sources.ts",
     "reconcile:sources": "bun run scripts/reconcile-persistent-sources.ts",
     "recompute:geometry": "bun run scripts/recompute-cluster-geometry.ts",
-    "bootstrap:fwi": "bash scripts/bootstrap-fwi.sh"
+    "bootstrap:fwi": "bash scripts/bootstrap-fwi.sh",
+    "apply:translations": "bun run scripts/apply-translations.ts"
   },
   "overrides": {
     "rolldown": "1.2.1"
