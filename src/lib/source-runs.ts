@@ -82,7 +82,7 @@ export function sourceRunIdempotencyKey(
 export function sourceRunOutcome(input: {
   accepted: number;
   expected?: number | null;
-  error?: string | null;
+  error?: string | null | undefined;
   disabled?: boolean;
 }): Pick<SourceRunReport, "outcome" | "coverageStatus"> {
   if (input.disabled) return { outcome: "skipped", coverageStatus: "unknown" };

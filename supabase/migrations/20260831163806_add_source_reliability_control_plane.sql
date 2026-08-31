@@ -534,15 +534,24 @@ begin
       else public.source_checkpoints.last_success_at
     end,
     upstream_published_at = case
-      when _outcome = 'succeeded' then excluded.upstream_published_at
+      when _outcome = 'succeeded' then coalesce(
+        excluded.upstream_published_at,
+        public.source_checkpoints.upstream_published_at
+      )
       else public.source_checkpoints.upstream_published_at
     end,
     data_from = case
-      when _outcome = 'succeeded' then excluded.data_from
+      when _outcome = 'succeeded' then coalesce(
+        excluded.data_from,
+        public.source_checkpoints.data_from
+      )
       else public.source_checkpoints.data_from
     end,
     data_through = case
-      when _outcome = 'succeeded' then excluded.data_through
+      when _outcome = 'succeeded' then coalesce(
+        excluded.data_through,
+        public.source_checkpoints.data_through
+      )
       else public.source_checkpoints.data_through
     end,
     validated_at = case
@@ -846,7 +855,7 @@ select
   family,
   criticality,
   case
-    when not enabled then 'paused'
+    when not enabled or public_reason_code = 'disabled' then 'paused'
     when valid_at is null then 'unavailable'
     when age_minutes > stale_after_minutes then 'stale'
     when age_minutes > warning_after_minutes then 'delayed'

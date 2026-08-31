@@ -279,6 +279,62 @@ select is(
   'failure cannot advance the last valid watermark'
 );
 
+select public.record_source_run(
+  _contract_key => 'fci',
+  _trigger_kind => 'manual',
+  _idempotency_key => 'pgtap:fci:with-slot',
+  _scheduled_for => '2026-08-31 12:00:00+00',
+  _started_at => '2026-08-31 12:00:01+00',
+  _finished_at => '2026-08-31 12:00:02+00',
+  _outcome => 'succeeded',
+  _upstream_published_at => '2026-08-31 11:50:00+00',
+  _data_from => null,
+  _data_through => '2026-08-31 11:50:00+00',
+  _validated_at => '2026-08-31 12:00:02+00',
+  _published_at => '2026-08-31 12:00:02+00',
+  _records_seen => 1,
+  _records_inserted => 1,
+  _records_updated => 0,
+  _records_rejected => 0,
+  _records_expected => null,
+  _coverage_status => 'complete',
+  _quality_checks => '{}'::jsonb,
+  _public_reason_code => null,
+  _private_diagnostic => null
+);
+select public.record_source_run(
+  _contract_key => 'fci',
+  _trigger_kind => 'manual',
+  _idempotency_key => 'pgtap:fci:quiet-poll',
+  _scheduled_for => '2026-08-31 12:10:00+00',
+  _started_at => '2026-08-31 12:10:01+00',
+  _finished_at => '2026-08-31 12:10:02+00',
+  _outcome => 'succeeded',
+  _upstream_published_at => null,
+  _data_from => null,
+  _data_through => null,
+  _validated_at => '2026-08-31 12:10:02+00',
+  _published_at => '2026-08-31 12:10:02+00',
+  _records_seen => 0,
+  _records_inserted => 0,
+  _records_updated => 0,
+  _records_rejected => 0,
+  _records_expected => null,
+  _coverage_status => 'complete',
+  _quality_checks => '{}'::jsonb,
+  _public_reason_code => null,
+  _private_diagnostic => null
+);
+select is(
+  (
+    select upstream_published_at
+    from public.source_checkpoints
+    where contract_key = 'fci'
+  ),
+  '2026-08-31 11:50:00+00'::timestamptz,
+  'a successful empty poll preserves the latest upstream watermark'
+);
+
 insert into public.source_contracts (
   key,
   version,
@@ -314,6 +370,7 @@ select
   state <> 'paused'
 from unnest(array[
   'paused',
+  'paused_run',
   'unavailable',
   'stale',
   'delayed',
@@ -332,6 +389,16 @@ insert into public.source_checkpoints (
   coverage_status
 )
 values
+  (
+    'pgtap_health_paused_run',
+    now() - interval '10 minutes',
+    now() - interval '10 minutes',
+    now() - interval '10 minutes',
+    now() - interval '10 minutes',
+    0,
+    1,
+    'unknown'
+  ),
   (
     'pgtap_health_stale',
     now() - interval '61 minutes',
@@ -377,6 +444,14 @@ select is(
   (select state from public.source_health where key = 'pgtap_health_paused'),
   'paused',
   'disabled contracts are paused'
+);
+update public.source_checkpoints
+set last_public_reason_code = 'disabled'
+where contract_key = 'pgtap_health_paused_run';
+select is(
+  (select state from public.source_health where key = 'pgtap_health_paused_run'),
+  'paused',
+  'an operator-disabled run pauses its source capability'
 );
 select is(
   (select state from public.source_health where key = 'pgtap_health_unavailable'),

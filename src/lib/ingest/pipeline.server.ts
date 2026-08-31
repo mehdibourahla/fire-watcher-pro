@@ -1,5 +1,11 @@
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import {
+  publicReasonForError,
+  sourceRunOutcome,
+  type PublicSourceReason,
+} from "@/lib/source-runs";
+import { recordSourceRun } from "@/lib/source-runs.server";
 
+import { algiersToday } from "./algiers-date";
 import { ingestEffis, type EffisRun } from "./effis.server";
 import { ingestFci } from "./fci.server";
 import { ingestFirms } from "./firms.server";
@@ -13,54 +19,6 @@ import { publishBroadcasts } from "./broadcast.server";
 import { deliverBroadcasts } from "./delivery.server";
 import { enrichClusterWinds, refreshRiskForecasts } from "./weather.server";
 
-type RunOutcome = {
-  status: "ok" | "failed";
-  recordsIn?: number;
-  recordsNew?: number;
-  error?: string;
-};
-
-/**
- * Journalling a run is observability, not the job itself — a failure here must
- * not discard detections that were already ingested successfully.
- */
-async function recordRun(
-  source: string,
-  startedAt: string,
-  outcome: RunOutcome,
-) {
-  // cast until generated types pick up ingest_runs from its migration
-  const { error } = await (
-    supabaseAdmin.from as unknown as (t: string) => {
-      insert: (
-        row: Record<string, unknown>,
-      ) => Promise<{ error: { message: string } | null }>;
-    }
-  )("ingest_runs").insert({
-    source,
-    started_at: startedAt,
-    finished_at: new Date().toISOString(),
-    status: outcome.status,
-    records_in: outcome.recordsIn ?? 0,
-    records_new: outcome.recordsNew ?? 0,
-    error: outcome.error ?? null,
-  });
-  if (error)
-    console.warn(`[ingest_runs] could not record ${source}:`, error.message);
-}
-
-async function markSource(name: string, ok: boolean, note: string) {
-  await supabaseAdmin
-    .from("data_sources")
-    .update({
-      status: ok ? "ok" : "degraded",
-      note,
-      updated_at: new Date().toISOString(),
-      ...(ok ? { last_ok_at: new Date().toISOString() } : {}),
-    })
-    .eq("name", name);
-}
-
 export type PipelineResult = {
   firms: Awaited<ReturnType<typeof ingestFirms>>;
   fci: Awaited<ReturnType<typeof ingestFci>>;
@@ -72,77 +30,109 @@ export type PipelineResult = {
 
 /** Satellite ingest → fusion → wind enrichment. Runs every ~15 minutes. */
 export async function runDetectionPipeline(): Promise<PipelineResult> {
-  const startedAt = new Date().toISOString();
+  const scheduledFor = new Date().toISOString();
 
+  const firmsStartedAt = new Date().toISOString();
   const firms = await ingestFirms();
-  await recordRun("firms", startedAt, {
-    status: firms.error ? "failed" : "ok",
-    recordsIn: firms.fetched,
-    recordsNew: firms.inserted,
-    ...(firms.error ? { error: firms.error } : {}),
+  const firmsHealth = sourceRunOutcome({
+    accepted: firms.fetched,
+    error: firms.error,
   });
-  await markSource(
-    "firms",
-    !firms.error,
-    firms.error ??
-      `${firms.inserted} new detections (${firms.feeds.join(", ") || "no rows"})`,
-  );
+  await recordSourceRun({
+    contractKey: "firms",
+    trigger: "scheduled",
+    scheduledFor,
+    startedAt: firmsStartedAt,
+    ...firmsHealth,
+    recordsSeen: firms.fetched,
+    recordsInserted: firms.inserted,
+    qualityChecks: { feeds_answered: firms.feeds.length },
+    publicReasonCode: firms.error ? publicReasonForError(firms.error) : null,
+    privateDiagnostic: firms.error ?? null,
+  });
 
   const fciStartedAt = new Date().toISOString();
   const fci = await ingestFci();
-  await recordRun("fci", fciStartedAt, {
-    status: fci.error ? "failed" : "ok",
-    recordsIn: fci.fetched,
-    recordsNew: fci.inserted,
-    ...(fci.error ? { error: fci.error } : {}),
+  const fciAccepted = Math.max(fci.fetched - fci.outside, 0);
+  const fciHealth = sourceRunOutcome({
+    accepted: fciAccepted,
+    error: fci.error,
   });
-  await markSource(
-    "fci",
-    !fci.error,
-    fci.error ??
-      (fci.latestSlot
-        ? `MTG FCI: ${fci.inserted} new detections, latest slot ${fci.ageMinutes} min old`
-        : "MTG FCI: no detections in the current window"),
-  );
+  await recordSourceRun({
+    contractKey: "fci",
+    trigger: "scheduled",
+    scheduledFor,
+    startedAt: fciStartedAt,
+    ...fciHealth,
+    upstreamPublishedAt: fci.latestSlot,
+    dataThrough: fci.latestSlot,
+    recordsSeen: fci.fetched,
+    recordsInserted: fci.inserted,
+    recordsRejected: fci.outside,
+    qualityChecks: {
+      inside_watch_box: fci.outside === 0,
+      latest_slot_age_minutes: fci.ageMinutes,
+    },
+    publicReasonCode: fci.error ? publicReasonForError(fci.error) : null,
+    privateDiagnostic: fci.error ?? null,
+  });
 
   const onmStartedAt = new Date().toISOString();
   const onm = await ingestOnm();
-  await recordRun("onm", onmStartedAt, {
-    status: onm.error ? "failed" : "ok",
-    recordsIn: onm.fetched,
-    recordsNew: onm.stored,
-    ...(onm.error ? { error: onm.error } : {}),
+  const onmAccepted = Math.max(onm.fetched - onm.unmatched, 0);
+  const onmHealth = sourceRunOutcome({
+    accepted: onmAccepted,
+    expected: onm.fetched || null,
+    error: onm.error,
   });
-  await markSource(
-    "onm",
-    !onm.error,
-    onm.error ??
-      `${onm.stored} vigilance warnings relayed (${onm.unmatched} unmatched wilaya names)`,
-  );
+  await recordSourceRun({
+    contractKey: "onm",
+    trigger: "scheduled",
+    scheduledFor,
+    startedAt: onmStartedAt,
+    ...onmHealth,
+    recordsSeen: onm.fetched,
+    recordsInserted: onm.stored,
+    recordsRejected: onm.unmatched,
+    recordsExpected: onm.fetched || null,
+    qualityChecks: { unmatched_wilayas: onm.unmatched },
+    publicReasonCode: onm.error
+      ? publicReasonForError(onm.error)
+      : onmHealth.outcome === "partial"
+        ? "coverage_partial"
+        : null,
+    privateDiagnostic: onm.error ?? null,
+  });
 
   // must precede fusion: fusion only clusters detections whose fp_reason is null
   const screenStartedAt = new Date().toISOString();
   try {
     const screen = await screenPersistentSources();
-    await recordRun("screen", screenStartedAt, {
-      status: "ok",
-      recordsIn: screen.screened,
-      recordsNew: screen.screened,
+    const screenComplete = screen.registry > 0;
+    await recordSourceRun({
+      contractKey: "persistent_screen",
+      trigger: "scheduled",
+      scheduledFor,
+      startedAt: screenStartedAt,
+      outcome: screenComplete ? "succeeded" : "partial",
+      coverageStatus: screenComplete ? "complete" : "partial",
+      recordsSeen: screen.screened,
+      recordsUpdated: screen.screened,
+      qualityChecks: { registry_entries: screen.registry },
+      publicReasonCode: screenComplete ? null : "coverage_partial",
     });
-    await markSource(
-      "screen",
-      screen.registry > 0,
-      screen.registry === 0
-        ? "Registry empty — no detections are being screened."
-        : `${screen.registry} known sources, ${screen.screened} detections screened this run`,
-    );
   } catch (error) {
     const message = error instanceof Error ? error.message : "screen failed";
-    await recordRun("screen", screenStartedAt, {
-      status: "failed",
-      error: message,
+    await recordSourceRun({
+      contractKey: "persistent_screen",
+      trigger: "scheduled",
+      scheduledFor,
+      startedAt: screenStartedAt,
+      outcome: "failed",
+      coverageStatus: "unknown",
+      publicReasonCode: publicReasonForError(message),
+      privateDiagnostic: message,
     });
-    await markSource("screen", false, message);
     throw error;
   }
 
@@ -150,47 +140,86 @@ export async function runDetectionPipeline(): Promise<PipelineResult> {
   let fusion: PipelineResult["fusion"] = null;
   try {
     fusion = await fuseDetections();
-    await recordRun("fusion", fusionStartedAt, {
-      status: "ok",
-      recordsIn: fusion.processed,
-      recordsNew: fusion.created,
+    await recordSourceRun({
+      contractKey: "fusion",
+      trigger: "scheduled",
+      scheduledFor,
+      startedAt: fusionStartedAt,
+      outcome: "succeeded",
+      coverageStatus: "complete",
+      recordsSeen: fusion.processed,
+      recordsInserted: fusion.created,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "fusion failed";
-    await recordRun("fusion", fusionStartedAt, {
-      status: "failed",
-      error: message,
+    await recordSourceRun({
+      contractKey: "fusion",
+      trigger: "scheduled",
+      scheduledFor,
+      startedAt: fusionStartedAt,
+      outcome: "failed",
+      coverageStatus: "unknown",
+      publicReasonCode: "dependency_failed",
+      privateDiagnostic: message,
     });
-    await markSource("geo", false, message);
   }
 
   let winds = 0;
   await flagPersistentCandidates();
 
+  const windStartedAt = new Date().toISOString();
   try {
     winds = await enrichClusterWinds();
-    await markSource("openmeteo", true, `Wind attached to ${winds} live fires`);
+    await recordSourceRun({
+      contractKey: "openmeteo_wind",
+      trigger: "scheduled",
+      scheduledFor,
+      startedAt: windStartedAt,
+      outcome: "succeeded",
+      coverageStatus: "complete",
+      recordsSeen: winds,
+      recordsUpdated: winds,
+    });
   } catch (error) {
-    await markSource(
-      "openmeteo",
-      false,
-      error instanceof Error ? error.message : "weather failed",
-    );
+    const message = error instanceof Error ? error.message : "weather failed";
+    await recordSourceRun({
+      contractKey: "openmeteo_wind",
+      trigger: "scheduled",
+      scheduledFor,
+      startedAt: windStartedAt,
+      outcome: "failed",
+      coverageStatus: "unknown",
+      publicReasonCode: publicReasonForError(message),
+      privateDiagnostic: message,
+    });
   }
 
   const broadcastStartedAt = new Date().toISOString();
   let broadcast: PipelineResult["broadcast"] = null;
   try {
     broadcast = await publishBroadcasts();
-    await recordRun("broadcast", broadcastStartedAt, {
-      status: "ok",
-      recordsNew: broadcast.published,
+    await recordSourceRun({
+      contractKey: "broadcast_publish",
+      trigger: "scheduled",
+      scheduledFor,
+      startedAt: broadcastStartedAt,
+      outcome: "succeeded",
+      coverageStatus: "complete",
+      recordsSeen: broadcast.published + broadcast.suppressed,
+      recordsInserted: broadcast.published,
+      qualityChecks: { suppressed: broadcast.suppressed },
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "broadcast failed";
-    await recordRun("broadcast", broadcastStartedAt, {
-      status: "failed",
-      error: message,
+    await recordSourceRun({
+      contractKey: "broadcast_publish",
+      trigger: "scheduled",
+      scheduledFor,
+      startedAt: broadcastStartedAt,
+      outcome: "failed",
+      coverageStatus: "unknown",
+      publicReasonCode: publicReasonForError(message),
+      privateDiagnostic: message,
     });
   }
 
@@ -198,18 +227,52 @@ export async function runDetectionPipeline(): Promise<PipelineResult> {
   let delivery: PipelineResult["delivery"] = null;
   try {
     delivery = await deliverBroadcasts();
-    await recordRun("delivery", deliveryStartedAt, {
-      status: "ok",
-      recordsIn: delivery.rows,
-      recordsNew: delivery.sent,
+    const noneConfigured =
+      !delivery.fcmConfigured && !delivery.telegramConfigured;
+    const incompleteCoverage =
+      !noneConfigured &&
+      (!delivery.fcmConfigured ||
+        !delivery.telegramConfigured ||
+        delivery.telegramChannels === 0);
+    const deliveryOutcome = delivery.disabled
+      ? ({ outcome: "skipped", coverageStatus: "unknown" } as const)
+      : noneConfigured
+        ? ({ outcome: "failed", coverageStatus: "unknown" } as const)
+        : incompleteCoverage
+          ? ({ outcome: "partial", coverageStatus: "partial" } as const)
+          : ({ outcome: "succeeded", coverageStatus: "complete" } as const);
+    const deliveryReason: PublicSourceReason | null = delivery.disabled
+      ? "disabled"
+      : noneConfigured || incompleteCoverage
+        ? "credentials_missing"
+        : null;
+    await recordSourceRun({
+      contractKey: "broadcast_delivery",
+      trigger: "scheduled",
+      scheduledFor,
+      startedAt: deliveryStartedAt,
+      ...deliveryOutcome,
+      recordsSeen: delivery.rows + delivery.telegramRows,
+      recordsUpdated: delivery.sent + delivery.telegramSent,
+      qualityChecks: {
+        fcm_configured: delivery.fcmConfigured,
+        telegram_configured: delivery.telegramConfigured,
+        telegram_channels: delivery.telegramChannels,
+      },
+      publicReasonCode: deliveryReason,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "delivery failed";
-    await recordRun("delivery", deliveryStartedAt, {
-      status: "failed",
-      error: message,
+    await recordSourceRun({
+      contractKey: "broadcast_delivery",
+      trigger: "scheduled",
+      scheduledFor,
+      startedAt: deliveryStartedAt,
+      outcome: "failed",
+      coverageStatus: "unknown",
+      publicReasonCode: "delivery_failed",
+      privateDiagnostic: message,
     });
-    await markSource("broadcast", false, message);
   }
 
   return { firms, fci, fusion, winds, broadcast, delivery };
@@ -217,13 +280,41 @@ export async function runDetectionPipeline(): Promise<PipelineResult> {
 
 /** Daily FWI outlook refresh, plus the EFFIS external cross-check. */
 export async function runRiskPipeline() {
+  const scheduledFor = new Date().toISOString();
+  const riskStartedAt = new Date().toISOString();
   const risk = await refreshRiskForecasts();
-  await markSource(
-    "local_fwi",
-    !risk.error,
-    risk.error ??
-      `FWI computed locally for ${risk.communes} communes (${risk.rows} rows)`,
-  );
+  const riskExpected = risk.communes * 6;
+  const missingGeography = risk.communes === 0 && !risk.error;
+  const riskHealth = sourceRunOutcome({
+    accepted: risk.rows,
+    expected: riskExpected,
+    error: risk.error ?? (missingGeography ? "no communes available" : null),
+  });
+  const validDate = `${algiersToday()}T00:00:00.000Z`;
+  await recordSourceRun({
+    contractKey: "local_fwi",
+    trigger: "scheduled",
+    scheduledFor,
+    startedAt: riskStartedAt,
+    ...riskHealth,
+    dataThrough: validDate,
+    recordsSeen: risk.rows,
+    recordsInserted: risk.rows,
+    recordsExpected: riskExpected || null,
+    qualityChecks: {
+      communes: risk.communes,
+      horizon_days: 6,
+    },
+    publicReasonCode: risk.error
+      ? publicReasonForError(risk.error)
+      : missingGeography
+        ? "dependency_failed"
+        : riskHealth.outcome === "partial"
+          ? "coverage_partial"
+          : null,
+    privateDiagnostic:
+      risk.error ?? (missingGeography ? "no communes available" : null),
+  });
 
   const effisStartedAt = new Date().toISOString();
   const effis = await ingestEffis().catch((e): EffisRun => ({
@@ -231,18 +322,29 @@ export async function runRiskPipeline() {
     classified: 0,
     error: e instanceof Error ? e.message : String(e),
   }));
-  await recordRun("effis", effisStartedAt, {
-    status: effis.error ? "failed" : "ok",
-    recordsIn: effis.communes,
-    recordsNew: effis.classified,
-    ...(effis.error ? { error: effis.error } : {}),
+  const effisHealth = sourceRunOutcome({
+    accepted: effis.classified,
+    expected: effis.communes || null,
+    error: effis.error,
   });
-  await markSource(
-    "effis",
-    !effis.error,
-    effis.error ??
-      `EFFIS danger classes stored for ${effis.classified} of ${effis.communes} communes`,
-  );
+  await recordSourceRun({
+    contractKey: "effis",
+    trigger: "scheduled",
+    scheduledFor,
+    startedAt: effisStartedAt,
+    ...effisHealth,
+    dataThrough: validDate,
+    recordsSeen: effis.communes,
+    recordsInserted: effis.classified,
+    recordsExpected: effis.communes || null,
+    qualityChecks: { communes_classified: effis.classified },
+    publicReasonCode: effis.error
+      ? publicReasonForError(effis.error)
+      : effisHealth.outcome === "partial"
+        ? "coverage_partial"
+        : null,
+    privateDiagnostic: effis.error ?? null,
+  });
 
   // The workflow greps this JSON for "error": EFFIS failure must only degrade
   // its own health row, never fail the FWI refresh — so no error string here.
