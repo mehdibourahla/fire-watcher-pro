@@ -24,7 +24,8 @@
     "recompute:geometry": "bun run scripts/recompute-cluster-geometry.ts",
     "bootstrap:fwi": "bash scripts/bootstrap-fwi.sh",
     "apply:translations": "bun run scripts/apply-translations.ts",
-    "preflight:broadcast": "bun run scripts/preflight-broadcast.ts"
+    "preflight:broadcast": "bun run scripts/preflight-broadcast.ts",
+    "seed:telegram": "bun run scripts/seed-telegram-channels.ts"
   },
   "overrides": {
     "rolldown": "1.2.1"
