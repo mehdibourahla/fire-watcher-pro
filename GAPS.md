@@ -281,12 +281,14 @@ real boundary, so the effective policy is 6. Captcha is disabled, which combined
 
 ### 4.3 Test coverage is narrow
 
-126 tests across 18 files cover the FWI maths, FWI state advancement, alert rule evaluation, geo
+284 tests across 32 files cover the FWI maths, FWI state advancement, alert rule evaluation, geo
 seeding, i18n key parity, ingest guards, the cross-border watch area, place labelling, Exif
 stripping, CAP construction, the public API helpers, the webhook URL guard, and the
-persistent-source grid, registration criteria, screen radius and drift heuristic. There is still
-no coverage of clustering/fusion internals, RLS policies, the route handlers end to end, or any
-UI. Fusion remains the weakest spot: both its commune attribution and its `fp_reason` filter —
+persistent-source grid, registration criteria, screen radius and drift heuristic. Source-run
+classification, public-status serialization and shared health summarization are included; a
+separate 38-assertion pgTAP suite covers the reliability schema, grants, atomic checkpointing and
+derived states. Most older RLS policies, route handlers end to end, and UI behavior still have no
+coverage. Fusion remains the weakest spot: both its commune attribution and its `fp_reason` filter —
 the one the whole screening design rests on — are guarded only by assertions over the source
 text, not by exercising the function. The screening thresholds are separately gated on a
 held-out confusion matrix (`.github/workflows/screening-gate.yml`), which is a real behavioural
