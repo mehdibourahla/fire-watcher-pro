@@ -334,7 +334,7 @@ export const fr: Translation = {
   },
   status: {
     degradedCount:
-      "{{count}} source(s) dégradée(s) — les détections peuvent être retardées.",
+      "{{count}} source(s) de données affectée(s) — la capacité actuelle peut être réduite.",
     metaTitle: "État des sources de données — Nadhir",
     metaDescription:
       "État en direct des flux satellites, météo et géodonnées qui alimentent les alertes Nadhir.",
@@ -345,11 +345,34 @@ export const fr: Translation = {
     health: "État",
     lastOk: "Dernier succès",
     note: "Remarque",
-    ok: "Opérationnel",
-    degraded: "Dégradé",
-    unavailable: "Indisponible",
-    stale:
-      "Aucune exécution réussie depuis {{time}} — le planificateur est peut-être à l'arrêt.",
+    validAge: "Données valides {{time}}",
+    noValidData: "Aucune donnée valide pour le moment",
+    lastSuccessAt: "Dernière validation {{time}}",
+    neverValidated: "Jamais validé",
+    coverage: "Couverture {{accepted}} / {{expected}}",
+    fallback: "Source de repli : {{source}}",
+    state: {
+      healthy: "Opérationnel",
+      delayed: "En retard",
+      degraded: "Dégradé",
+      stale: "Périmé",
+      unavailable: "Indisponible",
+      backfilling: "Rattrapage en cours",
+      paused: "En pause",
+    },
+    reason: {
+      credentials_missing:
+        "Les identifiants du fournisseur ne sont pas configurés",
+      upstream_unreachable: "Le fournisseur en amont est injoignable",
+      schema_invalid: "Le format des données en amont a échoué à la validation",
+      data_delayed: "Les données attendues ne sont pas encore arrivées",
+      coverage_partial:
+        "Seule une partie de la couverture attendue a été validée",
+      dependency_failed: "Une dépendance de traitement requise a échoué",
+      delivery_failed: "Une ou plusieurs tentatives de diffusion ont échoué",
+      disabled: "Mis en pause par un opérateur",
+      internal_error: "La dernière exécution a échoué en interne",
+    },
   },
   about: {
     contributeTitle:

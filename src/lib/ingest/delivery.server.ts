@@ -20,7 +20,10 @@ export type DeliveryRun = {
   sent: number;
   telegramRows: number;
   telegramSent: number;
-  configured: boolean;
+  telegramChannels: number;
+  fcmConfigured: boolean;
+  telegramConfigured: boolean;
+  disabled: boolean;
 };
 
 const RETRY_WINDOW_H = 24;
@@ -45,18 +48,6 @@ type DeliveryContext = {
   onmById: Map<string, { title: string; headline_fr: string | null }>;
   authorityById: Map<string, { source: string; body: string }>;
 };
-
-async function markSource(ok: boolean, note: string) {
-  await supabaseAdmin
-    .from("data_sources")
-    .update({
-      status: ok ? "ok" : "degraded",
-      note,
-      updated_at: new Date().toISOString(),
-      ...(ok ? { last_ok_at: new Date().toISOString() } : {}),
-    })
-    .eq("name", "broadcast");
-}
 
 async function pendingRows(channelColumn: string): Promise<PendingRow[]> {
   const windowStart = new Date(
@@ -344,13 +335,15 @@ export async function deliverBroadcasts(): Promise<DeliveryRun> {
     .single();
   if (settingsError) throw new Error(settingsError.message);
   if (settings.enabled !== true) {
-    await markSource(false, "Kill-switch engaged — delivery paused.");
     return {
       rows: 0,
       sent: 0,
       telegramRows: 0,
       telegramSent: 0,
-      configured: fcmConfigured(),
+      telegramChannels: 0,
+      fcmConfigured: fcmConfigured(),
+      telegramConfigured: telegramConfigured(),
+      disabled: true,
     };
   }
 
@@ -363,22 +356,6 @@ export async function deliverBroadcasts(): Promise<DeliveryRun> {
     ? await deliverTelegram(errors)
     : { rows: 0, sent: 0, channels: 0 };
 
-  const fcmNote = fcmOn
-    ? `FCM: ${fcm.sent} topic sends across ${fcm.rows} broadcasts`
-    : "FCM: FIREBASE_SERVICE_ACCOUNT not configured";
-  const telegramNote = telegramOn
-    ? telegram.channels
-      ? `Telegram: ${telegram.sent} messages to ${telegram.channels} channels`
-      : "Telegram: no channels seeded"
-    : "Telegram: TELEGRAM_BOT_TOKEN not configured";
-  const errorNote = errors.length
-    ? `; ${errors.length} rows failed: ${errors[0]}`
-    : "";
-  await markSource(
-    fcmOn && !errors.length,
-    `${fcmNote}; ${telegramNote}${errorNote}`,
-  );
-
   if (errors.length)
     throw new Error(`${errors.length} delivery rows failed: ${errors[0]}`);
 
@@ -387,6 +364,9 @@ export async function deliverBroadcasts(): Promise<DeliveryRun> {
     sent: fcm.sent,
     telegramRows: telegram.rows,
     telegramSent: telegram.sent,
-    configured: fcmOn,
+    telegramChannels: telegram.channels,
+    fcmConfigured: fcmOn,
+    telegramConfigured: telegramOn,
+    disabled: false,
   };
 }

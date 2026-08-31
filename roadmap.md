@@ -11,13 +11,13 @@ Seed and ops credentials live in `~/.config/nadhir/`, never in this repo.
 
 ## Data sources actually connected
 
-| Source                                        | State                                                                                  |
-| --------------------------------------------- | -------------------------------------------------------------------------------------- |
-| NASA FIRMS (SNPP, NOAA-20, NOAA-21, MODIS)    | connected, ingesting                                                                   |
-| Open-Meteo (weather + local FWI + winds)      | connected                                                                              |
-| OpenStreetMap (admin boundaries, settlements) | seeded via `bun run seed:geo`                                                          |
-| EUMETSAT MTG FCI                              | credentials valid; **feed health only** — netCDF is not decoded, no detections written |
-| EFFIS / GWIS                                  | connected — daily danger classes per commune from the EFFIS WMS (`effis_danger`)       |
+| Source                                        | State                                                                            |
+| --------------------------------------------- | -------------------------------------------------------------------------------- |
+| NASA FIRMS (SNPP, NOAA-20, NOAA-21, MODIS)    | connected, ingesting                                                             |
+| Open-Meteo (weather + local FWI + winds)      | connected                                                                        |
+| OpenStreetMap (admin boundaries, settlements) | seeded via `bun run seed:geo`                                                    |
+| EUMETSAT MTG FCI                              | connected — public WFS fire-radiative-power points ingest every 10 minutes       |
+| EFFIS / GWIS                                  | connected — daily danger classes per commune from the EFFIS WMS (`effis_danger`) |
 
 ## Phases
 
@@ -27,7 +27,8 @@ Seed and ops credentials live in `~/.config/nadhir/`, never in this repo.
 - [x] P4 Forecast page (6-day outlook, commune search)
 - [x] P5 Accounts & zones (auth, zones CRUD, settings)
 - [x] P6 Alerting (zone rules, dedup fan-out, alerts feed, cron endpoint)
-- [x] P7 Ingestion workers + `ingest_runs` health journal
+- [x] P7 Ingestion workers; the original `ingest_runs` journal is superseded by the
+      reliability-control-plane epic below
 - [x] P8 Fusion + risk engines (clustering, FSM, confidence, CFFDRS FWI)
 - [x] P9 Citizen reports + moderation console
 - [x] P10 History & burned areas (unbounded archive query, recharts)
@@ -131,3 +132,30 @@ Slices, in dependency order:
 Owner actions gating the epic: Firebase service account key into deploy secrets
 (exists per GAPS §1.3, unconnected); Telegram bot + channel creation; later
 SMS/email providers (per-recipient queues enter only then).
+
+## Epic: Data Reliability Control Plane
+
+**Why this is first.** Nadhir cannot make upstream providers stay online, but it must know
+when a scheduler, source, derived product or delivery channel is late; preserve the last
+validated watermark; and never present partial data as current. The approved architecture is
+in `docs/superpowers/specs/2026-08-31-data-reliability-control-plane-design.md`.
+
+Slices, in dependency order:
+
+- [x] M1A Contracts and truthful health: versioned source contracts, atomic checkpoints,
+      append-only private run evidence, one database-derived health view, structured reporting
+      from every current pipeline stage, four-language status UI, and the sanitized
+      `/api/public/v1/status` endpoint. The legacy `data_sources` and `ingest_runs` relations
+      remain dormant for one expand/contract deploy window; their removal is the next release.
+- [ ] M2 Isolated execution: per-contract queue jobs and leases, bounded retries, recorded
+      gaps, idempotent replay, Cloudflare plus database triggers, and an independent watchdog.
+- [ ] M3 Atomic daily risk: stage a complete 1,536-commune × 6-horizon snapshot, publish one
+      manifest transactionally, and block risk alerts from stale or partial products.
+- [ ] M4 Delivery reliability: separate FCM and Telegram attempts, retry each independently,
+      measure backlog against objectives, and open incidents without rewriting broadcast state.
+- [ ] M5 Operator response: deduplicated incidents, independent notifications, acknowledge /
+      pause / resume / replay controls, audit trail, retention, and failure drills.
+- [ ] M6 New-source gate: require every proposed layer to ship an adapter contract, captured
+      producer fixtures, licence/provenance, coverage and recency validation, fallback behavior,
+      and replay tests. Candidate layers remain NDVI/fuel condition, soil moisture, lightning,
+      burned area, population exposure, rainfall, ensemble weather, and smoke transport.

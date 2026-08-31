@@ -4,6 +4,7 @@ import { isInAlgeriaNorth } from "@/lib/ingest/geo";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchAllPages } from "@/lib/paginate";
 import type { AnyLocale, Locale } from "@/i18n";
+import type { SourceHealth } from "@/lib/source-health";
 
 export type ClusterState =
   | "unconfirmed"
@@ -95,15 +96,6 @@ export type EffisDanger = {
     | "very_extreme"
     | "masked";
   created_at: string;
-};
-
-export type DataSource = {
-  id: string;
-  name: string;
-  label: string;
-  status: "ok" | "degraded" | "unavailable";
-  last_ok_at: string | null;
-  note: string | null;
 };
 
 export type ClusterEvent = {
@@ -392,11 +384,16 @@ export const effisDangerQuery = queryOptions({
   },
 });
 
-export const dataSourcesQuery = queryOptions({
-  queryKey: ["data_sources"],
+export const sourceHealthQuery = queryOptions({
+  queryKey: ["source_health"],
   queryFn: async () =>
-    must<DataSource[]>(
-      await supabase.from("data_sources").select("*").order("name"),
+    must<SourceHealth[]>(
+      await supabase
+        .from("source_health")
+        .select(
+          "key, label, family, criticality, state, freshness_basis, valid_at, last_attempt_at, last_success_at, published_at, age_minutes, warning_after_minutes, stale_after_minutes, coverage_status, records_accepted, records_expected, fallback_contract_key, public_reason_code",
+        )
+        .order("key"),
     ),
 });
 

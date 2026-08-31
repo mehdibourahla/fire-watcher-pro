@@ -34,6 +34,11 @@ export const Route = createFileRoute("/api/public/v1/")({
               example: `${base}/api/public/v1/stats`,
             },
             {
+              path: "/api/public/v1/status",
+              params: {},
+              example: `${base}/api/public/v1/status`,
+            },
+            {
               path: "/api/public/v1/risk",
               params: {
                 horizon: "0-5",

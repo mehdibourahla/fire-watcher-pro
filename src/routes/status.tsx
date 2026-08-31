@@ -5,7 +5,8 @@ import { useTranslation } from "react-i18next";
 import { SourceHealth } from "@/components/nadhir/SourceHealth";
 import { SkeletonList } from "@/components/nadhir/states";
 import type { Locale } from "@/i18n";
-import { dataSourcesQuery } from "@/lib/nadhir";
+import { sourceHealthQuery } from "@/lib/nadhir";
+import { summariseSourceHealth } from "@/lib/source-health";
 
 export const Route = createFileRoute("/status")({
   head: () => ({
@@ -24,16 +25,16 @@ export const Route = createFileRoute("/status")({
     ],
   }),
   loader: ({ context }) =>
-    context.queryClient.ensureQueryData(dataSourcesQuery),
+    context.queryClient.ensureQueryData(sourceHealthQuery),
   component: StatusPage,
 });
 
 function StatusPage() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language as Locale;
-  const sources = useQuery(dataSourcesQuery);
+  const sources = useQuery(sourceHealthQuery);
 
-  const degraded = (sources.data ?? []).filter((s) => s.status !== "ok").length;
+  const summary = summariseSourceHealth(sources.data ?? []);
 
   return (
     <div className="mx-auto max-w-[900px] px-4 py-6">
@@ -42,7 +43,18 @@ function StatusPage() {
         {t("status.subtitle")}
       </p>
 
-      {degraded > 0 ? (
+      {sources.isError ? (
+        <p
+          role="alert"
+          className="mt-4 rounded-lg px-3 py-2 text-sm"
+          style={{
+            backgroundColor: "var(--emergency-surface)",
+            color: "var(--emergency)",
+          }}
+        >
+          {t("status.state.unavailable")}
+        </p>
+      ) : summary.affected > 0 ? (
         <p
           role="status"
           className="mt-4 rounded-lg px-3 py-2 text-sm"
@@ -51,16 +63,16 @@ function StatusPage() {
             color: "var(--emergency)",
           }}
         >
-          {t("status.degradedCount", { count: degraded })}
+          {t("status.degradedCount", { count: summary.affected })}
         </p>
       ) : null}
 
       {sources.isLoading ? (
         <SkeletonList rows={4} className="mt-5" />
-      ) : (
+      ) : sources.isError ? null : (
         <ul className="card mt-5">
           {(sources.data ?? []).map((source) => (
-            <SourceHealth key={source.id} source={source} locale={locale} />
+            <SourceHealth key={source.key} source={source} locale={locale} />
           ))}
         </ul>
       )}

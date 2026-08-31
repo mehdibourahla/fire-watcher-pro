@@ -21,13 +21,12 @@ import {
 } from "@/components/SiteChrome";
 import type { Locale } from "@/i18n";
 import { alertsQuery } from "@/lib/alerts";
-import { sourceStale } from "@/lib/freshness";
 import {
   LIVE_STATES,
   adminUnitsQuery,
   clustersQuery,
-  dataSourcesQuery,
   dangerLevelKey,
+  sourceHealthQuery,
   relativeTime,
   riskForecastsQuery,
   settlementsQuery,
@@ -35,6 +34,7 @@ import {
   unitName,
   type FireCluster,
 } from "@/lib/nadhir";
+import { sourceHealthCapabilityAffected } from "@/lib/source-health";
 import {
   SURVIVAL_ACTIVE_KEY,
   SURVIVAL_AUTO_KM,
@@ -90,7 +90,7 @@ function LiveMapPage() {
   const units = useQuery(adminUnitsQuery);
   const risk = useQuery(riskForecastsQuery);
   const settlements = useQuery(settlementsQuery);
-  const sources = useQuery(dataSourcesQuery);
+  const sources = useQuery(sourceHealthQuery);
   const alerts = useQuery({ ...alertsQuery, retry: false });
   const navigate = useNavigate();
 
@@ -169,8 +169,9 @@ function LiveMapPage() {
     );
   }, [risk.data]);
 
-  const degraded = (sources.data ?? []).some(
-    (s) => s.status !== "ok" || sourceStale(s),
+  const degraded = sourceHealthCapabilityAffected(
+    sources.data ?? [],
+    sources.isError,
   );
 
   const sorted = useMemo(

@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 
 import type { Database } from "@/integrations/supabase/types";
+import { summariseSourceHealth, type SourceHealth } from "@/lib/source-health";
 
 export const CORS_HEADERS: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
@@ -140,5 +141,34 @@ export function summariseFires(
     by_state,
     detected_last_24h,
     wilayas_with_live_fires: wilayas.size,
+  };
+}
+
+export function serializePublicSourceStatus(
+  rows: SourceHealth[],
+  generatedAt = new Date().toISOString(),
+) {
+  const summary = summariseSourceHealth(rows);
+
+  return {
+    generated_at: generatedAt,
+    overall: summary.allHealthy ? ("healthy" as const) : ("affected" as const),
+    affected: summary.affected,
+    critical_affected: summary.criticalAffected,
+    sources: rows.map((source) => ({
+      key: source.key,
+      family: source.family,
+      state: source.state,
+      valid_at: source.valid_at,
+      published_at: source.published_at,
+      age_minutes: source.age_minutes,
+      coverage: {
+        status: source.coverage_status,
+        accepted: source.records_accepted,
+        expected: source.records_expected,
+      },
+      fallback: source.fallback_contract_key,
+      reason: source.public_reason_code,
+    })),
   };
 }

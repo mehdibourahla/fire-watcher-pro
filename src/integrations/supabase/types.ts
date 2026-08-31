@@ -7,11 +7,6 @@ export type Json =
   | Json[];
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "14.5";
-  };
   public: {
     Tables: {
       admin_units: {
@@ -302,6 +297,8 @@ export type Database = {
           onm_vigilance_id?: string | null;
           phase?: string;
           severity: string;
+          telegram_channels?: number | null;
+          telegram_delivered_at?: string | null;
         };
         Update: {
           authority_warning_id?: string | null;
@@ -1223,6 +1220,263 @@ export type Database = {
           },
         ];
       };
+      source_checkpoints: {
+        Row: {
+          consecutive_failures: number;
+          contract_key: string;
+          coverage_status: string;
+          data_from: string | null;
+          data_through: string | null;
+          fallback_contract_key: string | null;
+          last_attempt_at: string | null;
+          last_public_reason_code: string | null;
+          last_scheduled_for: string | null;
+          last_success_at: string | null;
+          published_at: string | null;
+          records_accepted: number;
+          records_expected: number | null;
+          replay_cursor: Json | null;
+          schema_fingerprint: string | null;
+          updated_at: string;
+          upstream_published_at: string | null;
+          validated_at: string | null;
+        };
+        Insert: {
+          consecutive_failures?: number;
+          contract_key: string;
+          coverage_status?: string;
+          data_from?: string | null;
+          data_through?: string | null;
+          fallback_contract_key?: string | null;
+          last_attempt_at?: string | null;
+          last_public_reason_code?: string | null;
+          last_scheduled_for?: string | null;
+          last_success_at?: string | null;
+          published_at?: string | null;
+          records_accepted?: number;
+          records_expected?: number | null;
+          replay_cursor?: Json | null;
+          schema_fingerprint?: string | null;
+          updated_at?: string;
+          upstream_published_at?: string | null;
+          validated_at?: string | null;
+        };
+        Update: {
+          consecutive_failures?: number;
+          contract_key?: string;
+          coverage_status?: string;
+          data_from?: string | null;
+          data_through?: string | null;
+          fallback_contract_key?: string | null;
+          last_attempt_at?: string | null;
+          last_public_reason_code?: string | null;
+          last_scheduled_for?: string | null;
+          last_success_at?: string | null;
+          published_at?: string | null;
+          records_accepted?: number;
+          records_expected?: number | null;
+          replay_cursor?: Json | null;
+          schema_fingerprint?: string | null;
+          updated_at?: string;
+          upstream_published_at?: string | null;
+          validated_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "source_checkpoints_contract_key_fkey";
+            columns: ["contract_key"];
+            isOneToOne: true;
+            referencedRelation: "source_contracts";
+            referencedColumns: ["key"];
+          },
+          {
+            foreignKeyName: "source_checkpoints_contract_key_fkey";
+            columns: ["contract_key"];
+            isOneToOne: true;
+            referencedRelation: "source_health";
+            referencedColumns: ["key"];
+          },
+          {
+            foreignKeyName: "source_checkpoints_fallback_contract_key_fkey";
+            columns: ["fallback_contract_key"];
+            isOneToOne: false;
+            referencedRelation: "source_contracts";
+            referencedColumns: ["key"];
+          },
+          {
+            foreignKeyName: "source_checkpoints_fallback_contract_key_fkey";
+            columns: ["fallback_contract_key"];
+            isOneToOne: false;
+            referencedRelation: "source_health";
+            referencedColumns: ["key"];
+          },
+        ];
+      };
+      source_contracts: {
+        Row: {
+          attribution: string;
+          cadence_minutes: number;
+          created_at: string;
+          criticality: string;
+          dependency_keys: string[];
+          enabled: boolean;
+          expected_coverage: Json;
+          family: string;
+          freshness_basis: string;
+          key: string;
+          label: string;
+          licence: string;
+          max_fallback_age_minutes: number | null;
+          owner: string;
+          parser_version: string;
+          runbook_url: string | null;
+          stale_after_minutes: number;
+          updated_at: string;
+          version: number;
+          warning_after_minutes: number;
+        };
+        Insert: {
+          attribution: string;
+          cadence_minutes: number;
+          created_at?: string;
+          criticality: string;
+          dependency_keys?: string[];
+          enabled?: boolean;
+          expected_coverage?: Json;
+          family: string;
+          freshness_basis: string;
+          key: string;
+          label: string;
+          licence: string;
+          max_fallback_age_minutes?: number | null;
+          owner: string;
+          parser_version: string;
+          runbook_url?: string | null;
+          stale_after_minutes: number;
+          updated_at?: string;
+          version: number;
+          warning_after_minutes: number;
+        };
+        Update: {
+          attribution?: string;
+          cadence_minutes?: number;
+          created_at?: string;
+          criticality?: string;
+          dependency_keys?: string[];
+          enabled?: boolean;
+          expected_coverage?: Json;
+          family?: string;
+          freshness_basis?: string;
+          key?: string;
+          label?: string;
+          licence?: string;
+          max_fallback_age_minutes?: number | null;
+          owner?: string;
+          parser_version?: string;
+          runbook_url?: string | null;
+          stale_after_minutes?: number;
+          updated_at?: string;
+          version?: number;
+          warning_after_minutes?: number;
+        };
+        Relationships: [];
+      };
+      source_runs: {
+        Row: {
+          contract_key: string;
+          contract_version: number;
+          coverage_status: string;
+          created_at: string;
+          data_from: string | null;
+          data_through: string | null;
+          finished_at: string | null;
+          id: string;
+          idempotency_key: string | null;
+          outcome: string;
+          private_diagnostic: string | null;
+          public_reason_code: string | null;
+          published_at: string | null;
+          quality_checks: Json;
+          records_expected: number | null;
+          records_inserted: number;
+          records_rejected: number;
+          records_seen: number;
+          records_updated: number;
+          scheduled_for: string;
+          started_at: string;
+          trigger_kind: string;
+          upstream_published_at: string | null;
+          validated_at: string | null;
+        };
+        Insert: {
+          contract_key: string;
+          contract_version: number;
+          coverage_status?: string;
+          created_at?: string;
+          data_from?: string | null;
+          data_through?: string | null;
+          finished_at?: string | null;
+          id?: string;
+          idempotency_key?: string | null;
+          outcome: string;
+          private_diagnostic?: string | null;
+          public_reason_code?: string | null;
+          published_at?: string | null;
+          quality_checks?: Json;
+          records_expected?: number | null;
+          records_inserted?: number;
+          records_rejected?: number;
+          records_seen?: number;
+          records_updated?: number;
+          scheduled_for: string;
+          started_at: string;
+          trigger_kind: string;
+          upstream_published_at?: string | null;
+          validated_at?: string | null;
+        };
+        Update: {
+          contract_key?: string;
+          contract_version?: number;
+          coverage_status?: string;
+          created_at?: string;
+          data_from?: string | null;
+          data_through?: string | null;
+          finished_at?: string | null;
+          id?: string;
+          idempotency_key?: string | null;
+          outcome?: string;
+          private_diagnostic?: string | null;
+          public_reason_code?: string | null;
+          published_at?: string | null;
+          quality_checks?: Json;
+          records_expected?: number | null;
+          records_inserted?: number;
+          records_rejected?: number;
+          records_seen?: number;
+          records_updated?: number;
+          scheduled_for?: string;
+          started_at?: string;
+          trigger_kind?: string;
+          upstream_published_at?: string | null;
+          validated_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "source_runs_contract_key_fkey";
+            columns: ["contract_key"];
+            isOneToOne: false;
+            referencedRelation: "source_contracts";
+            referencedColumns: ["key"];
+          },
+          {
+            foreignKeyName: "source_runs_contract_key_fkey";
+            columns: ["contract_key"];
+            isOneToOne: false;
+            referencedRelation: "source_health";
+            referencedColumns: ["key"];
+          },
+        ];
+      };
       telegram_channels: {
         Row: {
           chat_id: string;
@@ -1508,6 +1762,44 @@ export type Database = {
         };
         Relationships: [];
       };
+      source_health: {
+        Row: {
+          age_minutes: number | null;
+          coverage_status: string | null;
+          criticality: string | null;
+          fallback_contract_key: string | null;
+          family: string | null;
+          freshness_basis: string | null;
+          key: string | null;
+          label: string | null;
+          last_attempt_at: string | null;
+          last_success_at: string | null;
+          public_reason_code: string | null;
+          published_at: string | null;
+          records_accepted: number | null;
+          records_expected: number | null;
+          stale_after_minutes: number | null;
+          state: string | null;
+          valid_at: string | null;
+          warning_after_minutes: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "source_checkpoints_fallback_contract_key_fkey";
+            columns: ["fallback_contract_key"];
+            isOneToOne: false;
+            referencedRelation: "source_contracts";
+            referencedColumns: ["key"];
+          },
+          {
+            foreignKeyName: "source_checkpoints_fallback_contract_key_fkey";
+            columns: ["fallback_contract_key"];
+            isOneToOne: false;
+            referencedRelation: "source_health";
+            referencedColumns: ["key"];
+          },
+        ];
+      };
     };
     Functions: {
       consume_rate_limit: {
@@ -1520,6 +1812,32 @@ export type Database = {
           _user_id: string;
         };
         Returns: boolean;
+      };
+      record_source_run: {
+        Args: {
+          _contract_key: string;
+          _coverage_status: string;
+          _data_from: string | null;
+          _data_through: string | null;
+          _finished_at: string;
+          _idempotency_key: string;
+          _outcome: string;
+          _private_diagnostic: string | null;
+          _public_reason_code: string | null;
+          _published_at: string | null;
+          _quality_checks: Json;
+          _records_expected: number | null;
+          _records_inserted: number;
+          _records_rejected: number;
+          _records_seen: number;
+          _records_updated: number;
+          _scheduled_for: string;
+          _started_at: string;
+          _trigger_kind: string;
+          _upstream_published_at: string | null;
+          _validated_at: string | null;
+        };
+        Returns: string;
       };
       vote_on_idea: {
         Args: { _idea: string; _value: number; _voter: string };

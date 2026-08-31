@@ -101,7 +101,7 @@ server-side; the CQL BBOX is lat-first, and a run whose features all fall outsid
 watch box errors instead of ingesting the wrong hemisphere. Flare screening applies
 unchanged (cell membership is cadence-free); the offline registry thresholds were
 derived from ~4 looks/day and must be re-derived before FCI detections are ever fed
-into registry *learning* — today they are not.
+into registry _learning_ — today they are not.
 
 ## 2. Data quality
 
@@ -163,6 +163,36 @@ has no counterpart commune in the database; `2839 Ouled Atia` exists here but in
 list; and `admin_units` holds 1537 communes against the law's 1541 — the missing rows
 are unidentified and need the Arabic original or ONS tables to name.
 
+### 2.4 Source reliability — truthful health shipped; execution and publication remain open
+
+The first slice of the Data Reliability Control Plane replaces the two most dangerous health
+shortcuts. Freshness is no longer guessed in the browser from hard-coded intervals, and raw
+`ingest_runs.error` is no longer public. Every current source and derived stage reports a
+structured outcome to an append-only private `source_runs` ledger; one atomic recorder advances
+the corresponding `source_checkpoints` row; and the `source_health` view derives `healthy`,
+`delayed`, `degraded`, `stale`, `unavailable` or `paused` from the versioned contract and its
+watermarks. The status page, homepage signal and `/api/public/v1/status` consume that same
+sanitized projection. This is milestone M1A in `roadmap.md`.
+
+What is deliberately still open:
+
+- **Scheduler response and isolated execution (M2).** `pg_cron` can enqueue a `pg_net` request
+  without proving the Worker completed it, and current stages still share one sequential request.
+  Queue leases, per-adapter runners, a second trigger and an independent watchdog are not built.
+- **Gap detection and replay (M2).** Checkpoints preserve watermarks and idempotency keys, but
+  there is no `source_gaps` registry, automatic replay cursor or operator replay workflow yet.
+- **Atomic FWI publication (M3).** The daily workflow records partial coverage honestly, but it
+  can still update part of the current forecast set in place. A staged 9,216-row snapshot and one
+  publication manifest must precede any new daily enrichment layer.
+- **Channel-isolated delivery (M4).** Publish and delivery health are distinct contracts now, but
+  Telegram and FCM attempts do not yet have independent durable queues, retries and backlog
+  objectives. One channel succeeding must not erase evidence that another failed.
+
+The dormant `data_sources` and `ingest_runs` relations exist only for the one-release
+schema-before-code deploy window. The contract-release checklist in
+`docs/superpowers/plans/2026-08-31-source-health-contract-cleanup.md` removes them after
+production evidence proves that no deployed code still uses them.
+
 ## 3. Product surface
 
 - **Alert rules R2 (growth) and R5 (all-clear)** are unimplemented. R5 additionally needs the
@@ -191,8 +221,9 @@ are unidentified and need the Arabic original or ONS tables to name.
   `onm_vigilance` and display verbatim per wilaya on the forecast page. Honest
   limits: ONM publishes no wildfire event type (heat and wind are the
   fire-relevant channels); titles are English-only in the feed (the per-warning
-  CAP XML carries FR/EN, not Arabic); publication cadence is unproven, so the
-  freshness window is 24h and a quiet weather day is not a dead feed.
+  CAP XML carries FR/EN, not Arabic); publication cadence is unproven. Health is
+  therefore based on successful validated polls, so a quiet weather day is not
+  treated as a dead feed.
 - **Admin console** has no cluster resolve (US-6). It gained a **Suggestions** tab on
   2026-08-30 for the `/contribute` idea board (nothing user-submitted reaches the public
   board until a moderator publishes it), and broadcast controls at `/broadcasts`:
@@ -227,8 +258,9 @@ are unidentified and need the Arabic original or ONS tables to name.
   survival shell only; spoken/recorded guidance audio (accessibility for low literacy)
   does not exist yet and must be human-recorded, not TTS.
 - **Public API** has no WebSocket and no tiles. What exists is `/api/public/v1/fires`
-  (with `?format=geojson`), `/api/public/v1/risk` and `/api/public/v1/stats`; the risk
-  endpoint takes `?commune=<code>` using `admin_units.code`, not a place name.
+  (with `?format=geojson`), `/api/public/v1/risk`, `/api/public/v1/stats` and the sanitized
+  `/api/public/v1/status`; the risk endpoint takes `?commune=<code>` using
+  `admin_units.code`, not a place name.
 
 ## 4. Contributing, tooling and licence
 
@@ -249,12 +281,14 @@ real boundary, so the effective policy is 6. Captcha is disabled, which combined
 
 ### 4.3 Test coverage is narrow
 
-126 tests across 18 files cover the FWI maths, FWI state advancement, alert rule evaluation, geo
+284 tests across 32 files cover the FWI maths, FWI state advancement, alert rule evaluation, geo
 seeding, i18n key parity, ingest guards, the cross-border watch area, place labelling, Exif
 stripping, CAP construction, the public API helpers, the webhook URL guard, and the
-persistent-source grid, registration criteria, screen radius and drift heuristic. There is still
-no coverage of clustering/fusion internals, RLS policies, the route handlers end to end, or any
-UI. Fusion remains the weakest spot: both its commune attribution and its `fp_reason` filter —
+persistent-source grid, registration criteria, screen radius and drift heuristic. Source-run
+classification, public-status serialization and shared health summarization are included; a
+separate 38-assertion pgTAP suite covers the reliability schema, grants, atomic checkpointing and
+derived states. Most older RLS policies, route handlers end to end, and UI behavior still have no
+coverage. Fusion remains the weakest spot: both its commune attribution and its `fp_reason` filter —
 the one the whole screening design rests on — are guarded only by assertions over the source
 text, not by exercising the function. The screening thresholds are separately gated on a
 held-out confusion matrix (`.github/workflows/screening-gate.yml`), which is a real behavioural
@@ -309,7 +343,7 @@ Things that cost real debugging time here, none of them obvious from the code.
 | Data engineering               | §2.1 ESA WorldCover, §2.2 EFFIS                                |
 | Backend with real consequences | §1.3 wiring a delivery channel onto the CAP object             |
 | Domain science                 | §1.1 danger-scale calibration — the highest-value problem here |
-| Ops                            | §1.2 SMTP, §1.4 netCDF decoding off-Worker                     |
+| Ops                            | §1.2 SMTP, §2.4 isolated execution and replay                  |
 
 Before changing anything that decides what a user is told, read `ORIGINAL-SPEC.md` for the
 intended model and `roadmap.md` for what is already built. The spec is authoritative except on
