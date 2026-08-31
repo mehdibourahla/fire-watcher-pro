@@ -1,8 +1,8 @@
 import { fcmTopic } from "@/lib/fcm";
 
 /* Public web-app config for the nadhir-dz Firebase project (not secrets). The
- * same values are duplicated in public/firebase-messaging-sw.js. The VAPID key
- * is still empty, so pushConfigured() is false and the UI says so. */
+ * config is duplicated in public/firebase-messaging-sw.js; the VAPID key is the
+ * project's Web Push certificate, public by design. */
 export const FIREBASE_WEB_CONFIG = {
   apiKey: "AIzaSyA2claby2DpwxxJ4JKZ6TeJSQXAOnpSyCY",
   authDomain: "nadhir-dz.firebaseapp.com",
@@ -10,7 +10,8 @@ export const FIREBASE_WEB_CONFIG = {
   messagingSenderId: "1038175256338",
   appId: "1:1038175256338:web:39579a97bd7e255211bdcb",
 };
-export const VAPID_PUBLIC_KEY = "";
+export const VAPID_PUBLIC_KEY =
+  "BNSuPFS5kXKkDygPlttxgL2raelotr2S4ilm-lXmV2kc7zSI_DL4x_awEAyIkWvWCgi7hT4haUAOoVxXqt4tGH4";
 
 export type PushSubscriptionState = {
   communes: string[];
