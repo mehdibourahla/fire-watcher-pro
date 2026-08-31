@@ -59,9 +59,7 @@ const warningsQuery = queryOptions({
     const [{ data: warnings, error }, { data: relayed }] = await Promise.all([
       supabase
         .from("authority_warnings")
-        .select(
-          "id, source, received_via, body, severity, wilaya_id, created_at",
-        )
+        .select("id, source, body, severity, created_at")
         .order("created_at", { ascending: false })
         .limit(20),
       supabase
