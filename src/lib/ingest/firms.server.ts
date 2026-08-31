@@ -86,6 +86,8 @@ export type FirmsRun = {
   fetched: number;
   inserted: number;
   feeds: string[];
+  dataFrom?: string;
+  dataThrough?: string;
   error?: string;
 };
 
@@ -142,5 +144,14 @@ export async function ingestFirms(dayRange = 1): Promise<FirmsRun> {
     if (error) throw new Error(`detections upsert failed: ${error.message}`);
     inserted += count ?? 0;
   }
-  return { fetched: rows.length, inserted, feeds };
+  const detectedAt = rows.map((row) => row.detected_at).sort();
+  const dataFrom = detectedAt[0];
+  const dataThrough = detectedAt.at(-1);
+  return {
+    fetched: rows.length,
+    inserted,
+    feeds,
+    ...(dataFrom === undefined ? {} : { dataFrom }),
+    ...(dataThrough === undefined ? {} : { dataThrough }),
+  };
 }
