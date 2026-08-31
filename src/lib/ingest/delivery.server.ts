@@ -300,9 +300,15 @@ async function deliverTelegram(errors: string[]): Promise<{
           ),
         ]
       : [];
-    const chats = wilayaIds
-      .map((id) => chatByWilaya.get(id))
-      .filter((chat): chat is string => Boolean(chat));
+    // distinct chats, not distinct wilayas: several wilayas may share one
+    // channel (a national channel maps every wilaya to the same chat)
+    const chats = [
+      ...new Set(
+        wilayaIds
+          .map((id) => chatByWilaya.get(id))
+          .filter((chat): chat is string => Boolean(chat)),
+      ),
+    ];
     try {
       for (const chat of chats) {
         await sendTelegram(chat, html!);

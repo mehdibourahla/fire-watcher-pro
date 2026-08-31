@@ -19,7 +19,9 @@ const mapping = JSON.parse(readFileSync(mappingPath, "utf8")) as Record<
 >;
 const entries = Object.entries(mapping);
 if (!entries.length) {
-  console.error(`${mappingPath} is empty — expected { "18": "@channel" }.`);
+  console.error(
+    `${mappingPath} is empty — expected { "18": "@channel" } or { "*": "@channel" }.`,
+  );
   process.exit(1);
 }
 
@@ -55,7 +57,15 @@ const byCode = new Map((wilayas ?? []).map((w) => [w.code, w]));
 const rows: { wilaya_id: string; chat_id: string }[] = [];
 let failed = 0;
 
-for (const [code, channel] of entries) {
+// "*" is a national channel: every wilaya points at the same chat, and delivery
+// dedupes so a multi-wilaya alert still posts once
+const expanded = entries.flatMap(([code, channel]) =>
+  code === "*"
+    ? (wilayas ?? []).map((w) => [w.code, channel] as [string, string])
+    : [[code, channel] as [string, string]],
+);
+
+for (const [code, channel] of expanded) {
   const wilaya = byCode.get(code);
   if (!wilaya) {
     console.log(`FAIL ${code} — no wilaya with that code`);
