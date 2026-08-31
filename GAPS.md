@@ -66,9 +66,13 @@ product are unreachable.
 
 ### 1.3 No alert reaches a human
 
-Alerts are computed and stored (`alerts` table) but nothing delivers them. Push, SMS, email
-and Telegram are all unwired; a Firebase service account exists but is not connected. The
-alerts table currently holds 0 rows, which is expected given §1.2.
+Largely closed 2026-08-30 by the Broadcast Alerts epic: confirmed fires and ONM Severe+
+warnings publish as Broadcast Alerts and fan out to FCM commune topics and per-wilaya
+Telegram channels (`src/lib/ingest/broadcast.server.ts`, `delivery.server.ts`), with an
+accountless web subscription flow. Remaining unwired: the per-user zone `alerts` rows
+(email/SMS, still gated on §1.2), and the runtime secrets — `FIREBASE_SERVICE_ACCOUNT`
+and `TELEGRAM_BOT_TOKEN` — plus the Firebase web config, without which delivery reports
+itself degraded on /status rather than pretending.
 
 The **CAP object** every channel must render is now built (`cap_alerts`, `src/lib/cap.ts`):
 each fire alert links to one CAP 1.2 warning carrying all four languages, so a channel added
