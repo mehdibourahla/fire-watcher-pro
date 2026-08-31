@@ -33,7 +33,9 @@ import { Route as SurvivalIndexRouteImport } from './routes/survival/index'
 import { Route as SurvivalAreasRouteImport } from './routes/survival/areas'
 import { Route as SurvivalCheckinRouteImport } from './routes/survival/checkin'
 import { Route as SurvivalSosRouteImport } from './routes/survival/sos'
+import { Route as ContributeLanguageLocaleRouteImport } from './routes/contribute_.language.$locale'
 import { Route as ApiPublicContributeIdeaRouteImport } from './routes/api/public/contribute/idea'
+import { Route as ApiPublicContributeTranslationRouteImport } from './routes/api/public/contribute/translation'
 import { Route as ApiPublicContributeVoteRouteImport } from './routes/api/public/contribute/vote'
 import { Route as ApiPublicCronAlertsRouteImport } from './routes/api/public/cron/alerts'
 import { Route as ApiPublicCronIngestRouteImport } from './routes/api/public/cron/ingest'
@@ -163,11 +165,23 @@ const SurvivalSosRoute = SurvivalSosRouteImport.update({
   path: '/sos',
   getParentRoute: () => SurvivalRouteRoute,
 } as any)
+const ContributeLanguageLocaleRoute =
+  ContributeLanguageLocaleRouteImport.update({
+    id: '/contribute_/language/$locale',
+    path: '/contribute/language/$locale',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicContributeIdeaRoute = ApiPublicContributeIdeaRouteImport.update({
   id: '/api/public/contribute/idea',
   path: '/api/public/contribute/idea',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicContributeTranslationRoute =
+  ApiPublicContributeTranslationRouteImport.update({
+    id: '/api/public/contribute/translation',
+    path: '/api/public/contribute/translation',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicContributeVoteRoute = ApiPublicContributeVoteRouteImport.update({
   id: '/api/public/contribute/vote',
   path: '/api/public/contribute/vote',
@@ -238,7 +252,9 @@ export interface FileRoutesByFullPath {
   '/survival/checkin': typeof SurvivalCheckinRoute
   '/survival/sos': typeof SurvivalSosRoute
   '/survival/': typeof SurvivalIndexRoute
+  '/contribute/language/$locale': typeof ContributeLanguageLocaleRoute
   '/api/public/contribute/idea': typeof ApiPublicContributeIdeaRoute
+  '/api/public/contribute/translation': typeof ApiPublicContributeTranslationRoute
   '/api/public/contribute/vote': typeof ApiPublicContributeVoteRoute
   '/api/public/cron/alerts': typeof ApiPublicCronAlertsRoute
   '/api/public/cron/ingest': typeof ApiPublicCronIngestRoute
@@ -272,7 +288,9 @@ export interface FileRoutesByTo {
   '/survival/checkin': typeof SurvivalCheckinRoute
   '/survival/sos': typeof SurvivalSosRoute
   '/survival': typeof SurvivalIndexRoute
+  '/contribute/language/$locale': typeof ContributeLanguageLocaleRoute
   '/api/public/contribute/idea': typeof ApiPublicContributeIdeaRoute
+  '/api/public/contribute/translation': typeof ApiPublicContributeTranslationRoute
   '/api/public/contribute/vote': typeof ApiPublicContributeVoteRoute
   '/api/public/cron/alerts': typeof ApiPublicCronAlertsRoute
   '/api/public/cron/ingest': typeof ApiPublicCronIngestRoute
@@ -309,7 +327,9 @@ export interface FileRoutesById {
   '/survival/checkin': typeof SurvivalCheckinRoute
   '/survival/sos': typeof SurvivalSosRoute
   '/survival/': typeof SurvivalIndexRoute
+  '/contribute_/language/$locale': typeof ContributeLanguageLocaleRoute
   '/api/public/contribute/idea': typeof ApiPublicContributeIdeaRoute
+  '/api/public/contribute/translation': typeof ApiPublicContributeTranslationRoute
   '/api/public/contribute/vote': typeof ApiPublicContributeVoteRoute
   '/api/public/cron/alerts': typeof ApiPublicCronAlertsRoute
   '/api/public/cron/ingest': typeof ApiPublicCronIngestRoute
@@ -346,7 +366,9 @@ export interface FileRouteTypes {
     | '/survival/checkin'
     | '/survival/sos'
     | '/survival/'
+    | '/contribute/language/$locale'
     | '/api/public/contribute/idea'
+    | '/api/public/contribute/translation'
     | '/api/public/contribute/vote'
     | '/api/public/cron/alerts'
     | '/api/public/cron/ingest'
@@ -380,7 +402,9 @@ export interface FileRouteTypes {
     | '/survival/checkin'
     | '/survival/sos'
     | '/survival'
+    | '/contribute/language/$locale'
     | '/api/public/contribute/idea'
+    | '/api/public/contribute/translation'
     | '/api/public/contribute/vote'
     | '/api/public/cron/alerts'
     | '/api/public/cron/ingest'
@@ -416,7 +440,9 @@ export interface FileRouteTypes {
     | '/survival/checkin'
     | '/survival/sos'
     | '/survival/'
+    | '/contribute_/language/$locale'
     | '/api/public/contribute/idea'
+    | '/api/public/contribute/translation'
     | '/api/public/contribute/vote'
     | '/api/public/cron/alerts'
     | '/api/public/cron/ingest'
@@ -442,7 +468,9 @@ export interface RootRouteChildren {
   StatusRoute: typeof StatusRoute
   TermsRoute: typeof TermsRoute
   FireIdRoute: typeof FireIdRoute
+  ContributeLanguageLocaleRoute: typeof ContributeLanguageLocaleRoute
   ApiPublicContributeIdeaRoute: typeof ApiPublicContributeIdeaRoute
+  ApiPublicContributeTranslationRoute: typeof ApiPublicContributeTranslationRoute
   ApiPublicContributeVoteRoute: typeof ApiPublicContributeVoteRoute
   ApiPublicCronAlertsRoute: typeof ApiPublicCronAlertsRoute
   ApiPublicCronIngestRoute: typeof ApiPublicCronIngestRoute
@@ -624,11 +652,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SurvivalSosRouteImport
       parentRoute: typeof SurvivalRouteRoute
     }
+    '/contribute_/language/$locale': {
+      id: '/contribute_/language/$locale'
+      path: '/contribute/language/$locale'
+      fullPath: '/contribute/language/$locale'
+      preLoaderRoute: typeof ContributeLanguageLocaleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/contribute/idea': {
       id: '/api/public/contribute/idea'
       path: '/api/public/contribute/idea'
       fullPath: '/api/public/contribute/idea'
       preLoaderRoute: typeof ApiPublicContributeIdeaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/contribute/translation': {
+      id: '/api/public/contribute/translation'
+      path: '/api/public/contribute/translation'
+      fullPath: '/api/public/contribute/translation'
+      preLoaderRoute: typeof ApiPublicContributeTranslationRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/contribute/vote': {
@@ -752,7 +794,9 @@ const rootRouteChildren: RootRouteChildren = {
   StatusRoute: StatusRoute,
   TermsRoute: TermsRoute,
   FireIdRoute: FireIdRoute,
+  ContributeLanguageLocaleRoute: ContributeLanguageLocaleRoute,
   ApiPublicContributeIdeaRoute: ApiPublicContributeIdeaRoute,
+  ApiPublicContributeTranslationRoute: ApiPublicContributeTranslationRoute,
   ApiPublicContributeVoteRoute: ApiPublicContributeVoteRoute,
   ApiPublicCronAlertsRoute: ApiPublicCronAlertsRoute,
   ApiPublicCronIngestRoute: ApiPublicCronIngestRoute,

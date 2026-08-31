@@ -3,7 +3,9 @@
 Route `/contribute/language/$locale`. Lets a native speaker read and correct Nadhir's
 copy without a GitHub account, a text editor, or any knowledge of TypeScript.
 
-Not built. This is the spec for the lane `/contribute` already advertises.
+**Built 2026-08-30.** `src/routes/contribute_.language.$locale.tsx` — the trailing
+underscore matters: without it TanStack nests the route under `contribute.tsx`, which has
+no `<Outlet />`, and the page silently renders the parent instead.
 
 ## Why the obvious answer fails
 
@@ -25,15 +27,16 @@ Two properties make review harder than it looks:
 - **Nothing in CI can check this.** The i18n test enforces key *parity*, not key
   *quality*. Human review is the only control that will ever exist here.
 
-## Prerequisite: locales become JSON
+## Correction: JSON was not a prerequisite
 
-`src/i18n/locales/*.ts` are pure object literals with a single `import type` and no logic
-(verified on `kab.ts`). Converting them to JSON behind a typed loader is mechanical and
-unlocks everything below: machine-readable extraction, clean review diffs, and any future
-external tool. Keep `en.ts` as the type source or generate the `Translation` type from
-`en.json`; the parity test keeps working unchanged.
+An earlier draft of this spec called converting `src/i18n/locales/*.ts` to JSON a
+prerequisite. That was wrong. The locale modules are plain objects the app already
+imports, so the page walks them at runtime (`rowsFor` in `src/lib/translate.ts`) and pairs
+each English string with its translation. No migration was needed to build this.
 
-Do this first. Every option below is worse while the strings live in TypeScript.
+JSON would still help two things that are **not** built: an external TMS such as Weblate,
+and a less brittle write-back than the string replacement `apply-translations.ts` does
+today. Neither is urgent.
 
 ## Surface
 
