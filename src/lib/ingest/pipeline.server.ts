@@ -9,6 +9,7 @@ import {
   flagPersistentCandidates,
   screenPersistentSources,
 } from "./persistent.server";
+import { publishBroadcasts } from "./broadcast.server";
 import { enrichClusterWinds, refreshRiskForecasts } from "./weather.server";
 
 type RunOutcome = {
@@ -64,6 +65,7 @@ export type PipelineResult = {
   fci: Awaited<ReturnType<typeof ingestFci>>;
   fusion: Awaited<ReturnType<typeof fuseDetections>> | null;
   winds: number;
+  broadcast: Awaited<ReturnType<typeof publishBroadcasts>> | null;
 };
 
 /** Satellite ingest → fusion → wind enrichment. Runs every ~15 minutes. */
@@ -174,7 +176,23 @@ export async function runDetectionPipeline(): Promise<PipelineResult> {
     );
   }
 
-  return { firms, fci, fusion, winds };
+  const broadcastStartedAt = new Date().toISOString();
+  let broadcast: PipelineResult["broadcast"] = null;
+  try {
+    broadcast = await publishBroadcasts();
+    await recordRun("broadcast", broadcastStartedAt, {
+      status: "ok",
+      recordsNew: broadcast.published,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "broadcast failed";
+    await recordRun("broadcast", broadcastStartedAt, {
+      status: "failed",
+      error: message,
+    });
+  }
+
+  return { firms, fci, fusion, winds, broadcast };
 }
 
 /** Daily FWI outlook refresh, plus the EFFIS external cross-check. */

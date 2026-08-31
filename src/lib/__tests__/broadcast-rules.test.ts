@@ -72,10 +72,9 @@ describe("targetCommunes", () => {
   });
 
   it("falls back to the fusion commune when no polygon contains the fire", () => {
-    const codes = targetCommunes(
-      { lat: 36.7, lon: 4.3, communeCode: "0601" },
-      [{ code: "0601", lat: 36.7, lon: 4.3, geom: null }],
-    );
+    const codes = targetCommunes({ lat: 36.7, lon: 4.3, communeCode: "0601" }, [
+      { code: "0601", lat: 36.7, lon: 4.3, geom: null },
+    ]);
     expect(codes).toEqual(["0601"]);
   });
 });

@@ -1,4 +1,8 @@
-import { MIN_CONFIDENCE, SETTLEMENT_EMERGENCY_KM, downwindOf } from "@/lib/alerts-rules";
+import {
+  MIN_CONFIDENCE,
+  SETTLEMENT_EMERGENCY_KM,
+  downwindOf,
+} from "@/lib/alerts-rules";
 import { bearingBetween } from "@/lib/nadhir";
 
 export const BROADCAST_RING_KM = 15;
@@ -59,7 +63,10 @@ function kmToSegment(
   const dx = bx - ax;
   const dy = by - ay;
   const len2 = dx * dx + dy * dy;
-  const t = len2 === 0 ? 0 : Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / len2));
+  const t =
+    len2 === 0
+      ? 0
+      : Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / len2));
   const px = ax + t * dx - x;
   const py = ay + t * dy - y;
   return Math.sqrt(px * px + py * py);
@@ -82,7 +89,14 @@ export function kmToMultiPolygon(
       for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
         const [xi, yi] = ring[i]!;
         const [xj, yj] = ring[j]!;
-        const km = kmToSegment(0, 0, (xi - lon) * kx, (yi - lat) * ky, (xj - lon) * kx, (yj - lat) * ky);
+        const km = kmToSegment(
+          0,
+          0,
+          (xi - lon) * kx,
+          (yi - lat) * ky,
+          (xj - lon) * kx,
+          (yj - lat) * ky,
+        );
         if (km < best) best = km;
       }
     }
@@ -166,8 +180,7 @@ export function planFireBroadcast(args: {
       return { action: "end" };
     if (args.state !== "active" || args.confidence < MIN_CONFIDENCE)
       return null;
-    const escalated =
-      open.severity === "Severe" && args.severity === "Extreme";
+    const escalated = open.severity === "Severe" && args.severity === "Extreme";
     if (args.additions.length || escalated)
       return {
         action: "update",

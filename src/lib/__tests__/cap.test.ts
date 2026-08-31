@@ -128,7 +128,10 @@ describe("buildBroadcastCap", () => {
       seq: 2,
       phase: "update",
       references: [
-        { identifier: "nadhir-brd-DZ7K4A-1", sent: "2026-08-30T10:00:00+01:00" },
+        {
+          identifier: "nadhir-brd-DZ7K4A-1",
+          sent: "2026-08-30T10:00:00+01:00",
+        },
       ],
     });
     expect(cap.msgType).toBe("Update");
@@ -183,7 +186,10 @@ describe("capToXml references", () => {
       seq: 2,
       phase: "update",
       references: [
-        { identifier: "nadhir-brd-DZ7K4A-1", sent: "2026-08-30T10:00:00+01:00" },
+        {
+          identifier: "nadhir-brd-DZ7K4A-1",
+          sent: "2026-08-30T10:00:00+01:00",
+        },
       ],
     });
     expect(capToXml(chained)).toContain(

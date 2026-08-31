@@ -68,7 +68,10 @@ describe("broadcastTexts", () => {
 
   it("drops the drift sentence when the wind direction is unknown", () => {
     const withDrift = broadcastTexts("initial", vars)[2]!;
-    const noDrift = broadcastTexts("initial", { ...vars, bearingDeg: null })[2]!;
+    const noDrift = broadcastTexts("initial", {
+      ...vars,
+      bearingDeg: null,
+    })[2]!;
     expect(withDrift.description).toContain("southeast");
     expect(noDrift.description).not.toContain("southeast");
   });
