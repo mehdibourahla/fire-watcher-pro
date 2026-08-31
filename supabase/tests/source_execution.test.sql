@@ -849,6 +849,246 @@ select has_index(
   'authority broadcast replay is idempotent'
 );
 
+insert into public.admin_units (
+  id,
+  level,
+  code,
+  name_ar,
+  name_fr,
+  name_en,
+  lat,
+  lon
+)
+values (
+  '10000000-0000-4000-8000-000000000001',
+  'commune',
+  'REPLAY-TEST',
+  'اختبار',
+  'Test de rejeu',
+  'Replay test',
+  36.7,
+  3.1
+)
+on conflict (code) do nothing;
+
+insert into auth.users (id, email)
+values (
+  '10000000-0000-4000-8000-000000000002',
+  'source-replay@example.test'
+)
+on conflict (id) do nothing;
+
+insert into public.authority_warnings (
+  id,
+  source,
+  received_via,
+  body,
+  severity,
+  commune_codes
+)
+values (
+  '10000000-0000-4000-8000-000000000003',
+  'pgtap',
+  'test',
+  'Replay fixture',
+  'Severe',
+  array['REPLAY-TEST']
+)
+on conflict (id) do nothing;
+
+create function pg_temp.write_replay_domain_fixture()
+returns void
+language plpgsql
+as $$
+declare
+  _onm_id uuid := '10000000-0000-4000-8000-000000000004';
+begin
+  insert into public.detections (
+    source,
+    sensor,
+    detected_at,
+    lat,
+    lon,
+    confidence_raw,
+    frp_mw,
+    daynight,
+    natural_key
+  )
+  values (
+    'firms',
+    'VIIRS_SNPP',
+    '2026-08-31 19:55:00+00',
+    36.7,
+    3.1,
+    0.9,
+    12.5,
+    'D',
+    'replay-test:detection'
+  )
+  on conflict (natural_key) do nothing;
+
+  insert into public.risk_forecasts (
+    commune_id,
+    forecast_date,
+    horizon_days,
+    source,
+    fwi,
+    danger_level
+  )
+  values (
+    '10000000-0000-4000-8000-000000000001',
+    '2026-08-31',
+    0,
+    'local_fwi',
+    18.5,
+    3
+  )
+  on conflict (commune_id, forecast_date, horizon_days, source) do update
+  set
+    fwi = excluded.fwi,
+    danger_level = excluded.danger_level;
+
+  insert into public.alerts (
+    user_id,
+    kind,
+    severity,
+    dedupe_key,
+    title,
+    body
+  )
+  values (
+    '10000000-0000-4000-8000-000000000002',
+    'fire',
+    3,
+    'replay-test:alert',
+    'Replay fixture',
+    'Replay fixture'
+  )
+  on conflict (user_id, dedupe_key) do nothing;
+
+  insert into public.onm_vigilance (
+    id,
+    cap_id,
+    title,
+    event,
+    severity,
+    urgency,
+    certainty,
+    sent,
+    area_desc
+  )
+  values (
+    _onm_id,
+    'replay-test:onm',
+    'Replay fixture',
+    'Fire',
+    'Severe',
+    'Immediate',
+    'Observed',
+    '2026-08-31 19:55:00+00',
+    'Replay test'
+  )
+  on conflict (cap_id) do update
+  set title = excluded.title;
+
+  insert into public.broadcasts (
+    kind,
+    phase,
+    onm_vigilance_id,
+    severity,
+    commune_codes
+  )
+  values (
+    'onm',
+    'initial',
+    _onm_id,
+    'Severe',
+    array['REPLAY-TEST']
+  )
+  on conflict do nothing;
+
+  insert into public.broadcasts (
+    kind,
+    phase,
+    authority_warning_id,
+    severity,
+    commune_codes
+  )
+  values (
+    'authority',
+    'initial',
+    '10000000-0000-4000-8000-000000000003',
+    'Severe',
+    array['REPLAY-TEST']
+  )
+  on conflict do nothing;
+end;
+$$;
+
+select pg_temp.write_replay_domain_fixture();
+select pg_temp.write_replay_domain_fixture();
+
+select is(
+  (
+    select count(*)::integer
+    from public.detections
+    where natural_key = 'replay-test:detection'
+  ),
+  1,
+  'running the same interval twice keeps one detection'
+);
+select is(
+  (
+    select count(*)::integer
+    from public.risk_forecasts
+    where commune_id = '10000000-0000-4000-8000-000000000001'
+      and forecast_date = '2026-08-31'
+      and horizon_days = 0
+      and source = 'local_fwi'
+  ),
+  1,
+  'running the same interval twice keeps one risk row'
+);
+select is(
+  (
+    select count(*)::integer
+    from public.alerts
+    where user_id = '10000000-0000-4000-8000-000000000002'
+      and dedupe_key = 'replay-test:alert'
+  ),
+  1,
+  'running the same interval twice keeps one alert decision'
+);
+select is(
+  (
+    select count(*)::integer
+    from public.onm_vigilance
+    where cap_id = 'replay-test:onm'
+  ),
+  1,
+  'running the same interval twice keeps one ONM warning'
+);
+select is(
+  (
+    select count(*)::integer
+    from public.broadcasts
+    where kind = 'onm'
+      and onm_vigilance_id = '10000000-0000-4000-8000-000000000004'
+  ),
+  1,
+  'running the same interval twice keeps one ONM broadcast'
+);
+select is(
+  (
+    select count(*)::integer
+    from public.broadcasts
+    where kind = 'authority'
+      and authority_warning_id = '10000000-0000-4000-8000-000000000003'
+  ),
+  1,
+  'running the same interval twice keeps one authority broadcast'
+);
+
 select * from finish();
 
 rollback;

@@ -44,15 +44,18 @@ describe("recorded source interval replay", () => {
       vi.fn(async () => new Response(csv, { status: 200 })),
     );
 
-    const result = await ingestFirms(interval);
+    const first = await ingestFirms(interval);
+    const second = await ingestFirms(interval);
 
-    expect(result).toMatchObject({
+    expect(first).toMatchObject({
       fetched: 4,
       inserted: 4,
       dataFrom: interval.dataFrom,
       dataThrough: interval.dataThrough,
     });
-    expect(upsert.mock.calls.flatMap(([rows]) => rows)).toHaveLength(4);
+    expect(second).toMatchObject(first);
+    expect(upsert).toHaveBeenCalledTimes(2);
+    expect(upsert.mock.calls[1]?.[0]).toEqual(upsert.mock.calls[0]?.[0]);
   });
 
   it("bounds FCI replay at both ends and reports the requested coverage", async () => {
@@ -83,17 +86,21 @@ describe("recorded source interval replay", () => {
     );
     vi.stubGlobal("fetch", fetchMock);
 
-    const result = await ingestFci(interval);
+    const first = await ingestFci(interval);
+    const second = await ingestFci(interval);
 
     const url = new URL(String(fetchMock.mock.calls[0]?.[0]));
     expect(url.searchParams.get("cql_filter")).toBe(
       "time >= '2026-08-31T19:50:00Z' AND time <= '2026-08-31T20:00:00Z' AND BBOX(geom, 18.9, -8.7, 37.6, 12)",
     );
-    expect(result).toMatchObject({
+    expect(first).toMatchObject({
       fetched: 1,
       inserted: 1,
       dataFrom: interval.dataFrom,
       dataThrough: interval.dataThrough,
     });
+    expect(second).toMatchObject(first);
+    expect(upsert).toHaveBeenCalledTimes(2);
+    expect(upsert.mock.calls[1]?.[0]).toEqual(upsert.mock.calls[0]?.[0]);
   });
 });

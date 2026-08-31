@@ -294,7 +294,7 @@ seeding, i18n key parity, ingest guards, the cross-border watch area, place labe
 stripping, CAP construction, the public API helpers, the webhook URL guard, and the
 persistent-source grid, registration criteria, screen radius and drift heuristic. Source-run
 classification, public-status serialization, shared health summarization, job execution,
-scheduling, watchdog, and replay are included. Separate 39- and 60-assertion pgTAP suites cover
+scheduling, watchdog, and replay are included. Separate 39- and 66-assertion pgTAP suites cover
 the reliability and execution schemas, grants, state transitions, leases, gaps, and replay.
 Most older RLS policies, route handlers end to end, and UI behavior still have no
 coverage. Fusion remains the weakest spot: both its commune attribution and its `fp_reason` filter —
