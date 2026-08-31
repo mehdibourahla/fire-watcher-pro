@@ -148,6 +148,7 @@ export const fr: Translation = {
     },
   },
   nav: {
+    menu: "Menu",
     contribute: "Contribuer",
     settings: "Réglages",
     map: "Carte en direct",

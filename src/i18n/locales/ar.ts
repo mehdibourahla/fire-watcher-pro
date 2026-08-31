@@ -144,6 +144,7 @@ export const ar: Translation = {
     },
   },
   nav: {
+    menu: "القائمة",
     contribute: "المساهمة",
     settings: "الإعدادات",
     map: "الخريطة المباشرة",

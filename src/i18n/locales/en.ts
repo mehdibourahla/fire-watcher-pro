@@ -144,6 +144,7 @@ export const en = {
     },
   },
   nav: {
+    menu: "Menu",
     contribute: "Contribute",
     settings: "Settings",
     map: "Live map",

@@ -146,6 +146,7 @@ export const kab: Translation = {
     },
   },
   nav: {
+    menu: "Umuɣ",
     contribute: "Ttekki",
     settings: "Iɣewwaṛen",
     map: "Takarḍa srid",
