@@ -1,7 +1,7 @@
 # Data reliability control plane — design
 
 Date: 2026-08-31
-Status: proposed
+Status: approved
 Epic: Reliable source ingestion and synchronized products
 
 ## Mandate
@@ -339,8 +339,15 @@ available.
 6. **New-source gate:** adapter template and CI contract requiring reliability metadata,
    tests, licence, provenance, and fallback behavior before any researched layer ships.
 
-Milestones are separate pull requests. Each must migrate its existing path completely;
-no old health, scheduler, or publication path remains beside its replacement.
+Milestones are separate pull requests. Each must migrate its existing application path
+completely; no old health, scheduler, or publication path remains beside its replacement.
+
+Production applies migrations before application code. Destructive schema cleanup therefore
+uses a two-release expand/contract cutover: the expand release creates and backfills the new
+model, migrates every application reader and writer, and leaves the old database objects
+dormant for one release. The immediately following contract release drops those objects after
+production evidence confirms that no deployed code uses them. This is a deployment-safety
+shim, not a parallel runtime path.
 
 ## Explicitly deferred
 
