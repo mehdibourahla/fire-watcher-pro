@@ -601,6 +601,9 @@ export const kab: Translation = {
       "I yal asteqsi, seqdec anermis yellan deg usebter « Ɣef ».",
   },
   push: {
+    bannerLive: "Alɣu iteddun deg tɣiwant-ik",
+    bannerOnm: "Alɣu unṣib n ONM",
+    bannerOpen: "Ldi talqayt n tmes",
     bell: "Ilɣa n temnaḍt-ik",
     inviteTitle: "Alɣu imiren ma tqerreb times",
     inviteBody:

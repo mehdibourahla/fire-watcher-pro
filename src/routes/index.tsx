@@ -11,6 +11,7 @@ import { Explain } from "@/components/nadhir/Explain";
 import { DetailSheet } from "@/components/nadhir/DetailSheet";
 import { LayerToggle } from "@/components/nadhir/LayerToggle";
 import { riskSolid } from "@/components/nadhir/risk-visuals";
+import { BroadcastBanner } from "@/components/nadhir/BroadcastBanner";
 import { SubscribeInvite } from "@/components/nadhir/SubscribeSheet";
 import { EmptyState, SkeletonList } from "@/components/nadhir/states";
 import {
@@ -322,6 +323,7 @@ function LiveMapPage() {
     <div className="mx-auto flex max-w-[1600px] flex-col gap-4 p-4 lg:h-[calc(100vh-3.5rem)] lg:flex-row">
       <aside className="order-2 flex w-full shrink-0 flex-col gap-3 lg:order-1 lg:w-[360px] lg:overflow-y-auto">
         <SubscribeInvite />
+        <BroadcastBanner />
         {zoneAlert ? (
           <section
             className="flex flex-col gap-2 rounded-xl border p-3"

@@ -623,6 +623,9 @@ export const fr: Translation = {
       "Pour toute question, utilisez le contact indiqué sur la page À propos.",
   },
   push: {
+    bannerLive: "Alerte en cours dans votre commune",
+    bannerOnm: "Avertissement officiel ONM",
+    bannerOpen: "Ouvrir les détails de l'incendie",
     bell: "Alertes de votre zone",
     inviteTitle: "Alerte immédiate si un feu approche",
     inviteBody:

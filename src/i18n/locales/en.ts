@@ -606,6 +606,9 @@ export const en = {
       "For any data question, use the contact channel listed on the About page.",
   },
   push: {
+    bannerLive: "Active alert in your commune",
+    bannerOnm: "Official ONM warning",
+    bannerOpen: "Open fire details",
     bell: "Area alerts",
     inviteTitle: "Instant alert if a fire comes close",
     inviteBody:

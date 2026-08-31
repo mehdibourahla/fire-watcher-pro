@@ -592,6 +592,9 @@ export const ar: Translation = {
       "لأي سؤال حول البيانات، استعمل وسيلة الاتصال المذكورة في صفحة «حول».",
   },
   push: {
+    bannerLive: "تنبيه ساري في بلديتك",
+    bannerOnm: "تحذير رسمي من الأرصاد (ONM)",
+    bannerOpen: "فتح تفاصيل الحريق",
     bell: "تنبيهات منطقتك",
     inviteTitle: "تنبيه فوري إن اقترب حريق",
     inviteBody:
