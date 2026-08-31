@@ -5,6 +5,7 @@ import {
 } from "@/lib/alerts-rules";
 import { BROADCAST_RING_KM } from "@/lib/cap";
 import { bearingBetween } from "@/lib/nadhir";
+import { isFuelLimited, type LandcoverFractions } from "@/lib/zonal";
 
 export const BROADCAST_END_AFTER_HOURS = 12;
 export const BROADCAST_DAILY_COMMUNE_LIMIT = 6;
@@ -152,6 +153,17 @@ export function downwindAdditions(
   });
 }
 
+/* A wildfire broadcast for a commune with nothing to burn is a false alarm by
+ * construction — the Sahara flares that reach fusion land here. Unknown land
+ * cover never masks: absence of data is not evidence of bare ground. */
+export function fuelLimitedCodes(
+  communes: { code: string; landcover: LandcoverFractions | null }[],
+): Set<string> {
+  return new Set(
+    communes.filter((c) => isFuelLimited(c.landcover)).map((c) => c.code),
+  );
+}
+
 export type FirePlan =
   | { action: "initial"; codes: string[] }
   | { action: "update"; codes: string[]; added: string[] }
@@ -168,7 +180,10 @@ export function planFireBroadcast(args: {
   open: { phase: string; communeCodes: string[]; severity: string } | null;
   targets: string[];
   additions: string[];
+  fuelLimited?: Set<string>;
 }): FirePlan {
+  const burnable = (codes: string[]) =>
+    args.fuelLimited ? codes.filter((c) => !args.fuelLimited!.has(c)) : codes;
   const open =
     args.open && (args.open.phase === "initial" || args.open.phase === "update")
       ? args.open
@@ -181,17 +196,20 @@ export function planFireBroadcast(args: {
     if (args.state !== "active" || args.confidence < MIN_CONFIDENCE)
       return null;
     const escalated = open.severity === "Severe" && args.severity === "Extreme";
-    if (args.additions.length || escalated)
+    const additions = burnable(args.additions);
+    if (additions.length || escalated)
       return {
         action: "update",
-        codes: [...open.communeCodes, ...args.additions],
-        added: args.additions,
+        codes: [...open.communeCodes, ...additions],
+        added: additions,
       };
     return null;
   }
 
-  if (args.state === "active" && args.confidence >= MIN_CONFIDENCE)
-    return { action: "initial", codes: args.targets };
+  if (args.state === "active" && args.confidence >= MIN_CONFIDENCE) {
+    const codes = burnable(args.targets);
+    return codes.length ? { action: "initial", codes } : null;
+  }
   return null;
 }
 
