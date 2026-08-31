@@ -74,16 +74,16 @@ const LANE_CARDS: LaneCard[] = [
   { key: "testing", Icon: Smartphone },
 ];
 
-const LANE_LINKS: Record<string, string> = {
-  local: `${REPO}/issues/new?labels=open-areas`,
-  language: `${REPO}/tree/main/src/i18n/locales`,
-  audio: `${REPO}/issues/new?labels=guidance-audio`,
-  institutional: `${REPO}/issues/new?labels=institutional`,
+// Only where reading really is the first step. The other four lanes ask for
+// something no GitHub page can accept from a non-developer — a place checked, a
+// language read, a voice recorded, an introduction — so they open the box instead.
+const LANE_READING: Partial<Record<string, string>> = {
   science: `${REPO}/blob/main/GAPS.md`,
   research: `${REPO}/blob/main/GAPS.md`,
   coordination: `${REPO}/issues`,
-  testing: `${REPO}/issues/new?labels=field-testing`,
 };
+
+const BOX_ID = "offer";
 
 function Stat({
   label,
@@ -196,7 +196,13 @@ function Deficit({ deficits }: { deficits: Deficits }) {
   );
 }
 
-function LaneGrid({ deficits }: { deficits: Deficits }) {
+function LaneGrid({
+  deficits,
+  onOffer,
+}: {
+  deficits: Deficits;
+  onOffer: (lane: Lane) => void;
+}) {
   const { t } = useTranslation();
   return (
     <div className="mt-7 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -223,15 +229,26 @@ function LaneGrid({ deficits }: { deficits: Deficits }) {
             <span className="text-[11.5px] leading-relaxed text-faint">
               {t("contribute.asks", { what: t(`contribute.${key}Asks`) })}
             </span>
-            <a
-              href={LANE_LINKS[key]}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1.5 text-[13px] font-medium text-[var(--accent)]"
-            >
-              {t(`contribute.${key}Cta`)}
-              <ArrowRight aria-hidden className="size-3.5 rtl:rotate-180" />
-            </a>
+            {LANE_READING[key] ? (
+              <a
+                href={LANE_READING[key]}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 text-[13px] font-medium text-[var(--accent)]"
+              >
+                {t(`contribute.${key}Cta`)}
+                <ArrowRight aria-hidden className="size-3.5 rtl:rotate-180" />
+              </a>
+            ) : (
+              <button
+                type="button"
+                onClick={() => onOffer(key)}
+                className="inline-flex items-center gap-1.5 self-start text-[13px] font-medium text-[var(--accent)]"
+              >
+                {t(`contribute.${key}Cta`)}
+                <ArrowRight aria-hidden className="size-3.5 rtl:rotate-180" />
+              </button>
+            )}
           </div>
         </article>
       ))}
@@ -430,9 +447,14 @@ function cap(s: string) {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-function IdeaBox() {
+function IdeaBox({
+  lane,
+  setLane,
+}: {
+  lane: string;
+  setLane: (lane: string) => void;
+}) {
   const { t, i18n } = useTranslation();
-  const [lane, setLane] = useState<string>("other");
   const [message, setMessage] = useState("");
   const [contact, setContact] = useState("");
   const [website, setWebsite] = useState("");
@@ -507,7 +529,10 @@ function IdeaBox() {
   }
 
   return (
-    <div className="card mt-10 flex flex-col gap-10 p-8 lg:flex-row lg:gap-14 lg:p-10">
+    <div
+      id={BOX_ID}
+      className="card mt-10 flex scroll-mt-20 flex-col gap-10 p-8 lg:flex-row lg:gap-14 lg:p-10"
+    >
       <div className="flex flex-col gap-3.5 lg:w-[296px] lg:shrink-0">
         <h2 className="font-display text-[26px] font-semibold leading-tight">
           {t("contribute.boxTitle")}
@@ -640,11 +665,19 @@ function Eyebrow({ children }: { children: string }) {
 function ContributePage() {
   const { t, i18n } = useTranslation();
   const deficits = Route.useLoaderData();
+  const [lane, setLane] = useState<string>("other");
 
   const measured = new Date(deficits.measuredAt).toLocaleDateString(
     i18n.language,
     { day: "numeric", month: "long", year: "numeric" },
   );
+
+  const offer = (picked: Lane) => {
+    setLane(picked);
+    document
+      .getElementById(BOX_ID)
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   return (
     <div className="mx-auto max-w-[1160px] px-5 pb-20">
@@ -678,12 +711,12 @@ function ContributePage() {
         <p className="mt-2 max-w-[64ch] text-[15px] leading-relaxed text-muted-foreground">
           {t("contribute.lanesLede")}
         </p>
-        <LaneGrid deficits={deficits} />
+        <LaneGrid deficits={deficits} onOffer={offer} />
       </section>
 
       <CodeSection />
       <Board />
-      <IdeaBox />
+      <IdeaBox lane={lane} setLane={setLane} />
 
       <section className="mt-20 flex flex-col gap-10 lg:flex-row lg:gap-14">
         <h2 className="font-display text-lg font-semibold leading-snug lg:w-[296px] lg:shrink-0">
