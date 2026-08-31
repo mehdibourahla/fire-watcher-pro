@@ -790,7 +790,7 @@ begin
     select case
       when contract.replay_capability = 'interval'
         and contract.replay_window_minutes is not null
-        and _expired.data_through >= _now - make_interval(
+        and _expired.data_from >= _now - make_interval(
           mins => contract.replay_window_minutes
         ) then 'open'
       else 'unrecoverable'

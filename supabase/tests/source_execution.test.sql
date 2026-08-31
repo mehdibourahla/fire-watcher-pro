@@ -1150,18 +1150,18 @@ select
   contract.version,
   'manual',
   'pgtap:expired-fci-retention',
-  '2099-01-01 00:10:00+00',
-  '2099-01-01 00:00:00+00',
-  '2099-01-01 00:10:00+00',
+  '2099-02-01 00:10:00+00',
+  '2099-01-30 00:00:00+00',
+  '2099-02-01 00:10:00+00',
   'cloudflare',
   'retry_wait',
   array['manual'],
-  '2099-01-01 00:20:00+00',
+  '2099-02-01 00:20:00+00',
   1,
   contract.max_attempts,
   contract.retry_base_seconds,
-  '2099-01-01 01:00:00+00',
-  '2099-01-01 00:11:00+00',
+  '2099-02-01 01:00:00+00',
+  '2099-02-01 00:11:00+00',
   'upstream_unreachable'
 from public.source_contracts as contract
 where contract.key = 'fci';
@@ -1176,10 +1176,10 @@ select is(
     select state
     from public.source_gaps
     where contract_key = 'fci'
-      and data_through = '2099-01-01 00:10:00+00'
+      and data_through = '2099-02-01 00:10:00+00'
   ),
   'unrecoverable',
-  'an expired retry outside provider retention is not offered for replay'
+  'an interval crossing the retention cutoff is not offered for exact replay'
 );
 
 insert into public.source_jobs (
