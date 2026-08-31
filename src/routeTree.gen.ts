@@ -47,6 +47,7 @@ import { Route as ApiPublicV1FiresRouteImport } from './routes/api/public/v1/fir
 import { Route as ApiPublicV1RiskRouteImport } from './routes/api/public/v1/risk'
 import { Route as ApiPublicV1SourcesRouteImport } from './routes/api/public/v1/sources'
 import { Route as ApiPublicV1StatsRouteImport } from './routes/api/public/v1/stats'
+import { Route as ApiPublicV1StatusRouteImport } from './routes/api/public/v1/status'
 import { Route as ApiPublicV1SubscribeRouteImport } from './routes/api/public/v1/subscribe'
 
 const IndexRoute = IndexRouteImport.update({
@@ -241,6 +242,11 @@ const ApiPublicV1StatsRoute = ApiPublicV1StatsRouteImport.update({
   path: '/api/public/v1/stats',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicV1StatusRoute = ApiPublicV1StatusRouteImport.update({
+  id: '/api/public/v1/status',
+  path: '/api/public/v1/status',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicV1SubscribeRoute = ApiPublicV1SubscribeRouteImport.update({
   id: '/api/public/v1/subscribe',
   path: '/api/public/v1/subscribe',
@@ -284,6 +290,7 @@ export interface FileRoutesByFullPath {
   '/api/public/v1/risk': typeof ApiPublicV1RiskRoute
   '/api/public/v1/sources': typeof ApiPublicV1SourcesRoute
   '/api/public/v1/stats': typeof ApiPublicV1StatsRoute
+  '/api/public/v1/status': typeof ApiPublicV1StatusRoute
   '/api/public/v1/subscribe': typeof ApiPublicV1SubscribeRoute
   '/api/public/v1/': typeof ApiPublicV1IndexRoute
 }
@@ -323,6 +330,7 @@ export interface FileRoutesByTo {
   '/api/public/v1/risk': typeof ApiPublicV1RiskRoute
   '/api/public/v1/sources': typeof ApiPublicV1SourcesRoute
   '/api/public/v1/stats': typeof ApiPublicV1StatsRoute
+  '/api/public/v1/status': typeof ApiPublicV1StatusRoute
   '/api/public/v1/subscribe': typeof ApiPublicV1SubscribeRoute
   '/api/public/v1': typeof ApiPublicV1IndexRoute
 }
@@ -365,6 +373,7 @@ export interface FileRoutesById {
   '/api/public/v1/risk': typeof ApiPublicV1RiskRoute
   '/api/public/v1/sources': typeof ApiPublicV1SourcesRoute
   '/api/public/v1/stats': typeof ApiPublicV1StatsRoute
+  '/api/public/v1/status': typeof ApiPublicV1StatusRoute
   '/api/public/v1/subscribe': typeof ApiPublicV1SubscribeRoute
   '/api/public/v1/': typeof ApiPublicV1IndexRoute
 }
@@ -407,6 +416,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/risk'
     | '/api/public/v1/sources'
     | '/api/public/v1/stats'
+    | '/api/public/v1/status'
     | '/api/public/v1/subscribe'
     | '/api/public/v1/'
   fileRoutesByTo: FileRoutesByTo
@@ -446,6 +456,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/risk'
     | '/api/public/v1/sources'
     | '/api/public/v1/stats'
+    | '/api/public/v1/status'
     | '/api/public/v1/subscribe'
     | '/api/public/v1'
   id:
@@ -487,6 +498,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/risk'
     | '/api/public/v1/sources'
     | '/api/public/v1/stats'
+    | '/api/public/v1/status'
     | '/api/public/v1/subscribe'
     | '/api/public/v1/'
   fileRoutesById: FileRoutesById
@@ -517,6 +529,7 @@ export interface RootRouteChildren {
   ApiPublicV1RiskRoute: typeof ApiPublicV1RiskRoute
   ApiPublicV1SourcesRoute: typeof ApiPublicV1SourcesRoute
   ApiPublicV1StatsRoute: typeof ApiPublicV1StatsRoute
+  ApiPublicV1StatusRoute: typeof ApiPublicV1StatusRoute
   ApiPublicV1SubscribeRoute: typeof ApiPublicV1SubscribeRoute
   ApiPublicV1IndexRoute: typeof ApiPublicV1IndexRoute
 }
@@ -789,6 +802,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicV1StatsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/v1/status': {
+      id: '/api/public/v1/status'
+      path: '/api/public/v1/status'
+      fullPath: '/api/public/v1/status'
+      preLoaderRoute: typeof ApiPublicV1StatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/v1/subscribe': {
       id: '/api/public/v1/subscribe'
       path: '/api/public/v1/subscribe'
@@ -869,6 +889,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicV1RiskRoute: ApiPublicV1RiskRoute,
   ApiPublicV1SourcesRoute: ApiPublicV1SourcesRoute,
   ApiPublicV1StatsRoute: ApiPublicV1StatsRoute,
+  ApiPublicV1StatusRoute: ApiPublicV1StatusRoute,
   ApiPublicV1SubscribeRoute: ApiPublicV1SubscribeRoute,
   ApiPublicV1IndexRoute: ApiPublicV1IndexRoute,
 }
