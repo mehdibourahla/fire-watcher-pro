@@ -70,6 +70,38 @@ export async function submitSuggestions(
   return { ok: true, saved: clean.length };
 }
 
+export type MyRow = {
+  keyPath: string;
+  status: string;
+  suggestion: string | null;
+  moderationNote: string | null;
+};
+
+/** A reviewer's own submissions, keyed by the browser key they carry. Runs
+ * server-side because anon deliberately cannot read the table. */
+export async function readMySuggestions(
+  locale: string,
+  reviewerKey: string,
+): Promise<MyRow[]> {
+  if (!REVIEWABLE.includes(locale as ReviewableLocale)) return [];
+  if (reviewerKey.length < 8 || reviewerKey.length > 64) return [];
+
+  const { data, error } = await supabaseAdmin
+    .from("translation_suggestions")
+    .select("key_path, status, suggestion, moderation_note")
+    .eq("locale", locale)
+    .eq("reviewer_key", reviewerKey)
+    .limit(1000);
+
+  if (error || !data) return [];
+  return data.map((row) => ({
+    keyPath: row.key_path,
+    status: row.status,
+    suggestion: row.suggestion,
+    moderationNote: row.moderation_note,
+  }));
+}
+
 async function consume(
   bucket: string,
   limit: number,

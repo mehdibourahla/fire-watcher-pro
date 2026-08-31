@@ -9,7 +9,10 @@ import {
   countSubmittable,
   groupRows,
   isSubmittable,
+  markSent,
   rowsFor,
+  summarise,
+  type DraftMap,
 } from "@/lib/translate";
 
 describe("rowsFor", () => {
@@ -41,6 +44,49 @@ describe("groupRows", () => {
     const groups = groupRows(rows);
     expect(groups.flatMap((g) => g.rows)).toHaveLength(rows.length);
     expect(new Set(groups.map((g) => g.key)).size).toBe(groups.length);
+  });
+});
+
+describe("markSent and summarise", () => {
+  // the bug this replaces: drafts were deleted on submit, so an hour of review
+  // vanished from the page and progress snapped back to zero
+  it("keeps every entry after sending, marking only what was sent", () => {
+    const before: DraftMap = {
+      a: { verdict: "confirmed" },
+      b: { verdict: "suggested", suggestion: "Amek" },
+      c: { verdict: "suggested", suggestion: "  " },
+    };
+    const after = markSent(before);
+    expect(Object.keys(after)).toHaveLength(3);
+    expect(after["a"]?.sent).toBe(true);
+    expect(after["b"]?.sent).toBe(true);
+    expect(after["c"]?.sent).toBeUndefined();
+  });
+
+  it("stops counting a sent draft as pending, so Send does not resend it", () => {
+    const after = markSent({ a: { verdict: "confirmed" } });
+    expect(countSubmittable(after)).toBe(0);
+    expect(isSubmittable(after["a"]!)).toBe(false);
+  });
+
+  it("reports outcomes against the server statuses", () => {
+    const drafts: DraftMap = {
+      a: { verdict: "confirmed", sent: true },
+      b: { verdict: "suggested", suggestion: "x", sent: true },
+      c: { verdict: "suggested", suggestion: "y", sent: true },
+      d: { verdict: "confirmed" },
+    };
+    const tally = summarise(drafts, {
+      a: { status: "accepted", suggestion: null, moderationNote: null },
+      b: { status: "rejected", suggestion: null, moderationNote: null },
+    });
+    expect(tally).toEqual({
+      reviewed: 4,
+      accepted: 1,
+      rejected: 1,
+      awaiting: 1,
+      unsent: 1,
+    });
   });
 });
 

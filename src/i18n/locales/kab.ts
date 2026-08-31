@@ -688,6 +688,18 @@ export const kab: Translation = {
     laneOther: "Ayen nniḍen",
   },
   translate: {
+    filterMine: "Ayen tuzneḍ",
+    youConfirmed: "Tsentmeḍ belli tarrayt-a teṣṣeḥ",
+    revise: "Ẓreg",
+    status_pending: "Yettraǧu asenqed",
+    status_accepted: "Yettwaqbel",
+    status_rejected: "Ur yettwasqedec ara",
+    tallyAccepted: "{{count}} yettwaqbel",
+    tallyAwaiting: "{{count}} yettraǧun",
+    tallyRejected: "{{count}} ur nettwasqedec ara",
+    tallyUnsent: "{{count}} ur nettwazen ara",
+    sentKept:
+      "Amahil-ik yeqqim deg usebter-a. Ayen tuzneḍ ad d-yesken agmuḍ-is ticki t-iwala umeḍbeṛ.",
     back: "Uɣal ɣer Ttekki",
     title: "Ɣer tasuqilt {{language}}",
     lede: "Yal aḍris n usnas, ɣer tama n uɣbalu-ines s teglizit. Sumer tarrayt yifen, neɣ sentem belli aḍris yeṣṣeḥ. Ur yeḥwaǧ ara amiḍan, u amahil-ik yettwaḥrez deg yiminig-a alamma tuzneḍ-t.",

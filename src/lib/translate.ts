@@ -64,11 +64,14 @@ export type Draft = {
   verdict: Verdict;
   suggestion?: string;
   note?: string;
+  /** Kept after sending rather than deleted, so a reviewer can see their own work. */
+  sent?: boolean;
 };
 
 export type DraftMap = Record<string, Draft>;
 
 export function isSubmittable(draft: Draft): boolean {
+  if (draft.sent) return false;
   if (draft.verdict === "confirmed") return true;
   const text = (draft.suggestion ?? "").trim();
   return text.length > 0 && text.length <= SUGGESTION_MAX;
@@ -76,6 +79,46 @@ export function isSubmittable(draft: Draft): boolean {
 
 export function countSubmittable(drafts: DraftMap): number {
   return Object.values(drafts).filter(isSubmittable).length;
+}
+
+export function markSent(drafts: DraftMap): DraftMap {
+  const next: DraftMap = {};
+  for (const [path, draft] of Object.entries(drafts)) {
+    next[path] = isSubmittable(draft) ? { ...draft, sent: true } : draft;
+  }
+  return next;
+}
+
+export type MyStatus = {
+  status: SuggestionStatus;
+  suggestion: string | null;
+  moderationNote: string | null;
+};
+
+export type MyStatusMap = Record<string, MyStatus>;
+
+export function summarise(drafts: DraftMap, statuses: MyStatusMap) {
+  let accepted = 0;
+  let rejected = 0;
+  let awaiting = 0;
+  let unsent = 0;
+  for (const [path, draft] of Object.entries(drafts)) {
+    if (!draft.sent) {
+      unsent += 1;
+      continue;
+    }
+    const status = statuses[path]?.status;
+    if (status === "accepted") accepted += 1;
+    else if (status === "rejected") rejected += 1;
+    else awaiting += 1;
+  }
+  return {
+    reviewed: Object.keys(drafts).length,
+    accepted,
+    rejected,
+    awaiting,
+    unsent,
+  };
 }
 
 /** A review of every string is not one sitting, so drafts survive a closed tab. */
