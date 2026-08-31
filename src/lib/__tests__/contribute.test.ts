@@ -68,7 +68,7 @@ describe("schema agreement", () => {
       "..",
       "supabase",
       "migrations",
-      "20260830070000_5e2a91c7-4d38-4b6a-9c15-7f2043e8bd61.sql",
+      "20260830090000_5e2a91c7-4d38-4b6a-9c15-7f2043e8bd61.sql",
     ),
     "utf8",
   );

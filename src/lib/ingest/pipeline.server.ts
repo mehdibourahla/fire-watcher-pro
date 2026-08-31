@@ -1,8 +1,9 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 import { ingestEffis, type EffisRun } from "./effis.server";
-import { ingestEumetsat } from "./eumetsat.server";
+import { ingestFci } from "./fci.server";
 import { ingestFirms } from "./firms.server";
+import { ingestOnm } from "./onm.server";
 import { fuseDetections } from "./fusion.server";
 import {
   flagPersistentCandidates,
@@ -60,7 +61,7 @@ async function markSource(name: string, ok: boolean, note: string) {
 
 export type PipelineResult = {
   firms: Awaited<ReturnType<typeof ingestFirms>>;
-  eumetsat: Awaited<ReturnType<typeof ingestEumetsat>>;
+  fci: Awaited<ReturnType<typeof ingestFci>>;
   fusion: Awaited<ReturnType<typeof fuseDetections>> | null;
   winds: number;
 };
@@ -84,18 +85,35 @@ export async function runDetectionPipeline(): Promise<PipelineResult> {
   );
 
   const fciStartedAt = new Date().toISOString();
-  const eumetsat = await ingestEumetsat();
+  const fci = await ingestFci();
   await recordRun("fci", fciStartedAt, {
-    status: eumetsat.error ? "failed" : "ok",
-    recordsIn: eumetsat.granules,
-    recordsNew: eumetsat.inserted,
-    ...(eumetsat.error ? { error: eumetsat.error } : {}),
+    status: fci.error ? "failed" : "ok",
+    recordsIn: fci.fetched,
+    recordsNew: fci.inserted,
+    ...(fci.error ? { error: fci.error } : {}),
   });
   await markSource(
     "fci",
-    !eumetsat.error && (eumetsat.ageMinutes ?? 999) < 180,
-    eumetsat.error ??
-      `${eumetsat.sensor} granule ${eumetsat.ageMinutes} min old (${eumetsat.granules} in window)`,
+    !fci.error,
+    fci.error ??
+      (fci.latestSlot
+        ? `MTG FCI: ${fci.inserted} new detections, latest slot ${fci.ageMinutes} min old`
+        : "MTG FCI: no detections in the current window"),
+  );
+
+  const onmStartedAt = new Date().toISOString();
+  const onm = await ingestOnm();
+  await recordRun("onm", onmStartedAt, {
+    status: onm.error ? "failed" : "ok",
+    recordsIn: onm.fetched,
+    recordsNew: onm.stored,
+    ...(onm.error ? { error: onm.error } : {}),
+  });
+  await markSource(
+    "onm",
+    !onm.error,
+    onm.error ??
+      `${onm.stored} vigilance warnings relayed (${onm.unmatched} unmatched wilaya names)`,
   );
 
   // must precede fusion: fusion only clusters detections whose fp_reason is null
@@ -156,7 +174,7 @@ export async function runDetectionPipeline(): Promise<PipelineResult> {
     );
   }
 
-  return { firms, eumetsat, fusion, winds };
+  return { firms, fci, fusion, winds };
 }
 
 /** Daily FWI outlook refresh, plus the EFFIS external cross-check. */

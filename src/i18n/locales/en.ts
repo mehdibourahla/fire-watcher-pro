@@ -276,8 +276,9 @@ export const en = {
     fuelLimited: "Not rated — negligible burnable vegetation",
     effisMasked:
       "EFFIS does not rate this commune's terrain (unvegetated land).",
+    onmLabel: "Official ONM warning",
     effisNone:
-      "No EFFIS comparison yet — the European classification arrives with the daily refresh.",
+      "No usable EFFIS comparison right now — the European product is fetched daily and refused when its run fails our quality checks.",
     effisClass: {
       low: "Low",
       moderate: "Moderate",
@@ -532,6 +533,8 @@ export const en = {
     pendingCount: "{{count}} awaiting review",
   },
   contribute: {
+    statFuelSubDone:
+      "Every commune now carries land cover. This deficit closed.",
     metaTitle: "Contribute to Nadhir",
     metaDescription:
       "What is missing from Nadhir today, and how to help — verifying places, reviewing Kabyle, recording guidance, opening institutional doors, and code.",

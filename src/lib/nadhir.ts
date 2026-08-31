@@ -343,6 +343,38 @@ export const settlementsQuery = queryOptions({
 });
 
 /** Latest EFFIS classification per commune (their run lags ours by design). */
+export type OnmVigilance = {
+  id: string;
+  cap_id: string;
+  title: string;
+  event: string;
+  severity: string;
+  urgency: string;
+  certainty: string;
+  onset: string | null;
+  expires: string | null;
+  sent: string;
+  area_desc: string;
+  cap_url: string | null;
+  wilaya_id: string | null;
+  headline_fr: string | null;
+};
+
+export const onmVigilanceQuery = queryOptions({
+  queryKey: ["onm_vigilance"],
+  queryFn: async () =>
+    must<OnmVigilance[]>(
+      await supabase
+        .from("onm_vigilance")
+        .select(
+          "id, cap_id, title, event, severity, urgency, certainty, onset, expires, sent, area_desc, cap_url, wilaya_id, headline_fr",
+        )
+        .gt("expires", new Date().toISOString())
+        .order("sent", { ascending: false })
+        .limit(300),
+    ),
+});
+
 export const effisDangerQuery = queryOptions({
   queryKey: ["effis_danger"],
   queryFn: async () => {

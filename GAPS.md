@@ -83,15 +83,21 @@ it. The `cap_alerts` migration was applied to the live project on 2026-08-29
 
 Start at: `src/lib/alerts-engine.server.ts`, `src/lib/cap.ts`.
 
-### 1.4 No sub-5-minute detection
+### 1.4 Geostationary detection — wired 2026-08-30, ~30–40 min latency
 
-The spec's §1.4 target depends on the geostationary EUMETSAT MTG FCI feed. Credentials are valid and
-the feed is polled for health, but the granules are netCDF and the edge runtime cannot decode
-them, so **no FCI detection is ever written**. A test pins this behaviour in
-`src/lib/__tests__/ingest.test.ts` so it cannot regress silently.
+MTG FCI detections now ingest every 10 minutes from EUMETSAT's public WFS
+(`mtg_fd:frp` on view.eumetsat.int — the same product the Data Store serves as
+netCDF, pre-decoded to GeoJSON points, anonymous). `src/lib/ingest/fci.server.ts`
+replaced the old catalogue-liveness poll; end-to-end latency is the feed's ~25 min
+plus the 10-minute cron. The spec's sub-5-minute target is not met and cannot be
+from this feed; it would need the Data Store push subscription plus a decode worker.
 
-Detection latency is therefore whatever the polar-orbiting satellites give — hours, not
-minutes. Fixing it means decoding netCDF somewhere that is not a Worker.
+Guards, stated: the layer serves a months-deep archive, so the fetch is time-filtered
+server-side; the CQL BBOX is lat-first, and a run whose features all fall outside the
+watch box errors instead of ingesting the wrong hemisphere. Flare screening applies
+unchanged (cell membership is cadence-free); the offline registry thresholds were
+derived from ~4 looks/day and must be re-derived before FCI detections are ever fed
+into registry *learning* — today they are not.
 
 ## 2. Data quality
 
@@ -138,22 +144,20 @@ The layer only serves its current run, so each row is stamped with the fetch dat
 palette change on their side still degrades the source loudly (the run errors when zero
 communes match).
 
-### 2.3 Commune-to-wilaya assignment diverges from the 2026 law
+### 2.3 Commune-to-wilaya assignment — reconciled with Loi 26-06 (2026-08-30)
 
-`admin_units` holds **1536** communes against the official **1541**, but the honest finding
-is wider than five missing rows: per-wilaya counts differ from post-Loi-26-06 lists in
-**27 wilayas, in both directions** (e.g. Bou Saâda holds 23 communes here vs 13 officially;
-M'Sila 24 vs 34; El Aricha has zero). The OSM extract in `data/geo` encodes a different
-post-2026 reassignment than the law's, and the secondary datasets disagree with each other
-(a widely used community dataset gives El Aricha 8 communes; the Journal Officiel gives 4).
-Reconciliation therefore needs the Journal Officiel itself (Loi 26-06, JORADP
-F2026025.pdf) as the authority — build the canonical commune→wilaya table from it, diff
-against `admin_units`, then correct `data/geo` and reseed. Until then, wilaya groupings in
-the UI show OSM's opinion of the assignment, not necessarily the law's.
+The law (JORADP N° 25, transcribed with citations in `data/geo/loi-26-06.json`) is now
+the applied authority: `bun run audit:loi` verifies 403 of the law's 404 listed
+assignments against the live `admin_units`, zero misfiled. Five re-parents were applied
+with article citations (El Aricha's four communes out of Tlemcen per Art. 52 bis 14;
+Beni Khellad out of Aïn Témouchent per Art. 17) and mirrored in `data/geo/algeria-admin.json`
+so reseeds agree; ten spelling variants are pinned in the law file's `name_mappings`
+(each code verified against the database), and the audit consumes them.
 
-Reproduce: fetch any 1541-commune reference list and compare per-wilaya counts against
-`select w.code, count(*) from admin_units c join admin_units w on w.id = c.parent_id
-where c.level='commune' group by 1;`
+Still open, stated in the law file's `open_items`: Bou Saâda's "Menaâ" (Art. 52 bis 19)
+has no counterpart commune in the database; `2839 Ouled Atia` exists here but in no law
+list; and `admin_units` holds 1537 communes against the law's 1541 — the missing rows
+are unidentified and need the Arabic original or ONS tables to name.
 
 ## 3. Product surface
 
@@ -178,6 +182,13 @@ where c.level='commune' group by 1;`
   including Arzew and Skikda, which the confidence model had scored at 0.82 — above the 0.6
   alerting bar, while a genuine new wildfire scores ~0.40.
   Reproduce: `bun run evaluate:sources`.
+- **ONM vigilance is relayed** since 2026-08-30: the met office's CAP warnings
+  (CC BY 4.0, WMO-registered authority) ingest every pipeline run into
+  `onm_vigilance` and display verbatim per wilaya on the forecast page. Honest
+  limits: ONM publishes no wildfire event type (heat and wind are the
+  fire-relevant channels); titles are English-only in the feed (the per-warning
+  CAP XML carries FR/EN, not Arabic); publication cadence is unproven, so the
+  freshness window is 24h and a quiet weather day is not a dead feed.
 - **Admin console** has no cluster resolve (US-6), no broadcast, and no audit log. It gained a
   **Suggestions** tab on 2026-08-30 for the `/contribute` idea board; nothing user-submitted
   reaches the public board until a moderator publishes it.
@@ -188,7 +199,8 @@ where c.level='commune' group by 1;`
   person. Voting is anonymous by necessity (§1.2 makes accounts unreachable) and keyed to a
   `localStorage` value, so clearing storage earns another vote; the UI says the count shows
   interest rather than a number of people. Open-area verification has a column
-  (`verified_at`) but no submission form yet — the lane links to a GitHub issue.
+  (`verified_at`) but no submission form — verifications arrive as free text in the idea box
+  and a maintainer transcribes them, so the headline deficit only moves by hand.
 - **Survival mode** (`/survival`) ships with deliberate limits, each stated in the UI
   rather than papered over: the SOS queue is **local-only** — no server inbox exists
   because nobody would monitor it (§1.3), and the copy says so; quick hazard reports

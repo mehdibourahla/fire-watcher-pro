@@ -277,8 +277,9 @@ export const kab: Translation = {
     effis: "EFFIS/GWIS (tadbelt tuṛufit) tsemma taɣiwant-a: {{class}}",
     fuelLimited: "Ur yettwasemma ara — drus n yimɣan i yettarɣen",
     effisMasked: "EFFIS ur isemma ara akal n taɣiwant-a (akal war imɣan).",
+    onmLabel: "Alɣu unṣib n ONM",
     effisNone:
-      "Ulac aserwes EFFIS ar tura — asmil uṛufi yettas-d s uleqqem n yal ass.",
+      "Ulac aserwes EFFIS yelhan tura — afaris uṛufi yettwajbed yal ass, yettwagi ma yecceḍ deg usenqed-nneɣ n tɣara.",
     effisClass: {
       low: "Meẓẓi",
       moderate: "Alemmas",
@@ -531,6 +532,8 @@ export const kab: Translation = {
     pendingCount: "{{count}} yettrajun asenqed",
   },
   contribute: {
+    statFuelSubDone:
+      "Yal taɣiwant tesɛa tura isefka n tɣawsa n wakal. Axuṣṣ-a yemmed.",
     metaTitle: "Ttekki deg Nadhir",
     metaDescription:
       "Ayen ixuṣṣen Nadhir ass-a, d wamek ara tallteḍ — asenqed n yimukan, taɣuri n teqbaylit, asekles n wawal, tildin n tewwura n tuddsiwin, d tangalt.",

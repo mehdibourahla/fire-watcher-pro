@@ -167,9 +167,13 @@ function Deficit({ deficits }: { deficits: Deficits }) {
         }
         filled={percent(deficits.communesWithFuel, deficits.communesTotal)}
         sub={
-          known(deficits.communesTotal)
-            ? t("contribute.statFuelSub", { missing: missing.toLocaleString() })
-            : unknown
+          !known(deficits.communesTotal)
+            ? unknown
+            : missing > 0
+              ? t("contribute.statFuelSub", {
+                  missing: missing.toLocaleString(),
+                })
+              : t("contribute.statFuelSubDone")
         }
       />
       <Stat

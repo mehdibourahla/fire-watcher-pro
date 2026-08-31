@@ -44,12 +44,14 @@ export async function readDeficits(): Promise<Deficits> {
         .select("id", head)
         .eq("level", "commune"),
     ),
+    // presence of land-cover data, not presence of trees: since the WorldCover
+    // enrichment a zero forest_fraction means a desert commune, not a missing one
     count(
       supabaseAdmin
         .from("admin_units")
         .select("id", head)
         .eq("level", "commune")
-        .gt("forest_fraction", 0),
+        .not("landcover", "is", null),
     ),
     count(supabaseAdmin.from("alerts").select("id", head)),
   ]);
