@@ -708,6 +708,18 @@ export const fr: Translation = {
     laneOther: "Autre chose",
   },
   translate: {
+    filterMine: "Envoyées par vous",
+    youConfirmed: "Vous avez confirmé cette formulation",
+    revise: "Corriger",
+    status_pending: "En attente de relecture",
+    status_accepted: "Acceptée",
+    status_rejected: "Non retenue",
+    tallyAccepted: "{{count}} acceptées",
+    tallyAwaiting: "{{count}} en attente",
+    tallyRejected: "{{count}} non retenues",
+    tallyUnsent: "{{count}} pas encore envoyées",
+    sentKept:
+      "Votre travail reste sur cette page. Les envois affichent leur issue dès qu’un mainteneur les a examinés.",
     back: "Retour à Contribuer",
     title: "Relire la traduction {{language}}",
     lede: "Chaque chaîne de l’application, à côté de sa source anglaise. Proposez une meilleure formulation, ou confirmez qu’une chaîne est correcte. Aucun compte requis, et votre travail reste dans ce navigateur jusqu’à l’envoi.",

@@ -687,6 +687,18 @@ export const en = {
     laneOther: "Something else",
   },
   translate: {
+    filterMine: "Sent by you",
+    youConfirmed: "You confirmed this reads right",
+    revise: "Revise",
+    status_pending: "Awaiting review",
+    status_accepted: "Accepted",
+    status_rejected: "Not used",
+    tallyAccepted: "{{count}} accepted",
+    tallyAwaiting: "{{count}} awaiting review",
+    tallyRejected: "{{count}} not used",
+    tallyUnsent: "{{count}} not sent yet",
+    sentKept:
+      "Your work stays on this page. Sent items show their outcome once a maintainer has looked at them.",
     back: "Back to Contribute",
     title: "Review the {{language}} translation",
     lede: "Every string in the app, beside its English source. Suggest a better wording, or confirm one reads correctly. No account needed, and your work is kept in this browser until you send it.",

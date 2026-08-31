@@ -9,7 +9,7 @@ import {
   Search,
   X,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -18,12 +18,16 @@ import {
   countSubmittable,
   groupRows,
   isSubmittable,
+  markSent,
   readDrafts,
   readReviewerKey,
   rowsFor,
+  summarise,
   writeDrafts,
   type Draft,
   type DraftMap,
+  type MyStatus,
+  type MyStatusMap,
   type ReviewableLocale,
   type StringRow,
 } from "@/lib/translate";
@@ -47,29 +51,61 @@ export const Route = createFileRoute("/contribute_/language/$locale")({
   component: ReviewPage,
 });
 
-type Filter = "all" | "todo" | "changed" | "confirmed";
+type Filter = "all" | "todo" | "changed" | "confirmed" | "mine";
+
+function StatusBadge({ status }: { status: MyStatus | undefined }) {
+  const { t } = useTranslation();
+  if (!status) return null;
+  const tone =
+    status.status === "accepted"
+      ? "bg-[var(--accent-tint)] text-[var(--accent)]"
+      : status.status === "rejected"
+        ? "bg-muted text-muted-foreground"
+        : "bg-muted text-muted-foreground";
+  return (
+    <span className="flex flex-col gap-1">
+      <span
+        className={cn(
+          "self-start rounded-md px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider",
+          tone,
+        )}
+      >
+        {t(`translate.status_${status.status}`)}
+      </span>
+      {status.moderationNote ? (
+        <span className="text-[11.5px] leading-relaxed text-faint">
+          {status.moderationNote}
+        </span>
+      ) : null}
+    </span>
+  );
+}
 
 function Row({
   row,
   draft,
+  status,
   rtl,
   onChange,
 }: {
   row: StringRow;
   draft: Draft | undefined;
+  status: MyStatus | undefined;
   rtl: boolean;
   onChange: (next: Draft | undefined) => void;
 }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
-  const suggesting = open || draft?.verdict === "suggested";
-  const confirmed = draft?.verdict === "confirmed";
+  const sent = draft?.sent === true;
+  const suggesting = !sent && (open || draft?.verdict === "suggested");
+  const confirmed = !sent && draft?.verdict === "confirmed";
 
   return (
     <li
       className={cn(
         "grid gap-3 border-b border-border px-4 py-4 last:border-b-0 md:grid-cols-[1fr_1fr_auto] md:items-start md:gap-5",
         confirmed && "bg-[var(--accent-tint)]/40",
+        sent && "bg-muted/30",
       )}
     >
       <div className="flex flex-col gap-1.5">
@@ -91,6 +127,24 @@ function Row({
         >
           {row.current || "—"}
         </span>
+
+        {sent ? (
+          <div className="flex flex-col gap-1.5">
+            {draft?.verdict === "suggested" ? (
+              <span
+                dir={rtl ? "rtl" : "ltr"}
+                className="text-[13.5px] font-medium leading-relaxed"
+              >
+                {draft.suggestion}
+              </span>
+            ) : (
+              <span className="text-[13px] text-muted-foreground">
+                {t("translate.youConfirmed")}
+              </span>
+            )}
+            <StatusBadge status={status} />
+          </div>
+        ) : null}
 
         {suggesting ? (
           <div className="flex flex-col gap-1.5">
@@ -120,22 +174,24 @@ function Row({
       </div>
 
       <div className="flex items-center gap-1.5 md:flex-col md:items-stretch">
-        <button
-          type="button"
-          aria-pressed={confirmed}
-          onClick={() =>
-            onChange(confirmed ? undefined : { verdict: "confirmed" })
-          }
-          className={cn(
-            "inline-flex items-center justify-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors",
-            confirmed
-              ? "border-[var(--accent)] bg-[var(--accent)] text-[var(--accent-ink)]"
-              : "border-border text-muted-foreground hover:text-foreground",
-          )}
-        >
-          <Check aria-hidden className="size-3.5" />
-          {t("translate.looksRight")}
-        </button>
+        {!sent ? (
+          <button
+            type="button"
+            aria-pressed={confirmed}
+            onClick={() =>
+              onChange(confirmed ? undefined : { verdict: "confirmed" })
+            }
+            className={cn(
+              "inline-flex items-center justify-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors",
+              confirmed
+                ? "border-[var(--accent)] bg-[var(--accent)] text-[var(--accent-ink)]"
+                : "border-border text-muted-foreground hover:text-foreground",
+            )}
+          >
+            <Check aria-hidden className="size-3.5" />
+            {t("translate.looksRight")}
+          </button>
+        ) : null}
         {!suggesting ? (
           <button
             type="button"
@@ -146,7 +202,7 @@ function Row({
             className="inline-flex items-center justify-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             <Pencil aria-hidden className="size-3.5" />
-            {t("translate.suggest")}
+            {sent ? t("translate.revise") : t("translate.suggest")}
           </button>
         ) : null}
       </div>
@@ -167,6 +223,42 @@ function ReviewPage() {
   const [name, setName] = useState("");
   const [sent, setSent] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [statuses, setStatuses] = useState<MyStatusMap>({});
+
+  const loadStatuses = useCallback(async () => {
+    const reviewerKey = readReviewerKey();
+    if (!reviewerKey) return;
+    try {
+      const res = await fetch("/api/public/contribute/my-translations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ locale, reviewerKey }),
+      });
+      const body = (await res.json()) as {
+        rows: {
+          keyPath: string;
+          status: string;
+          moderationNote: string | null;
+          suggestion: string | null;
+        }[];
+      };
+      const map: MyStatusMap = {};
+      for (const row of body.rows ?? []) {
+        map[row.keyPath] = {
+          status: row.status as MyStatus["status"],
+          suggestion: row.suggestion,
+          moderationNote: row.moderationNote,
+        };
+      }
+      setStatuses(map);
+    } catch {
+      // no statuses is a quieter failure than a broken page
+    }
+  }, [locale]);
+
+  useEffect(() => {
+    void loadStatuses();
+  }, [loadStatuses]);
 
   const update = (path: string, next: Draft | undefined) => {
     setDrafts((prev) => {
@@ -183,6 +275,7 @@ function ReviewPage() {
     return rows.filter((row) => {
       const draft = drafts[row.path];
       if (filter === "todo" && draft) return false;
+      if (filter === "mine" && !draft?.sent) return false;
       if (filter === "changed" && draft?.verdict !== "suggested") return false;
       if (filter === "confirmed" && draft?.verdict !== "confirmed")
         return false;
@@ -198,6 +291,7 @@ function ReviewPage() {
   const groups = useMemo(() => groupRows(visible), [visible]);
   const pending = countSubmittable(drafts);
   const reviewed = Object.keys(drafts).length;
+  const tally = summarise(drafts, statuses);
 
   const submit = useMutation({
     mutationFn: async () => {
@@ -235,8 +329,13 @@ function ReviewPage() {
     onSuccess: (saved) => {
       setSent(saved);
       setError(null);
-      setDrafts({});
-      writeDrafts(locale, {});
+      // marked rather than deleted: the reviewer must still see what they sent
+      setDrafts((prev) => {
+        const next = markSent(prev);
+        writeDrafts(locale, next);
+        return next;
+      });
+      void loadStatuses();
     },
     onError: (e: Error) =>
       setError(
@@ -251,6 +350,7 @@ function ReviewPage() {
     { key: "todo", label: t("translate.filterTodo") },
     { key: "changed", label: t("translate.filterChanged") },
     { key: "confirmed", label: t("translate.filterConfirmed") },
+    { key: "mine", label: t("translate.filterMine") },
   ];
 
   return (
@@ -287,8 +387,35 @@ function ReviewPage() {
             style={{ width: `${(reviewed / rows.length) * 100}%` }}
           />
         </div>
+        {tally.reviewed > 0 ? (
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t border-border pt-3 text-xs">
+            {tally.accepted > 0 ? (
+              <span className="font-medium text-[var(--accent)]">
+                {t("translate.tallyAccepted", { count: tally.accepted })}
+              </span>
+            ) : null}
+            {tally.awaiting > 0 ? (
+              <span className="text-muted-foreground">
+                {t("translate.tallyAwaiting", { count: tally.awaiting })}
+              </span>
+            ) : null}
+            {tally.rejected > 0 ? (
+              <span className="text-muted-foreground">
+                {t("translate.tallyRejected", { count: tally.rejected })}
+              </span>
+            ) : null}
+            {tally.unsent > 0 ? (
+              <span className="text-muted-foreground">
+                {t("translate.tallyUnsent", { count: tally.unsent })}
+              </span>
+            ) : null}
+          </div>
+        ) : null}
+
         <p className="text-xs leading-relaxed text-faint">
-          {t("translate.draftNote")}
+          {tally.reviewed > tally.unsent
+            ? t("translate.sentKept")
+            : t("translate.draftNote")}
         </p>
       </div>
 
@@ -367,6 +494,7 @@ function ReviewPage() {
                         key={row.path}
                         row={row}
                         draft={drafts[row.path]}
+                        status={statuses[row.path]}
                         rtl={rtl}
                         onChange={(next) => update(row.path, next)}
                       />
@@ -415,10 +543,11 @@ function ReviewPage() {
                     setDrafts({});
                     writeDrafts(locale, {});
                   }}
-                  className="order-4 inline-flex h-9 shrink-0 items-center gap-1.5 rounded-md border border-border px-3 text-[13px] text-muted-foreground sm:order-3"
+                  aria-label={t("translate.clear")}
+                  title={t("translate.clear")}
+                  className="order-4 inline-flex size-9 shrink-0 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:text-foreground sm:order-3"
                 >
-                  <RotateCcw aria-hidden className="size-3.5" />
-                  {t("translate.clear")}
+                  <RotateCcw aria-hidden className="size-4" />
                 </button>
                 <button
                   type="button"

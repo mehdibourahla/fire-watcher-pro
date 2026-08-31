@@ -677,6 +677,18 @@ export const ar: Translation = {
     laneOther: "شيء آخر",
   },
   translate: {
+    filterMine: "أرسلتها أنت",
+    youConfirmed: "أكّدت أن هذه الصياغة سليمة",
+    revise: "عدّل",
+    status_pending: "في انتظار المراجعة",
+    status_accepted: "مقبولة",
+    status_rejected: "لم تُعتمد",
+    tallyAccepted: "{{count}} مقبولة",
+    tallyAwaiting: "{{count}} في الانتظار",
+    tallyRejected: "{{count}} لم تُعتمد",
+    tallyUnsent: "{{count}} لم تُرسل بعد",
+    sentKept:
+      "يبقى عملك على هذه الصفحة. تُظهر المُرسَلات نتيجتها بمجرد أن يطّلع عليها مشرف.",
     back: "العودة إلى المساهمة",
     title: "راجع الترجمة {{language}}",
     lede: "كل نص في التطبيق، بجانب مصدره الإنجليزي. اقترح صياغة أفضل، أو أكّد أن النص سليم. لا حاجة إلى حساب، وعملك محفوظ في هذا المتصفح حتى ترسله.",
