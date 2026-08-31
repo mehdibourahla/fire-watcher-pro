@@ -605,6 +605,48 @@ export const en = {
     privacy_contact_body:
       "For any data question, use the contact channel listed on the About page.",
   },
+  push: {
+    bell: "Area alerts",
+    inviteTitle: "Instant alert if a fire comes close",
+    inviteBody:
+      "Pick your communes to get a notification the moment a fire is confirmed near them — free, no account, switch off anytime.",
+    inviteCta: "Enable area alerts",
+    inviteLater: "Later",
+    inviteOnce: "Shown once — the bell above stays available.",
+    sheetTitle: "Area alerts",
+    sheetBody:
+      "Delivered the moment a fire is confirmed near your communes — no account, no email. Your subscription is anonymous and stays on this device.",
+    yourCommunes: "Your communes",
+    addCommune: "Add a commune",
+    searchCommune: "Search for a commune…",
+    maxCommunes: "Up to {{max}} communes.",
+    lang: "Alert language",
+    whatTitle: "What you receive",
+    whatFires: "Confirmed fires near your communes",
+    whatFiresAlways: "always",
+    whatOnm: "Official weather warnings (ONM)",
+    noDanger:
+      "We never send daily danger levels — only confirmed fires and official warnings.",
+    activate: "Enable alerts",
+    update: "Update subscription",
+    disable: "Turn off alerts",
+    permissionTitle: "Nadhir needs notification permission to reach you",
+    permissionBody:
+      "When a satellite confirms a fire near one of your communes, a notification reaches you within minutes — even with the app closed.",
+    permissionPoint1:
+      "Confirmed fires and official warnings only — no daily messages.",
+    permissionPoint2:
+      "No account: we don't know your name, number or precise location.",
+    permissionPoint3: "You can switch it off anytime from this screen.",
+    permissionContinue: "Continue",
+    permissionLater: "Not now",
+    active: "Alerts active for {{count}} communes.",
+    denied:
+      "Your browser blocked notifications. Allow them in the site settings, then try again.",
+    unavailable: "Push delivery is not configured on this deployment yet.",
+    unsupported: "This browser does not support push notifications.",
+    error: "Subscription failed. Check your connection and try again.",
+  },
 };
 
 export type Translation = typeof en;

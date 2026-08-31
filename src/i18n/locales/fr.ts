@@ -622,4 +622,49 @@ export const fr: Translation = {
     privacy_contact_body:
       "Pour toute question, utilisez le contact indiqué sur la page À propos.",
   },
+  push: {
+    bell: "Alertes de votre zone",
+    inviteTitle: "Alerte immédiate si un feu approche",
+    inviteBody:
+      "Choisissez vos communes pour être notifié dès qu'un incendie y est confirmé — gratuit, sans compte, désactivable à tout moment.",
+    inviteCta: "Activer les alertes de ma zone",
+    inviteLater: "Plus tard",
+    inviteOnce:
+      "Affiché une seule fois — la cloche en haut reste toujours disponible.",
+    sheetTitle: "Alertes de votre zone",
+    sheetBody:
+      "Reçues dès qu'un incendie est confirmé près de vos communes — sans compte, sans e-mail. Votre abonnement est anonyme et reste sur cet appareil.",
+    yourCommunes: "Vos communes",
+    addCommune: "Ajouter une commune",
+    searchCommune: "Rechercher une commune…",
+    maxCommunes: "Jusqu'à {{max}} communes.",
+    lang: "Langue des alertes",
+    whatTitle: "Ce que vous recevez",
+    whatFires: "Incendies confirmés près de vos communes",
+    whatFiresAlways: "toujours",
+    whatOnm: "Avertissements météo officiels (ONM)",
+    noDanger:
+      "Nous n'envoyons jamais les niveaux de danger quotidiens — uniquement les incendies confirmés et les avertissements officiels.",
+    activate: "Activer les alertes",
+    update: "Mettre à jour l'abonnement",
+    disable: "Désactiver les alertes",
+    permissionTitle:
+      "Pour vous joindre, Nadhir a besoin de l'autorisation de notification",
+    permissionBody:
+      "Quand un satellite confirme un incendie près d'une de vos communes, une notification vous parvient en quelques minutes — même application fermée.",
+    permissionPoint1:
+      "Incendies confirmés et avertissements officiels uniquement — aucun message quotidien.",
+    permissionPoint2:
+      "Sans compte : nous ne connaissons ni votre nom, ni votre numéro, ni votre position précise.",
+    permissionPoint3: "Désactivable à tout moment depuis cet écran.",
+    permissionContinue: "Continuer",
+    permissionLater: "Pas maintenant",
+    active: "Alertes actives pour {{count}} communes.",
+    denied:
+      "Votre navigateur a bloqué les notifications. Autorisez-les dans les réglages du site, puis réessayez.",
+    unavailable:
+      "La livraison push n'est pas encore configurée sur ce déploiement.",
+    unsupported: "Ce navigateur ne prend pas en charge les notifications push.",
+    error: "Échec de l'abonnement. Vérifiez votre connexion et réessayez.",
+  },
 };

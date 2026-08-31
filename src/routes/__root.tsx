@@ -171,6 +171,13 @@ function RootComponent() {
   }, []);
 
   useEffect(() => {
+    // ADR-0004: the client re-asserts its FCM topics on load (token refresh path)
+    void import("@/lib/push").then(({ syncSubscription }) =>
+      syncSubscription().catch(() => undefined),
+    );
+  }, []);
+
+  useEffect(() => {
     const media = window.matchMedia("(prefers-color-scheme: dark)");
     const onChange = () => {
       if (readThemeCookie() === "system") applyTheme("system");
