@@ -156,6 +156,8 @@ export function SubscribeSheet({ open, onClose }: Props) {
       setDone(true);
       setStep("pick");
     } catch (e) {
+      // the friendly copy hid a CSP block once; keep the real cause reachable
+      console.error("[push] subscription failed", e);
       setError(
         e instanceof Error && e.message === "permission_denied"
           ? t("push.denied")

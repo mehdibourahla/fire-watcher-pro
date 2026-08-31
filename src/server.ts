@@ -29,7 +29,8 @@ const CSP = [
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com",
   "img-src 'self' data: blob: https://*.cartocdn.com",
-  `connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.cartocdn.com${LOCAL_SUPABASE}`,
+  // the two hosts the Firebase SDK calls to mint a push registration token
+  `connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.cartocdn.com https://firebaseinstallations.googleapis.com https://fcmregistrations.googleapis.com${LOCAL_SUPABASE}`,
   "worker-src 'self' blob:",
   "manifest-src 'self'",
   // would rewrite a contributor's http://localhost stack to https and break it
