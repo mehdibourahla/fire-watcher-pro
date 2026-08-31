@@ -5,6 +5,10 @@ const WINDOW_DAYS = 7;
 export const Route = createFileRoute("/api/public/v1/stats")({
   server: {
     handlers: {
+      ANY: async () => {
+        const { methodNotAllowed } = await import("@/lib/public-api.server");
+        return methodNotAllowed();
+      },
       OPTIONS: async () => {
         const { preflight } = await import("@/lib/public-api.server");
         return preflight();

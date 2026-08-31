@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   fireFeatureCollection,
+  methodNotAllowed,
   serializePublicSourceStatus,
   summariseFires,
 } from "@/lib/public-api.server";
@@ -44,6 +45,20 @@ describe("fireFeatureCollection", () => {
       type: "FeatureCollection",
       features: [],
     });
+  });
+});
+
+describe("methodNotAllowed", () => {
+  it("returns the public API's JSON 405 contract", async () => {
+    const response = methodNotAllowed();
+
+    expect(response.status).toBe(405);
+    await expect(response.json()).resolves.toEqual({
+      error: "method not allowed",
+    });
+    expect(response.headers.get("Allow")).toBe("GET, HEAD, OPTIONS");
+    expect(response.headers.get("Access-Control-Allow-Origin")).toBe("*");
+    expect(response.headers.get("Content-Type")).toBe("application/json");
   });
 });
 

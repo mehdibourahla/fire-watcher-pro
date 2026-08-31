@@ -25,6 +25,17 @@ export function json(
   });
 }
 
+export function methodNotAllowed() {
+  return new Response(JSON.stringify({ error: "method not allowed" }), {
+    status: 405,
+    headers: {
+      ...CORS_HEADERS,
+      Allow: "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+    },
+  });
+}
+
 /** Publishable-key client: reads only what the anon SELECT policies allow. */
 export function publicSupabase() {
   const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
