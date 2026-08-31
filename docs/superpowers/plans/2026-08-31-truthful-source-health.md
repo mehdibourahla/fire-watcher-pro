@@ -202,6 +202,12 @@ export type SourceRunReport = {
 };
 
 export function publicReasonForError(error: string): PublicSourceReason;
+export function sourceRunOutcome(input: {
+  accepted: number;
+  expected?: number | null;
+  error?: string | null;
+  disabled?: boolean;
+}): Pick<SourceRunReport, "outcome" | "coverageStatus">;
 export async function recordSourceRun(
   report: SourceRunReport,
 ): Promise<boolean>;
@@ -223,11 +229,11 @@ export async function recordSourceRun(
 
 - Modify: `src/lib/ingest/pipeline.server.ts`
 - Modify: `src/lib/ingest/delivery.server.ts`
-- Modify: `src/lib/__tests__/ingest.test.ts`
+- Modify: `src/lib/__tests__/source-runs.test.ts`
 - Delete: no files in this task
 
-- [ ] **Step 1: Add failing source-coverage tests.** Replace the old assertion that checks browser freshness windows with assertions that every stage in `runDetectionPipeline` and `runRiskPipeline` calls `recordSourceRun`, and that neither pipeline file references `data_sources`, `ingest_runs`, `markSource`, or the old string-cast insert.
-- [ ] **Step 2: Run `bun run test src/lib/__tests__/ingest.test.ts`.** Expected: failures on the new run-report coverage assertions.
+- [ ] **Step 1: Add failing outcome-transition tests.** Exercise the real shared outcome builder with hand-checked inputs: a successful empty poll is complete, an errored run with no accepted rows is failed, an errored or under-covered run with accepted rows is partial, and an operator-disabled run is skipped without becoming a successful validation. These tests protect the branches every pipeline stage uses without grepping implementation text.
+- [ ] **Step 2: Run `bun run test src/lib/__tests__/source-runs.test.ts`.** Expected: failures because the outcome builder and transitions do not exist yet.
 - [ ] **Step 3: Replace the local journaling helpers.** Delete `RunOutcome`, `recordRun`, and both `markSource` implementations. Import the shared reporter. Use the pipeline start as `scheduledFor` for all stages in that invocation so stage identities are deterministic.
 - [ ] **Step 4: Report detection and processing stages.** Record structured outcomes for:
   - `firms`: successful empty polls are complete; zero responding feeds is failed; freshness uses poll validation, not latest detection;
