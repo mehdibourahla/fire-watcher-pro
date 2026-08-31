@@ -221,8 +221,9 @@ production evidence proves that no deployed code still uses them.
   `onm_vigilance` and display verbatim per wilaya on the forecast page. Honest
   limits: ONM publishes no wildfire event type (heat and wind are the
   fire-relevant channels); titles are English-only in the feed (the per-warning
-  CAP XML carries FR/EN, not Arabic); publication cadence is unproven, so the
-  freshness window is 24h and a quiet weather day is not a dead feed.
+  CAP XML carries FR/EN, not Arabic); publication cadence is unproven. Health is
+  therefore based on successful validated polls, so a quiet weather day is not
+  treated as a dead feed.
 - **Admin console** has no cluster resolve (US-6). It gained a **Suggestions** tab on
   2026-08-30 for the `/contribute` idea board (nothing user-submitted reaches the public
   board until a moderator publishes it), and broadcast controls at `/broadcasts`:

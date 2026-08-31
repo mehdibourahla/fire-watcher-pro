@@ -47,6 +47,25 @@ select is(
   'every current external source and derived stage has a contract'
 );
 
+select is(
+  (
+    select warning_after_minutes
+    from public.source_contracts
+    where key = 'local_fwi'
+  ),
+  32 * 60,
+  'current-day FWI stays healthy until the next 08:00 UTC publication deadline'
+);
+select is(
+  (
+    select stale_after_minutes
+    from public.source_contracts
+    where key = 'local_fwi'
+  ),
+  48 * 60,
+  'an FWI product becomes stale before the publication cycle after next'
+);
+
 select ok(
   (
     select bool_and(relrowsecurity)
