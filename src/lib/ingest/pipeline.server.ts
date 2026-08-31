@@ -209,6 +209,7 @@ export async function runDetectionPipeline(): Promise<PipelineResult> {
       status: "failed",
       error: message,
     });
+    await markSource("broadcast", false, message);
   }
 
   return { firms, fci, fusion, winds, broadcast, delivery };

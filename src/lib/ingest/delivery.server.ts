@@ -180,7 +180,10 @@ function fcmMessagesFor(
   return null;
 }
 
-async function deliverFcm(): Promise<{ rows: number; sent: number }> {
+async function deliverFcm(errors: string[]): Promise<{
+  rows: number;
+  sent: number;
+}> {
   const pending = await pendingRows("fcm_delivered_at");
   if (!pending.length) return { rows: 0, sent: 0 };
   const context = await loadContext(pending);
@@ -191,9 +194,15 @@ async function deliverFcm(): Promise<{ rows: number; sent: number }> {
     const messages = fcmMessagesFor(row, context);
     if (messages === null) continue;
     if (sent + messages.length > FCM_SEND_BUDGET) break;
-    for (const message of messages) {
-      await fcmSend(message);
-      sent += 1;
+    // one persistently rejected row must not silence every other pending alert
+    try {
+      for (const message of messages) {
+        await fcmSend(message);
+        sent += 1;
+      }
+    } catch (error) {
+      errors.push(error instanceof Error ? error.message : "fcm send failed");
+      continue;
     }
     const { error } = await supabaseAdmin
       .from("broadcasts")
@@ -252,7 +261,7 @@ function telegramHtmlFor(
   return null;
 }
 
-async function deliverTelegram(): Promise<{
+async function deliverTelegram(errors: string[]): Promise<{
   rows: number;
   sent: number;
   channels: number;
@@ -294,9 +303,16 @@ async function deliverTelegram(): Promise<{
     const chats = wilayaIds
       .map((id) => chatByWilaya.get(id))
       .filter((chat): chat is string => Boolean(chat));
-    for (const chat of chats) {
-      await sendTelegram(chat, html!);
-      sent += 1;
+    try {
+      for (const chat of chats) {
+        await sendTelegram(chat, html!);
+        sent += 1;
+      }
+    } catch (error) {
+      errors.push(
+        error instanceof Error ? error.message : "telegram send failed",
+      );
+      continue;
     }
     // stamped even with zero matching channels: nothing further to deliver
     const { error } = await supabaseAdmin
@@ -313,12 +329,32 @@ async function deliverTelegram(): Promise<{
 }
 
 export async function deliverBroadcasts(): Promise<DeliveryRun> {
+  // the kill-switch promise is "nothing goes out", so it gates fan-out of
+  // already-published rows too, and fails closed like the publisher's gate
+  const { data: settings, error: settingsError } = await supabaseAdmin
+    .from("broadcast_settings")
+    .select("enabled")
+    .eq("id", true)
+    .single();
+  if (settingsError) throw new Error(settingsError.message);
+  if (settings.enabled !== true) {
+    await markSource(false, "Kill-switch engaged — delivery paused.");
+    return {
+      rows: 0,
+      sent: 0,
+      telegramRows: 0,
+      telegramSent: 0,
+      configured: fcmConfigured(),
+    };
+  }
+
+  const errors: string[] = [];
   const fcmOn = fcmConfigured();
-  const fcm = fcmOn ? await deliverFcm() : { rows: 0, sent: 0 };
+  const fcm = fcmOn ? await deliverFcm(errors) : { rows: 0, sent: 0 };
 
   const telegramOn = telegramConfigured();
   const telegram = telegramOn
-    ? await deliverTelegram()
+    ? await deliverTelegram(errors)
     : { rows: 0, sent: 0, channels: 0 };
 
   const fcmNote = fcmOn
@@ -329,7 +365,16 @@ export async function deliverBroadcasts(): Promise<DeliveryRun> {
       ? `Telegram: ${telegram.sent} messages to ${telegram.channels} channels`
       : "Telegram: no channels seeded"
     : "Telegram: TELEGRAM_BOT_TOKEN not configured";
-  await markSource(fcmOn, `${fcmNote}; ${telegramNote}`);
+  const errorNote = errors.length
+    ? `; ${errors.length} rows failed: ${errors[0]}`
+    : "";
+  await markSource(
+    fcmOn && !errors.length,
+    `${fcmNote}; ${telegramNote}${errorNote}`,
+  );
+
+  if (errors.length)
+    throw new Error(`${errors.length} delivery rows failed: ${errors[0]}`);
 
   return {
     rows: fcm.rows,

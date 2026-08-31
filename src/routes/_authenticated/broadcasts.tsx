@@ -226,6 +226,7 @@ function BroadcastConsole() {
             {t("broadcastAdmin.body")}
             <textarea
               required
+              maxLength={1500}
               rows={3}
               value={form.body}
               onChange={(e) => setForm({ ...form, body: e.target.value })}

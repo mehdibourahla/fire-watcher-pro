@@ -384,9 +384,11 @@ export async function publishBroadcasts(): Promise<BroadcastRun> {
 }
 
 async function relayAuthorityWarnings(): Promise<number> {
+  // recent window: unbounded growth would eventually hit the 1000-row page cap
   const { data: warnings, error } = await supabaseAdmin
     .from("authority_warnings")
-    .select("id, severity, wilaya_id, commune_codes");
+    .select("id, severity, wilaya_id, commune_codes")
+    .gte("created_at", new Date(Date.now() - 7 * 86400_000).toISOString());
   if (error) throw new Error(error.message);
   if (!warnings?.length) return 0;
 
