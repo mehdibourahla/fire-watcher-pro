@@ -10,7 +10,7 @@ export type SourceRunRpcClient = {
   rpc: (
     name: "record_source_run",
     args: SourceRunRpcArgs,
-  ) => Promise<{ error: { message: string } | null }>;
+  ) => PromiseLike<{ error: { message: string } | null }>;
 };
 
 export async function recordSourceRunWith(
@@ -31,9 +31,5 @@ export async function recordSourceRunWith(
 export async function recordSourceRun(
   report: SourceRunReport,
 ): Promise<boolean> {
-  return recordSourceRunWith(
-    supabaseAdmin as unknown as SourceRunRpcClient,
-    report,
-    new Date().toISOString(),
-  );
+  return recordSourceRunWith(supabaseAdmin, report, new Date().toISOString());
 }

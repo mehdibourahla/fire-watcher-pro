@@ -151,6 +151,23 @@ select ok(
   'only the service role can report runs'
 );
 
+update public.source_checkpoints
+set
+  last_scheduled_for = null,
+  last_attempt_at = null,
+  last_success_at = null,
+  upstream_published_at = null,
+  data_from = null,
+  data_through = null,
+  validated_at = null,
+  published_at = null,
+  consecutive_failures = 0,
+  records_accepted = 0,
+  records_expected = null,
+  coverage_status = 'unknown',
+  last_public_reason_code = null
+where contract_key in ('firms', 'fci', 'fusion');
+
 select isnt(
   public.record_source_run(
     _contract_key => 'firms',
@@ -296,6 +313,75 @@ select is(
   ),
   '2026-08-31 10:00:00+00'::timestamptz,
   'failure cannot advance the last valid watermark'
+);
+
+select public.record_source_run(
+  _contract_key => 'fusion',
+  _trigger_kind => 'manual',
+  _idempotency_key => 'pgtap:fusion:newer-success',
+  _scheduled_for => '2026-08-31 13:00:00+00',
+  _started_at => '2026-08-31 13:00:01+00',
+  _finished_at => '2026-08-31 13:00:02+00',
+  _outcome => 'succeeded',
+  _upstream_published_at => null,
+  _data_from => '2026-08-31 12:50:00+00',
+  _data_through => '2026-08-31 13:00:00+00',
+  _validated_at => '2026-08-31 13:00:02+00',
+  _published_at => '2026-08-31 13:00:02+00',
+  _records_seen => 4,
+  _records_inserted => 2,
+  _records_updated => 2,
+  _records_rejected => 0,
+  _records_expected => 4,
+  _coverage_status => 'complete',
+  _quality_checks => '{}'::jsonb,
+  _public_reason_code => null,
+  _private_diagnostic => null
+);
+select public.record_source_run(
+  _contract_key => 'fusion',
+  _trigger_kind => 'manual',
+  _idempotency_key => 'pgtap:fusion:older-failure',
+  _scheduled_for => '2026-08-31 12:00:00+00',
+  _started_at => '2026-08-31 12:00:01+00',
+  _finished_at => '2026-08-31 13:05:00+00',
+  _outcome => 'failed',
+  _upstream_published_at => null,
+  _data_from => null,
+  _data_through => null,
+  _validated_at => null,
+  _published_at => null,
+  _records_seen => 0,
+  _records_inserted => 0,
+  _records_updated => 0,
+  _records_rejected => 0,
+  _records_expected => 4,
+  _coverage_status => 'unknown',
+  _quality_checks => '{}'::jsonb,
+  _public_reason_code => 'dependency_failed',
+  _private_diagnostic => 'older work finished after the current interval'
+);
+select results_eq(
+  $$
+    select
+      last_attempt_at,
+      data_through,
+      consecutive_failures,
+      records_accepted,
+      coverage_status
+    from public.source_checkpoints
+    where contract_key = 'fusion'
+  $$,
+  $$
+    values (
+      '2026-08-31 13:00:02+00'::timestamptz,
+      '2026-08-31 13:00:00+00'::timestamptz,
+      0,
+      4,
+      'complete'::text
+    )
+  $$,
+  'an older run cannot overwrite a newer checkpoint'
 );
 
 select public.record_source_run(

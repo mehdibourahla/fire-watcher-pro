@@ -49,3 +49,10 @@ export function summariseSourceHealth(rows: SourceHealth[]) {
     allHealthy: affected.length === 0,
   };
 }
+
+export function sourceHealthCapabilityAffected(
+  rows: SourceHealth[],
+  unavailable: boolean,
+) {
+  return unavailable || summariseSourceHealth(rows).capabilityAffected > 0;
+}

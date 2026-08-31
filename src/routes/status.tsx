@@ -43,7 +43,18 @@ function StatusPage() {
         {t("status.subtitle")}
       </p>
 
-      {summary.affected > 0 ? (
+      {sources.isError ? (
+        <p
+          role="alert"
+          className="mt-4 rounded-lg px-3 py-2 text-sm"
+          style={{
+            backgroundColor: "var(--emergency-surface)",
+            color: "var(--emergency)",
+          }}
+        >
+          {t("status.state.unavailable")}
+        </p>
+      ) : summary.affected > 0 ? (
         <p
           role="status"
           className="mt-4 rounded-lg px-3 py-2 text-sm"
@@ -58,7 +69,7 @@ function StatusPage() {
 
       {sources.isLoading ? (
         <SkeletonList rows={4} className="mt-5" />
-      ) : (
+      ) : sources.isError ? null : (
         <ul className="card mt-5">
           {(sources.data ?? []).map((source) => (
             <SourceHealth key={source.key} source={source} locale={locale} />

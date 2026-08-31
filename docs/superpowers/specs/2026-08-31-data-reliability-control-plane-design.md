@@ -169,8 +169,9 @@ Append-only execution record replacing `ingest_runs`:
 - private diagnostic detail
 
 Public access is limited to a sanitized view. The raw table is restricted to operators
-and the service role. Existing `ingest_runs` data is migrated and the old table and read
-path are removed in the same change.
+and the service role. Existing `ingest_runs` data is migrated and its old read path is
+removed in M1A. The table stays dormant for the schema-before-code window and is removed
+by the named contract cleanup release after production evidence confirms the cutover.
 
 ### `source_gaps`
 

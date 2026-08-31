@@ -1,3 +1,5 @@
+import type { Database } from "@/integrations/supabase/types";
+
 export type SourceRunOutcome = "succeeded" | "partial" | "failed" | "skipped";
 
 export type SourceRunTrigger = "scheduled" | "manual" | "replay" | "dependency";
@@ -99,29 +101,49 @@ export function sourceRunOutcome(input: {
   return { outcome: "succeeded", coverageStatus: "complete" };
 }
 
-export type SourceRunRpcArgs = {
-  _contract_key: string;
-  _trigger_kind: SourceRunTrigger;
-  _idempotency_key: string;
-  _scheduled_for: string;
-  _started_at: string;
-  _finished_at: string;
-  _outcome: SourceRunOutcome;
-  _upstream_published_at: string | null;
-  _data_from: string | null;
-  _data_through: string | null;
-  _validated_at: string | null;
-  _published_at: string | null;
-  _records_seen: number;
-  _records_inserted: number;
-  _records_updated: number;
-  _records_rejected: number;
-  _records_expected: number | null;
-  _coverage_status: SourceCoverageStatus;
-  _quality_checks: Record<string, boolean | number | string | null>;
-  _public_reason_code: PublicSourceReason | null;
-  _private_diagnostic: string | null;
-};
+export function deliveryRunOutcome(input: {
+  disabled: boolean;
+  fcmConfigured: boolean;
+  telegramConfigured: boolean;
+  telegramChannels: number;
+}): Pick<SourceRunReport, "outcome" | "coverageStatus" | "publicReasonCode"> {
+  if (input.disabled)
+    return {
+      outcome: "skipped",
+      coverageStatus: "unknown",
+      publicReasonCode: "disabled",
+    };
+
+  if (!input.fcmConfigured && !input.telegramConfigured)
+    return {
+      outcome: "failed",
+      coverageStatus: "unknown",
+      publicReasonCode: "credentials_missing",
+    };
+
+  if (!input.fcmConfigured || !input.telegramConfigured)
+    return {
+      outcome: "partial",
+      coverageStatus: "partial",
+      publicReasonCode: "credentials_missing",
+    };
+
+  if (input.telegramChannels === 0)
+    return {
+      outcome: "partial",
+      coverageStatus: "partial",
+      publicReasonCode: "coverage_partial",
+    };
+
+  return {
+    outcome: "succeeded",
+    coverageStatus: "complete",
+    publicReasonCode: null,
+  };
+}
+
+export type SourceRunRpcArgs =
+  Database["public"]["Functions"]["record_source_run"]["Args"];
 
 export function sourceRunRpcArgs(
   report: SourceRunReport,

@@ -34,7 +34,7 @@ import {
   unitName,
   type FireCluster,
 } from "@/lib/nadhir";
-import { summariseSourceHealth } from "@/lib/source-health";
+import { sourceHealthCapabilityAffected } from "@/lib/source-health";
 import {
   SURVIVAL_ACTIVE_KEY,
   SURVIVAL_AUTO_KM,
@@ -169,8 +169,10 @@ function LiveMapPage() {
     );
   }, [risk.data]);
 
-  const degraded =
-    summariseSourceHealth(sources.data ?? []).capabilityAffected > 0;
+  const degraded = sourceHealthCapabilityAffected(
+    sources.data ?? [],
+    sources.isError,
+  );
 
   const sorted = useMemo(
     () =>

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  sourceHealthCapabilityAffected,
   summariseSourceHealth,
   type SourceHealth,
   type SourceHealthState,
@@ -90,5 +91,20 @@ describe("summariseSourceHealth", () => {
       capabilityAffected: 0,
       allHealthy: true,
     });
+  });
+});
+
+describe("sourceHealthCapabilityAffected", () => {
+  it("does not report an unavailable health query as healthy", () => {
+    expect(sourceHealthCapabilityAffected([], true)).toBe(true);
+  });
+
+  it("uses the derived capability summary when the query succeeds", () => {
+    expect(
+      sourceHealthCapabilityAffected(
+        [source("firms", "healthy"), source("wind", "paused", "optional")],
+        false,
+      ),
+    ).toBe(false);
   });
 });

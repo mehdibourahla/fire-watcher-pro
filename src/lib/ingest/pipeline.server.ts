@@ -1,7 +1,7 @@
 import {
+  deliveryRunOutcome,
   publicReasonForError,
   sourceRunOutcome,
-  type PublicSourceReason,
 } from "@/lib/source-runs";
 import { recordSourceRun } from "@/lib/source-runs.server";
 
@@ -227,25 +227,7 @@ export async function runDetectionPipeline(): Promise<PipelineResult> {
   let delivery: PipelineResult["delivery"] = null;
   try {
     delivery = await deliverBroadcasts();
-    const noneConfigured =
-      !delivery.fcmConfigured && !delivery.telegramConfigured;
-    const incompleteCoverage =
-      !noneConfigured &&
-      (!delivery.fcmConfigured ||
-        !delivery.telegramConfigured ||
-        delivery.telegramChannels === 0);
-    const deliveryOutcome = delivery.disabled
-      ? ({ outcome: "skipped", coverageStatus: "unknown" } as const)
-      : noneConfigured
-        ? ({ outcome: "failed", coverageStatus: "unknown" } as const)
-        : incompleteCoverage
-          ? ({ outcome: "partial", coverageStatus: "partial" } as const)
-          : ({ outcome: "succeeded", coverageStatus: "complete" } as const);
-    const deliveryReason: PublicSourceReason | null = delivery.disabled
-      ? "disabled"
-      : noneConfigured || incompleteCoverage
-        ? "credentials_missing"
-        : null;
+    const deliveryOutcome = deliveryRunOutcome(delivery);
     await recordSourceRun({
       contractKey: "broadcast_delivery",
       trigger: "scheduled",
@@ -259,7 +241,6 @@ export async function runDetectionPipeline(): Promise<PipelineResult> {
         telegram_configured: delivery.telegramConfigured,
         telegram_channels: delivery.telegramChannels,
       },
-      publicReasonCode: deliveryReason,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "delivery failed";

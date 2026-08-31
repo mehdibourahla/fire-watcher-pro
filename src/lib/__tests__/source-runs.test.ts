@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import {
+  deliveryRunOutcome,
   publicReasonForError,
   sourceRunIdempotencyKey,
   sourceRunOutcome,
@@ -88,6 +89,38 @@ describe("sourceRunOutcome", () => {
     expect(sourceRunOutcome({ accepted: 0, disabled: true })).toEqual({
       outcome: "skipped",
       coverageStatus: "unknown",
+    });
+  });
+});
+
+describe("deliveryRunOutcome", () => {
+  it("reports missing Telegram channel coverage separately from missing credentials", () => {
+    expect(
+      deliveryRunOutcome({
+        disabled: false,
+        fcmConfigured: true,
+        telegramConfigured: true,
+        telegramChannels: 0,
+      }),
+    ).toEqual({
+      outcome: "partial",
+      coverageStatus: "partial",
+      publicReasonCode: "coverage_partial",
+    });
+  });
+
+  it("reports genuinely missing delivery credentials", () => {
+    expect(
+      deliveryRunOutcome({
+        disabled: false,
+        fcmConfigured: true,
+        telegramConfigured: false,
+        telegramChannels: 0,
+      }),
+    ).toEqual({
+      outcome: "partial",
+      coverageStatus: "partial",
+      publicReasonCode: "credentials_missing",
     });
   });
 });

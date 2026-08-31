@@ -46,6 +46,7 @@ create table public.source_contracts (
 
 create table public.source_checkpoints (
   contract_key text primary key references public.source_contracts(key),
+  last_scheduled_for timestamptz,
   last_attempt_at timestamptz,
   last_success_at timestamptz,
   upstream_published_at timestamptz,
@@ -493,6 +494,7 @@ begin
 
   insert into public.source_checkpoints (
     contract_key,
+    last_scheduled_for,
     last_attempt_at,
     last_success_at,
     upstream_published_at,
@@ -509,6 +511,7 @@ begin
   )
   values (
     _contract_key,
+    _scheduled_for,
     coalesce(_finished_at, _started_at),
     case
       when _outcome = 'succeeded' then coalesce(_validated_at, _finished_at)
@@ -528,38 +531,51 @@ begin
   )
   on conflict (contract_key) do update
   set
-    last_attempt_at = excluded.last_attempt_at,
+    last_scheduled_for = excluded.last_scheduled_for,
+    last_attempt_at = greatest(
+      public.source_checkpoints.last_attempt_at,
+      excluded.last_attempt_at
+    ),
     last_success_at = case
-      when _outcome = 'succeeded' then excluded.last_success_at
+      when _outcome = 'succeeded' then greatest(
+        public.source_checkpoints.last_success_at,
+        excluded.last_success_at
+      )
       else public.source_checkpoints.last_success_at
     end,
     upstream_published_at = case
-      when _outcome = 'succeeded' then coalesce(
-        excluded.upstream_published_at,
-        public.source_checkpoints.upstream_published_at
+      when _outcome = 'succeeded' then greatest(
+        public.source_checkpoints.upstream_published_at,
+        excluded.upstream_published_at
       )
       else public.source_checkpoints.upstream_published_at
     end,
     data_from = case
-      when _outcome = 'succeeded' then coalesce(
-        excluded.data_from,
-        public.source_checkpoints.data_from
+      when _outcome = 'succeeded' then greatest(
+        public.source_checkpoints.data_from,
+        excluded.data_from
       )
       else public.source_checkpoints.data_from
     end,
     data_through = case
-      when _outcome = 'succeeded' then coalesce(
-        excluded.data_through,
-        public.source_checkpoints.data_through
+      when _outcome = 'succeeded' then greatest(
+        public.source_checkpoints.data_through,
+        excluded.data_through
       )
       else public.source_checkpoints.data_through
     end,
     validated_at = case
-      when _outcome = 'succeeded' then excluded.validated_at
+      when _outcome = 'succeeded' then greatest(
+        public.source_checkpoints.validated_at,
+        excluded.validated_at
+      )
       else public.source_checkpoints.validated_at
     end,
     published_at = case
-      when _outcome = 'succeeded' then excluded.published_at
+      when _outcome = 'succeeded' then greatest(
+        public.source_checkpoints.published_at,
+        excluded.published_at
+      )
       else public.source_checkpoints.published_at
     end,
     consecutive_failures = case
@@ -575,7 +591,9 @@ begin
       when _outcome = 'succeeded' then null
       else excluded.last_public_reason_code
     end,
-    updated_at = now();
+    updated_at = now()
+  where public.source_checkpoints.last_scheduled_for is null
+    or excluded.last_scheduled_for >= public.source_checkpoints.last_scheduled_for;
 
   return _run_id;
 end;
@@ -633,6 +651,7 @@ grant execute on function public.record_source_run(
 -- initial bridge; the application switches to record_source_run in this release.
 update public.source_checkpoints as checkpoint
 set
+  last_scheduled_for = legacy.updated_at,
   last_attempt_at = legacy.updated_at,
   last_success_at = legacy.last_ok_at,
   upstream_published_at = case
@@ -754,6 +773,7 @@ begin
 
   insert into public.source_checkpoints (
     contract_key,
+    last_scheduled_for,
     last_attempt_at,
     last_success_at,
     upstream_published_at,
@@ -767,6 +787,7 @@ begin
   )
   values (
     _contract_key,
+    new.updated_at,
     new.updated_at,
     new.last_ok_at,
     case when _contract_key = 'fci' then new.last_ok_at else null end,
@@ -784,6 +805,7 @@ begin
   )
   on conflict (contract_key) do update
   set
+    last_scheduled_for = excluded.last_scheduled_for,
     last_attempt_at = excluded.last_attempt_at,
     last_success_at = coalesce(excluded.last_success_at, public.source_checkpoints.last_success_at),
     upstream_published_at = coalesce(
@@ -796,7 +818,9 @@ begin
     consecutive_failures = excluded.consecutive_failures,
     coverage_status = excluded.coverage_status,
     last_public_reason_code = excluded.last_public_reason_code,
-    updated_at = excluded.updated_at;
+    updated_at = excluded.updated_at
+  where public.source_checkpoints.last_scheduled_for is null
+    or excluded.last_scheduled_for >= public.source_checkpoints.last_scheduled_for;
 
   return new;
 end;
