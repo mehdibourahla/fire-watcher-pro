@@ -22,6 +22,7 @@ import { Route as StatusRouteImport } from './routes/status'
 import { Route as SurvivalRouteRouteImport } from './routes/survival/route'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedAlertsRouteImport } from './routes/_authenticated/alerts'
+import { Route as AuthenticatedBroadcastsRouteImport } from './routes/_authenticated/broadcasts'
 import { Route as AuthenticatedModerationRouteImport } from './routes/_authenticated/moderation'
 import { Route as AuthenticatedReportRouteImport } from './routes/_authenticated/report'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
@@ -45,6 +46,7 @@ import { Route as ApiPublicV1FiresRouteImport } from './routes/api/public/v1/fir
 import { Route as ApiPublicV1RiskRouteImport } from './routes/api/public/v1/risk'
 import { Route as ApiPublicV1SourcesRouteImport } from './routes/api/public/v1/sources'
 import { Route as ApiPublicV1StatsRouteImport } from './routes/api/public/v1/stats'
+import { Route as ApiPublicV1SubscribeRouteImport } from './routes/api/public/v1/subscribe'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -108,6 +110,11 @@ const TermsRoute = TermsRouteImport.update({
 const AuthenticatedAlertsRoute = AuthenticatedAlertsRouteImport.update({
   id: '/alerts',
   path: '/alerts',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedBroadcastsRoute = AuthenticatedBroadcastsRouteImport.update({
+  id: '/broadcasts',
+  path: '/broadcasts',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedModerationRoute = AuthenticatedModerationRouteImport.update({
@@ -227,6 +234,11 @@ const ApiPublicV1StatsRoute = ApiPublicV1StatsRouteImport.update({
   path: '/api/public/v1/stats',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicV1SubscribeRoute = ApiPublicV1SubscribeRouteImport.update({
+  id: '/api/public/v1/subscribe',
+  path: '/api/public/v1/subscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -241,6 +253,7 @@ export interface FileRoutesByFullPath {
   '/status': typeof StatusRoute
   '/terms': typeof TermsRoute
   '/alerts': typeof AuthenticatedAlertsRoute
+  '/broadcasts': typeof AuthenticatedBroadcastsRoute
   '/moderation': typeof AuthenticatedModerationRoute
   '/report': typeof AuthenticatedReportRoute
   '/settings': typeof AuthenticatedSettingsRoute
@@ -263,6 +276,7 @@ export interface FileRoutesByFullPath {
   '/api/public/v1/risk': typeof ApiPublicV1RiskRoute
   '/api/public/v1/sources': typeof ApiPublicV1SourcesRoute
   '/api/public/v1/stats': typeof ApiPublicV1StatsRoute
+  '/api/public/v1/subscribe': typeof ApiPublicV1SubscribeRoute
   '/api/public/v1/': typeof ApiPublicV1IndexRoute
 }
 export interface FileRoutesByTo {
@@ -277,6 +291,7 @@ export interface FileRoutesByTo {
   '/status': typeof StatusRoute
   '/terms': typeof TermsRoute
   '/alerts': typeof AuthenticatedAlertsRoute
+  '/broadcasts': typeof AuthenticatedBroadcastsRoute
   '/moderation': typeof AuthenticatedModerationRoute
   '/report': typeof AuthenticatedReportRoute
   '/settings': typeof AuthenticatedSettingsRoute
@@ -299,6 +314,7 @@ export interface FileRoutesByTo {
   '/api/public/v1/risk': typeof ApiPublicV1RiskRoute
   '/api/public/v1/sources': typeof ApiPublicV1SourcesRoute
   '/api/public/v1/stats': typeof ApiPublicV1StatsRoute
+  '/api/public/v1/subscribe': typeof ApiPublicV1SubscribeRoute
   '/api/public/v1': typeof ApiPublicV1IndexRoute
 }
 export interface FileRoutesById {
@@ -316,6 +332,7 @@ export interface FileRoutesById {
   '/status': typeof StatusRoute
   '/terms': typeof TermsRoute
   '/_authenticated/alerts': typeof AuthenticatedAlertsRoute
+  '/_authenticated/broadcasts': typeof AuthenticatedBroadcastsRoute
   '/_authenticated/moderation': typeof AuthenticatedModerationRoute
   '/_authenticated/report': typeof AuthenticatedReportRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
@@ -338,6 +355,7 @@ export interface FileRoutesById {
   '/api/public/v1/risk': typeof ApiPublicV1RiskRoute
   '/api/public/v1/sources': typeof ApiPublicV1SourcesRoute
   '/api/public/v1/stats': typeof ApiPublicV1StatsRoute
+  '/api/public/v1/subscribe': typeof ApiPublicV1SubscribeRoute
   '/api/public/v1/': typeof ApiPublicV1IndexRoute
 }
 export interface FileRouteTypes {
@@ -355,6 +373,7 @@ export interface FileRouteTypes {
     | '/status'
     | '/terms'
     | '/alerts'
+    | '/broadcasts'
     | '/moderation'
     | '/report'
     | '/settings'
@@ -377,6 +396,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/risk'
     | '/api/public/v1/sources'
     | '/api/public/v1/stats'
+    | '/api/public/v1/subscribe'
     | '/api/public/v1/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -391,6 +411,7 @@ export interface FileRouteTypes {
     | '/status'
     | '/terms'
     | '/alerts'
+    | '/broadcasts'
     | '/moderation'
     | '/report'
     | '/settings'
@@ -413,6 +434,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/risk'
     | '/api/public/v1/sources'
     | '/api/public/v1/stats'
+    | '/api/public/v1/subscribe'
     | '/api/public/v1'
   id:
     | '__root__'
@@ -429,6 +451,7 @@ export interface FileRouteTypes {
     | '/status'
     | '/terms'
     | '/_authenticated/alerts'
+    | '/_authenticated/broadcasts'
     | '/_authenticated/moderation'
     | '/_authenticated/report'
     | '/_authenticated/settings'
@@ -451,6 +474,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/risk'
     | '/api/public/v1/sources'
     | '/api/public/v1/stats'
+    | '/api/public/v1/subscribe'
     | '/api/public/v1/'
   fileRoutesById: FileRoutesById
 }
@@ -479,6 +503,7 @@ export interface RootRouteChildren {
   ApiPublicV1RiskRoute: typeof ApiPublicV1RiskRoute
   ApiPublicV1SourcesRoute: typeof ApiPublicV1SourcesRoute
   ApiPublicV1StatsRoute: typeof ApiPublicV1StatsRoute
+  ApiPublicV1SubscribeRoute: typeof ApiPublicV1SubscribeRoute
   ApiPublicV1IndexRoute: typeof ApiPublicV1IndexRoute
 }
 
@@ -573,6 +598,13 @@ declare module '@tanstack/react-router' {
       path: '/alerts'
       fullPath: '/alerts'
       preLoaderRoute: typeof AuthenticatedAlertsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/broadcasts': {
+      id: '/_authenticated/broadcasts'
+      path: '/broadcasts'
+      fullPath: '/broadcasts'
+      preLoaderRoute: typeof AuthenticatedBroadcastsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/moderation': {
@@ -736,11 +768,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicV1StatsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/v1/subscribe': {
+      id: '/api/public/v1/subscribe'
+      path: '/api/public/v1/subscribe'
+      fullPath: '/api/public/v1/subscribe'
+      preLoaderRoute: typeof ApiPublicV1SubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAlertsRoute: typeof AuthenticatedAlertsRoute
+  AuthenticatedBroadcastsRoute: typeof AuthenticatedBroadcastsRoute
   AuthenticatedModerationRoute: typeof AuthenticatedModerationRoute
   AuthenticatedReportRoute: typeof AuthenticatedReportRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
@@ -751,6 +791,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAlertsRoute: AuthenticatedAlertsRoute,
+  AuthenticatedBroadcastsRoute: AuthenticatedBroadcastsRoute,
   AuthenticatedModerationRoute: AuthenticatedModerationRoute,
   AuthenticatedReportRoute: AuthenticatedReportRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
@@ -805,6 +846,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicV1RiskRoute: ApiPublicV1RiskRoute,
   ApiPublicV1SourcesRoute: ApiPublicV1SourcesRoute,
   ApiPublicV1StatsRoute: ApiPublicV1StatsRoute,
+  ApiPublicV1SubscribeRoute: ApiPublicV1SubscribeRoute,
   ApiPublicV1IndexRoute: ApiPublicV1IndexRoute,
 }
 export const routeTree = rootRouteImport

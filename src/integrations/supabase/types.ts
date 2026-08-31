@@ -168,8 +168,191 @@ export type Database = {
           },
         ];
       };
+      authority_warnings: {
+        Row: {
+          body: string;
+          commune_codes: string[] | null;
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          received_via: string;
+          severity: string;
+          source: string;
+          wilaya_id: string | null;
+        };
+        Insert: {
+          body: string;
+          commune_codes?: string[] | null;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          received_via: string;
+          severity: string;
+          source: string;
+          wilaya_id?: string | null;
+        };
+        Update: {
+          body?: string;
+          commune_codes?: string[] | null;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          received_via?: string;
+          severity?: string;
+          source?: string;
+          wilaya_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "authority_warnings_wilaya_id_fkey";
+            columns: ["wilaya_id"];
+            isOneToOne: false;
+            referencedRelation: "admin_units";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      broadcast_audit: {
+        Row: {
+          action: string;
+          at: string;
+          cluster_id: string | null;
+          commune_codes: string[] | null;
+          id: string;
+          kind: string | null;
+          onm_vigilance_id: string | null;
+          payload: Json | null;
+          phase: string | null;
+          reason: string;
+          severity: string | null;
+        };
+        Insert: {
+          action: string;
+          at?: string;
+          cluster_id?: string | null;
+          commune_codes?: string[] | null;
+          id?: string;
+          kind?: string | null;
+          onm_vigilance_id?: string | null;
+          payload?: Json | null;
+          phase?: string | null;
+          reason: string;
+          severity?: string | null;
+        };
+        Update: {
+          action?: string;
+          at?: string;
+          cluster_id?: string | null;
+          commune_codes?: string[] | null;
+          id?: string;
+          kind?: string | null;
+          onm_vigilance_id?: string | null;
+          payload?: Json | null;
+          phase?: string | null;
+          reason?: string;
+          severity?: string | null;
+        };
+        Relationships: [];
+      };
+      broadcast_settings: {
+        Row: {
+          enabled: boolean;
+          id: boolean;
+          updated_at: string;
+        };
+        Insert: {
+          enabled?: boolean;
+          id?: boolean;
+          updated_at?: string;
+        };
+        Update: {
+          enabled?: boolean;
+          id?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      broadcasts: {
+        Row: {
+          authority_warning_id: string | null;
+          cap_alert_id: string | null;
+          cluster_id: string | null;
+          commune_codes: string[];
+          created_at: string;
+          fcm_delivered_at: string | null;
+          fcm_topics: number | null;
+          id: string;
+          kind: string;
+          onm_vigilance_id: string | null;
+          phase: string;
+          severity: string;
+          telegram_channels: number | null;
+          telegram_delivered_at: string | null;
+        };
+        Insert: {
+          authority_warning_id?: string | null;
+          cap_alert_id?: string | null;
+          cluster_id?: string | null;
+          commune_codes: string[];
+          created_at?: string;
+          fcm_delivered_at?: string | null;
+          fcm_topics?: number | null;
+          id?: string;
+          kind: string;
+          onm_vigilance_id?: string | null;
+          phase?: string;
+          severity: string;
+        };
+        Update: {
+          authority_warning_id?: string | null;
+          cap_alert_id?: string | null;
+          cluster_id?: string | null;
+          commune_codes?: string[];
+          created_at?: string;
+          fcm_delivered_at?: string | null;
+          fcm_topics?: number | null;
+          id?: string;
+          kind?: string;
+          onm_vigilance_id?: string | null;
+          phase?: string;
+          severity?: string;
+          telegram_channels?: number | null;
+          telegram_delivered_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "broadcasts_authority_warning_id_fkey";
+            columns: ["authority_warning_id"];
+            isOneToOne: false;
+            referencedRelation: "authority_warnings";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "broadcasts_cap_alert_id_fkey";
+            columns: ["cap_alert_id"];
+            isOneToOne: false;
+            referencedRelation: "cap_alerts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "broadcasts_cluster_id_fkey";
+            columns: ["cluster_id"];
+            isOneToOne: false;
+            referencedRelation: "fire_clusters";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "broadcasts_onm_vigilance_id_fkey";
+            columns: ["onm_vigilance_id"];
+            isOneToOne: false;
+            referencedRelation: "onm_vigilance";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       cap_alerts: {
         Row: {
+          cap_references: string | null;
           cluster_id: string | null;
           created_at: string;
           id: string;
@@ -182,6 +365,7 @@ export type Database = {
           status: string;
         };
         Insert: {
+          cap_references?: string | null;
           cluster_id?: string | null;
           created_at?: string;
           id?: string;
@@ -194,6 +378,7 @@ export type Database = {
           status: string;
         };
         Update: {
+          cap_references?: string | null;
           cluster_id?: string | null;
           created_at?: string;
           id?: string;
@@ -1033,6 +1218,32 @@ export type Database = {
             foreignKeyName: "settlements_commune_id_fkey";
             columns: ["commune_id"];
             isOneToOne: false;
+            referencedRelation: "admin_units";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      telegram_channels: {
+        Row: {
+          chat_id: string;
+          created_at: string;
+          wilaya_id: string;
+        };
+        Insert: {
+          chat_id: string;
+          created_at?: string;
+          wilaya_id: string;
+        };
+        Update: {
+          chat_id?: string;
+          created_at?: string;
+          wilaya_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "telegram_channels_wilaya_id_fkey";
+            columns: ["wilaya_id"];
+            isOneToOne: true;
             referencedRelation: "admin_units";
             referencedColumns: ["id"];
           },

@@ -9,6 +9,8 @@ import {
   flagPersistentCandidates,
   screenPersistentSources,
 } from "./persistent.server";
+import { publishBroadcasts } from "./broadcast.server";
+import { deliverBroadcasts } from "./delivery.server";
 import { enrichClusterWinds, refreshRiskForecasts } from "./weather.server";
 
 type RunOutcome = {
@@ -64,6 +66,8 @@ export type PipelineResult = {
   fci: Awaited<ReturnType<typeof ingestFci>>;
   fusion: Awaited<ReturnType<typeof fuseDetections>> | null;
   winds: number;
+  broadcast: Awaited<ReturnType<typeof publishBroadcasts>> | null;
+  delivery: Awaited<ReturnType<typeof deliverBroadcasts>> | null;
 };
 
 /** Satellite ingest → fusion → wind enrichment. Runs every ~15 minutes. */
@@ -174,7 +178,41 @@ export async function runDetectionPipeline(): Promise<PipelineResult> {
     );
   }
 
-  return { firms, fci, fusion, winds };
+  const broadcastStartedAt = new Date().toISOString();
+  let broadcast: PipelineResult["broadcast"] = null;
+  try {
+    broadcast = await publishBroadcasts();
+    await recordRun("broadcast", broadcastStartedAt, {
+      status: "ok",
+      recordsNew: broadcast.published,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "broadcast failed";
+    await recordRun("broadcast", broadcastStartedAt, {
+      status: "failed",
+      error: message,
+    });
+  }
+
+  const deliveryStartedAt = new Date().toISOString();
+  let delivery: PipelineResult["delivery"] = null;
+  try {
+    delivery = await deliverBroadcasts();
+    await recordRun("delivery", deliveryStartedAt, {
+      status: "ok",
+      recordsIn: delivery.rows,
+      recordsNew: delivery.sent,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "delivery failed";
+    await recordRun("delivery", deliveryStartedAt, {
+      status: "failed",
+      error: message,
+    });
+    await markSource("broadcast", false, message);
+  }
+
+  return { firms, fci, fusion, winds, broadcast, delivery };
 }
 
 /** Daily FWI outlook refresh, plus the EFFIS external cross-check. */

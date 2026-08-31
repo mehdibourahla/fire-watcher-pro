@@ -23,8 +23,9 @@ export type CapAlert = {
   sender: string;
   sent: string;
   status: "Actual";
-  msgType: "Alert";
+  msgType: "Alert" | "Update" | "Cancel";
   scope: "Public";
+  references?: string;
   info: CapInfo[];
 };
 
@@ -94,6 +95,94 @@ export function buildFireCap(input: FireCapInput): CapAlert {
   };
 }
 
+export type BroadcastPhase = "initial" | "update" | "end" | "cancel";
+
+export type BroadcastCapInput = {
+  shortId: string;
+  seq: number;
+  phase: BroadcastPhase;
+  lat: number;
+  lon: number;
+  severity: "Extreme" | "Severe";
+  confidence: number;
+  areaDesc: string;
+  sentAt: Date;
+  texts: CapText[];
+  references: { identifier: string; sent: string }[];
+};
+
+export const BROADCAST_RING_KM = 15;
+const CLOSED_VALID_FOR_MINUTES = 24 * 60;
+
+export function broadcastCapIdentifier(shortId: string, seq: number): string {
+  return `nadhir-brd-${shortId}-${seq}`;
+}
+
+const BROADCAST_MSG_TYPE: Record<BroadcastPhase, CapAlert["msgType"]> = {
+  initial: "Alert",
+  update: "Update",
+  end: "Update",
+  cancel: "Cancel",
+};
+
+export function buildBroadcastCap(input: BroadcastCapInput): CapAlert {
+  const closed = input.phase === "end" || input.phase === "cancel";
+  const effective = capDateTime(input.sentAt);
+  const expires = capDateTime(
+    new Date(
+      input.sentAt.getTime() +
+        (closed ? CLOSED_VALID_FOR_MINUTES : VALID_FOR_MINUTES) * 60_000,
+    ),
+  );
+
+  const urgency: CapUrgency = closed
+    ? "Past"
+    : input.severity === "Extreme"
+      ? "Immediate"
+      : "Expected";
+  const certainty: CapCertainty =
+    input.phase === "cancel"
+      ? "Unlikely"
+      : input.phase === "end"
+        ? "Possible"
+        : input.confidence >= OBSERVED_CONFIDENCE
+          ? "Observed"
+          : "Likely";
+
+  return {
+    identifier: broadcastCapIdentifier(input.shortId, input.seq),
+    sender: CAP_SENDER,
+    sent: effective,
+    status: "Actual",
+    msgType: BROADCAST_MSG_TYPE[input.phase],
+    scope: "Public",
+    // a re-flare opens a fresh thread: chaining it to the closed one would tell
+    // clients this Alert updates a warning that is already over
+    ...(input.phase !== "initial" && input.references.length
+      ? {
+          references: input.references
+            .map((r) => `${CAP_SENDER},${r.identifier},${r.sent}`)
+            .join(" "),
+        }
+      : {}),
+    info: input.texts.map((text) => ({
+      language: text.language,
+      category: "Fire",
+      event: text.event,
+      urgency,
+      severity: input.severity,
+      certainty,
+      effective,
+      expires,
+      headline: text.headline,
+      description: text.description,
+      instruction: text.instruction,
+      areaDesc: input.areaDesc,
+      circle: `${input.lat},${input.lon} ${BROADCAST_RING_KM}`,
+    })),
+  };
+}
+
 function escape(value: string): string {
   return value
     .replace(/&/g, "&amp;")
@@ -139,6 +228,7 @@ export function capToXml(alert: CapAlert): string {
     `  ${tag("status", alert.status)}`,
     `  ${tag("msgType", alert.msgType)}`,
     `  ${tag("scope", alert.scope)}`,
+    ...(alert.references ? [`  ${tag("references", alert.references)}`] : []),
     info,
     "</alert>",
   ].join("\n");

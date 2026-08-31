@@ -66,9 +66,13 @@ product are unreachable.
 
 ### 1.3 No alert reaches a human
 
-Alerts are computed and stored (`alerts` table) but nothing delivers them. Push, SMS, email
-and Telegram are all unwired; a Firebase service account exists but is not connected. The
-alerts table currently holds 0 rows, which is expected given §1.2.
+Largely closed 2026-08-30 by the Broadcast Alerts epic: confirmed fires and ONM Severe+
+warnings publish as Broadcast Alerts and fan out to FCM commune topics and per-wilaya
+Telegram channels (`src/lib/ingest/broadcast.server.ts`, `delivery.server.ts`), with an
+accountless web subscription flow. Remaining unwired: the per-user zone `alerts` rows
+(email/SMS, still gated on §1.2), and the runtime secrets — `FIREBASE_SERVICE_ACCOUNT`
+and `TELEGRAM_BOT_TOKEN` — plus the Firebase web config, without which delivery reports
+itself degraded on /status rather than pretending.
 
 The **CAP object** every channel must render is now built (`cap_alerts`, `src/lib/cap.ts`):
 each fire alert links to one CAP 1.2 warning carrying all four languages, so a channel added
@@ -189,9 +193,11 @@ are unidentified and need the Arabic original or ONS tables to name.
   fire-relevant channels); titles are English-only in the feed (the per-warning
   CAP XML carries FR/EN, not Arabic); publication cadence is unproven, so the
   freshness window is 24h and a quiet weather day is not a dead feed.
-- **Admin console** has no cluster resolve (US-6), no broadcast, and no audit log. It gained a
-  **Suggestions** tab on 2026-08-30 for the `/contribute` idea board; nothing user-submitted
-  reaches the public board until a moderator publishes it.
+- **Admin console** has no cluster resolve (US-6). It gained a **Suggestions** tab on
+  2026-08-30 for the `/contribute` idea board (nothing user-submitted reaches the public
+  board until a moderator publishes it), and broadcast controls at `/broadcasts`:
+  kill-switch, append-only audit view, and manual relay of attributed authority warnings
+  (the phone-call case).
 - **`/contribute` collects notes that nobody answers yet.** The box records a submission and
   the copy says so — a person reviews it, expect days not minutes — but there is no reply
   path. When the planned agent is wired in, its reply must state that it is an agent: a
@@ -269,7 +275,9 @@ Things that cost real debugging time here, none of them obvious from the code.
 - **Migrations.** Two agents adding migrations the same hour produced a duplicate version
   prefix, which the Supabase ledger cannot hold. Applying one with `psql` without inserting a
   row into `supabase_migrations.schema_migrations` silently breaks the next `supabase db push`.
-  Check existing versions and the ledger before adding one.
+  Check existing versions and the ledger before adding one, and re-check after merging `main`:
+  a long-running branch collided twice in one afternoon because everyone picks round-hour
+  timestamps. Offset minutes (`…095000`, `…105000`) sidestep it.
 - **`main` is protected.** Pull request with a review required; force-push and deletion blocked.
   An admin push still succeeds while printing the rule warning — that output is not an error.
 - **Declaring `routes` in the wrangler config flips `workers_dev` to false.** Attaching the

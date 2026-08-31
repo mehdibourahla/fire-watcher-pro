@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { BrandMark } from "@/components/BrandMark";
+import { SubscribeSheet } from "@/components/nadhir/SubscribeSheet";
 import { RISK_LEVELS, riskSolid } from "@/components/nadhir/risk-visuals";
 import {
   LOCALES,
@@ -116,6 +117,27 @@ export function ThemeToggle() {
   );
 }
 
+export function SubscribeBell() {
+  const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        aria-label={t("push.bell")}
+        title={t("push.bell")}
+        className="rounded-full border border-dashed border-[var(--accent)] p-1.5 text-[var(--accent)] transition-colors hover:bg-[var(--accent-tint)]"
+      >
+        <Bell aria-hidden className="size-4" />
+      </button>
+      {open ? (
+        <SubscribeSheet open={open} onClose={() => setOpen(false)} />
+      ) : null}
+    </>
+  );
+}
+
 /** Below lg the inline nav is hidden, so without this the only way to any page
  * that is not a bottom tab is the footer. */
 function MobileNav() {
@@ -195,6 +217,7 @@ export function SiteHeader() {
 
         <div className="ms-auto flex items-center gap-1 sm:gap-2">
           <LanguageSwitcher />
+          <SubscribeBell />
           <ThemeToggle />
           <Link
             to="/zones"

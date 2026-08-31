@@ -2,7 +2,12 @@ import { readFileSync } from "node:fs";
 
 import { describe, expect, it } from "vitest";
 
-import { buildFireCap, capToXml } from "@/lib/cap";
+import {
+  buildBroadcastCap,
+  buildFireCap,
+  broadcastCapIdentifier,
+  capToXml,
+} from "@/lib/cap";
 
 const input = {
   shortId: "DZVVQPN",
@@ -82,6 +87,132 @@ describe("buildFireCap", () => {
     const cap = buildFireCap(input);
     expect(Date.parse(cap.info[0]!.expires)).toBeGreaterThan(
       Date.parse(cap.info[0]!.effective),
+    );
+  });
+});
+
+const broadcastInput = {
+  shortId: "DZ7K4A",
+  seq: 1,
+  phase: "initial" as const,
+  lat: 36.7447,
+  lon: 4.3722,
+  severity: "Severe" as const,
+  confidence: 0.83,
+  areaDesc: "Azazga, Tizi Ouzou",
+  sentAt: new Date("2026-08-30T12:00:00Z"),
+  texts: [
+    {
+      language: "ar-DZ",
+      event: "حريق غابات",
+      headline: "حريق مؤكد — عزازقة، تيزي وزو",
+      description: "حريق مؤكد عبر القمر الاصطناعي.",
+      instruction: "اتصل بالحماية المدنية على 14.",
+    },
+  ],
+  references: [],
+};
+
+describe("buildBroadcastCap", () => {
+  it("opens the thread as a CAP Alert with a fresh sequenced identifier", () => {
+    const cap = buildBroadcastCap(broadcastInput);
+    expect(cap.msgType).toBe("Alert");
+    expect(cap.identifier).toBe("nadhir-brd-DZ7K4A-1");
+    expect(broadcastCapIdentifier("DZ7K4A", 3)).toBe("nadhir-brd-DZ7K4A-3");
+    expect(cap.references).toBeUndefined();
+  });
+
+  it("chains an update to its predecessors via references", () => {
+    const cap = buildBroadcastCap({
+      ...broadcastInput,
+      seq: 2,
+      phase: "update",
+      references: [
+        {
+          identifier: "nadhir-brd-DZ7K4A-1",
+          sent: "2026-08-30T10:00:00+01:00",
+        },
+      ],
+    });
+    expect(cap.msgType).toBe("Update");
+    expect(cap.identifier).toBe("nadhir-brd-DZ7K4A-2");
+    expect(cap.references).toBe(
+      "alerts@nadhir.app,nadhir-brd-DZ7K4A-1,2026-08-30T10:00:00+01:00",
+    );
+  });
+
+  it("does not chain a re-flare's fresh thread to the closed one", () => {
+    const reflare = buildBroadcastCap({
+      ...broadcastInput,
+      seq: 4,
+      phase: "initial",
+      references: [
+        {
+          identifier: "nadhir-brd-DZ7K4A-3",
+          sent: "2026-08-30T10:00:00+01:00",
+        },
+      ],
+    });
+    expect(reflare.msgType).toBe("Alert");
+    expect(reflare.references).toBeUndefined();
+  });
+
+  it("closes observation-honestly as an Update in the past, valid a day", () => {
+    const cap = buildBroadcastCap({ ...broadcastInput, seq: 3, phase: "end" });
+    expect(cap.msgType).toBe("Update");
+    expect(cap.info[0]!.urgency).toBe("Past");
+    expect(cap.info[0]!.certainty).toBe("Possible");
+    expect(
+      Date.parse(cap.info[0]!.expires) - Date.parse(cap.info[0]!.effective),
+    ).toBe(24 * 3600_000);
+  });
+
+  it("retracts a false positive as a Cancel", () => {
+    const cap = buildBroadcastCap({
+      ...broadcastInput,
+      seq: 2,
+      phase: "cancel",
+    });
+    expect(cap.msgType).toBe("Cancel");
+    expect(cap.info[0]!.urgency).toBe("Past");
+    expect(cap.info[0]!.certainty).toBe("Unlikely");
+  });
+
+  it("maps severity to urgency while the fire is live", () => {
+    expect(buildBroadcastCap(broadcastInput).info[0]!.urgency).toBe("Expected");
+    const extreme = buildBroadcastCap({
+      ...broadcastInput,
+      severity: "Extreme" as const,
+    });
+    expect(extreme.info[0]!.severity).toBe("Extreme");
+    expect(extreme.info[0]!.urgency).toBe("Immediate");
+  });
+
+  it("targets the 15 km ring as a CAP circle", () => {
+    expect(buildBroadcastCap(broadcastInput).info[0]!.circle).toBe(
+      "36.7447,4.3722 15",
+    );
+  });
+});
+
+describe("capToXml references", () => {
+  it("emits the references element only when the alert has one", () => {
+    const chained = buildBroadcastCap({
+      ...broadcastInput,
+      seq: 2,
+      phase: "update",
+      references: [
+        {
+          identifier: "nadhir-brd-DZ7K4A-1",
+          sent: "2026-08-30T10:00:00+01:00",
+        },
+      ],
+    });
+    expect(capToXml(chained)).toContain(
+      "<references>alerts@nadhir.app,nadhir-brd-DZ7K4A-1,2026-08-30T10:00:00+01:00</references>",
+    );
+    expect(capToXml(buildBroadcastCap(broadcastInput))).not.toContain(
+      "<references>",
     );
   });
 });
