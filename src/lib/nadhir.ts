@@ -238,8 +238,8 @@ export function intlLocale(locale: AnyLocale): string {
   return locale === "kab" ? "fr" : locale;
 }
 
-export function relativeTime(iso: string, locale: AnyLocale) {
-  const diffMs = Date.now() - new Date(iso).getTime();
+export function relativeTime(iso: string, locale: AnyLocale, now = Date.now()) {
+  const diffMs = now - new Date(iso).getTime();
   const mins = Math.round(diffMs / 60000);
   const rtf = new Intl.RelativeTimeFormat(intlLocale(locale), {
     numeric: "auto",

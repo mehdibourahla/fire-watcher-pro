@@ -62,12 +62,14 @@ export const Route = createFileRoute("/")({
       },
     ],
   }),
-  loader: ({ context }) =>
-    Promise.all([
+  loader: async ({ context }) => {
+    await Promise.all([
       context.queryClient.ensureQueryData(clustersQuery),
       context.queryClient.ensureQueryData(adminUnitsQuery),
       context.queryClient.ensureQueryData(riskForecastsQuery),
-    ]),
+    ]);
+    return { renderedAt: Date.now() };
+  },
   component: LiveMapPage,
 });
 
@@ -78,6 +80,8 @@ function stateRank(c: FireCluster) {
 function LiveMapPage() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language as Locale;
+  const { renderedAt } = Route.useLoaderData();
+  const [now, setNow] = useState(renderedAt);
   const [selected, setSelected] = useState<string | null>(null);
   const [layers, setLayers] = useState<MapLayers>({
     fires: true,
@@ -93,6 +97,13 @@ function LiveMapPage() {
   const sources = useQuery(sourceHealthQuery);
   const alerts = useQuery({ ...alertsQuery, retry: false });
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const refresh = () => setNow(Date.now());
+    refresh();
+    const interval = window.setInterval(refresh, 60_000);
+    return () => window.clearInterval(interval);
+  }, [renderedAt]);
 
   const [interstitial, setInterstitial] = useState<{
     km: number;
@@ -313,7 +324,7 @@ function LiveMapPage() {
         </span>
         <span className="text-xs text-muted-foreground">
           {t("map.lastPass", {
-            time: relativeTime(cluster.last_detected_at, locale),
+            time: relativeTime(cluster.last_detected_at, locale, now),
           })}
         </span>
       </button>
@@ -504,6 +515,7 @@ function LiveMapPage() {
             <ClusterDetail
               cluster={selectedCluster}
               locale={locale}
+              now={now}
               placeName={(() => {
                 const p = labelFor(selectedCluster);
                 return p.approximate
@@ -557,7 +569,7 @@ function LiveMapPage() {
                 </dt>
                 <dd className="font-semibold">
                   {t("survival.interSatellite", {
-                    time: relativeTime(interstitial.seen, locale),
+                    time: relativeTime(interstitial.seen, locale, now),
                   })}
                 </dd>
               </div>
@@ -601,11 +613,13 @@ function LiveMapPage() {
 function ClusterDetail({
   cluster,
   locale,
+  now,
   placeName,
   settlementName,
 }: {
   cluster: FireCluster;
   locale: Locale;
+  now: number;
   placeName: string;
   settlementName: string | null;
 }) {
@@ -617,7 +631,7 @@ function ClusterDetail({
         <p className="text-sm text-muted-foreground">
           {t(`state.${cluster.state}`)} ·{" "}
           {t("map.lastPass", {
-            time: relativeTime(cluster.last_detected_at, locale),
+            time: relativeTime(cluster.last_detected_at, locale, now),
           })}
         </p>
       </div>
