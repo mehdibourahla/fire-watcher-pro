@@ -27,6 +27,7 @@
     "preflight:broadcast": "bun run scripts/preflight-broadcast.ts",
     "seed:telegram": "bun run scripts/seed-telegram-channels.ts",
     "source:job": "bun run scripts/run-source-job.ts",
+    "replay:source": "bun run scripts/replay-source-gap.ts",
     "watchdog:sources": "bun run scripts/source-watchdog.ts"
   },
   "overrides": {
