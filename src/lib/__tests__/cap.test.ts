@@ -141,6 +141,22 @@ describe("buildBroadcastCap", () => {
     );
   });
 
+  it("does not chain a re-flare's fresh thread to the closed one", () => {
+    const reflare = buildBroadcastCap({
+      ...broadcastInput,
+      seq: 4,
+      phase: "initial",
+      references: [
+        {
+          identifier: "nadhir-brd-DZ7K4A-3",
+          sent: "2026-08-30T10:00:00+01:00",
+        },
+      ],
+    });
+    expect(reflare.msgType).toBe("Alert");
+    expect(reflare.references).toBeUndefined();
+  });
+
   it("closes observation-honestly as an Update in the past, valid a day", () => {
     const cap = buildBroadcastCap({ ...broadcastInput, seq: 3, phase: "end" });
     expect(cap.msgType).toBe("Update");

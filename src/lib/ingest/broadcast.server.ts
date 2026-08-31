@@ -223,6 +223,7 @@ export async function publishBroadcasts(): Promise<BroadcastRun> {
 
   let published = 0;
   let suppressed = 0;
+  const errors: string[] = [];
   const now = Date.now();
 
   for (const cluster of clusters) {
@@ -263,123 +264,139 @@ export async function publishBroadcasts(): Promise<BroadcastRun> {
     });
     if (!plan) continue;
 
-    const phase: BroadcastPhase = plan.action;
-    const closed = phase === "end" || phase === "cancel";
-    const messageSeverity = closed
-      ? ((open?.severity ?? severity) as "Extreme" | "Severe")
-      : severity;
-    const wanted =
-      plan.action === "initial" || plan.action === "update"
-        ? plan.codes
-        : (open?.communeCodes ?? []);
-    const { allowed, dropped } = applyDailyLimit(
-      wanted,
-      sentToday,
-      closed || messageSeverity === "Extreme",
-    );
-    if (!allowed.length) {
-      suppressed += 1;
-      await auditRow({
-        action: "suppressed",
-        reason: "rate_limit",
-        kind: "fire",
-        cluster_id: cluster.id,
+    // one failing cluster must not silence the clusters after it, nor skip the relays
+    try {
+      const phase: BroadcastPhase = plan.action;
+      const closed = phase === "end" || phase === "cancel";
+      const messageSeverity = closed
+        ? ((open?.severity ?? severity) as "Extreme" | "Severe")
+        : severity;
+      const wanted =
+        plan.action === "initial" || plan.action === "update"
+          ? plan.codes
+          : (open?.communeCodes ?? []);
+      const { allowed, dropped } = applyDailyLimit(
+        wanted,
+        sentToday,
+        closed || messageSeverity === "Extreme",
+      );
+      if (!allowed.length) {
+        suppressed += 1;
+        await auditRow({
+          action: "suppressed",
+          reason: "rate_limit",
+          kind: "fire",
+          cluster_id: cluster.id,
+          phase,
+          severity: messageSeverity,
+          commune_codes: dropped,
+        });
+        continue;
+      }
+
+      const commune = cluster.commune_id
+        ? unitById.get(cluster.commune_id)
+        : null;
+      const wilaya = commune?.parent_id
+        ? unitById.get(commune.parent_id)
+        : null;
+      const place =
+        (cluster.nearest_settlement_id
+          ? settlementName.get(cluster.nearest_settlement_id)
+          : null) ??
+        commune?.name_fr ??
+        coordLabel(cluster.lat, cluster.lon);
+
+      const chain = chains.get(cluster.id) ?? [];
+      const cap = buildBroadcastCap({
+        shortId: cluster.short_id,
+        seq: chain.length + 1,
         phase,
+        lat: cluster.lat,
+        lon: cluster.lon,
         severity: messageSeverity,
-        commune_codes: dropped,
+        confidence: cluster.confidence,
+        areaDesc:
+          [commune?.name_fr, wilaya?.name_fr].filter(Boolean).join(", ") ||
+          place,
+        sentAt: new Date(),
+        texts: broadcastTexts(phase, {
+          place,
+          wilaya: wilaya?.name_fr ?? "",
+          km: cluster.nearest_settlement_km,
+          bearingDeg: cluster.spread_bearing_deg,
+          hotspots: cluster.detection_count,
+          hours: BROADCAST_END_AFTER_HOURS,
+        }),
+        references: chain,
       });
-      continue;
-    }
 
-    const commune = cluster.commune_id
-      ? unitById.get(cluster.commune_id)
-      : null;
-    const wilaya = commune?.parent_id ? unitById.get(commune.parent_id) : null;
-    const place =
-      (cluster.nearest_settlement_id
-        ? settlementName.get(cluster.nearest_settlement_id)
-        : null) ??
-      commune?.name_fr ??
-      coordLabel(cluster.lat, cluster.lon);
+      const { data: capRow, error: capInsertError } = await supabaseAdmin
+        .from("cap_alerts")
+        .insert({
+          identifier: cap.identifier,
+          sender: cap.sender,
+          sent: cap.sent,
+          status: cap.status,
+          msg_type: cap.msgType,
+          scope: cap.scope,
+          cap_references: cap.references ?? null,
+          cluster_id: cluster.id,
+          info: cap.info,
+        })
+        .select("id")
+        .single();
+      if (capInsertError)
+        throw new Error(`cap_alerts insert failed: ${capInsertError.message}`);
 
-    const chain = chains.get(cluster.id) ?? [];
-    const cap = buildBroadcastCap({
-      shortId: cluster.short_id,
-      seq: chain.length + 1,
-      phase,
-      lat: cluster.lat,
-      lon: cluster.lon,
-      severity: messageSeverity,
-      confidence: cluster.confidence,
-      areaDesc:
-        [commune?.name_fr, wilaya?.name_fr].filter(Boolean).join(", ") || place,
-      sentAt: new Date(),
-      texts: broadcastTexts(phase, {
-        place,
-        wilaya: wilaya?.name_fr ?? "",
-        km: cluster.nearest_settlement_km,
-        bearingDeg: cluster.spread_bearing_deg,
-        hotspots: cluster.detection_count,
-        hours: BROADCAST_END_AFTER_HOURS,
-      }),
-      references: chain,
-    });
+      const { error: broadcastError } = await supabaseAdmin
+        .from("broadcasts")
+        .insert({
+          kind: "fire",
+          phase,
+          cluster_id: cluster.id,
+          cap_alert_id: capRow.id,
+          severity: messageSeverity,
+          commune_codes: allowed,
+        });
+      if (broadcastError)
+        throw new Error(`broadcasts insert failed: ${broadcastError.message}`);
 
-    const { data: capRow, error: capInsertError } = await supabaseAdmin
-      .from("cap_alerts")
-      .insert({
-        identifier: cap.identifier,
-        sender: cap.sender,
-        sent: cap.sent,
-        status: cap.status,
-        msg_type: cap.msgType,
-        scope: cap.scope,
-        cap_references: cap.references ?? null,
-        cluster_id: cluster.id,
-        info: cap.info,
-      })
-      .select("id")
-      .single();
-    if (capInsertError)
-      throw new Error(`cap_alerts insert failed: ${capInsertError.message}`);
-
-    const { error: broadcastError } = await supabaseAdmin
-      .from("broadcasts")
-      .insert({
+      published += 1;
+      if (!closed)
+        for (const code of allowed)
+          sentToday.set(code, (sentToday.get(code) ?? 0) + 1);
+      await auditRow({
+        action: "published",
+        reason: phase,
         kind: "fire",
-        phase,
         cluster_id: cluster.id,
-        cap_alert_id: capRow.id,
+        phase,
         severity: messageSeverity,
         commune_codes: allowed,
+        payload: {
+          identifier: cap.identifier,
+          ...(dropped.length ? { rate_limited: dropped } : {}),
+          ...(phase === "update" && plan.action === "update"
+            ? { added: plan.added }
+            : {}),
+        },
       });
-    if (broadcastError)
-      throw new Error(`broadcasts insert failed: ${broadcastError.message}`);
-
-    published += 1;
-    if (!closed)
-      for (const code of allowed)
-        sentToday.set(code, (sentToday.get(code) ?? 0) + 1);
-    await auditRow({
-      action: "published",
-      reason: phase,
-      kind: "fire",
-      cluster_id: cluster.id,
-      phase,
-      severity: messageSeverity,
-      commune_codes: allowed,
-      payload: {
-        identifier: cap.identifier,
-        ...(dropped.length ? { rate_limited: dropped } : {}),
-        ...(phase === "update" && plan.action === "update"
-          ? { added: plan.added }
-          : {}),
-      },
-    });
+    } catch (error) {
+      errors.push(
+        error instanceof Error ? error.message : `cluster ${cluster.short_id}`,
+      );
+    }
   }
 
   published += await relayOnmWarnings();
   published += await relayAuthorityWarnings();
+
+  if (errors.length)
+    throw new Error(
+      `${errors.length} clusters failed to publish: ${errors[0]}`,
+    );
+
   return { published, suppressed };
 }
 

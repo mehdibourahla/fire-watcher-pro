@@ -156,7 +156,9 @@ export function buildBroadcastCap(input: BroadcastCapInput): CapAlert {
     status: "Actual",
     msgType: BROADCAST_MSG_TYPE[input.phase],
     scope: "Public",
-    ...(input.references.length
+    // a re-flare opens a fresh thread: chaining it to the closed one would tell
+    // clients this Alert updates a warning that is already over
+    ...(input.phase !== "initial" && input.references.length
       ? {
           references: input.references
             .map((r) => `${CAP_SENDER},${r.identifier},${r.sent}`)
