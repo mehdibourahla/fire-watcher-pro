@@ -12,31 +12,6 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5";
   };
-  graphql_public: {
-    Tables: {
-      [_ in never]: never;
-    };
-    Views: {
-      [_ in never]: never;
-    };
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json;
-          operationName?: string;
-          query?: string;
-          variables?: Json;
-        };
-        Returns: Json;
-      };
-    };
-    Enums: {
-      [_ in never]: never;
-    };
-    CompositeTypes: {
-      [_ in never]: never;
-    };
-  };
   public: {
     Tables: {
       admin_units: {
@@ -47,7 +22,6 @@ export type Database = {
           geom: Json | null;
           id: string;
           landcover: Json | null;
-          terrain: Json | null;
           lat: number;
           level: string;
           lon: number;
@@ -57,6 +31,7 @@ export type Database = {
           name_kab: string | null;
           parent_id: string | null;
           population: number | null;
+          terrain: Json | null;
         };
         Insert: {
           code: string;
@@ -65,7 +40,6 @@ export type Database = {
           geom?: Json | null;
           id?: string;
           landcover?: Json | null;
-          terrain?: Json | null;
           lat: number;
           level: string;
           lon: number;
@@ -75,6 +49,7 @@ export type Database = {
           name_kab?: string | null;
           parent_id?: string | null;
           population?: number | null;
+          terrain?: Json | null;
         };
         Update: {
           code?: string;
@@ -83,7 +58,6 @@ export type Database = {
           geom?: Json | null;
           id?: string;
           landcover?: Json | null;
-          terrain?: Json | null;
           lat?: number;
           level?: string;
           lon?: number;
@@ -93,6 +67,7 @@ export type Database = {
           name_kab?: string | null;
           parent_id?: string | null;
           population?: number | null;
+          terrain?: Json | null;
         };
         Relationships: [
           {
@@ -746,17 +721,17 @@ export type Database = {
       onm_vigilance: {
         Row: {
           area_desc: string;
-          headline_fr: string | null;
-          instruction_fr: string | null;
-          polygon: Json | null;
           cap_id: string;
           cap_url: string | null;
           certainty: string;
           created_at: string;
           event: string;
           expires: string | null;
+          headline_fr: string | null;
           id: string;
+          instruction_fr: string | null;
           onset: string | null;
+          polygon: Json | null;
           sent: string;
           severity: string;
           title: string;
@@ -766,16 +741,16 @@ export type Database = {
         Insert: {
           area_desc: string;
           cap_id: string;
-          headline_fr?: string | null;
-          instruction_fr?: string | null;
-          polygon?: Json | null;
           cap_url?: string | null;
           certainty: string;
           created_at?: string;
           event: string;
           expires?: string | null;
+          headline_fr?: string | null;
           id?: string;
+          instruction_fr?: string | null;
           onset?: string | null;
+          polygon?: Json | null;
           sent: string;
           severity: string;
           title: string;
@@ -785,23 +760,31 @@ export type Database = {
         Update: {
           area_desc?: string;
           cap_id?: string;
-          headline_fr?: string | null;
-          instruction_fr?: string | null;
-          polygon?: Json | null;
           cap_url?: string | null;
           certainty?: string;
           created_at?: string;
           event?: string;
           expires?: string | null;
+          headline_fr?: string | null;
           id?: string;
+          instruction_fr?: string | null;
           onset?: string | null;
+          polygon?: Json | null;
           sent?: string;
           severity?: string;
           title?: string;
           urgency?: string;
           wilaya_id?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "onm_vigilance_wilaya_id_fkey";
+            columns: ["wilaya_id"];
+            isOneToOne: false;
+            referencedRelation: "admin_units";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       open_areas: {
         Row: {
@@ -967,8 +950,8 @@ export type Database = {
           components: Json | null;
           created_at: string;
           danger_level: number;
-          fuel_limited: boolean;
           forecast_date: string;
+          fuel_limited: boolean;
           fwi: number;
           horizon_days: number;
           id: string;
@@ -979,8 +962,8 @@ export type Database = {
           components?: Json | null;
           created_at?: string;
           danger_level: number;
-          fuel_limited?: boolean;
           forecast_date: string;
+          fuel_limited?: boolean;
           fwi: number;
           horizon_days: number;
           id?: string;
@@ -991,8 +974,8 @@ export type Database = {
           components?: Json | null;
           created_at?: string;
           danger_level?: number;
-          fuel_limited?: boolean;
           forecast_date?: string;
+          fuel_limited?: boolean;
           fwi?: number;
           horizon_days?: number;
           id?: string;
@@ -1408,9 +1391,6 @@ export type CompositeTypes<
     : never;
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],
