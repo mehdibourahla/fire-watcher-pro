@@ -2131,23 +2131,23 @@ export type Database = {
         Args: {
           _attempt: number;
           _coverage_status: string;
-          _data_from: string;
-          _data_through: string;
+          _data_from: string | null;
+          _data_through: string | null;
           _finished_at: string;
           _job_id: string;
           _outcome: string;
-          _private_diagnostic: string;
-          _public_reason_code: string;
-          _published_at: string;
+          _private_diagnostic: string | null;
+          _public_reason_code: string | null;
+          _published_at: string | null;
           _quality_checks: Json;
-          _records_expected: number;
+          _records_expected: number | null;
           _records_inserted: number;
           _records_rejected: number;
           _records_seen: number;
           _records_updated: number;
           _retryable: boolean;
-          _upstream_published_at: string;
-          _validated_at: string;
+          _upstream_published_at: string | null;
+          _validated_at: string | null;
           _worker_id: string;
         };
         Returns: {
@@ -2205,16 +2205,16 @@ export type Database = {
         Args: {
           _contract_key: string;
           _coverage_status: string;
-          _data_from: string;
-          _data_through: string;
+          _data_from: string | null;
+          _data_through: string | null;
           _finished_at: string;
           _idempotency_key: string;
           _outcome: string;
-          _private_diagnostic: string;
-          _public_reason_code: string;
-          _published_at: string;
+          _private_diagnostic: string | null;
+          _public_reason_code: string | null;
+          _published_at: string | null;
           _quality_checks: Json;
-          _records_expected: number;
+          _records_expected: number | null;
           _records_inserted: number;
           _records_rejected: number;
           _records_seen: number;
@@ -2222,8 +2222,8 @@ export type Database = {
           _scheduled_for: string;
           _started_at: string;
           _trigger_kind: string;
-          _upstream_published_at: string;
-          _validated_at: string;
+          _upstream_published_at: string | null;
+          _validated_at: string | null;
         };
         Returns: string;
       };

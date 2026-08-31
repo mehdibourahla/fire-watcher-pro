@@ -142,8 +142,24 @@ export function deliveryRunOutcome(input: {
   };
 }
 
-export type SourceRunRpcArgs =
+type GeneratedSourceRunRpcArgs =
   Database["public"]["Functions"]["record_source_run"]["Args"];
+type NullableSourceRunArg =
+  | "_data_from"
+  | "_data_through"
+  | "_private_diagnostic"
+  | "_public_reason_code"
+  | "_published_at"
+  | "_records_expected"
+  | "_upstream_published_at"
+  | "_validated_at";
+
+export type SourceRunRpcArgs = Omit<
+  GeneratedSourceRunRpcArgs,
+  NullableSourceRunArg
+> & {
+  [Key in NullableSourceRunArg]: GeneratedSourceRunRpcArgs[Key] | null;
+};
 
 export function sourceRunRpcArgs(
   report: SourceRunReport,
