@@ -1,0 +1,222 @@
+import type { BroadcastPhase, CapText } from "@/lib/cap";
+
+export type BroadcastVars = {
+  place: string;
+  wilaya: string;
+  km: number | null;
+  bearingDeg: number | null;
+  hotspots: number;
+  hours: number;
+};
+
+type Copy = {
+  event: string;
+  initialHeadline: string;
+  initialDesc: string;
+  initialDescNoKm: string;
+  initialDrift: string;
+  updateHeadline: string;
+  updateDesc: string;
+  updateDrift: string;
+  endHeadline: string;
+  endDesc: string;
+  cancelHeadline: string;
+  cancelDesc: string;
+  instruction: string;
+  compass: [string, string, string, string, string, string, string, string];
+};
+
+/* AR copy is approved maquette wording; instruction lines are the pre-approved
+ * Standing Guidance already shipped in alerts-engine. KAB pending native review. */
+const COPY: Record<"ar" | "fr" | "en" | "kab", Copy> = {
+  ar: {
+    event: "حريق غابات",
+    initialHeadline: "حريق مؤكد — {{place}}، {{wilaya}}",
+    initialDesc:
+      "حريق مؤكد عبر القمر الاصطناعي على بعد نحو {{km}} كلم من {{place}}",
+    initialDescNoKm: "حريق مؤكد عبر القمر الاصطناعي قرب {{place}}",
+    initialDrift: "، يتقدم مع الريح نحو {{bearing}}",
+    updateHeadline: "تحديث — حريق {{place}}",
+    updateDesc: "اتسع الرصد إلى {{hotspots}} نقطة حرارية.",
+    updateDrift: " اتجاه التقدم نحو {{bearing}}.",
+    endHeadline: "حريق {{place}} — لا رصد جديد",
+    endDesc:
+      "لم تُرصد نقاط حرارية منذ {{hours}} ساعة. قد تفوت الأقمار الاصطناعية نارًا نشطة — اتبع تعليمات الحماية المدنية.",
+    cancelHeadline: "إلغاء تنبيه حريق {{place}}",
+    cancelDesc: "تبيّن أن الرصد قرب {{place}} لم يكن حريقًا نشطًا.",
+    instruction:
+      "ابتعد عن الدخان، واتبع تعليمات السلطات المحلية، واتصل بالحماية المدنية على 14 إذا هدّد الحريق أشخاصًا أو منازل.",
+    compass: [
+      "الشمال",
+      "الشمال الشرقي",
+      "الشرق",
+      "الجنوب الشرقي",
+      "الجنوب",
+      "الجنوب الغربي",
+      "الغرب",
+      "الشمال الغربي",
+    ],
+  },
+  fr: {
+    event: "Feu de forêt",
+    initialHeadline: "Incendie confirmé — {{place}}, {{wilaya}}",
+    initialDesc:
+      "Incendie confirmé par satellite à environ {{km}} km de {{place}}",
+    initialDescNoKm: "Incendie confirmé par satellite près de {{place}}",
+    initialDrift: ", poussé par le vent vers {{bearing}}",
+    updateHeadline: "Mise à jour — incendie de {{place}}",
+    updateDesc: "La détection s'est étendue à {{hotspots}} points chauds.",
+    updateDrift: " La progression reste orientée vers {{bearing}}.",
+    endHeadline: "Incendie de {{place}} — aucune nouvelle détection",
+    endDesc:
+      "Aucun point chaud détecté depuis {{hours}} heures. Les satellites peuvent manquer un feu actif — suivez les consignes de la Protection Civile.",
+    cancelHeadline: "Annulation — alerte incendie de {{place}}",
+    cancelDesc:
+      "La détection près de {{place}} ne correspondait pas à un incendie actif.",
+    instruction:
+      "Éloignez-vous de la fumée, suivez les consignes des autorités locales et appelez la Protection Civile au 14 si le feu menace des personnes ou des habitations.",
+    compass: [
+      "le nord",
+      "le nord-est",
+      "l'est",
+      "le sud-est",
+      "le sud",
+      "le sud-ouest",
+      "l'ouest",
+      "le nord-ouest",
+    ],
+  },
+  en: {
+    event: "Wildfire",
+    initialHeadline: "Confirmed fire — {{place}}, {{wilaya}}",
+    initialDesc: "Satellite-confirmed fire about {{km}} km from {{place}}",
+    initialDescNoKm: "Satellite-confirmed fire near {{place}}",
+    initialDrift: ", moving with the wind toward the {{bearing}}",
+    updateHeadline: "Update — {{place}} fire",
+    updateDesc: "Detection has grown to {{hotspots}} hotspots.",
+    updateDrift: " It is still heading {{bearing}}.",
+    endHeadline: "{{place}} fire — no new detections",
+    endDesc:
+      "No hotspots detected for {{hours}} hours. Satellites can miss an active fire — follow Civil Protection instructions.",
+    cancelHeadline: "Cancelled — {{place}} fire alert",
+    cancelDesc: "The detection near {{place}} was not an active fire.",
+    instruction:
+      "Stay away from the smoke, follow instructions from local authorities, and call Civil Protection on 14 if the fire threatens people or homes.",
+    compass: [
+      "north",
+      "northeast",
+      "east",
+      "southeast",
+      "south",
+      "southwest",
+      "west",
+      "northwest",
+    ],
+  },
+  kab: {
+    event: "Times n teẓgi",
+    initialHeadline: "Times tettwatebbet — {{place}}, {{wilaya}}",
+    initialDesc:
+      "Times tettwatebbet s uḍfar n igenwan ɣef azal n {{km}} km si {{place}}",
+    initialDescNoKm: "Times tettwatebbet s uḍfar n igenwan ɣer {{place}}",
+    initialDrift: ", tetteddu d waḍu ɣer {{bearing}}",
+    updateHeadline: "Aleqqem — times n {{place}}",
+    updateDesc: "Aḍfar yewweḍ ɣer {{hotspots}} n tenqiḍin n tmes.",
+    updateDrift: " Mazal tetteddu ɣer {{bearing}}.",
+    endHeadline: "Times n {{place}} — ulac aḍfar amaynut",
+    endDesc:
+      "Ulac tinqiḍin n tmes seg {{hours}} n tsaɛtin. Igenwan zemren ad zeglen times iddren — ḍfer iwellihen n Tɣellist Tagdudant.",
+    cancelHeadline: "Yefsex — alɣu n tmes n {{place}}",
+    cancelDesc: "Aḍfar ɣer {{place}} mači d times iddren.",
+    instruction:
+      "Ḥader iman-ik seg dexxan, ḍfer iwellihen n yidebbaren idiganen, tsiwleḍ i Tɣellist Tagdudant ɣef 14 ma tessexlaɛ times imdanen neɣ ixxamen.",
+    compass: [
+      "agafa",
+      "agafa-agmuḍ",
+      "agmuḍ",
+      "anẓul-agmuḍ",
+      "anẓul",
+      "anẓul-ataram",
+      "ataram",
+      "agafa-ataram",
+    ],
+  },
+};
+
+const LANGUAGE: Record<keyof typeof COPY, string> = {
+  ar: "ar-DZ",
+  fr: "fr-DZ",
+  en: "en",
+  kab: "kab",
+};
+
+function fill(template: string, vars: Record<string, string | number>) {
+  return template.replace(/\{\{(\w+)\}\}/g, (_, k: string) =>
+    String(vars[k] ?? ""),
+  );
+}
+
+function compassWord(copy: Copy, deg: number): string {
+  return copy.compass[Math.round((((deg % 360) + 360) % 360) / 45) % 8]!;
+}
+
+function description(
+  phase: BroadcastPhase,
+  copy: Copy,
+  vars: BroadcastVars,
+): string {
+  const slots = {
+    place: vars.place,
+    km: vars.km ?? "",
+    hotspots: vars.hotspots,
+    hours: vars.hours,
+    bearing: vars.bearingDeg === null ? "" : compassWord(copy, vars.bearingDeg),
+  };
+  switch (phase) {
+    case "initial": {
+      const base = fill(
+        vars.km === null ? copy.initialDescNoKm : copy.initialDesc,
+        slots,
+      );
+      const drift =
+        vars.bearingDeg === null ? "" : fill(copy.initialDrift, slots);
+      return `${base}${drift}.`;
+    }
+    case "update": {
+      const drift =
+        vars.bearingDeg === null ? "" : fill(copy.updateDrift, slots);
+      return `${fill(copy.updateDesc, slots)}${drift}`;
+    }
+    case "end":
+      return fill(copy.endDesc, slots);
+    case "cancel":
+      return fill(copy.cancelDesc, slots);
+  }
+}
+
+const HEADLINE: Record<BroadcastPhase, keyof Copy> = {
+  initial: "initialHeadline",
+  update: "updateHeadline",
+  end: "endHeadline",
+  cancel: "cancelHeadline",
+};
+
+export function broadcastTexts(
+  phase: BroadcastPhase,
+  vars: BroadcastVars,
+): CapText[] {
+  const live = phase === "initial" || phase === "update";
+  return (Object.keys(COPY) as (keyof typeof COPY)[]).map((locale) => {
+    const copy = COPY[locale];
+    return {
+      language: LANGUAGE[locale],
+      event: copy.event,
+      headline: fill(copy[HEADLINE[phase]] as string, {
+        place: vars.place,
+        wilaya: vars.wilaya,
+      }),
+      description: description(phase, copy, vars),
+      instruction: live ? copy.instruction : "",
+    };
+  });
+}
