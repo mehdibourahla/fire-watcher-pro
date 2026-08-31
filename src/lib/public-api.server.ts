@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 
 import type { Database } from "@/integrations/supabase/types";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { summariseSourceHealth, type SourceHealth } from "@/lib/source-health";
 
 export const CORS_HEADERS: Record<string, string> = {
@@ -68,7 +69,7 @@ export async function enforceRateLimit(
     request.headers.get("x-real-ip") ||
     "unknown";
 
-  const { data, error } = await publicSupabase().rpc("consume_rate_limit", {
+  const { data, error } = await supabaseAdmin.rpc("consume_rate_limit", {
     _bucket: `public-api:${ip}`,
     _limit: RATE_LIMIT_PER_MINUTE,
     _window_seconds: 60,

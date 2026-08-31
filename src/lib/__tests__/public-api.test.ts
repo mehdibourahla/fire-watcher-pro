@@ -1,6 +1,13 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+const { adminRpc } = vi.hoisted(() => ({ adminRpc: vi.fn() }));
+
+vi.mock("@/integrations/supabase/client.server", () => ({
+  supabaseAdmin: { rpc: adminRpc },
+}));
 
 import {
+  enforceRateLimit,
   fireFeatureCollection,
   methodNotAllowed,
   serializePublicSourceStatus,
@@ -59,6 +66,31 @@ describe("methodNotAllowed", () => {
     expect(response.headers.get("Allow")).toBe("GET, HEAD, OPTIONS");
     expect(response.headers.get("Access-Control-Allow-Origin")).toBe("*");
     expect(response.headers.get("Content-Type")).toBe("application/json");
+  });
+});
+
+describe("enforceRateLimit", () => {
+  it("uses the server-side limiter RPC and returns its 429 response", async () => {
+    adminRpc.mockResolvedValueOnce({ data: false, error: null });
+
+    const response = await enforceRateLimit(
+      new Request("https://example.test/api/public/v1/status", {
+        headers: { "cf-connecting-ip": "203.0.113.8" },
+      }),
+    );
+
+    expect(adminRpc).toHaveBeenCalledWith("consume_rate_limit", {
+      _bucket: "public-api:203.0.113.8",
+      _limit: 60,
+      _window_seconds: 60,
+    });
+    expect(response?.status).toBe(429);
+    await expect(response?.json()).resolves.toEqual({
+      error: "rate limit exceeded",
+      limit: 60,
+      window_seconds: 60,
+    });
+    expect(response?.headers.get("Retry-After")).toBe("60");
   });
 });
 
