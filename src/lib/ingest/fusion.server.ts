@@ -114,6 +114,15 @@ export async function mergeOverlappingClusters(): Promise<string[]> {
       .from("alerts")
       .update({ cluster_id: primary })
       .in("cluster_id", duplicates);
+    // the delete would null these FKs, orphaning an open broadcast thread
+    await supabaseAdmin
+      .from("cap_alerts")
+      .update({ cluster_id: primary })
+      .in("cluster_id", duplicates);
+    await supabaseAdmin
+      .from("broadcasts")
+      .update({ cluster_id: primary })
+      .in("cluster_id", duplicates);
     await supabaseAdmin.from("fire_clusters").delete().in("id", duplicates);
     await supabaseAdmin.from("cluster_events").insert({
       cluster_id: primary,

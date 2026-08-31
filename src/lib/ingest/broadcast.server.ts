@@ -62,14 +62,15 @@ async function auditRow(row: {
 }
 
 export async function publishBroadcasts(): Promise<BroadcastRun> {
+  // fail closed: a missing or unreadable kill-switch row must stop publishing
   const { data: settings, error: settingsError } = await supabaseAdmin
     .from("broadcast_settings")
     .select("enabled")
     .eq("id", true)
-    .maybeSingle();
+    .single();
   if (settingsError) throw new Error(settingsError.message);
 
-  if (settings?.enabled === false) {
+  if (settings.enabled !== true) {
     // one audit row per outage, not one per 15-minute run
     const { data: last } = await supabaseAdmin
       .from("broadcast_audit")
