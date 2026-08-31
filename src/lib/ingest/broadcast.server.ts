@@ -7,6 +7,7 @@ import {
   applyDailyLimit,
   downwindAdditions,
   fireSeverity,
+  fuelLimitedCodes,
   planFireBroadcast,
   targetCommunes,
   type CommuneShape,
@@ -160,15 +161,26 @@ export async function publishBroadcasts(): Promise<BroadcastRun> {
     ),
   );
   const geomById = new Map<string, CommuneShape["geom"]>();
+  const landcoverById = new Map<
+    string,
+    Parameters<typeof fuelLimitedCodes>[0][number]["landcover"]
+  >();
   for (let i = 0; i < shortlist.length; i += 50) {
     const ids = shortlist.slice(i, i + 50).map((c) => c.id);
     const { data, error } = await supabaseAdmin
       .from("admin_units")
-      .select("id, geom")
+      .select("id, geom, landcover")
       .in("id", ids);
     if (error) throw new Error(error.message);
-    for (const row of data ?? [])
+    for (const row of data ?? []) {
       geomById.set(row.id, row.geom as CommuneShape["geom"]);
+      landcoverById.set(
+        row.id,
+        row.landcover as Parameters<
+          typeof fuelLimitedCodes
+        >[0][number]["landcover"],
+      );
+    }
   }
   const shapes: (CommuneShape & { id: string })[] = shortlist.map((c) => ({
     id: c.id,
@@ -178,6 +190,12 @@ export async function publishBroadcasts(): Promise<BroadcastRun> {
     geom: geomById.get(c.id) ?? null,
   }));
   const shapeByCode = new Map(shapes.map((s) => [s.code, s]));
+  const fuelLimited = fuelLimitedCodes(
+    shortlist.map((c) => ({
+      code: c.code,
+      landcover: landcoverById.get(c.id) ?? null,
+    })),
+  );
 
   const settlementIds = clusters
     .map((c) => c.nearest_settlement_id)
@@ -261,6 +279,7 @@ export async function publishBroadcasts(): Promise<BroadcastRun> {
       open,
       targets,
       additions,
+      fuelLimited,
     });
     if (!plan) continue;
 

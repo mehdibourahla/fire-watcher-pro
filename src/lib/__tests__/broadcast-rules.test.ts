@@ -8,6 +8,7 @@ import {
   kmToMultiPolygon,
   planFireBroadcast,
   pointInMultiPolygon,
+  fuelLimitedCodes,
   targetCommunes,
   type CommuneShape,
 } from "@/lib/broadcast-rules";
@@ -202,6 +203,83 @@ describe("planFireBroadcast", () => {
         open: { phase: "end", communeCodes: ["1503"], severity: "Severe" },
       }),
     ).toEqual({ action: "initial", codes: ["1503", "1510"] });
+  });
+});
+
+describe("fuelLimitedCodes", () => {
+  const communes = [
+    {
+      code: "3306",
+      landcover: {
+        tree: 0,
+        shrub: 0,
+        grass: 0,
+        crop: 0,
+        bare: 1,
+        built: 0,
+        water: 0,
+        other: 0,
+      },
+    },
+    {
+      code: "1518",
+      landcover: {
+        tree: 0.5,
+        shrub: 0.1,
+        grass: 0.2,
+        crop: 0.14,
+        bare: 0.06,
+        built: 0,
+        water: 0,
+        other: 0,
+      },
+    },
+    { code: "9999", landcover: null },
+  ];
+
+  it("names the communes with nothing to burn", () => {
+    expect(fuelLimitedCodes(communes)).toEqual(new Set(["3306"]));
+  });
+
+  it("never masks a commune whose land cover is unknown", () => {
+    expect(fuelLimitedCodes([{ code: "9999", landcover: null }]).size).toBe(0);
+  });
+});
+
+describe("planFireBroadcast fuel gate", () => {
+  const HOUR = 3600_000;
+  const now = Date.parse("2026-08-30T12:00:00Z");
+  const base = {
+    state: "active",
+    confidence: 0.7,
+    lastDetectedMs: now - HOUR,
+    nowMs: now,
+    severity: "Extreme" as const,
+    open: null,
+    targets: ["3306"],
+    additions: [],
+    fuelLimited: new Set(["3306"]),
+  };
+
+  it("does not open a thread where every target commune has no fuel", () => {
+    expect(planFireBroadcast(base)).toBeNull();
+  });
+
+  it("still opens for the communes that can burn", () => {
+    expect(planFireBroadcast({ ...base, targets: ["3306", "1518"] })).toEqual({
+      action: "initial",
+      codes: ["1518"],
+    });
+  });
+
+  it("still closes a thread that was already open", () => {
+    expect(
+      planFireBroadcast({
+        ...base,
+        lastDetectedMs: now - 13 * HOUR,
+        open: { phase: "initial", communeCodes: ["3306"], severity: "Extreme" },
+      }),
+    ).toEqual({ action: "end" });
   });
 });
 
