@@ -12,14 +12,14 @@ zone. The interface ships in Arabic (default, RTL), French, English and Kabyle.
 
 ## Data sources
 
-| Source                                          | State                                                                                                                                 |
-| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| NASA FIRMS (SNPP, NOAA-20, NOAA-21, MODIS)      | connected, ingesting                                                                                                                  |
-| NASA FIRMS science archive (`VIIRS_SNPP_SP`)    | source of the persistent-industrial-source registry — its `type` label is absent from the near-real-time feeds                        |
-| Open-Meteo (weather, fire-weather index, winds) | connected                                                                                                                             |
-| OpenStreetMap (admin boundaries, settlements)   | seeded from `data/geo/`, ODbL                                                                                                         |
-| EUMETSAT MTG FCI                                | credentials valid, **feed health only** — the granules are netCDF, which the edge runtime cannot decode, so no detections are written |
-| EFFIS / GWIS                                    | connected — daily danger-class comparison sampled from the EFFIS WMS (no raw FWI values are published, so classes are the contract)   |
+| Source                                          | State                                                                                                          |
+| ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| NASA FIRMS (SNPP, NOAA-20, NOAA-21, MODIS)      | connected, ingesting                                                                                           |
+| NASA FIRMS science archive (`VIIRS_SNPP_SP`)    | source of the persistent-industrial-source registry — its `type` label is absent from the near-real-time feeds |
+| Open-Meteo (weather, fire-weather index, winds) | connected                                                                                                      |
+| OpenStreetMap (admin boundaries, settlements)   | seeded from `data/geo/`, ODbL                                                                                  |
+| EUMETSAT MTG FCI                                | connected — fire-radiative-power points from EUMETSAT's public WFS ingest every 10 minutes                     |
+| EFFIS / GWIS                                    | connected — daily danger-class comparison sampled from the EFFIS WMS                                           |
 
 Geography is 69 wilayas, 1536 communes and 10257 settlements, taken from OpenStreetMap via
 Overpass rather than geoBoundaries or GADM — those have incomplete Algerian ADM2 coverage.
@@ -47,12 +47,14 @@ The dev server listens on **8080**, not vite's usual 5173; the port is set expli
 
 Only the Supabase URL and publishable key are needed to boot the UI. The service-role key
 and ingestion credentials (`FIRMS_MAP_KEY`, `EUMETSAT_CONSUMER_KEY/SECRET`) are server-side
-only and are needed just for ingestion. Missing credentials degrade gracefully: the relevant
-worker marks itself unavailable in `data_sources` instead of crashing.
+only and are needed just for ingestion. Every stage reports a structured outcome to the private,
+append-only `source_runs` ledger; the public `source_health` view derives freshness, coverage and
+availability without exposing credentials or raw errors. Missing credentials fail that source's
+contract with an allow-listed public reason instead of exposing a mutable raw-error note.
 
 ### Database
 
-Migrations live in `supabase/migrations/` (21 of them). Before running `supabase db push`,
+Migrations live in `supabase/migrations/`. Before running `supabase db push`,
 check that `supabase/config.toml` names the project you actually mean — a stale ref there
 sends migrations to the wrong database, and CLI errors quote the stale id rather than the
 linked one. `supabase/.temp/linked-project.json` is the real link target.
@@ -93,9 +95,10 @@ Scheduling is `pg_cron` calling back into the deployed app over HTTP. The target
 vault secret `nadhir_app_url`; the cron function raises if it is unset, so the jobs fail
 loudly rather than silently doing nothing when the app is not deployed.
 
-A public read API is exposed at `/api/public/v1/fires`, `/api/public/v1/risk` and
-`/api/public/v1/stats`. The risk endpoint takes `?commune=<code>` — the `admin_units.code`
-value, not a place name. Fires also serve GeoJSON with `?format=geojson`.
+A public read API is exposed at `/api/public/v1/fires`, `/api/public/v1/risk`,
+`/api/public/v1/stats` and `/api/public/v1/status`. The status endpoint is the same sanitized,
+server-derived health model used by the UI. The risk endpoint takes `?commune=<code>` — the
+`admin_units.code` value, not a place name. Fires also serve GeoJSON with `?format=geojson`.
 
 ## Deployment
 
@@ -154,8 +157,9 @@ want to contribute. The blockers that matter most:
 - **Cross-border fires are watched but coarsely placed.** Detections in the Moroccan and
   Tunisian border strips are ingested and shown with coordinates rather than an Algerian
   commune name, but nothing yet says which country they are in.
-- **No sub-5-minute detection.** The geostationary FCI feed is polled for health only — its
-  netCDF granules cannot be decoded in the edge runtime, so it writes no detections.
+- **No sub-5-minute detection.** The geostationary FCI WFS feed is ingested every 10 minutes,
+  with roughly 25 minutes of upstream publication latency. Meeting the original target needs
+  the Data Store push subscription plus a decode worker.
 - **Gas flares are screened, not perfectly.** 77% of Algeria's satellite fire detections are
   permanent industrial heat sources. A registry learned from NASA's own labels removes 98.4%
   of alerting-size false fires, at the cost of 5.5% of real ones — almost all of them small

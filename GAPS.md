@@ -101,7 +101,7 @@ server-side; the CQL BBOX is lat-first, and a run whose features all fall outsid
 watch box errors instead of ingesting the wrong hemisphere. Flare screening applies
 unchanged (cell membership is cadence-free); the offline registry thresholds were
 derived from ~4 looks/day and must be re-derived before FCI detections are ever fed
-into registry *learning* — today they are not.
+into registry _learning_ — today they are not.
 
 ## 2. Data quality
 
@@ -162,6 +162,36 @@ Still open, stated in the law file's `open_items`: Bou Saâda's "Menaâ" (Art. 5
 has no counterpart commune in the database; `2839 Ouled Atia` exists here but in no law
 list; and `admin_units` holds 1537 communes against the law's 1541 — the missing rows
 are unidentified and need the Arabic original or ONS tables to name.
+
+### 2.4 Source reliability — truthful health shipped; execution and publication remain open
+
+The first slice of the Data Reliability Control Plane replaces the two most dangerous health
+shortcuts. Freshness is no longer guessed in the browser from hard-coded intervals, and raw
+`ingest_runs.error` is no longer public. Every current source and derived stage reports a
+structured outcome to an append-only private `source_runs` ledger; one atomic recorder advances
+the corresponding `source_checkpoints` row; and the `source_health` view derives `healthy`,
+`delayed`, `degraded`, `stale`, `unavailable` or `paused` from the versioned contract and its
+watermarks. The status page, homepage signal and `/api/public/v1/status` consume that same
+sanitized projection. This is milestone M1A in `roadmap.md`.
+
+What is deliberately still open:
+
+- **Scheduler response and isolated execution (M2).** `pg_cron` can enqueue a `pg_net` request
+  without proving the Worker completed it, and current stages still share one sequential request.
+  Queue leases, per-adapter runners, a second trigger and an independent watchdog are not built.
+- **Gap detection and replay (M2).** Checkpoints preserve watermarks and idempotency keys, but
+  there is no `source_gaps` registry, automatic replay cursor or operator replay workflow yet.
+- **Atomic FWI publication (M3).** The daily workflow records partial coverage honestly, but it
+  can still update part of the current forecast set in place. A staged 9,216-row snapshot and one
+  publication manifest must precede any new daily enrichment layer.
+- **Channel-isolated delivery (M4).** Publish and delivery health are distinct contracts now, but
+  Telegram and FCM attempts do not yet have independent durable queues, retries and backlog
+  objectives. One channel succeeding must not erase evidence that another failed.
+
+The dormant `data_sources` and `ingest_runs` relations exist only for the one-release
+schema-before-code deploy window. The contract-release checklist in
+`docs/superpowers/plans/2026-08-31-source-health-contract-cleanup.md` removes them after
+production evidence proves that no deployed code still uses them.
 
 ## 3. Product surface
 
@@ -227,8 +257,9 @@ are unidentified and need the Arabic original or ONS tables to name.
   survival shell only; spoken/recorded guidance audio (accessibility for low literacy)
   does not exist yet and must be human-recorded, not TTS.
 - **Public API** has no WebSocket and no tiles. What exists is `/api/public/v1/fires`
-  (with `?format=geojson`), `/api/public/v1/risk` and `/api/public/v1/stats`; the risk
-  endpoint takes `?commune=<code>` using `admin_units.code`, not a place name.
+  (with `?format=geojson`), `/api/public/v1/risk`, `/api/public/v1/stats` and the sanitized
+  `/api/public/v1/status`; the risk endpoint takes `?commune=<code>` using
+  `admin_units.code`, not a place name.
 
 ## 4. Contributing, tooling and licence
 
@@ -309,7 +340,7 @@ Things that cost real debugging time here, none of them obvious from the code.
 | Data engineering               | §2.1 ESA WorldCover, §2.2 EFFIS                                |
 | Backend with real consequences | §1.3 wiring a delivery channel onto the CAP object             |
 | Domain science                 | §1.1 danger-scale calibration — the highest-value problem here |
-| Ops                            | §1.2 SMTP, §1.4 netCDF decoding off-Worker                     |
+| Ops                            | §1.2 SMTP, §2.4 isolated execution and replay                  |
 
 Before changing anything that decides what a user is told, read `ORIGINAL-SPEC.md` for the
 intended model and `roadmap.md` for what is already built. The spec is authoritative except on
