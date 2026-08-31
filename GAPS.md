@@ -201,6 +201,15 @@ are unidentified and need the Arabic original or ONS tables to name.
   interest rather than a number of people. Open-area verification has a column
   (`verified_at`) but no submission form — verifications arrive as free text in the idea box
   and a maintainer transcribes them, so the headline deficit only moves by hand.
+- **Translation review is a real surface** since 2026-08-30:
+  `/contribute/language/<ar|fr|kab>` shows all 671 strings beside their English source,
+  accepts a suggestion or a "reads right" confirmation per string, keeps drafts in the
+  browser across sessions, and submits in rate-limited batches. Accepting in the moderation
+  console records a decision only — `bun run apply:translations <locale>` rewrites the
+  locale file and leaves a normal diff, so every word a person is shown still arrives
+  through a reviewed commit. Suggestions whose `current_text` no longer matches the file are
+  skipped and named rather than applied to changed copy. Kabyle stays out of the language
+  pickers until a speaker has been through it.
 - **Survival mode** (`/survival`) ships with deliberate limits, each stated in the UI
   rather than papered over: the SOS queue is **local-only** — no server inbox exists
   because nobody would monitor it (§1.3), and the copy says so; quick hazard reports

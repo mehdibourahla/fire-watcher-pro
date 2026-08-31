@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import {
   ArrowRight,
   Building2,
@@ -233,7 +233,16 @@ function LaneGrid({
             <span className="text-[11.5px] leading-relaxed text-faint">
               {t("contribute.asks", { what: t(`contribute.${key}Asks`) })}
             </span>
-            {LANE_READING[key] ? (
+            {key === "language" ? (
+              <Link
+                to="/contribute/language/$locale"
+                params={{ locale: "kab" }}
+                className="inline-flex items-center gap-1.5 text-[13px] font-medium text-[var(--accent)]"
+              >
+                {t(`contribute.${key}Cta`)}
+                <ArrowRight aria-hidden className="size-3.5 rtl:rotate-180" />
+              </Link>
+            ) : LANE_READING[key] ? (
               <a
                 href={LANE_READING[key]}
                 target="_blank"
