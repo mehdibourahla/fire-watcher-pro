@@ -56,7 +56,7 @@ private.sync_legacy_source_checkpoint()
   - one successful report creates a run and advances success/watermark fields atomically;
   - one failed report increments the failure streak without advancing the last valid watermark;
   - duplicate idempotency keys do not create a second run or mutate the checkpoint twice;
-  - health derivation reaches `paused`, `unavailable`, `stale`, `delayed`, `degraded`, and `healthy` using test contracts with timestamps relative to `now()`;
+  - health derivation reaches `paused`, `unavailable`, `stale`, `delayed`, `degraded`, and `healthy` using test contracts with timestamps relative to `now()`; `backfilling` remains a reserved public state until milestone 2 adds `source_gaps`;
   - raw diagnostics never appear among `source_health` columns.
 - [ ] **Step 2: Run the database test and see the expected failure.** Use `supabase start` if the local stack is not running, then `supabase test db --local supabase/tests/source_reliability.test.sql`. Expected: missing reliability relations/function.
 - [ ] **Step 3: Generate the migration with the CLI.** Run `supabase migration new add_source_reliability_control_plane`; use the exact generated file from this point onward.
