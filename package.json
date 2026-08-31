@@ -7,7 +7,7 @@
     "dev": "vite dev",
     "build": "vite build",
     "build:dev": "vite build --mode development",
-    "preview": "vite preview",
+    "preview": "nitro preview",
     "lint": "eslint .",
     "format": "prettier --write .",
     "test": "vitest run",
@@ -110,6 +110,7 @@
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.56.1",
     "vite": "8.1.5",
-    "vitest": "^3"
+    "vitest": "^3",
+    "wrangler": "4.127.1"
   }
 }
