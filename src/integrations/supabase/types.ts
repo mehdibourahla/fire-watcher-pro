@@ -350,6 +350,77 @@ export type Database = {
           },
         ];
       };
+      contribution_idea_votes: {
+        Row: {
+          created_at: string;
+          idea_id: string;
+          value: number;
+          voter_key: string;
+        };
+        Insert: {
+          created_at?: string;
+          idea_id: string;
+          value: number;
+          voter_key: string;
+        };
+        Update: {
+          created_at?: string;
+          idea_id?: string;
+          value?: number;
+          voter_key?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "contribution_idea_votes_idea_id_fkey";
+            columns: ["idea_id"];
+            isOneToOne: false;
+            referencedRelation: "contribution_ideas";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      contribution_ideas: {
+        Row: {
+          contact: string | null;
+          created_at: string;
+          id: string;
+          lane: string;
+          locale: string;
+          message: string;
+          moderated_by: string | null;
+          moderation_note: string | null;
+          published_at: string | null;
+          score: number;
+          status: string;
+        };
+        Insert: {
+          contact?: string | null;
+          created_at?: string;
+          id?: string;
+          lane?: string;
+          locale?: string;
+          message: string;
+          moderated_by?: string | null;
+          moderation_note?: string | null;
+          published_at?: string | null;
+          score?: number;
+          status?: string;
+        };
+        Update: {
+          contact?: string | null;
+          created_at?: string;
+          id?: string;
+          lane?: string;
+          locale?: string;
+          message?: string;
+          moderated_by?: string | null;
+          moderation_note?: string | null;
+          published_at?: string | null;
+          score?: number;
+          status?: string;
+        };
+        Relationships: [];
+      };
       data_sources: {
         Row: {
           id: string;
@@ -745,6 +816,9 @@ export type Database = {
           osm_id: number | null;
           osm_type: string | null;
           source: string;
+          verified_at: string | null;
+          verified_by: string | null;
+          verified_note: string | null;
         };
         Insert: {
           area_type: string;
@@ -758,6 +832,9 @@ export type Database = {
           osm_id?: number | null;
           osm_type?: string | null;
           source?: string;
+          verified_at?: string | null;
+          verified_by?: string | null;
+          verified_note?: string | null;
         };
         Update: {
           area_type?: string;
@@ -771,6 +848,9 @@ export type Database = {
           osm_id?: number | null;
           osm_type?: string | null;
           source?: string;
+          verified_at?: string | null;
+          verified_by?: string | null;
+          verified_note?: string | null;
         };
         Relationships: [
           {
@@ -1195,6 +1275,10 @@ export type Database = {
           _user_id: string;
         };
         Returns: boolean;
+      };
+      vote_on_idea: {
+        Args: { _idea: string; _value: number; _voter: string };
+        Returns: number;
       };
     };
     Enums: {

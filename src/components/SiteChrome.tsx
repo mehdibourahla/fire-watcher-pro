@@ -3,6 +3,7 @@ import {
   Bell,
   Flame,
   MapPin,
+  Menu,
   Monitor,
   Moon,
   Settings,
@@ -18,8 +19,16 @@ import {
   LOCALES,
   LOCALE_LABELS,
   LOCALE_SHORT_LABELS,
+  RTL_LOCALES,
   applyLocale,
 } from "@/i18n";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { dangerLevelKey } from "@/lib/nadhir";
 import {
   applyTheme,
@@ -35,6 +44,7 @@ const PRIMARY_NAV = [
   { to: "/history", key: "nav.history" },
   { to: "/status", key: "nav.status" },
   { to: "/about", key: "nav.about" },
+  { to: "/contribute", key: "nav.contribute" },
 ] as const;
 
 const TABS = [
@@ -106,11 +116,56 @@ export function ThemeToggle() {
   );
 }
 
+/** Below lg the inline nav is hidden, so without this the only way to any page
+ * that is not a bottom tab is the footer. */
+function MobileNav() {
+  const { t, i18n } = useTranslation();
+  const [open, setOpen] = useState(false);
+  // the sheet has no logical side, so it must follow the locale or it opens from
+  // the opposite edge to the button that summoned it in Arabic
+  const side = RTL_LOCALES.includes(
+    i18n.language as (typeof RTL_LOCALES)[number],
+  )
+    ? "right"
+    : "left";
+  return (
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger
+        aria-label={t("nav.menu")}
+        className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground lg:hidden"
+      >
+        <Menu aria-hidden className="size-5" />
+      </SheetTrigger>
+      <SheetContent side={side} className="w-[17rem] p-0">
+        <SheetHeader className="border-b border-border py-3 pe-12 ps-4 text-start">
+          <SheetTitle className="font-display text-base">
+            {t("nav.menu")}
+          </SheetTitle>
+        </SheetHeader>
+        <nav className="flex flex-col p-2" aria-label={t("nav.menu")}>
+          {PRIMARY_NAV.map((item) => (
+            <Link
+              key={item.to}
+              to={item.to}
+              activeOptions={{ exact: item.to === "/" }}
+              onClick={() => setOpen(false)}
+              className="rounded-md px-3 py-2.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground [&.active]:bg-muted [&.active]:font-medium [&.active]:text-foreground"
+            >
+              {t(item.key)}
+            </Link>
+          ))}
+        </nav>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
 export function SiteHeader() {
   const { t } = useTranslation();
   return (
     <header className="sticky top-0 z-20 border-b border-border bg-surface/95 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-[1600px] items-center gap-2 px-3 sm:gap-4 sm:px-4">
+        <MobileNav />
         <Link to="/" className="flex min-w-0 items-center gap-2">
           <BrandMark className="h-7 w-7 shrink-0 rounded-[7px]" />
           {/* below 360px the wordmark plus the controls no longer fit; the logo carries it */}
@@ -254,6 +309,12 @@ export function SiteFooter() {
         </Link>
         <Link to="/status" className="hover:text-foreground">
           {t("nav.status")}
+        </Link>
+        <Link
+          to="/contribute"
+          className="font-semibold text-[var(--accent)] hover:opacity-80"
+        >
+          {t("nav.contribute")}
         </Link>
         <Link to="/terms" className="hover:text-foreground">
           {t("legal.terms")}

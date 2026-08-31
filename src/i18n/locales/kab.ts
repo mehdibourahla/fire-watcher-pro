@@ -146,6 +146,8 @@ export const kab: Translation = {
     },
   },
   nav: {
+    menu: "Umuɣ",
+    contribute: "Ttekki",
     settings: "Iɣewwaṛen",
     map: "Takarḍa srid",
     forecast: "Asmenyaf",
@@ -339,6 +341,10 @@ export const kab: Translation = {
     stale: "Ulac tazzla yeddan seg {{time}} — ahat yeḥbes umsɣiwes.",
   },
   about: {
+    contributeTitle: "Nadhir bnan-t yimdanen ur nettaru akk tangalt",
+    contributeBody:
+      "Imukan yettwasenqden, tutlayt teɣra-tt tin i tt-yessnen, yiwen umyagar d tenmehla n twilayt. Atan wayen ixuṣṣen.",
+    contributeCta: "Wali ayen ixuṣṣen",
     attribution: "Isefka: NASA FIRMS, Open-Meteo, OpenStreetMap — CC-BY 4.0",
     metaTitle: "Ɣef Nadhir — tarrayt d isefka",
     metaDescription:
@@ -496,6 +502,16 @@ export const kab: Translation = {
     role_admin: "anedbal",
   },
   admin: {
+    tabReports: "Ineqqisen n tmessi",
+    tabIdeas: "Isumar",
+    publish: "Suffeɣ ɣer tfelwit",
+    unpublish: "Kkes seg tfelwit",
+    spam: "Aspam",
+    filterPublished: "Yeffɣen",
+    filterSpam: "Aspam",
+    contactLeft: "yeǧǧa anermis",
+    noContact: "ulac anermis",
+    ideasEmpty: "Ulac isumar ara yettwasenqden.",
     title: "Tafelwit n usenqed",
     metaTitle: "Tafelwit n usenqed — Nadhir",
     metaDescription: "Senqed, qbel neɣ agi ineɣmisen n yimezdaɣ.",
@@ -514,6 +530,155 @@ export const kab: Translation = {
     reviewed: "Yettwasenqed {{time}}",
     queueEmpty: "Ulac ayen ara yettwasenqden.",
     pendingCount: "{{count}} yettrajun asenqed",
+  },
+  contribute: {
+    statFuelSubDone:
+      "Yal taɣiwant tesɛa tura isefka n tɣawsa n wakal. Axuṣṣ-a yemmed.",
+    metaTitle: "Ttekki deg Nadhir",
+    metaDescription:
+      "Ayen ixuṣṣen Nadhir ass-a, d wamek ara tallteḍ — asenqed n yimukan, taɣuri n teqbaylit, asekles n wawal, tildin n tewwura n tuddsiwin, d tangalt.",
+    eyebrow: "Ttekki",
+    title: "Nadhir yeḥwaǧ ugar n tengalt.",
+    lede: "Anagraw n ulɣu ɣef tmessi ifeccel ɣef tutlayt, ɣef tmusni n wakal d laman n tuddsiwin uqbel ad ifeccel ɣef useɣzan. Ayen akk i d-iteddun ixuṣṣ tura — yettwaḥsab seg taffa n yisefka tamiranit, mačči yura s ufus.",
+    measuredAt: "Yettwaɣra seg taffa n yisefka tamiranit · {{date}}",
+    unavailable: "Amḍan ur yellin ara",
+    statPlaces: "Imukan yettwasenqden",
+    statPlacesSub: "Ula d yiwen ur t-isenqed umdan ibedden dinna.",
+    statPlacesSubSome: "{{done}} senqden-ten yimdanen di tmurt.",
+    statFuel: "Tiɣiwanin s yisefka n tesɣart",
+    statFuelSub: "Mazal ixuṣṣ {{missing}} — amḍan-a yettembiwil.",
+    statAlerts: "Ilɣa yettwaznen",
+    statAlertsSub: "Amsedday yessefru-ten. Ulac abadu i ten-yettawin.",
+    statLanguages: "Tutlayin yellan",
+    statLanguagesSub: "Taqbaylit werǧin tt-iɣra umeslay n tayemmat.",
+    lanesEyebrow: "Tiwwura",
+    lanesTitle: "Anida ara tallteḍ s tidet",
+    lanesLede:
+      "Yettwaseggem s wakken i t-yeḥwaǧ usenfaru. Tangalt tella deg wadda acku d tidet, mačči d tawḥidt.",
+    asks: "Ayen i teḥwaǧ: {{what}}",
+    localTitle: "Senqed amkan yeqreb ɣur-k",
+    localDeficit: "0 seg {{total}} yettwasenqden",
+    localBody:
+      "Nadhir yesgez isugam, tizeqqiwin n tɣuri d wemkanen ilelliyen seg OpenStreetMap. Ulac win yebedden dinna. Ini-aɣ-d ma yettwaɣbel, ma yezmer ad yaweḍ, ma yemdel, neɣ ma yuɣal d amkan n lebni.",
+    localAsks: "yiwet n tmeddit, tiliɣri, d wemkan i tessneḍ yakan",
+    localCta: "Senqed amkan",
+    languageTitle: "Ɣer taqbaylit",
+    languageDeficit: "1 seg 4 n tutlayin ur nettwaɣra ara",
+    languageBody:
+      "Taqbaylit tella deg usnas ass-a, tettwasuqel war amaɣru n tayemmat. Awal ur nemɣi ara deg ulɣu yesserḥu laman uqbel ad yesserḥu tiyaḍ.",
+    languageAsks: "tussna n tutlayt, d umeẓẓuɣ i uswir n wawal",
+    languageCta: "Ɣer iḍrisen",
+    audioTitle: "Sekles awal n uneǧmuɛ",
+    audioDeficit: "0 seg 4 n tutlayin yettwaskelsen",
+    audioBody:
+      "Awal n uneǧmuɛ yella d aḍris. Win ur nezmir ad iɣer ur yettawi acemma. Ilaq ad yili d taɣect n wemdan — taɣect tafalsuyt ur tettwaqbal ara dagi.",
+    audioAsks: "taxxamt tasusamt d uzgen n usrag",
+    audioCta: "Sekles yiwen uḍris",
+    institutionalTitle: "Ldi tawwurt n tuddsa",
+    institutionalDeficit: "0 n yilɣa i yettawḍen ɣer yiwen",
+    institutionalBody:
+      "Taɣawsa n ulɣu CAP tewjed, ulac abadu i tt-yettawin. Taḥraset tazayezt ɣur-s amkan n ulɣu yettwakelsen ur yeččur yiwen. Yiwen n umyagar yifen aseggas n usenfaru.",
+    institutionalAsks: "anermis n tidet, d tazmert ad t-tesqedceḍ",
+    institutionalCta: "Bdu adiwenni-nni",
+    scienceTitle: "Seɣzef tallunt n uneɣmis",
+    scienceDeficit: "tilisa yettwaṛeḍlen seg Kanada",
+    scienceBody:
+      "Amatar d akanadi, yettwaxdem i teẓgi tagrakalt n ugafa, yettusqedec ɣef tegnawt taquranit. Uṣeggem-is yeḥwaǧ taɣtest n umussnaw n tmessi, mačči abeddel n usiḍen.",
+    scienceAsks: "tussna n tmessi, neɣ tiddadanin i wemyager ɣef tlisa",
+    scienceCta: "Wali ttbut",
+    researchTitle: "Nadi ayen ur nettwali ara",
+    researchDeficit: "1 n uɣbalu n usnifel",
+    researchBody:
+      "Yal timessi i d-yufa Nadhir tekka-d seg yiwen n usaǧǧaw. Tifin n yiɣbula imaynuten, d ubeggen belli ttdellin s tidet Lezzayer, d amahil n tnarit s yisemmiden n tidet.",
+    researchAsks: "ṣṣbeṛ ɣef tesmilt, d ccekk",
+    researchCta: "Isteqsiyen yeldin",
+    coordinationTitle: "Eǧǧ amahil ad yelḥu",
+    coordinationDeficit: "ulac amsedduy",
+    coordinationBody:
+      "Asemyizwer, tilisa n uzemz, izen n lqem, tuqqna ɣef tesniwelt tbedd. Asenfaru s yimttekkiyen deg ukkuz n tutlayin war win i iṭṭfen amur ad yeɣli.",
+    coordinationAsks: "tanezzut, d tannumi n uḍfar",
+    coordinationCta: "Amek yettwaḍfar umahil",
+    testingTitle: "Rẓ-it ɣef tiliɣri rxisen",
+    testingDeficit: "werǧin yettwaɛerḍ di tmurt",
+    testingBody:
+      "Askar n tudert ilaq ad iddu war internet, ɣef tallalt taqbuṛt, anida ulac aẓeṭṭa. Ayagi werǧin yettwaɛreḍ deg tɣiwant n tmurt — ala deg iminig ɣef tuqqna tarurad.",
+    testingAsks: "tiliɣri ur nelli d tajdidt, d uẓeṭṭa ur nelhi",
+    testingCta: "Acu ara tɛerḍeḍ",
+    codeTitle: "Ma tettaruḍ tangalt",
+    codeBody:
+      "Yiwet n tigzemt, acku d yiwen ubrid seg waṭas. AGPL-3.0, yettazzal war ula d yiwen n uffir.",
+    codeRepo: "Wali akufi",
+    codeIssues: "Tugniwin timezwura",
+    codeStep1: "Sader-it sakin sekker-it",
+    codeStep1Body:
+      "Sebded, nɣel afaylu n twennaḍt n umedya, sekker aqeddac n tneflit. Azalen yettwaḥerzen d izayazen s wudem n usixzeṛ, ulac ayen yeqqnen ɣer uffir ara tessutreḍ.",
+    codeStep2: "Ddem kra n tidet",
+    codeStep2Body:
+      "Tugniwin s tecreḍt good first issue, neɣ kra i yellan deg GAPS.md — i d-yesgezen ayen yerẓan, yal awal s tuttra i t-yebeggnen.",
+    codeStep3: "Ldi tuttra n usmezdi",
+    codeStep3Body:
+      "Asdukkel amezgi yesskar ttypes, ticraḍ d ulinter war ula d yiwen n uffir, ihi fork yettaṭṭaf tisenqedin tizegzawin am umeḍbeṛ.",
+    codeStep4: "Kkuz n tutlayin neɣ ula d yiwet",
+    codeStep4Body:
+      "Yal aḍris amaynut yella s taɛrabt, tafṛansist, taglizit d teqbaylit. Ticraḍ ttḥettimen tugdut n tsura: aḍris ixuṣṣen yerreẓ lebni deg umḍiq n tuffra tilemt.",
+    boardEyebrow: "Tafelwit",
+    boardTitle: "Ayen i d-ssumren yimdanen",
+    boardLede:
+      "Amdan iɣeṛṛa yal asumer uqbel ad d-iban dagi. Adegger d tamatart tazuranit mačči d tafrant — ur yeqqin ɣer umiḍan.",
+    boardSorted: "Yettwaseggem s yidgaren",
+    boardEmptyTitle: "Ulac ayen yeffɣen ar tura",
+    boardEmptyBody:
+      "Tizmilin ttbanent dagi ticki t-iɣra umeḍbeṛ. Ma tesɛiḍ tikti, seg wurti wadda i tebda.",
+    voteUp: "Qebleɣ",
+    voteDown: "Ur qbileɣ ara",
+    voted: "Tefkiḍ adegger",
+    voteNote:
+      "Idgaren ttwaḥerzen ɣef yiminig-ik mačči ɣef umiḍan, ihi amḍan yesbeggin asḥissef mačči amḍan n yimdanen.",
+    boxTitle: "Umuɣ-a d axuṣṣan",
+    boxBody:
+      "Ad yeqqim akken i lebda. Asefrek n usenfaru, unadi, kra ur d-yeɣli i yiwen dagi — ma tzemreḍ ad talteḍ s webrid ur nelli ara deg usebter-a, aru-t.",
+    fieldLane: "Abrid iqerben",
+    fieldMessage: "D acu ara txedmeḍ?",
+    fieldMessagePlaceholder:
+      "Ili-k d uzrig. « Zemreɣ ad alteɣ » d awezɣi ad yettwaxdem ugar n « ttedduɣ ger Jijel d Texenna yal ddurt, zemreɣ ad senqdeɣ imukan ilelliyen ɣef ubrid-nni ».",
+    fieldContact: "Amek ara nawweḍ ɣur-k",
+    fieldOptional: "d afrayan",
+    fieldContactPlaceholder: "Imayl, neɣ eǧǧ-it d ilem",
+    fieldContactHelp:
+      "Yettusqdac kan i tririt fell-ak ɣef tezmilt-a. Werǧin ad d-iffeɣ ɣef tfelwit, werǧin ad yettwabḍu.",
+    counter: "{{count}} n yisekkilen",
+    submit: "Azen-it",
+    submitting: "Tuzna…",
+    inboxNotice:
+      "Ulac win iɣeṛṛan tabewwaṭ-a s wakud ilaw. Amdan yessenqad ayen i d-yettasen, yessufuɣ ayen yesɛan azal. Ṛǧu ussan mačky tisdatin.",
+    errTooShort: "Kra n wawalen nniḍen — akken ad yizmir yiwen ad yexdem.",
+    errRateLimited:
+      "D aṭas n tezmilin deg kra n wakud. Ɛreḍ tikkelt-nniḍen ticki.",
+    errFailed:
+      "Tuzna ur teddi ara. Ulac ayen yettwaḥerzen, ɛreḍ tikkelt-nniḍen.",
+    sentTitle: "Tettwakles.",
+    sentBody:
+      "Tazmilt-ik tella deg udraw. Ulac win iɣeṛṛan tabewwaṭ-a s wakud ilaw — amdan yessenqad ayen i d-yettasen, yessufuɣ ayen yesɛan azal i tfelwit. Ṛǧu ussan mačči tisdatin.",
+    sentNoContact:
+      "Ma ur teǧǧiḍ ara anermis, ur k-d-yettuɣal ara wawal srid — ttwali tafelwit, dinna i d-ttbanent tezmilin yeffɣen.",
+    sentAnother: "Aru tayeḍ",
+    rulesTitle: "Uqbel ad tbeddleḍ ayen i yettwannan i wemdan",
+    rulesBody:
+      "Nadhir yeqqar talɣut s taɣect-is, ur yettawi tiludna ala seg udabu. Yal taɣawsa yettwaskanen tebbwi laɛmer-is. Ulac aseglem n ubrid n tuffɣa, u « yeɣlel » tettwagdel d tecreḍt n waddad deg ugrudem meṛṛa. Wigi mačči d tismenyifin n uɣanib — d sebba i ɣef yezmer usenfaru ad yesɛu laman.",
+    linkGlossary: "Amawal",
+    linkAdr2: "ADR-0002 · asnuɣes n yidabuyen",
+    linkAdr3: "ADR-0003 · ulac aseglem n ubrid",
+    linkContributing: "CONTRIBUTING.md",
+    laneLocal: "Tamusni n wakal",
+    laneLanguage: "Tutlayt",
+    laneAudio: "Asekles",
+    laneInstitutional: "Tuddsa",
+    laneScience: "Tussna n tmessi",
+    laneResearch: "Unadi",
+    laneCoordination: "Asedduy",
+    laneTesting: "Aɛraḍ",
+    laneCode: "Tangalt",
+    laneOther: "Ayen nniḍen",
   },
   webhooks: {
     title: "Iwebhooks n yilɣa",
