@@ -183,6 +183,8 @@ retention. Terminal gaps for other contracts are marked unrecoverable rather tha
 they can be reconstructed. A five-minute GitHub watchdog queries Supabase
 directly, so the Worker is not its own monitor. Its failures report breached database evidence,
 not an inferred Worker crash. Queue, lease, gap, run, and replay internals remain service-role-only.
+Current-only backlog is explicit: an older queued slot is failed with an audited `data_delayed`
+run and unrecoverable gap before the consumer drains the newest useful slot.
 This implementation is locally verified but not yet deployed; production observation is still
 required before claiming operational reliability.
 
@@ -289,13 +291,14 @@ real boundary, so the effective policy is 6. Captcha is disabled, which combined
 
 ### 4.3 Test coverage is narrow
 
-330 tests across 39 files cover the FWI maths, FWI state advancement, alert rule evaluation, geo
+332 tests across 40 files cover the FWI maths, FWI state advancement, alert rule evaluation, geo
 seeding, i18n key parity, ingest guards, the cross-border watch area, place labelling, Exif
 stripping, CAP construction, the public API helpers, the webhook URL guard, and the
 persistent-source grid, registration criteria, screen radius and drift heuristic. Source-run
 classification, public-status serialization, shared health summarization, job execution,
-scheduling, watchdog, and replay are included. Separate 39- and 66-assertion pgTAP suites cover
-the reliability and execution schemas, grants, state transitions, leases, gaps, and replay.
+scheduling, watchdog, and replay are included. Separate 39- and 72-assertion pgTAP suites cover
+the reliability and execution schemas, grants, state transitions, leases, gaps, and replay; a
+10-assertion two-session suite exercises lease collisions and completion/recovery races.
 Most older RLS policies, route handlers end to end, and UI behavior still have no
 coverage. Fusion remains the weakest spot: both its commune attribution and its `fp_reason` filter —
 the one the whole screening design rests on — are guarded only by assertions over the source

@@ -33,7 +33,7 @@ const job = (contractKey: string): ClaimedSourceJob => ({
   updated_at: "2026-08-31T20:00:01.000Z",
 });
 
-function dependencies(): SourceRunnerDependencies {
+function dependencies() {
   return {
     ingestFirms: vi.fn().mockResolvedValue({
       fetched: 2,
@@ -90,7 +90,7 @@ function dependencies(): SourceRunnerDependencies {
       telegramConfigured: true,
       disabled: false,
     }),
-  };
+  } satisfies SourceRunnerDependencies;
 }
 
 describe("source runner registry", () => {
@@ -139,7 +139,7 @@ describe("source runner registry", () => {
 
   it("keeps an under-covered adapter result partial and retryable", async () => {
     const deps = dependencies();
-    vi.mocked(deps.ingestOnm).mockResolvedValue({
+    deps.ingestOnm.mockResolvedValue({
       fetched: 3,
       stored: 3,
       unmatched: 1,
@@ -157,7 +157,7 @@ describe("source runner registry", () => {
 
   it("contains raw adapter errors only in the private diagnostic", async () => {
     const deps = dependencies();
-    vi.mocked(deps.ingestFci).mockResolvedValue({
+    deps.ingestFci.mockResolvedValue({
       fetched: 0,
       inserted: 0,
       outside: 0,
@@ -195,7 +195,7 @@ describe("source runner registry", () => {
 
   it("does not let an optional wind failure call or block another runner", async () => {
     const deps = dependencies();
-    vi.mocked(deps.enrichClusterWinds).mockRejectedValue(
+    deps.enrichClusterWinds.mockRejectedValue(
       new Error("open-meteo unavailable"),
     );
     const runners = createSourceRunners(deps);

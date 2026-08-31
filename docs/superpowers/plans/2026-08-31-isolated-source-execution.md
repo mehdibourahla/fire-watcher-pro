@@ -498,7 +498,7 @@ The script creates a service-role Supabase client, selects the service-only view
 
 - [ ] **Step 5: Convert the daily workflow into two queue consumers.**
 
-Keep the 06:05 UTC schedule and manual dispatch. Use a matrix with exact values `local_fwi` and `effis`; each job invokes `scripts/run-source-job.ts --target github --contract <key>`. Each matrix job owns one contract and can retry within its 30-minute workflow budget without blocking the other.
+Keep the 06:05 UTC schedule and manual dispatch. Use a matrix with exact values `local_fwi` and `effis`; each job invokes `scripts/run-source-job.ts --target github --contract <key>`. Each matrix job owns one contract, drains successful work until no job remains, and can retry within its 30-minute workflow budget without blocking the other. Current-only jobs supersede older queued slots with an audited failure and unrecoverable gap before claiming the newest useful slot.
 
 - [ ] **Step 6: Add the five-minute independent watchdog workflow.**
 

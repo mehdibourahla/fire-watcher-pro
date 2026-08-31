@@ -229,6 +229,9 @@ area product whose valid date advances.
 - Exact replays use the same adapter and validation path as scheduled runs, but are enabled only
   where the provider can supply the requested historical interval. Unsupported or expired gaps
   are marked unrecoverable rather than silently substituting current data.
+- For current-only adapters, an older queued slot is audited as missed and unrecoverable when a
+  newer useful slot exists; consumers drain to the newest slot instead of mislabelling current
+  data with the old interval.
 
 The direct cron endpoints are removed. A GitHub Actions watchdog reads the run ledger and queue
 without using the application host. It reports breached database evidence without inferring that

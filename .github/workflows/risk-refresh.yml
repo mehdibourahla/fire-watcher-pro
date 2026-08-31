@@ -39,10 +39,11 @@ jobs:
             status=$?
             set -e
             if [ "$status" -eq 0 ]; then exit 0; fi
-            if [ "$status" -ne 75 ]; then exit "$status"; fi
             if [ "$SECONDS" -ge "$deadline" ]; then
-              echo "::error::source job retry window exceeded"
+              echo "::error::source job drain window exceeded"
               exit 1
             fi
+            if [ "$status" -eq 76 ]; then continue; fi
+            if [ "$status" -ne 75 ]; then exit "$status"; fi
             sleep 60
           done

@@ -18,18 +18,19 @@ const interval = {
   dataFrom: "2026-08-31T19:50:00.000Z",
   dataThrough: "2026-08-31T20:00:00.000Z",
 };
+const originalDateNow = Date.now;
+const originalFetch = globalThis.fetch;
 
 describe("recorded source interval replay", () => {
   beforeEach(() => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date("2026-08-31T20:10:00.000Z"));
+    Date.now = () => Date.parse("2026-08-31T20:10:00.000Z");
     process.env["FIRMS_MAP_KEY"] = "test-key";
     upsert.mockClear();
   });
 
   afterEach(() => {
-    vi.useRealTimers();
-    vi.unstubAllGlobals();
+    Date.now = originalDateNow;
+    globalThis.fetch = originalFetch;
     delete process.env["FIRMS_MAP_KEY"];
   });
 
@@ -39,10 +40,7 @@ describe("recorded source interval replay", () => {
       "36.70000,3.10000,2026-08-31,1955,n,12.5,D",
       "36.71000,3.11000,2026-08-31,1940,n,11.0,D",
     ].join("\n");
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => new Response(csv, { status: 200 })),
-    );
+    globalThis.fetch = vi.fn(async () => new Response(csv, { status: 200 }));
 
     const first = await ingestFirms(interval);
     const second = await ingestFirms(interval);
@@ -81,10 +79,10 @@ describe("recorded source interval replay", () => {
         },
       },
     ];
-    const fetchMock = vi.fn(async (_input: string) =>
+    const fetchMock = vi.fn(async (_input: RequestInfo | URL) =>
       Response.json({ type: "FeatureCollection", features }),
     );
-    vi.stubGlobal("fetch", fetchMock);
+    globalThis.fetch = fetchMock;
 
     const first = await ingestFci(interval);
     const second = await ingestFci(interval);

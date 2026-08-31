@@ -849,6 +849,136 @@ select has_index(
   'authority broadcast replay is idempotent'
 );
 
+create temporary table versioned_job as
+select
+  pg_temp.enqueue_test_job(
+    'fci',
+    'pgtap:contract-version',
+    '2026-08-31 23:00:00+00'
+  ) as id,
+  (
+    select version
+    from public.source_contracts
+    where key = 'fci'
+  ) as contract_version;
+update public.source_contracts
+set version = version + 1
+where key = 'fci';
+select * from public.claim_source_job(
+  'pgtap-contract-version',
+  'cloudflare',
+  'fci',
+  '2026-08-31 23:00:01+00'
+);
+select is(
+  pg_temp.finish_test_job(
+    (select id from versioned_job),
+    'pgtap-contract-version',
+    '2026-08-31 23:00:02+00',
+    'succeeded',
+    null,
+    false,
+    '2026-08-31 22:50:00+00',
+    '2026-08-31 23:00:00+00'
+  ),
+  'succeeded',
+  'a queued job can complete after its contract version changes'
+);
+select is(
+  (
+    select run.contract_version
+    from public.source_runs as run
+    where run.job_id = (select id from versioned_job)
+  ),
+  (select contract_version from versioned_job),
+  'job-backed run provenance uses the version captured at enqueue time'
+);
+
+update public.source_contracts
+set dependency_keys = '{}'
+where key = 'local_fwi';
+insert into public.source_jobs (
+  contract_key,
+  contract_version,
+  trigger_kind,
+  idempotency_key,
+  scheduled_for,
+  data_from,
+  data_through,
+  execution_target,
+  enqueued_by,
+  available_at,
+  max_attempts,
+  retry_base_seconds,
+  retry_until
+)
+select
+  contract.key,
+  contract.version,
+  'scheduled',
+  'pgtap:daily-backlog:' || slot.scheduled_for::text,
+  slot.scheduled_for,
+  slot.scheduled_for - interval '1 day',
+  slot.scheduled_for,
+  'github',
+  array['database'],
+  slot.scheduled_for,
+  contract.max_attempts,
+  contract.retry_base_seconds,
+  slot.scheduled_for + interval '4 hours'
+from public.source_contracts as contract
+cross join (
+  values
+    ('2099-08-30 06:00:00+00'::timestamptz),
+    ('2099-08-31 06:00:00+00'::timestamptz)
+) as slot(scheduled_for)
+where contract.key = 'local_fwi';
+
+create temporary table daily_backlog_claim as
+select * from public.claim_source_job(
+  'pgtap-daily-backlog',
+  'github',
+  'local_fwi',
+  '2099-08-31 06:05:00+00'
+);
+select is(
+  (select scheduled_for from daily_backlog_claim),
+  '2099-08-31 06:00:00+00'::timestamptz,
+  'a current-only daily consumer claims the newest useful slot'
+);
+select is(
+  (
+    select state
+    from public.source_jobs
+    where idempotency_key = 'pgtap:daily-backlog:2099-08-30 06:00:00+00'
+  ),
+  'failed',
+  'the obsolete daily slot becomes terminal instead of running current data'
+);
+select is(
+  (
+    select state
+    from public.source_gaps
+    where contract_key = 'local_fwi'
+      and data_through = '2099-08-30 06:00:00+00'
+  ),
+  'unrecoverable',
+  'the missed current-only interval is recorded as unrecoverable'
+);
+select is(
+  (
+    select outcome
+    from public.source_runs
+    where job_id = (
+      select id
+      from public.source_jobs
+      where idempotency_key = 'pgtap:daily-backlog:2099-08-30 06:00:00+00'
+    )
+  ),
+  'failed',
+  'superseding an obsolete daily slot leaves an audited run'
+);
+
 insert into public.admin_units (
   id,
   level,

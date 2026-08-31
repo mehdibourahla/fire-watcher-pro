@@ -82,7 +82,9 @@ waits on the Firebase and Telegram runtime secrets.
 - Supabase cron and Cloudflare cron independently enqueue the same normalized source slots
   every minute. Cloudflare consumes short jobs; expired leases are recovered in Postgres.
 - Daily FWI and EFFIS use separate GitHub Actions consumers in
-  `.github/workflows/risk-refresh.yml` because they are CPU-bound.
+  `.github/workflows/risk-refresh.yml` because they are CPU-bound. Each consumer drains its
+  contract; obsolete current-only slots are audited as unrecoverable instead of running fresh
+  data against an old interval.
 - `.github/workflows/source-watchdog.yml` checks queue delay, expired leases, and missing runs
   through Supabase every five minutes without depending on the Worker host.
 - `bun run seed:geo --prune` — reseed geography from `data/geo/` (monthly, idempotent).

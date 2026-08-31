@@ -1,4 +1,5 @@
 import { executeNextSourceJob } from "../src/lib/ingest/source-executor.server";
+import { sourceJobCommandExitCode } from "../src/lib/source-job-command";
 
 const valueAfter = (flag: string): string | undefined => {
   const index = process.argv.indexOf(flag);
@@ -23,6 +24,4 @@ const result = await executeNextSourceJob({
   workerId: `github:${process.env["GITHUB_RUN_ID"] ?? "local"}:${contract}`,
 });
 console.log(JSON.stringify(result));
-
-if (!result.claimed || result.state === "retry_wait") process.exitCode = 75;
-else if (result.state !== "succeeded") process.exitCode = 1;
+process.exitCode = sourceJobCommandExitCode(result);

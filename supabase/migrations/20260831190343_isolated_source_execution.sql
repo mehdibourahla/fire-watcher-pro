@@ -310,10 +310,18 @@ declare
   _contract_version integer;
   _run_id uuid;
 begin
-  select version
-  into _contract_version
-  from public.source_contracts
-  where key = _contract_key;
+  if _job_id is null then
+    select version
+    into _contract_version
+    from public.source_contracts
+    where key = _contract_key;
+  else
+    select contract_version
+    into _contract_version
+    from public.source_jobs
+    where id = _job_id
+      and contract_key = _contract_key;
+  end if;
 
   if _contract_version is null then
     raise exception 'unknown source contract: %', _contract_key;
@@ -699,6 +707,9 @@ set search_path = ''
 as $$
 declare
   _candidate record;
+  _obsolete public.source_jobs%rowtype;
+  _obsolete_attempt integer;
+  _affected integer;
 begin
   if length(coalesce(_worker_id, '')) not between 1 and 200 then
     raise exception 'invalid worker id';
@@ -706,6 +717,99 @@ begin
   if _execution_target not in ('cloudflare', 'github') then
     raise exception 'invalid execution target';
   end if;
+
+  -- A current-only adapter must never run today's payload while claiming an
+  -- older interval. Audit every superseded slot, preserve its gap, then claim
+  -- only the newest useful scheduled job for that contract.
+  for _obsolete in
+    select job.*
+    from public.source_jobs as job
+    join public.source_contracts as contract
+      on contract.key = job.contract_key
+    where job.execution_target = _execution_target
+      and (_contract_key is null or job.contract_key = _contract_key)
+      and contract.replay_capability = 'none'
+      and job.trigger_kind = 'scheduled'
+      and job.state in ('queued', 'retry_wait')
+      and job.attempt_count < job.max_attempts
+      and exists (
+        select 1
+        from public.source_jobs as newer
+        where newer.contract_key = job.contract_key
+          and newer.trigger_kind = 'scheduled'
+          and newer.scheduled_for > job.scheduled_for
+          and newer.available_at <= _now
+      )
+    order by job.contract_key, job.scheduled_for, job.id
+    for update of job skip locked
+  loop
+    _obsolete_attempt := _obsolete.attempt_count + 1;
+
+    update public.source_jobs
+    set
+      state = 'failed',
+      attempt_count = _obsolete_attempt,
+      started_at = coalesce(started_at, _now),
+      finished_at = _now,
+      last_error_at = _now,
+      last_public_reason_code = 'data_delayed',
+      updated_at = _now
+    where id = _obsolete.id;
+
+    perform private.record_source_run(
+      _contract_key => _obsolete.contract_key,
+      _trigger_kind => _obsolete.trigger_kind,
+      _idempotency_key => 'job:' || _obsolete.id::text
+        || ':attempt:' || _obsolete_attempt::text,
+      _scheduled_for => _obsolete.scheduled_for,
+      _started_at => _now,
+      _finished_at => _now,
+      _outcome => 'failed',
+      _upstream_published_at => null,
+      _data_from => null,
+      _data_through => null,
+      _validated_at => null,
+      _published_at => null,
+      _records_seen => 0,
+      _records_inserted => 0,
+      _records_updated => 0,
+      _records_rejected => 0,
+      _records_expected => null,
+      _coverage_status => 'unknown',
+      _quality_checks => '{"obsolete_slot":true}'::jsonb,
+      _public_reason_code => 'data_delayed',
+      _private_diagnostic => 'superseded by a newer current-only scheduled slot',
+      _job_id => _obsolete.id,
+      _attempt => _obsolete_attempt
+    );
+
+    insert into public.source_gaps (
+      contract_key,
+      data_from,
+      data_through,
+      state,
+      public_reason_code,
+      detected_at,
+      updated_at
+    )
+    values (
+      _obsolete.contract_key,
+      _obsolete.data_from,
+      _obsolete.data_through,
+      'unrecoverable',
+      'data_delayed',
+      _now,
+      _now
+    )
+    on conflict (contract_key, data_from, data_through) do update
+    set
+      state = case
+        when public.source_gaps.state = 'resolved' then 'resolved'
+        else 'unrecoverable'
+      end,
+      public_reason_code = excluded.public_reason_code,
+      updated_at = excluded.updated_at;
+  end loop;
 
   for _candidate in
     select
@@ -781,7 +885,13 @@ begin
       ),
       _now,
       _now + make_interval(secs => _candidate.lease_seconds)
-    );
+    )
+    on conflict do nothing;
+
+    get diagnostics _affected = row_count;
+    if _affected = 0 then
+      continue;
+    end if;
 
     update public.source_jobs
     set
@@ -837,6 +947,11 @@ declare
   _will_retry boolean;
   _gap_state text;
 begin
+  select * into _lease
+  from public.source_job_leases
+  where job_id = _job_id
+  for update;
+
   select * into _job
   from public.source_jobs
   where id = _job_id
@@ -845,11 +960,6 @@ begin
   if _job.id is null then
     raise exception 'unknown source job';
   end if;
-
-  select * into _lease
-  from public.source_job_leases
-  where job_id = _job_id
-  for update;
 
   if _job.state <> 'running'
     or _lease.job_id is null
@@ -1021,31 +1131,36 @@ begin
     from public.source_job_leases
     where lease_expires_at <= _now
     order by contract_key
-    for update skip locked
   loop
-    perform public.complete_source_job(
-      _job_id => _lease.job_id,
-      _worker_id => _lease.worker_id,
-      _attempt => _lease.attempt,
-      _finished_at => _now,
-      _outcome => 'failed',
-      _upstream_published_at => null,
-      _data_from => null,
-      _data_through => null,
-      _validated_at => null,
-      _published_at => null,
-      _records_seen => 0,
-      _records_inserted => 0,
-      _records_updated => 0,
-      _records_rejected => 0,
-      _records_expected => null,
-      _coverage_status => 'unknown',
-      _quality_checks => '{"lease_expired":true}'::jsonb,
-      _public_reason_code => 'internal_error',
-      _private_diagnostic => 'source job lease expired',
-      _retryable => true
-    );
-    _recovered := _recovered + 1;
+    begin
+      perform public.complete_source_job(
+        _job_id => _lease.job_id,
+        _worker_id => _lease.worker_id,
+        _attempt => _lease.attempt,
+        _finished_at => _now,
+        _outcome => 'failed',
+        _upstream_published_at => null,
+        _data_from => null,
+        _data_through => null,
+        _validated_at => null,
+        _published_at => null,
+        _records_seen => 0,
+        _records_inserted => 0,
+        _records_updated => 0,
+        _records_rejected => 0,
+        _records_expected => null,
+        _coverage_status => 'unknown',
+        _quality_checks => '{"lease_expired":true}'::jsonb,
+        _public_reason_code => 'internal_error',
+        _private_diagnostic => 'source job lease expired',
+        _retryable => true
+      );
+      _recovered := _recovered + 1;
+    exception when raise_exception then
+      if sqlerrm <> 'source job lease does not match completion' then
+        raise;
+      end if;
+    end;
   end loop;
 
   return _recovered;
