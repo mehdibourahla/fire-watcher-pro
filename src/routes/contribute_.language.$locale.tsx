@@ -254,7 +254,7 @@ function ReviewPage() {
   ];
 
   return (
-    <div className="mx-auto max-w-[1100px] px-5 pb-32 pt-10">
+    <div className="mx-auto max-w-[1100px] px-5 pb-44 pt-10 lg:pb-32">
       <Link
         to="/contribute"
         className="inline-flex items-center gap-1.5 text-[13px] text-muted-foreground hover:text-foreground"
@@ -379,9 +379,10 @@ function ReviewPage() {
         </div>
       )}
 
+      {/* bottom-14 clears the 56px mobile tab bar, which is lg:hidden and covers Send */}
       {pending > 0 || sent > 0 ? (
-        <div className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-surface/95 backdrop-blur">
-          <div className="mx-auto flex max-w-[1100px] flex-wrap items-center gap-3 px-5 py-3">
+        <div className="fixed inset-x-0 bottom-14 z-20 border-t border-border bg-surface/95 backdrop-blur lg:bottom-0">
+          <div className="mx-auto flex max-w-[1100px] flex-wrap items-center gap-2 px-5 py-3 sm:gap-3">
             {sent > 0 ? (
               <>
                 <Check aria-hidden className="size-4 text-[var(--accent)]" />
@@ -399,14 +400,14 @@ function ReviewPage() {
               </>
             ) : (
               <>
-                <span className="text-sm font-medium">
+                <span className="order-1 text-sm font-medium">
                   {t("translate.pending", { count: pending })}
                 </span>
                 <input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder={t("translate.namePlaceholder")}
-                  className="h-9 w-40 rounded-md border border-border bg-background px-3 text-[13px]"
+                  className="order-3 h-9 min-w-0 flex-1 rounded-md border border-border bg-background px-3 text-[13px] sm:order-2 sm:w-40 sm:flex-none"
                 />
                 <button
                   type="button"
@@ -414,7 +415,7 @@ function ReviewPage() {
                     setDrafts({});
                     writeDrafts(locale, {});
                   }}
-                  className="inline-flex h-9 items-center gap-1.5 rounded-md border border-border px-3 text-[13px] text-muted-foreground"
+                  className="order-4 inline-flex h-9 shrink-0 items-center gap-1.5 rounded-md border border-border px-3 text-[13px] text-muted-foreground sm:order-3"
                 >
                   <RotateCcw aria-hidden className="size-3.5" />
                   {t("translate.clear")}
@@ -423,7 +424,7 @@ function ReviewPage() {
                   type="button"
                   disabled={submit.isPending}
                   onClick={() => submit.mutate()}
-                  className="ms-auto inline-flex h-9 items-center rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground disabled:opacity-60"
+                  className="order-2 ms-auto inline-flex h-9 shrink-0 items-center rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground disabled:opacity-60 sm:order-4"
                 >
                   {submit.isPending
                     ? t("translate.sending")
