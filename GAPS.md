@@ -275,7 +275,9 @@ Things that cost real debugging time here, none of them obvious from the code.
 - **Migrations.** Two agents adding migrations the same hour produced a duplicate version
   prefix, which the Supabase ledger cannot hold. Applying one with `psql` without inserting a
   row into `supabase_migrations.schema_migrations` silently breaks the next `supabase db push`.
-  Check existing versions and the ledger before adding one.
+  Check existing versions and the ledger before adding one, and re-check after merging `main`:
+  a long-running branch collided twice in one afternoon because everyone picks round-hour
+  timestamps. Offset minutes (`…095000`, `…105000`) sidestep it.
 - **`main` is protected.** Pull request with a review required; force-push and deletion blocked.
   An admin push still succeeds while printing the rule warning — that output is not an error.
 - **Declaring `routes` in the wrangler config flips `workers_dev` to false.** Attaching the
