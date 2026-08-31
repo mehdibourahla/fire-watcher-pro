@@ -148,6 +148,7 @@ export const fr: Translation = {
     },
   },
   nav: {
+    contribute: "Contribuer",
     settings: "Réglages",
     map: "Carte en direct",
     forecast: "Prévision",
@@ -349,6 +350,11 @@ export const fr: Translation = {
       "Aucune exécution réussie depuis {{time}} — le planificateur est peut-être à l'arrêt.",
   },
   about: {
+    contributeTitle:
+      "Nadhir est construit par des gens qui n’écrivent pas tous du code",
+    contributeBody:
+      "Des lieux vérifiés, une langue relue par quelqu’un qui la parle, une mise en relation avec une direction de wilaya. Voici ce qui manque.",
+    contributeCta: "Voir ce qui manque",
     attribution: "Données : NASA FIRMS, Open-Meteo, OpenStreetMap — CC-BY 4.0",
     metaTitle: "À propos de Nadhir — méthodologie et données",
     metaDescription:
@@ -511,6 +517,16 @@ export const fr: Translation = {
     role_admin: "administrateur",
   },
   admin: {
+    tabReports: "Signalements",
+    tabIdeas: "Propositions",
+    publish: "Publier au tableau",
+    unpublish: "Retirer du tableau",
+    spam: "Indésirable",
+    filterPublished: "Publiées",
+    filterSpam: "Indésirables",
+    contactLeft: "coordonnées laissées",
+    noContact: "sans coordonnées",
+    ideasEmpty: "Aucune proposition à examiner.",
     title: "Console de modération",
     metaTitle: "Console de modération — Nadhir",
     metaDescription:
@@ -531,6 +547,154 @@ export const fr: Translation = {
     reviewed: "Vérifié {{time}}",
     queueEmpty: "Rien à vérifier.",
     pendingCount: "{{count}} en attente",
+  },
+  contribute: {
+    metaTitle: "Contribuer à Nadhir",
+    metaDescription:
+      "Ce qui manque à Nadhir aujourd’hui, et comment aider — vérifier des lieux, relire le kabyle, enregistrer les consignes, ouvrir des portes institutionnelles, et le code.",
+    eyebrow: "Contribuer",
+    title: "Nadhir a besoin de bien plus que de code.",
+    lede: "Un système d’alerte aux incendies échoue sur la langue, la connaissance du terrain et la confiance institutionnelle bien avant d’échouer sur le logiciel. Tout ce qui suit manque aujourd’hui — compté dans la base de données en direct, pas écrit à la main.",
+    measuredAt: "Lu dans la base de données en direct · {{date}}",
+    unavailable: "Compte indisponible",
+    statPlaces: "Lieux vérifiés",
+    statPlacesSub: "Aucun n’a été vérifié par une personne sur place.",
+    statPlacesSubSome: "{{done}} vérifiés par quelqu’un sur le terrain.",
+    statFuel: "Communes avec données de combustible",
+    statFuelSub: "Il en manque {{missing}} — et ce chiffre bouge.",
+    statAlerts: "Alertes délivrées",
+    statAlertsSub: "Le moteur les calcule. Aucun canal ne les transporte.",
+    statLanguages: "Langues livrées",
+    statLanguagesSub: "Le kabyle n’a jamais été relu par un locuteur natif.",
+    lanesEyebrow: "Par où entrer",
+    lanesTitle: "Là où vous aideriez vraiment",
+    lanesLede:
+      "Classé selon le besoin réel du projet. Le code figure en bas parce que c’est la vérité, pas par modestie.",
+    asks: "Ce que cela demande : {{what}}",
+    localTitle: "Vérifier un lieu près de chez vous",
+    localDeficit: "0 sur {{total}} vérifiés",
+    localBody:
+      "Nadhir liste des stades, des cours d’école et des terrains dégagés tirés d’OpenStreetMap. Personne n’y a mis les pieds. Dites-nous s’il est goudronné, accessible, fermé, ou devenu un chantier.",
+    localAsks:
+      "un après-midi, un téléphone, et un endroit que vous connaissez déjà",
+    localCta: "Vérifier un lieu",
+    languageTitle: "Relire le kabyle",
+    languageDeficit: "1 langue sur 4 non relue",
+    languageBody:
+      "Le taqbaylit est livré dans l’application, traduit sans relecteur natif. Un mot faux dans une alerte coûte la confiance avant de coûter autre chose.",
+    languageAsks: "la maîtrise de la langue, et l’oreille du registre",
+    languageCta: "Relire les textes",
+    audioTitle: "Enregistrer les consignes",
+    audioDeficit: "0 langue sur 4 enregistrée",
+    audioBody:
+      "Les consignes permanentes existent en texte. Qui ne sait pas lire n’a rien. Il faut une voix humaine — la synthèse vocale est exclue ici.",
+    audioAsks: "une pièce silencieuse et une demi-heure",
+    audioCta: "Enregistrer une piste",
+    institutionalTitle: "Ouvrir une porte institutionnelle",
+    institutionalDeficit: "0 alerte atteint quelqu’un",
+    institutionalBody:
+      "L’objet d’alerte CAP est construit et aucun canal ne le transporte. La Protection Civile détient un créneau d’alerte enregistré que personne n’alimente. Une mise en relation vaut mieux qu’une année de développement.",
+    institutionalAsks: "un contact réel, et la légitimité pour l’activer",
+    institutionalCta: "Engager la conversation",
+    scienceTitle: "Calibrer l’échelle de danger",
+    scienceDeficit: "seuils empruntés au Canada",
+    scienceBody:
+      "L’indice est canadien, conçu pour la forêt boréale et appliqué à un régime aride. Le corriger demande le jugement d’un scientifique du feu, pas une retouche de l’arithmétique.",
+    scienceAsks:
+      "la science du feu, ou les statistiques pour discuter des seuils",
+    scienceCta: "Voir les preuves",
+    researchTitle: "Chercher ce que nous ne voyons pas",
+    researchDeficit: "1 source de détection",
+    researchBody:
+      "Chaque incendie détecté par Nadhir vient d’un seul fournisseur. Trouver de nouvelles sources, et prouver qu’elles couvrent vraiment l’Algérie, est un travail de bureau aux conséquences réelles.",
+    researchAsks: "de la patience avec la documentation, et du scepticisme",
+    researchCta: "Questions ouvertes",
+    coordinationTitle: "Faire avancer le travail",
+    coordinationDeficit: "aucun coordinateur",
+    coordinationBody:
+      "Tri des tickets, jalons, notes de version, relance d’une revue à l’arrêt. Un projet réparti sur quatre langues sans personne pour tenir l’ordre dérive.",
+    coordinationAsks: "de l’organisation, et l’habitude de relancer",
+    coordinationCta: "Comment le travail est suivi",
+    testingTitle: "Le casser sur un téléphone bon marché",
+    testingDeficit: "jamais testé sur le terrain",
+    testingBody:
+      "Le mode survie doit fonctionner hors ligne, sur un vieil appareil, là où il n’y a pas de réseau. Cela n’a jamais été testé dans une commune rurale — seulement dans un navigateur sur une connexion rapide.",
+    testingAsks: "un téléphone qui n’est pas neuf, et une mauvaise réception",
+    testingCta: "Quoi tester",
+    codeTitle: "Si vous écrivez du code",
+    codeBody:
+      "Une seule section, parce que c’est une voie parmi d’autres. AGPL-3.0, et cela tourne sans le moindre secret.",
+    codeRepo: "Voir le dépôt",
+    codeIssues: "Premiers tickets",
+    codeStep1: "Cloner et lancer",
+    codeStep1Body:
+      "Installez, copiez le fichier d’environnement d’exemple, démarrez le serveur de développement. Les valeurs versionnées sont publiques par conception : rien n’est bloqué derrière un secret à demander.",
+    codeStep2: "Prendre quelque chose de réel",
+    codeStep2Body:
+      "Les tickets étiquetés good first issue, ou n’importe quoi dans GAPS.md — qui liste ce qui est cassé, chaque affirmation accompagnée de la requête qui la prouve.",
+    codeStep3: "Ouvrir une pull request",
+    codeStep3Body:
+      "L’intégration continue lance les types, les tests et le lint sans aucun secret : un fork obtient exactement les mêmes validations qu’un mainteneur.",
+    codeStep4: "Quatre langues ou aucune",
+    codeStep4Body:
+      "Chaque nouvelle chaîne existe en arabe, français, anglais et kabyle. Les tests imposent la parité des clés : une chaîne manquante casse la compilation au lieu de s’afficher vide.",
+    boardEyebrow: "Le tableau",
+    boardTitle: "Ce que les gens ont proposé",
+    boardLede:
+      "Une personne lit chaque proposition avant qu’elle n’apparaisse ici. Le vote est un signal approximatif, pas un scrutin — il n’est lié à aucun compte.",
+    boardSorted: "Trié par votes",
+    boardEmptyTitle: "Rien de publié pour l’instant",
+    boardEmptyBody:
+      "Les notes apparaissent ici une fois lues par un mainteneur. Si vous avez une idée, c’est dans le champ ci-dessous qu’elle commence.",
+    voteUp: "D’accord",
+    voteDown: "Pas d’accord",
+    voted: "Vous avez voté",
+    voteNote:
+      "Les votes sont associés à votre navigateur, pas à un compte : le total montre un intérêt, pas un nombre de personnes.",
+    boxTitle: "Cette liste est incomplète",
+    boxBody:
+      "Elle le restera toujours. Gestion de projet, recherche, quelque chose auquel personne ici n’a pensé — si vous pouvez aider d’une manière absente de cette page, écrivez-le.",
+    fieldLane: "Voie la plus proche",
+    fieldMessage: "Que feriez-vous ?",
+    fieldMessagePlaceholder:
+      "Soyez précis. « Je peux aider » est plus difficile à exploiter que « je fais la route entre Jijel et Texenna chaque semaine et je peux vérifier les clairières le long de cette route ».",
+    fieldContact: "Comment vous joindre",
+    fieldOptional: "facultatif",
+    fieldContactPlaceholder: "E-mail, ou laissez vide",
+    fieldContactHelp:
+      "Utilisé uniquement pour vous répondre à propos de cette note. Jamais publié sur le tableau, jamais partagé.",
+    counter: "{{count}} caractères",
+    submit: "Envoyer",
+    submitting: "Envoi…",
+    inboxNotice:
+      "Personne ne lit cette boîte en temps réel. Une personne examine ce qui arrive et publie ce qui est utile. Comptez en jours, pas en minutes.",
+    errTooShort: "Quelques mots de plus — de quoi permettre d’agir.",
+    errRateLimited:
+      "Cela fait plusieurs notes en peu de temps. Réessayez plus tard.",
+    errFailed: "L’envoi a échoué. Rien n’a été enregistré, réessayez.",
+    sentTitle: "Enregistré.",
+    sentBody:
+      "Votre note est dans la file. Personne ne lit cette boîte en temps réel — une personne examine ce qui arrive et publie ce qui est utile au tableau. Comptez en jours, pas en minutes.",
+    sentNoContact:
+      "Sans coordonnées, vous n’aurez pas de réponse directe — surveillez le tableau, c’est là qu’apparaissent les notes publiées.",
+    sentAnother: "Écrire une autre note",
+    rulesTitle: "Avant de changer ce qu’on dit à une personne",
+    rulesBody:
+      "Nadhir énonce des informations en son nom propre et ne relaie des consignes que d’une autorité. Chaque fait affiché porte son âge. Il n’y a pas d’itinéraire d’évacuation, et « en sécurité » est banni comme libellé d’état partout dans l’interface. Ce ne sont pas des préférences de style — c’est la raison pour laquelle ce projet peut inspirer confiance.",
+    linkGlossary: "Le glossaire",
+    linkAdr2: "ADR-0002 · informer les autorités",
+    linkAdr3: "ADR-0003 · pas d’itinéraire",
+    linkContributing: "CONTRIBUTING.md",
+    laneLocal: "Connaissance du terrain",
+    laneLanguage: "Langue",
+    laneAudio: "Enregistrement",
+    laneInstitutional: "Institutionnel",
+    laneScience: "Science du feu",
+    laneResearch: "Recherche",
+    laneCoordination: "Coordination",
+    laneTesting: "Tests",
+    laneCode: "Code",
+    laneOther: "Autre chose",
   },
   webhooks: {
     title: "Webhooks d'alerte",

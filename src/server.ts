@@ -11,6 +11,13 @@ type ServerEntry = {
   ) => Promise<Response> | Response;
 };
 
+// CONTRIBUTING.md tells contributors to run their own Supabase stack, which
+// serves over http on localhost — without this the browser blocks every call to
+// it and the documented local workflow cannot work. Never added in production.
+const LOCAL_SUPABASE = import.meta.env.DEV
+  ? " http://127.0.0.1:* http://localhost:* ws://127.0.0.1:* ws://localhost:*"
+  : "";
+
 const CSP = [
   "default-src 'self'",
   "base-uri 'self'",
@@ -22,10 +29,11 @@ const CSP = [
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com",
   "img-src 'self' data: blob: https://*.cartocdn.com",
-  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.cartocdn.com",
+  `connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.cartocdn.com${LOCAL_SUPABASE}`,
   "worker-src 'self' blob:",
   "manifest-src 'self'",
-  "upgrade-insecure-requests",
+  // would rewrite a contributor's http://localhost stack to https and break it
+  ...(import.meta.env.DEV ? [] : ["upgrade-insecure-requests"]),
 ].join("; ");
 
 const SECURITY_HEADERS: Record<string, string> = {

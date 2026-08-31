@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { EmergencyNumbers } from "@/components/SiteChrome";
@@ -90,6 +90,23 @@ function AboutPage() {
           </li>
         ))}
       </ul>
+
+      <Link
+        to="/contribute"
+        className="card mt-6 flex flex-wrap items-center justify-between gap-4 p-5 transition-colors hover:border-[var(--accent)]"
+      >
+        <span className="flex flex-col gap-1">
+          <span className="font-display text-[17px] font-semibold">
+            {t("about.contributeTitle")}
+          </span>
+          <span className="max-w-[58ch] text-sm text-muted-foreground">
+            {t("about.contributeBody")}
+          </span>
+        </span>
+        <span className="inline-flex h-9 shrink-0 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground">
+          {t("about.contributeCta")}
+        </span>
+      </Link>
 
       <div className="mt-6">
         <EmergencyNumbers />

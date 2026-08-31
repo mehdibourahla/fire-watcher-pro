@@ -35,6 +35,7 @@ const PRIMARY_NAV = [
   { to: "/history", key: "nav.history" },
   { to: "/status", key: "nav.status" },
   { to: "/about", key: "nav.about" },
+  { to: "/contribute", key: "nav.contribute" },
 ] as const;
 
 const TABS = [
@@ -254,6 +255,12 @@ export function SiteFooter() {
         </Link>
         <Link to="/status" className="hover:text-foreground">
           {t("nav.status")}
+        </Link>
+        <Link
+          to="/contribute"
+          className="font-semibold text-[var(--accent)] hover:opacity-80"
+        >
+          {t("nav.contribute")}
         </Link>
         <Link to="/terms" className="hover:text-foreground">
           {t("legal.terms")}
