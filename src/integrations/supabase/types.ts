@@ -1106,6 +1106,32 @@ export type Database = {
           },
         ];
       };
+      telegram_channels: {
+        Row: {
+          chat_id: string;
+          created_at: string;
+          wilaya_id: string;
+        };
+        Insert: {
+          chat_id: string;
+          created_at?: string;
+          wilaya_id: string;
+        };
+        Update: {
+          chat_id?: string;
+          created_at?: string;
+          wilaya_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "telegram_channels_wilaya_id_fkey";
+            columns: ["wilaya_id"];
+            isOneToOne: true;
+            referencedRelation: "admin_units";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       user_roles: {
         Row: {
           created_at: string;
