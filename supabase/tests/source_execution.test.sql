@@ -1,0 +1,699 @@
+begin;
+
+set local search_path = public, extensions;
+
+select no_plan();
+
+select has_table('public', 'source_jobs', 'source job queue exists');
+select has_table('public', 'source_job_leases', 'per-contract leases exist');
+select has_table('public', 'source_gaps', 'source gaps exist');
+select has_view('public', 'source_watchdog', 'watchdog projection exists');
+
+select has_function(
+  'public',
+  'enqueue_due_source_jobs',
+  array['timestamp with time zone', 'text'],
+  'due-job enqueue RPC exists'
+);
+select has_function(
+  'public',
+  'claim_source_job',
+  array['text', 'text', 'text', 'timestamp with time zone'],
+  'job claim RPC exists'
+);
+select has_function(
+  'public',
+  'complete_source_job',
+  array[
+    'uuid',
+    'text',
+    'integer',
+    'timestamp with time zone',
+    'text',
+    'timestamp with time zone',
+    'timestamp with time zone',
+    'timestamp with time zone',
+    'timestamp with time zone',
+    'timestamp with time zone',
+    'integer',
+    'integer',
+    'integer',
+    'integer',
+    'integer',
+    'text',
+    'jsonb',
+    'text',
+    'text',
+    'boolean'
+  ],
+  'job completion RPC exists'
+);
+select has_function(
+  'public',
+  'enqueue_source_replay',
+  array['uuid', 'timestamp with time zone'],
+  'gap replay RPC exists'
+);
+
+select ok(
+  (
+    select bool_and(relrowsecurity)
+    from pg_class
+    where oid = any(array[
+      'public.source_jobs'::regclass,
+      'public.source_job_leases'::regclass,
+      'public.source_gaps'::regclass
+    ])
+  ),
+  'RLS is enabled on every execution table'
+);
+select ok(
+  not has_table_privilege('anon', 'public.source_jobs', 'select')
+  and not has_table_privilege('authenticated', 'public.source_jobs', 'select')
+  and not has_table_privilege('anon', 'public.source_gaps', 'select')
+  and not has_table_privilege('authenticated', 'public.source_gaps', 'select'),
+  'queue and gap rows are private'
+);
+select ok(
+  has_function_privilege(
+    'service_role',
+    'public.enqueue_due_source_jobs(timestamp with time zone,text)',
+    'execute'
+  )
+  and not has_function_privilege(
+    'anon',
+    'public.enqueue_due_source_jobs(timestamp with time zone,text)',
+    'execute'
+  ),
+  'only the service role can enqueue due work'
+);
+select ok(
+  not has_function_privilege(
+    'anon',
+    'public.claim_source_job(text,text,text,timestamp with time zone)',
+    'execute'
+  )
+  and not has_function_privilege(
+    'authenticated',
+    'public.claim_source_job(text,text,text,timestamp with time zone)',
+    'execute'
+  )
+  and not has_function_privilege(
+    'anon',
+    'public.enqueue_source_replay(uuid,timestamp with time zone)',
+    'execute'
+  ),
+  'public roles cannot claim or replay work'
+);
+select ok(
+  not has_function_privilege(
+    'anon',
+    'public.complete_source_job(uuid,text,integer,timestamp with time zone,text,timestamp with time zone,timestamp with time zone,timestamp with time zone,timestamp with time zone,timestamp with time zone,integer,integer,integer,integer,integer,text,jsonb,text,text,boolean)',
+    'execute'
+  )
+  and not has_function_privilege(
+    'authenticated',
+    'public.complete_source_job(uuid,text,integer,timestamp with time zone,text,timestamp with time zone,timestamp with time zone,timestamp with time zone,timestamp with time zone,timestamp with time zone,integer,integer,integer,integer,integer,text,jsonb,text,text,boolean)',
+    'execute'
+  )
+  and not has_table_privilege('anon', 'public.source_watchdog', 'select')
+  and not has_table_privilege(
+    'authenticated',
+    'public.source_watchdog',
+    'select'
+  ),
+  'public roles cannot complete work or inspect the watchdog'
+);
+select has_index(
+  'public',
+  'source_jobs',
+  'source_jobs_claim_idx',
+  'claimable jobs have a partial lookup index'
+);
+select has_index(
+  'public',
+  'source_job_leases',
+  'source_job_leases_expiry_idx',
+  'expired leases have a lookup index'
+);
+select has_index(
+  'public',
+  'source_runs',
+  'source_runs_job_idx',
+  'source run job foreign keys are indexed'
+);
+select is(
+  (
+    select count(*)::integer
+    from cron.job
+    where jobname in ('nadhir-source-enqueue', 'nadhir-source-recover')
+  ),
+  2,
+  'database enqueue and expired-lease recovery schedules are active'
+);
+select is(
+  (
+    select count(*)::integer
+    from cron.job
+    where jobname in ('nadhir-ingest', 'nadhir-risk', 'nadhir-alerts')
+  ),
+  0,
+  'legacy HTTP pipeline schedules are removed'
+);
+select ok(
+  (
+    select bool_and(command not like '%net.http_post%')
+    from cron.job
+    where jobname in ('nadhir-source-enqueue', 'nadhir-source-recover')
+  ),
+  'database schedules invoke queue functions without HTTP fan-out'
+);
+
+update public.source_contracts
+set schedule_enabled = key in ('fci', 'firms');
+
+delete from public.source_job_leases;
+delete from public.source_jobs;
+delete from public.source_gaps;
+
+select is(
+  public.enqueue_due_source_jobs(
+    '2026-08-31 20:07:45+00'::timestamptz,
+    'database'
+  ),
+  2,
+  'database scheduler enqueues each due contract once'
+);
+select is(
+  public.enqueue_due_source_jobs(
+    '2026-08-31 20:07:59+00'::timestamptz,
+    'cloudflare'
+  ),
+  0,
+  'the second scheduler observes existing normalized slots'
+);
+select is(
+  (
+    select count(*)::integer
+    from public.source_jobs
+    where scheduled_for = '2026-08-31 20:00:00+00'
+  ),
+  2,
+  'database and Cloudflare enqueue one job per contract and slot'
+);
+select ok(
+  (
+    select bool_and(enqueued_by = array['cloudflare', 'database'])
+    from public.source_jobs
+  ),
+  'deduplicated jobs retain evidence from both schedulers'
+);
+
+create temporary table first_claim as
+select * from public.claim_source_job(
+  'pgtap-worker-a',
+  'cloudflare',
+  null,
+  '2026-08-31 20:08:00+00'
+);
+create temporary table second_claim as
+select * from public.claim_source_job(
+  'pgtap-worker-b',
+  'cloudflare',
+  null,
+  '2026-08-31 20:08:00+00'
+);
+
+select is(
+  (select count(*)::integer from first_claim),
+  1,
+  'the first worker claims one job'
+);
+select is(
+  (select count(*)::integer from second_claim),
+  1,
+  'another contract remains claimable while the first lease is active'
+);
+select isnt(
+  (select contract_key from first_claim),
+  (select contract_key from second_claim),
+  'sequential claims lease different contracts'
+);
+select is(
+  (select count(*)::integer from public.source_job_leases),
+  2,
+  'one active lease is retained for each claimed contract'
+);
+
+create function pg_temp.enqueue_test_job(
+  _contract_key text,
+  _idempotency_key text,
+  _scheduled_for timestamptz,
+  _max_attempts integer default 3,
+  _retry_until timestamptz default '2026-09-01 00:00:00+00',
+  _gap_id uuid default null
+)
+returns uuid
+language plpgsql
+as $$
+declare
+  _job_id uuid;
+begin
+  insert into public.source_jobs (
+    contract_key,
+    contract_version,
+    trigger_kind,
+    idempotency_key,
+    scheduled_for,
+    data_from,
+    data_through,
+    execution_target,
+    enqueued_by,
+    available_at,
+    max_attempts,
+    retry_base_seconds,
+    retry_until,
+    gap_id
+  )
+  select
+    contract.key,
+    contract.version,
+    case when _gap_id is null then 'manual' else 'replay' end,
+    _idempotency_key,
+    _scheduled_for,
+    _scheduled_for - interval '10 minutes',
+    _scheduled_for,
+    'cloudflare',
+    array['manual'],
+    _scheduled_for,
+    _max_attempts,
+    30,
+    _retry_until,
+    _gap_id
+  from public.source_contracts as contract
+  where contract.key = _contract_key
+  returning id into _job_id;
+
+  return _job_id;
+end;
+$$;
+
+create function pg_temp.finish_test_job(
+  _job_id uuid,
+  _worker_id text,
+  _finished_at timestamptz,
+  _outcome text,
+  _reason text,
+  _retryable boolean,
+  _covered_from timestamptz default null,
+  _covered_through timestamptz default null
+)
+returns text
+language sql
+as $$
+  select (public.complete_source_job(
+    _job_id => _job_id,
+    _worker_id => _worker_id,
+    _attempt => (
+      select attempt_count from public.source_jobs where id = _job_id
+    ),
+    _finished_at => _finished_at,
+    _outcome => _outcome,
+    _upstream_published_at => null,
+    _data_from => _covered_from,
+    _data_through => _covered_through,
+    _validated_at => case when _outcome = 'succeeded' then _finished_at end,
+    _published_at => case when _outcome = 'succeeded' then _finished_at end,
+    _records_seen => case when _outcome = 'succeeded' then 1 else 0 end,
+    _records_inserted => case when _outcome = 'succeeded' then 1 else 0 end,
+    _records_updated => 0,
+    _records_rejected => 0,
+    _records_expected => 1,
+    _coverage_status => case
+      when _outcome = 'succeeded' then 'complete'
+      else 'unknown'
+    end,
+    _quality_checks => '{}'::jsonb,
+    _public_reason_code => _reason,
+    _private_diagnostic => case
+      when _outcome = 'succeeded' then null
+      else 'test-only diagnostic'
+    end,
+    _retryable => _retryable
+  )).state
+$$;
+
+delete from public.source_job_leases;
+delete from public.source_jobs;
+delete from public.source_gaps;
+
+update public.source_contracts
+set dependency_keys = case
+  when key = 'fusion' then array['firms']
+  else dependency_keys
+end;
+
+select pg_temp.enqueue_test_job(
+  'firms',
+  'pgtap:dependency:firms',
+  '2026-08-31 20:20:00+00'
+);
+select pg_temp.enqueue_test_job(
+  'fusion',
+  'pgtap:dependency:fusion',
+  '2026-08-31 20:20:00+00'
+);
+select is(
+  (
+    select count(*)::integer
+    from public.claim_source_job(
+      'pgtap-dependent',
+      'cloudflare',
+      'fusion',
+      '2026-08-31 20:21:00+00'
+    )
+  ),
+  0,
+  'a dependent job is unavailable before its dependency is terminal'
+);
+update public.source_jobs
+set state = 'succeeded', finished_at = '2026-08-31 20:21:00+00'
+where idempotency_key = 'pgtap:dependency:firms';
+select is(
+  (
+    select count(*)::integer
+    from public.claim_source_job(
+      'pgtap-dependent',
+      'cloudflare',
+      'fusion',
+      '2026-08-31 20:21:00+00'
+    )
+  ),
+  1,
+  'a dependent job becomes claimable after its dependency is terminal'
+);
+
+delete from public.source_job_leases;
+delete from public.source_jobs;
+delete from public.source_gaps;
+
+update public.source_contracts
+set dependency_keys = '{}'
+where key in ('broadcast_publish', 'openmeteo_wind');
+
+create temporary table transient_job as
+select pg_temp.enqueue_test_job(
+  'firms',
+  'pgtap:transient',
+  '2026-08-31 21:00:00+00'
+) as id;
+select * from public.claim_source_job(
+  'pgtap-transient',
+  'cloudflare',
+  'firms',
+  '2026-08-31 21:00:01+00'
+);
+select is(
+  pg_temp.finish_test_job(
+    (select id from transient_job),
+    'pgtap-transient',
+    '2026-08-31 21:00:02+00',
+    'failed',
+    'upstream_unreachable',
+    true
+  ),
+  'retry_wait',
+  'a transient failure enters retry wait'
+);
+select is(
+  (
+    select count(*)::integer
+    from public.source_gaps
+    where contract_key = 'firms' and state = 'open'
+  ),
+  1,
+  'a transient failure records one open gap'
+);
+select is(
+  (
+    select count(*)::integer
+    from public.source_runs
+    where job_id = (select id from transient_job) and attempt = 1
+  ),
+  1,
+  'the failed attempt is auditable against its job and attempt'
+);
+select throws_ok(
+  format(
+    $$select pg_temp.finish_test_job(%L::uuid, %L, %L::timestamptz, 'failed', 'upstream_unreachable', true)$$,
+    (select id from transient_job),
+    'pgtap-transient',
+    '2026-08-31 21:00:03+00'
+  ),
+  'P0001',
+  'source job lease does not match completion',
+  'duplicate completion is rejected after the lease is released'
+);
+select is(
+  (
+    select count(*)::integer
+    from public.source_runs
+    where job_id = (select id from transient_job)
+  ),
+  1,
+  'duplicate completion cannot append or advance the checkpoint twice'
+);
+
+create temporary table permanent_job as
+select pg_temp.enqueue_test_job(
+  'fci',
+  'pgtap:permanent',
+  '2026-08-31 21:10:00+00'
+) as id;
+select * from public.claim_source_job(
+  'pgtap-permanent',
+  'cloudflare',
+  'fci',
+  '2026-08-31 21:10:01+00'
+);
+select is(
+  pg_temp.finish_test_job(
+    (select id from permanent_job),
+    'pgtap-permanent',
+    '2026-08-31 21:10:02+00',
+    'failed',
+    'credentials_missing',
+    false
+  ),
+  'failed',
+  'a permanent failure becomes terminal immediately'
+);
+
+create temporary table exhausted_job as
+select pg_temp.enqueue_test_job(
+  'onm',
+  'pgtap:exhausted',
+  '2026-08-31 21:20:00+00',
+  1
+) as id;
+select * from public.claim_source_job(
+  'pgtap-exhausted',
+  'cloudflare',
+  'onm',
+  '2026-08-31 21:20:01+00'
+);
+select is(
+  pg_temp.finish_test_job(
+    (select id from exhausted_job),
+    'pgtap-exhausted',
+    '2026-08-31 21:20:02+00',
+    'failed',
+    'upstream_unreachable',
+    true
+  ),
+  'failed',
+  'max attempts stop a transient retry'
+);
+
+create temporary table deadline_job as
+select pg_temp.enqueue_test_job(
+  'broadcast_publish',
+  'pgtap:deadline',
+  '2026-08-31 21:30:00+00',
+  3,
+  '2026-08-31 21:30:10+00'
+) as id;
+select * from public.claim_source_job(
+  'pgtap-deadline',
+  'cloudflare',
+  'broadcast_publish',
+  '2026-08-31 21:30:01+00'
+);
+select is(
+  pg_temp.finish_test_job(
+    (select id from deadline_job),
+    'pgtap-deadline',
+    '2026-08-31 21:30:02+00',
+    'failed',
+    'upstream_unreachable',
+    true
+  ),
+  'failed',
+  'the retry deadline stops a transient retry'
+);
+
+create temporary table expired_job as
+select pg_temp.enqueue_test_job(
+  'openmeteo_wind',
+  'pgtap:expired',
+  '2026-08-31 21:40:00+00'
+) as id;
+select * from public.claim_source_job(
+  'pgtap-expired',
+  'cloudflare',
+  'openmeteo_wind',
+  '2026-08-31 21:40:01+00'
+);
+select is(
+  private.requeue_expired_source_jobs('2026-08-31 21:43:00+00'),
+  1,
+  'expired lease recovery audits one abandoned attempt'
+);
+select is(
+  (
+    select state from public.source_jobs
+    where id = (select id from expired_job)
+  ),
+  'retry_wait',
+  'an expired lease is requeued while retry budget remains'
+);
+select is(
+  (
+    select count(*)::integer
+    from public.source_job_leases
+    where job_id = (select id from expired_job)
+  ),
+  0,
+  'expired lease recovery releases the contract'
+);
+
+create temporary table replay_gap as
+select id, data_from, data_through
+from public.source_gaps
+where contract_key = 'firms'
+limit 1;
+update public.source_jobs
+set state = 'failed', finished_at = '2026-08-31 21:59:00+00'
+where id = (select id from transient_job);
+create temporary table replay_job as
+select public.enqueue_source_replay(
+  (select id from replay_gap),
+  '2026-08-31 22:00:00+00'
+) as id;
+select ok(
+  (
+    select job.data_from = gap.data_from
+      and job.data_through = gap.data_through
+    from public.source_jobs as job
+    cross join replay_gap as gap
+    where job.id = (select id from replay_job)
+  ),
+  'replay preserves the exact recorded gap interval'
+);
+select * from public.claim_source_job(
+  'pgtap-replay-partial',
+  'cloudflare',
+  'firms',
+  '2026-08-31 22:00:01+00'
+);
+select is(
+  pg_temp.finish_test_job(
+    (select id from replay_job),
+    'pgtap-replay-partial',
+    '2026-08-31 22:00:02+00',
+    'succeeded',
+    null,
+    false,
+    (select data_from + interval '1 minute' from replay_gap),
+    (select data_through from replay_gap)
+  ),
+  'succeeded',
+  'the replay job can succeed with narrower observed coverage'
+);
+select is(
+  (
+    select state from public.source_gaps
+    where id = (select id from replay_gap)
+  ),
+  'open',
+  'success without full interval coverage leaves the gap open'
+);
+
+create temporary table full_replay_job as
+select public.enqueue_source_replay(
+  (select id from replay_gap),
+  '2026-08-31 22:10:00+00'
+) as id;
+select * from public.claim_source_job(
+  'pgtap-replay-full',
+  'cloudflare',
+  'firms',
+  '2026-08-31 22:10:01+00'
+);
+select is(
+  pg_temp.finish_test_job(
+    (select id from full_replay_job),
+    'pgtap-replay-full',
+    '2026-08-31 22:10:02+00',
+    'succeeded',
+    null,
+    false,
+    (select data_from from replay_gap),
+    (select data_through from replay_gap)
+  ),
+  'succeeded',
+  'a full-coverage replay succeeds'
+);
+select is(
+  (
+    select state from public.source_gaps
+    where id = (select id from replay_gap)
+  ),
+  'resolved',
+  'full interval coverage resolves the gap exactly once'
+);
+
+select is(
+  (
+    select count(*)::integer
+    from public.source_watchdog
+    where issue_code not in (
+      'missing_job',
+      'queue_delayed',
+      'lease_expired',
+      'run_delayed'
+    )
+  ),
+  0,
+  'the watchdog exposes only allow-listed issue codes'
+);
+select is(
+  (
+    select count(*)::integer
+    from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'source_watchdog'
+      and column_name = any(array[
+        'private_diagnostic',
+        'payload',
+        'url',
+        'credentials'
+      ])
+  ),
+  0,
+  'the watchdog cannot expose diagnostics, payloads, URLs, or credentials'
+);
+
+select * from finish();
+
+rollback;

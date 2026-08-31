@@ -7,6 +7,31 @@ export type Json =
   | Json[];
 
 export type Database = {
+  graphql_public: {
+    Tables: {
+      [_ in never]: never;
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json;
+          operationName?: string;
+          query?: string;
+          variables?: Json;
+        };
+        Returns: Json;
+      };
+    };
+    Enums: {
+      [_ in never]: never;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
+    };
+  };
   public: {
     Tables: {
       admin_units: {
@@ -1320,16 +1345,24 @@ export type Database = {
           criticality: string;
           dependency_keys: string[];
           enabled: boolean;
+          execution_target: string;
           expected_coverage: Json;
           family: string;
           freshness_basis: string;
           key: string;
           label: string;
+          lease_seconds: number;
           licence: string;
+          max_attempts: number;
           max_fallback_age_minutes: number | null;
+          overlap_minutes: number;
           owner: string;
           parser_version: string;
+          retry_base_seconds: number;
+          retry_window_minutes: number;
           runbook_url: string | null;
+          schedule_enabled: boolean;
+          schedule_offset_minutes: number;
           stale_after_minutes: number;
           updated_at: string;
           version: number;
@@ -1342,16 +1375,24 @@ export type Database = {
           criticality: string;
           dependency_keys?: string[];
           enabled?: boolean;
+          execution_target?: string;
           expected_coverage?: Json;
           family: string;
           freshness_basis: string;
           key: string;
           label: string;
+          lease_seconds?: number;
           licence: string;
+          max_attempts?: number;
           max_fallback_age_minutes?: number | null;
+          overlap_minutes?: number;
           owner: string;
           parser_version: string;
+          retry_base_seconds?: number;
+          retry_window_minutes?: number;
           runbook_url?: string | null;
+          schedule_enabled?: boolean;
+          schedule_offset_minutes?: number;
           stale_after_minutes: number;
           updated_at?: string;
           version: number;
@@ -1364,16 +1405,24 @@ export type Database = {
           criticality?: string;
           dependency_keys?: string[];
           enabled?: boolean;
+          execution_target?: string;
           expected_coverage?: Json;
           family?: string;
           freshness_basis?: string;
           key?: string;
           label?: string;
+          lease_seconds?: number;
           licence?: string;
+          max_attempts?: number;
           max_fallback_age_minutes?: number | null;
+          overlap_minutes?: number;
           owner?: string;
           parser_version?: string;
+          retry_base_seconds?: number;
+          retry_window_minutes?: number;
           runbook_url?: string | null;
+          schedule_enabled?: boolean;
+          schedule_offset_minutes?: number;
           stale_after_minutes?: number;
           updated_at?: string;
           version?: number;
@@ -1381,8 +1430,222 @@ export type Database = {
         };
         Relationships: [];
       };
+      source_gaps: {
+        Row: {
+          contract_key: string;
+          data_from: string;
+          data_through: string;
+          detected_at: string;
+          id: string;
+          public_reason_code: string | null;
+          replay_count: number;
+          resolved_at: string | null;
+          resolved_by_run_id: string | null;
+          state: string;
+          updated_at: string;
+        };
+        Insert: {
+          contract_key: string;
+          data_from: string;
+          data_through: string;
+          detected_at?: string;
+          id?: string;
+          public_reason_code?: string | null;
+          replay_count?: number;
+          resolved_at?: string | null;
+          resolved_by_run_id?: string | null;
+          state?: string;
+          updated_at?: string;
+        };
+        Update: {
+          contract_key?: string;
+          data_from?: string;
+          data_through?: string;
+          detected_at?: string;
+          id?: string;
+          public_reason_code?: string | null;
+          replay_count?: number;
+          resolved_at?: string | null;
+          resolved_by_run_id?: string | null;
+          state?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "source_gaps_contract_key_fkey";
+            columns: ["contract_key"];
+            isOneToOne: false;
+            referencedRelation: "source_contracts";
+            referencedColumns: ["key"];
+          },
+          {
+            foreignKeyName: "source_gaps_contract_key_fkey";
+            columns: ["contract_key"];
+            isOneToOne: false;
+            referencedRelation: "source_health";
+            referencedColumns: ["key"];
+          },
+          {
+            foreignKeyName: "source_gaps_resolved_by_run_id_fkey";
+            columns: ["resolved_by_run_id"];
+            isOneToOne: false;
+            referencedRelation: "source_runs";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      source_job_leases: {
+        Row: {
+          attempt: number;
+          contract_key: string;
+          job_id: string;
+          lease_expires_at: string;
+          leased_at: string;
+          worker_id: string;
+        };
+        Insert: {
+          attempt: number;
+          contract_key: string;
+          job_id: string;
+          lease_expires_at: string;
+          leased_at: string;
+          worker_id: string;
+        };
+        Update: {
+          attempt?: number;
+          contract_key?: string;
+          job_id?: string;
+          lease_expires_at?: string;
+          leased_at?: string;
+          worker_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "source_job_leases_contract_key_fkey";
+            columns: ["contract_key"];
+            isOneToOne: true;
+            referencedRelation: "source_contracts";
+            referencedColumns: ["key"];
+          },
+          {
+            foreignKeyName: "source_job_leases_contract_key_fkey";
+            columns: ["contract_key"];
+            isOneToOne: true;
+            referencedRelation: "source_health";
+            referencedColumns: ["key"];
+          },
+          {
+            foreignKeyName: "source_job_leases_job_id_fkey";
+            columns: ["job_id"];
+            isOneToOne: true;
+            referencedRelation: "source_jobs";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      source_jobs: {
+        Row: {
+          attempt_count: number;
+          available_at: string;
+          contract_key: string;
+          contract_version: number;
+          created_at: string;
+          data_from: string;
+          data_through: string;
+          enqueued_by: string[];
+          execution_target: string;
+          finished_at: string | null;
+          gap_id: string | null;
+          id: string;
+          idempotency_key: string;
+          last_error_at: string | null;
+          last_public_reason_code: string | null;
+          max_attempts: number;
+          retry_base_seconds: number;
+          retry_until: string;
+          scheduled_for: string;
+          started_at: string | null;
+          state: string;
+          trigger_kind: string;
+          updated_at: string;
+        };
+        Insert: {
+          attempt_count?: number;
+          available_at?: string;
+          contract_key: string;
+          contract_version: number;
+          created_at?: string;
+          data_from: string;
+          data_through: string;
+          enqueued_by?: string[];
+          execution_target: string;
+          finished_at?: string | null;
+          gap_id?: string | null;
+          id?: string;
+          idempotency_key: string;
+          last_error_at?: string | null;
+          last_public_reason_code?: string | null;
+          max_attempts: number;
+          retry_base_seconds: number;
+          retry_until: string;
+          scheduled_for: string;
+          started_at?: string | null;
+          state?: string;
+          trigger_kind: string;
+          updated_at?: string;
+        };
+        Update: {
+          attempt_count?: number;
+          available_at?: string;
+          contract_key?: string;
+          contract_version?: number;
+          created_at?: string;
+          data_from?: string;
+          data_through?: string;
+          enqueued_by?: string[];
+          execution_target?: string;
+          finished_at?: string | null;
+          gap_id?: string | null;
+          id?: string;
+          idempotency_key?: string;
+          last_error_at?: string | null;
+          last_public_reason_code?: string | null;
+          max_attempts?: number;
+          retry_base_seconds?: number;
+          retry_until?: string;
+          scheduled_for?: string;
+          started_at?: string | null;
+          state?: string;
+          trigger_kind?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "source_jobs_contract_key_fkey";
+            columns: ["contract_key"];
+            isOneToOne: false;
+            referencedRelation: "source_contracts";
+            referencedColumns: ["key"];
+          },
+          {
+            foreignKeyName: "source_jobs_contract_key_fkey";
+            columns: ["contract_key"];
+            isOneToOne: false;
+            referencedRelation: "source_health";
+            referencedColumns: ["key"];
+          },
+          {
+            foreignKeyName: "source_jobs_gap_id_fkey";
+            columns: ["gap_id"];
+            isOneToOne: false;
+            referencedRelation: "source_gaps";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       source_runs: {
         Row: {
+          attempt: number | null;
           contract_key: string;
           contract_version: number;
           coverage_status: string;
@@ -1392,6 +1655,7 @@ export type Database = {
           finished_at: string | null;
           id: string;
           idempotency_key: string | null;
+          job_id: string | null;
           outcome: string;
           private_diagnostic: string | null;
           public_reason_code: string | null;
@@ -1409,6 +1673,7 @@ export type Database = {
           validated_at: string | null;
         };
         Insert: {
+          attempt?: number | null;
           contract_key: string;
           contract_version: number;
           coverage_status?: string;
@@ -1418,6 +1683,7 @@ export type Database = {
           finished_at?: string | null;
           id?: string;
           idempotency_key?: string | null;
+          job_id?: string | null;
           outcome: string;
           private_diagnostic?: string | null;
           public_reason_code?: string | null;
@@ -1435,6 +1701,7 @@ export type Database = {
           validated_at?: string | null;
         };
         Update: {
+          attempt?: number | null;
           contract_key?: string;
           contract_version?: number;
           coverage_status?: string;
@@ -1444,6 +1711,7 @@ export type Database = {
           finished_at?: string | null;
           id?: string;
           idempotency_key?: string | null;
+          job_id?: string | null;
           outcome?: string;
           private_diagnostic?: string | null;
           public_reason_code?: string | null;
@@ -1474,6 +1742,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "source_health";
             referencedColumns: ["key"];
+          },
+          {
+            foreignKeyName: "source_runs_job_id_fkey";
+            columns: ["job_id"];
+            isOneToOne: false;
+            referencedRelation: "source_jobs";
+            referencedColumns: ["id"];
           },
         ];
       };
@@ -1800,11 +2075,124 @@ export type Database = {
           },
         ];
       };
+      source_watchdog: {
+        Row: {
+          contract_key: string | null;
+          issue_code: string | null;
+          job_id: string | null;
+          lease_expires_at: string | null;
+          observed_at: string | null;
+          scheduled_for: string | null;
+        };
+        Relationships: [];
+      };
     };
     Functions: {
+      claim_source_job: {
+        Args: {
+          _contract_key?: string;
+          _execution_target: string;
+          _now?: string;
+          _worker_id: string;
+        };
+        Returns: {
+          attempt_count: number;
+          available_at: string;
+          contract_key: string;
+          contract_version: number;
+          created_at: string;
+          data_from: string;
+          data_through: string;
+          enqueued_by: string[];
+          execution_target: string;
+          finished_at: string | null;
+          gap_id: string | null;
+          id: string;
+          idempotency_key: string;
+          last_error_at: string | null;
+          last_public_reason_code: string | null;
+          max_attempts: number;
+          retry_base_seconds: number;
+          retry_until: string;
+          scheduled_for: string;
+          started_at: string | null;
+          state: string;
+          trigger_kind: string;
+          updated_at: string;
+        }[];
+        SetofOptions: {
+          from: "*";
+          to: "source_jobs";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
+      complete_source_job: {
+        Args: {
+          _attempt: number;
+          _coverage_status: string;
+          _data_from: string;
+          _data_through: string;
+          _finished_at: string;
+          _job_id: string;
+          _outcome: string;
+          _private_diagnostic: string;
+          _public_reason_code: string;
+          _published_at: string;
+          _quality_checks: Json;
+          _records_expected: number;
+          _records_inserted: number;
+          _records_rejected: number;
+          _records_seen: number;
+          _records_updated: number;
+          _retryable: boolean;
+          _upstream_published_at: string;
+          _validated_at: string;
+          _worker_id: string;
+        };
+        Returns: {
+          attempt_count: number;
+          available_at: string;
+          contract_key: string;
+          contract_version: number;
+          created_at: string;
+          data_from: string;
+          data_through: string;
+          enqueued_by: string[];
+          execution_target: string;
+          finished_at: string | null;
+          gap_id: string | null;
+          id: string;
+          idempotency_key: string;
+          last_error_at: string | null;
+          last_public_reason_code: string | null;
+          max_attempts: number;
+          retry_base_seconds: number;
+          retry_until: string;
+          scheduled_for: string;
+          started_at: string | null;
+          state: string;
+          trigger_kind: string;
+          updated_at: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "source_jobs";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       consume_rate_limit: {
         Args: { _bucket: string; _limit: number; _window_seconds: number };
         Returns: boolean;
+      };
+      enqueue_due_source_jobs: {
+        Args: { _enqueued_by: string; _observed_at: string };
+        Returns: number;
+      };
+      enqueue_source_replay: {
+        Args: { _gap_id: string; _requested_at?: string };
+        Returns: string;
       };
       has_role: {
         Args: {
@@ -1817,16 +2205,16 @@ export type Database = {
         Args: {
           _contract_key: string;
           _coverage_status: string;
-          _data_from: string | null;
-          _data_through: string | null;
+          _data_from: string;
+          _data_through: string;
           _finished_at: string;
           _idempotency_key: string;
           _outcome: string;
-          _private_diagnostic: string | null;
-          _public_reason_code: string | null;
-          _published_at: string | null;
+          _private_diagnostic: string;
+          _public_reason_code: string;
+          _published_at: string;
           _quality_checks: Json;
-          _records_expected: number | null;
+          _records_expected: number;
           _records_inserted: number;
           _records_rejected: number;
           _records_seen: number;
@@ -1834,8 +2222,8 @@ export type Database = {
           _scheduled_for: string;
           _started_at: string;
           _trigger_kind: string;
-          _upstream_published_at: string | null;
-          _validated_at: string | null;
+          _upstream_published_at: string;
+          _validated_at: string;
         };
         Returns: string;
       };
@@ -1971,6 +2359,9 @@ export type CompositeTypes<
     : never;
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],
