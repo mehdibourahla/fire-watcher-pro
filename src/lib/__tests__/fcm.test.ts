@@ -1,11 +1,28 @@
 import { describe, expect, it } from "vitest";
 
-import { FCM_LANGS, fcmMessagesForFire, fcmMessagesForOnm, fcmTopic } from "@/lib/fcm";
+import {
+  FCM_LANGS,
+  fcmMessagesForFire,
+  fcmMessagesForOnm,
+  fcmTopic,
+} from "@/lib/fcm";
 
 const info = [
-  { language: "ar-DZ", headline: "حريق مؤكد — عزازقة", description: "وصف عربي" },
-  { language: "fr-DZ", headline: "Incendie confirmé — Azazga", description: "desc fr" },
-  { language: "en", headline: "Confirmed fire — Azazga", description: "desc en" },
+  {
+    language: "ar-DZ",
+    headline: "حريق مؤكد — عزازقة",
+    description: "وصف عربي",
+  },
+  {
+    language: "fr-DZ",
+    headline: "Incendie confirmé — Azazga",
+    description: "desc fr",
+  },
+  {
+    language: "en",
+    headline: "Confirmed fire — Azazga",
+    description: "desc en",
+  },
   { language: "kab", headline: "Times — Azazga", description: "desc kab" },
 ];
 

@@ -259,17 +259,23 @@ export type Database = {
           cluster_id: string | null;
           commune_codes: string[];
           created_at: string;
+          fcm_delivered_at: string | null;
+          fcm_topics: number | null;
           id: string;
           kind: string;
           onm_vigilance_id: string | null;
           phase: string;
           severity: string;
+          telegram_channels: number | null;
+          telegram_delivered_at: string | null;
         };
         Insert: {
           cap_alert_id?: string | null;
           cluster_id?: string | null;
           commune_codes: string[];
           created_at?: string;
+          fcm_delivered_at?: string | null;
+          fcm_topics?: number | null;
           id?: string;
           kind: string;
           onm_vigilance_id?: string | null;
@@ -281,11 +287,15 @@ export type Database = {
           cluster_id?: string | null;
           commune_codes?: string[];
           created_at?: string;
+          fcm_delivered_at?: string | null;
+          fcm_topics?: number | null;
           id?: string;
           kind?: string;
           onm_vigilance_id?: string | null;
           phase?: string;
           severity?: string;
+          telegram_channels?: number | null;
+          telegram_delivered_at?: string | null;
         };
         Relationships: [
           {
