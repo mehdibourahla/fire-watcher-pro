@@ -3,9 +3,9 @@ import {
   SETTLEMENT_EMERGENCY_KM,
   downwindOf,
 } from "@/lib/alerts-rules";
+import { BROADCAST_RING_KM } from "@/lib/cap";
 import { bearingBetween } from "@/lib/nadhir";
 
-export const BROADCAST_RING_KM = 15;
 export const BROADCAST_END_AFTER_HOURS = 12;
 export const BROADCAST_DAILY_COMMUNE_LIMIT = 6;
 

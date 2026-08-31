@@ -91,7 +91,7 @@ topics serve the future native mobile apps unchanged.
 
 Slices, in dependency order:
 
-- [ ] A1 CAP → broadcast publisher: trigger on confirmed clusters (≥0.6, severity
+- [x] A1 CAP → broadcast publisher: trigger on confirmed clusters (≥0.6, severity
       by settlement proximity) and ONM Severe+; targeting = containing commune +
       ~15 km polygon ring, updates extend pure-downwind; lifecycle initial →
       update → observation-honest end ("no detections for N h", never all-clear);
