@@ -1,14 +1,14 @@
 import { fcmTopic } from "@/lib/fcm";
 
-/* Public web-app config from the Firebase console (not secrets). Empty until the
- * owner registers the web app; the whole flow reports "unavailable" until then.
- * The same values must be pasted into public/firebase-messaging-sw.js. */
+/* Public web-app config for the nadhir-dz Firebase project (not secrets). The
+ * same values are duplicated in public/firebase-messaging-sw.js. The VAPID key
+ * is still empty, so pushConfigured() is false and the UI says so. */
 export const FIREBASE_WEB_CONFIG = {
-  apiKey: "",
-  authDomain: "",
-  projectId: "",
-  messagingSenderId: "",
-  appId: "",
+  apiKey: "AIzaSyA2claby2DpwxxJ4JKZ6TeJSQXAOnpSyCY",
+  authDomain: "nadhir-dz.firebaseapp.com",
+  projectId: "nadhir-dz",
+  messagingSenderId: "1038175256338",
+  appId: "1:1038175256338:web:39579a97bd7e255211bdcb",
 };
 export const VAPID_PUBLIC_KEY = "";
 

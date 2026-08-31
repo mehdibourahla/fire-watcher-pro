@@ -131,9 +131,17 @@ export async function fcmSubscribeTopics(
         }),
       },
     );
+    const action = add ? "subscribe" : "unsubscribe";
     if (!res.ok)
-      throw new Error(
-        `topic ${add ? "subscribe" : "unsubscribe"} failed (${res.status}) for ${topic}`,
-      );
+      throw new Error(`topic ${action} failed (${res.status}) for ${topic}`);
+
+    // the batch endpoint answers 200 and reports a rejected token inside
+    // results[]; trusting res.ok alone tells a subscriber they are subscribed
+    const body = (await res.json().catch(() => null)) as {
+      results?: { error?: string }[];
+    } | null;
+    const failure = body?.results?.find((r) => r.error)?.error;
+    if (failure)
+      throw new Error(`topic ${action} rejected for ${topic}: ${failure}`);
   }
 }

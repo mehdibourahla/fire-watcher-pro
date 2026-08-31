@@ -1,12 +1,11 @@
 /* global importScripts, firebase */
-/* Public Firebase web config — must match src/lib/push.ts. Empty until the
- * owner registers the web app; the worker stays inert until filled. */
+/* Public Firebase web config — must match src/lib/push.ts. */
 const FIREBASE_WEB_CONFIG = {
-  apiKey: "",
-  authDomain: "",
-  projectId: "",
-  messagingSenderId: "",
-  appId: "",
+  apiKey: "AIzaSyA2claby2DpwxxJ4JKZ6TeJSQXAOnpSyCY",
+  authDomain: "nadhir-dz.firebaseapp.com",
+  projectId: "nadhir-dz",
+  messagingSenderId: "1038175256338",
+  appId: "1:1038175256338:web:39579a97bd7e255211bdcb",
 };
 
 if (FIREBASE_WEB_CONFIG.apiKey) {
