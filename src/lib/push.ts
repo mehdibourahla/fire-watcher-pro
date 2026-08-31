@@ -104,10 +104,10 @@ export async function subscribeToCommunes(
     const stale = previous.communes.filter(
       (c) => !next.has(fcmTopic(c, previous.lang)),
     );
+    // before writeSubscription: a failure here surfaces and a retry redoes both
+    // calls (idempotent), instead of silently leaving stale-language topics live
     if (stale.length)
-      await callSubscribeApi(token, stale, previous.lang, "unsubscribe").catch(
-        () => {},
-      );
+      await callSubscribeApi(token, stale, previous.lang, "unsubscribe");
   }
   writeSubscription({ communes, lang });
 }

@@ -19,6 +19,7 @@ type BannerRow = {
   cap_alerts: { info: unknown } | null;
   fire_clusters: { short_id: string } | null;
   onm_vigilance: { title: string; headline_fr: string | null } | null;
+  authority_warnings: { source: string; body: string } | null;
 };
 
 const bannersQuery = queryOptions({
@@ -28,7 +29,7 @@ const bannersQuery = queryOptions({
     const { data, error } = await supabase
       .from("broadcasts")
       .select(
-        "id, kind, phase, severity, commune_codes, cluster_id, created_at, cap_alerts(info), fire_clusters(short_id), onm_vigilance(title, headline_fr)",
+        "id, kind, phase, severity, commune_codes, cluster_id, created_at, cap_alerts(info), fire_clusters(short_id), onm_vigilance(title, headline_fr), authority_warnings(source, body)",
       )
       .gte("created_at", since)
       .order("created_at", { ascending: false });
@@ -39,6 +40,7 @@ const bannersQuery = queryOptions({
 });
 
 function headlineFor(row: BannerRow, locale: AnyLocale): string | null {
+  if (row.kind === "authority") return row.authority_warnings?.body ?? null;
   if (row.kind === "onm")
     return row.onm_vigilance?.headline_fr ?? row.onm_vigilance?.title ?? null;
   const info = row.cap_alerts?.info as
@@ -103,7 +105,11 @@ export function BroadcastBanner() {
               ) : (
                 <Flame aria-hidden className="size-3.5" />
               )}
-              {row.kind === "onm" ? t("push.bannerOnm") : t("push.bannerLive")}
+              {row.kind === "onm"
+                ? t("push.bannerOnm")
+                : row.kind === "authority"
+                  ? (row.authority_warnings?.source ?? t("push.bannerOnm"))
+                  : t("push.bannerLive")}
               <span className="ms-auto">
                 {relativeTime(row.created_at, locale)}
               </span>

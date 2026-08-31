@@ -47,7 +47,7 @@ const auditQuery = queryOptions({
       .from("broadcast_audit")
       .select("id, at, action, reason, kind, phase, severity, commune_codes")
       .order("at", { ascending: false })
-      .limit(100);
+      .limit(200);
     if (error) throw new Error(error.message);
     return data ?? [];
   },

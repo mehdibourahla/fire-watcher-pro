@@ -26,8 +26,10 @@ alter table public.broadcasts add constraint broadcasts_check check (
 create unique index idx_broadcasts_authority_once
   on public.broadcasts (authority_warning_id) where kind = 'authority';
 
--- relayed warnings are public information; writing them is admin-only
-grant select on public.authority_warnings to anon, authenticated;
+-- relayed warnings are public information, but only the warning itself:
+-- created_by (an admin uid) and received_via stay off the public surface
+grant select (id, source, body, severity, created_at)
+  on public.authority_warnings to anon, authenticated;
 grant insert on public.authority_warnings to authenticated;
 grant all on public.authority_warnings to service_role;
 alter table public.authority_warnings enable row level security;

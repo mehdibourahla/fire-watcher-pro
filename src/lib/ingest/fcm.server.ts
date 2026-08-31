@@ -99,6 +99,9 @@ export async function fcmSend(message: FcmMessage): Promise<void> {
       body: JSON.stringify({ message }),
     },
   );
+  // a topic nobody subscribed yet is not a failure; aborting here would
+  // re-send the row's earlier topics next run as duplicates
+  if (res.status === 404) return;
   if (!res.ok)
     throw new Error(
       `fcm send failed (${res.status}) for ${message.topic}: ${(await res.text()).slice(0, 300)}`,
