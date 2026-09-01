@@ -53,21 +53,24 @@ function WebhooksPage() {
       invalidate();
       toast.success(t("webhooks.created"));
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(t(e.message)),
   });
 
   const toggle = useMutation({
     mutationFn: (v: { id: string; active: boolean }) =>
       updateWebhook(v.id, { active: v.active }),
     onSuccess: invalidate,
+    onError: (e: Error) => toast.error(t(e.message)),
   });
 
   const remove = useMutation({
     mutationFn: (id: string) => deleteWebhook(id),
     onSuccess: invalidate,
+    onError: (e: Error) => toast.error(t(e.message)),
   });
 
   const validUrl = /^https:\/\/.+/.test(url.trim());
+  const hasKinds = kinds.length > 0;
 
   return (
     <div className="mx-auto max-w-[900px] px-4 py-6">
@@ -82,7 +85,7 @@ function WebhooksPage() {
           className="mt-3 grid gap-3 sm:grid-cols-2"
           onSubmit={(e) => {
             e.preventDefault();
-            if (!validUrl || !label.trim()) return;
+            if (!validUrl || !label.trim() || !hasKinds) return;
             create.mutate();
           }}
         >
@@ -126,6 +129,11 @@ function WebhooksPage() {
                 </label>
               ))}
             </div>
+            {!hasKinds ? (
+              <p className="mt-1 text-xs text-destructive">
+                {t("webhooks.kindsRequired")}
+              </p>
+            ) : null}
           </fieldset>
           <label className="text-sm">
             {t("webhooks.minSeverity")}
@@ -144,7 +152,9 @@ function WebhooksPage() {
           <div className="sm:col-span-2">
             <button
               type="submit"
-              disabled={!validUrl || !label.trim() || create.isPending}
+              disabled={
+                !validUrl || !label.trim() || !hasKinds || create.isPending
+              }
               className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
             >
               {create.isPending ? t("webhooks.saving") : t("webhooks.save")}

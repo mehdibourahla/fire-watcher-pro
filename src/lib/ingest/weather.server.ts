@@ -3,7 +3,6 @@ import { fetchAllPages } from "@/lib/paginate";
 
 import { isFuelLimited, type LandcoverFractions } from "@/lib/zonal";
 
-import { algiersToday } from "./algiers-date";
 import { dailyFromHourly, type HourlyBlock } from "./noon-weather";
 import {
   FWI_START,
@@ -16,7 +15,6 @@ import {
 
 const HORIZON_DAYS = 6;
 const SPINUP_DAYS = 92;
-const SOURCE = "local_fwi";
 const BATCH = 25;
 const RETRY_LIMIT = 5;
 const RETRY_BASE_MS = 2000;
@@ -44,6 +42,14 @@ export type RiskRun = {
   rows: number;
   requests?: number;
   error?: string;
+  publishedAt?: string;
+  superseded?: boolean;
+};
+
+export type RiskRefreshIdentity = {
+  snapshotId: string;
+  baseDate: string;
+  scheduledFor: string;
 };
 
 async function fetchDaily(
@@ -175,7 +181,40 @@ export function seriesFwi(
   return { days: out, carried };
 }
 
-export async function refreshRiskForecasts(): Promise<RiskRun> {
+export async function refreshRiskForecasts({
+  snapshotId,
+  baseDate,
+  scheduledFor,
+}: RiskRefreshIdentity): Promise<RiskRun> {
+  const staleBefore = new Date(Date.now() - 24 * 60 * 60_000).toISOString();
+  const { error: startError } = await supabaseAdmin.rpc(
+    "begin_risk_forecast_snapshot",
+    {
+      _snapshot_id: snapshotId,
+      _base_date: baseDate,
+      _scheduled_for: scheduledFor,
+      _stale_before: staleBefore,
+    },
+  );
+  if (startError)
+    return {
+      communes: 0,
+      rows: 0,
+      error: `risk snapshot start failed: ${startError.message}`,
+    };
+
+  const discard = async () => {
+    const { error } = await supabaseAdmin.rpc(
+      "discard_risk_forecast_snapshot",
+      {
+        _snapshot_id: snapshotId,
+        _base_date: baseDate,
+        _scheduled_for: scheduledFor,
+      },
+    );
+    return error;
+  };
+
   const communes = await fetchAllPages<{
     id: string;
     lat: number;
@@ -189,7 +228,10 @@ export async function refreshRiskForecasts(): Promise<RiskRun> {
       .eq("level", "commune")
       .range(from, to),
   );
-  if (!communes.length) return { communes: 0, rows: 0 };
+  if (!communes.length) {
+    await discard();
+    return { communes: 0, rows: 0 };
+  }
 
   const stored = new Map<string, StoredState>();
   for (const row of await fetchAllPages<StoredState & { commune_id: string }>(
@@ -204,7 +246,7 @@ export async function refreshRiskForecasts(): Promise<RiskRun> {
     if (!stored.has(row.commune_id)) stored.set(row.commune_id, row);
   }
 
-  const todayMs = Date.parse(algiersToday());
+  const todayMs = Date.parse(`${baseDate}T00:00:00Z`);
   const daysSince = (date: string) =>
     Math.round((todayMs - Date.parse(date)) / 86400000);
 
@@ -227,10 +269,10 @@ export async function refreshRiskForecasts(): Promise<RiskRun> {
   }
 
   type Row = {
+    snapshot_id: string;
     commune_id: string;
     forecast_date: string;
     horizon_days: number;
-    source: string;
     fwi: number;
     danger_level: number;
     fuel_limited: boolean;
@@ -242,13 +284,12 @@ export async function refreshRiskForecasts(): Promise<RiskRun> {
     states: (StoredState & { commune_id: string })[],
   ) => {
     for (let i = 0; i < rows.length; i += 500) {
-      const { error } = await supabaseAdmin
-        .from("risk_forecasts")
-        .upsert(rows.slice(i, i + 500), {
-          onConflict: "commune_id,forecast_date,horizon_days,source",
-        });
+      const { error } = await supabaseAdmin.rpc("stage_risk_forecast_batch", {
+        _snapshot_id: snapshotId,
+        _rows: rows.slice(i, i + 500),
+      });
       if (error)
-        throw new Error(`risk_forecasts upsert failed: ${error.message}`);
+        throw new Error(`risk forecast staging failed: ${error.message}`);
     }
     for (let i = 0; i < states.length; i += 500) {
       const { error } = await supabaseAdmin.from("fwi_state").upsert(
@@ -261,6 +302,25 @@ export async function refreshRiskForecasts(): Promise<RiskRun> {
 
   let written = 0;
   let requests = 0;
+
+  const fail = async (error: unknown): Promise<RiskRun> => {
+    const message =
+      typeof error === "string"
+        ? error
+        : error instanceof Error
+          ? error.message
+          : "refresh failed";
+    const cleanupError = await discard();
+    const cleanupMessage = cleanupError?.message;
+    return {
+      communes: communes.length,
+      rows: written,
+      requests,
+      error: cleanupMessage
+        ? `${message}; staging cleanup failed: ${cleanupMessage}`
+        : message,
+    };
+  };
 
   for (const [pastDays, members] of groups) {
     for (let i = 0; i < members.length; i += BATCH) {
@@ -275,14 +335,7 @@ export async function refreshRiskForecasts(): Promise<RiskRun> {
         );
         requests += 1;
       } catch (e) {
-        // whatever already flushed stays committed, so the next run resumes
-        // from stored state instead of restarting the whole bootstrap
-        return {
-          communes: communes.length,
-          rows: written,
-          requests,
-          error: e instanceof Error ? e.message : "fetch failed",
-        };
+        return fail(e);
       }
       const rows: Row[] = [];
       const nextState: (StoredState & { commune_id: string })[] = [];
@@ -309,10 +362,10 @@ export async function refreshRiskForecasts(): Promise<RiskRun> {
           );
           if (horizon < 0 || horizon >= HORIZON_DAYS) return;
           rows.push({
+            snapshot_id: snapshotId,
             commune_id: commune.id,
             forecast_date: day.date,
             horizon_days: horizon,
-            source: SOURCE,
             fwi: day.fwi,
             danger_level: day.level,
             fuel_limited: fuelLimited,
@@ -320,12 +373,59 @@ export async function refreshRiskForecasts(): Promise<RiskRun> {
           });
         });
       });
-      await flush(rows, nextState);
+      try {
+        await flush(rows, nextState);
+      } catch (error) {
+        return fail(error);
+      }
       written += rows.length;
     }
   }
 
-  return { communes: communes.length, rows: written, requests };
+  const promotionArgs = {
+    _snapshot_id: snapshotId,
+    _base_date: baseDate,
+    _scheduled_for: scheduledFor,
+  };
+  let promotion = await supabaseAdmin.rpc(
+    "publish_risk_forecast_snapshot",
+    promotionArgs,
+  );
+  if (promotion.error)
+    promotion = await supabaseAdmin.rpc(
+      "publish_risk_forecast_snapshot",
+      promotionArgs,
+    );
+  const { data: promoted, error: promotionError } = promotion;
+  if (promotionError)
+    return fail(`risk snapshot promotion failed: ${promotionError.message}`);
+  const publication = promoted as {
+    status?: string;
+    rows?: number;
+    published_at?: string | null;
+  } | null;
+  if (publication?.status === "superseded")
+    return {
+      communes: communes.length,
+      rows: written,
+      requests,
+      superseded: true,
+    };
+  if (
+    publication?.status !== "promoted" ||
+    publication.rows !== written ||
+    !publication.published_at
+  )
+    return fail(
+      `risk snapshot promotion count mismatch: expected ${written}, got ${publication?.rows ?? "invalid response"}`,
+    );
+
+  return {
+    communes: communes.length,
+    rows: written,
+    requests,
+    publishedAt: publication.published_at,
+  };
 }
 
 /** Attach current wind to live clusters so the spread arrow is real. */

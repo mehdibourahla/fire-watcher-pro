@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 
 import type { Database } from "@/integrations/supabase/types";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { summariseSourceHealth, type SourceHealth } from "@/lib/source-health";
 
 export const CORS_HEADERS: Record<string, string> = {
@@ -10,8 +11,29 @@ export const CORS_HEADERS: Record<string, string> = {
   "Cache-Control": "public, max-age=60",
 };
 
+const POST_CORS_HEADERS: Record<string, string> = {
+  ...CORS_HEADERS,
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
+
 export function preflight() {
   return new Response(null, { status: 204, headers: CORS_HEADERS });
+}
+
+export function postPreflight() {
+  return new Response(null, { status: 204, headers: POST_CORS_HEADERS });
+}
+
+function jsonResponse(
+  body: unknown,
+  status: number,
+  contentType: string,
+  corsHeaders: Record<string, string>,
+) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": contentType },
+  });
 }
 
 export function json(
@@ -19,9 +41,36 @@ export function json(
   status = 200,
   contentType = "application/json",
 ) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { ...CORS_HEADERS, "Content-Type": contentType },
+  return jsonResponse(body, status, contentType, CORS_HEADERS);
+}
+
+export function postJson(
+  body: unknown,
+  status = 200,
+  contentType = "application/json",
+) {
+  return jsonResponse(body, status, contentType, POST_CORS_HEADERS);
+}
+
+export function methodNotAllowed() {
+  return new Response(JSON.stringify({ error: "method not allowed" }), {
+    status: 405,
+    headers: {
+      ...CORS_HEADERS,
+      Allow: "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+    },
+  });
+}
+
+export function postMethodNotAllowed() {
+  return new Response(JSON.stringify({ error: "method not allowed" }), {
+    status: 405,
+    headers: {
+      ...POST_CORS_HEADERS,
+      Allow: "POST, OPTIONS",
+      "Content-Type": "application/json",
+    },
   });
 }
 
@@ -44,9 +93,9 @@ export function publicSupabase() {
 
 export const RATE_LIMIT_PER_MINUTE = 60;
 
-/** Spec 11: 60 rpm per IP. Returns a 429 Response when the caller is over. */
-export async function enforceRateLimit(
+async function enforceRateLimitWithHeaders(
   request: Request,
+  corsHeaders: Record<string, string>,
 ): Promise<Response | null> {
   // cf-connecting-ip is set by the edge; x-forwarded-for is caller-supplied, so
   // trusting it first let anyone reset their own bucket on every request
@@ -57,7 +106,7 @@ export async function enforceRateLimit(
     request.headers.get("x-real-ip") ||
     "unknown";
 
-  const { data, error } = await publicSupabase().rpc("consume_rate_limit", {
+  const { data, error } = await supabaseAdmin.rpc("consume_rate_limit", {
     _bucket: `public-api:${ip}`,
     _limit: RATE_LIMIT_PER_MINUTE,
     _window_seconds: 60,
@@ -75,7 +124,7 @@ export async function enforceRateLimit(
       {
         status: 429,
         headers: {
-          ...CORS_HEADERS,
+          ...corsHeaders,
           "Content-Type": "application/json",
           "Retry-After": "60",
         },
@@ -83,6 +132,17 @@ export async function enforceRateLimit(
     );
   }
   return null;
+}
+
+/** Spec 11: 60 rpm per IP. Returns a 429 Response when the caller is over. */
+export function enforceRateLimit(request: Request): Promise<Response | null> {
+  return enforceRateLimitWithHeaders(request, CORS_HEADERS);
+}
+
+export function enforcePostRateLimit(
+  request: Request,
+): Promise<Response | null> {
+  return enforceRateLimitWithHeaders(request, POST_CORS_HEADERS);
 }
 
 export function clampInt(

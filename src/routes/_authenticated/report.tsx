@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { Locale } from "@/i18n";
@@ -13,13 +13,15 @@ import {
 import { ReportPhoto } from "@/components/ReportPhoto";
 import {
   createReport,
+  createReportPhotoDraft,
   deleteReport,
   myReportsQuery,
   myRolesQuery,
   type CitizenReport,
   type ReportKind,
+  ReportMutationError,
+  type ReportPhotoDraft,
   type Sighting,
-  uploadReportPhoto,
   type SizeHint,
 } from "@/lib/reports";
 import { pageMeta } from "@/lib/page-meta";
@@ -79,32 +81,35 @@ function ReportPage() {
   );
   const [size, setSize] = useState<SizeHint>("small");
   const [note, setNote] = useState("");
-  const [photo, setPhoto] = useState("");
+  const [photo, setPhoto] = useState<ReportPhotoDraft | null>(null);
   const [photoError, setPhotoError] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
   const [locating, setLocating] = useState(false);
   const [geoError, setGeoError] = useState(false);
   const [done, setDone] = useState(false);
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["reports"] });
 
+  useEffect(() => () => photo?.dispose(), [photo]);
+
   const submit = useMutation({
     mutationFn: () =>
-      createReport({
-        kind: hazardKind,
-        lat: Number(lat),
-        lon: Number(lon),
-        sighting,
-        size_hint: size,
-        note: note.trim() || null,
-        photo_url: photo || null,
-        commune_id: communeId || null,
-        observed_at: new Date().toISOString(),
-      }),
+      createReport(
+        {
+          kind: hazardKind,
+          lat: Number(lat),
+          lon: Number(lon),
+          sighting,
+          size_hint: size,
+          note: note.trim() || null,
+          commune_id: communeId || null,
+          observed_at: new Date().toISOString(),
+        },
+        photo,
+      ),
     onSuccess: () => {
       setDone(true);
       setNote("");
-      setPhoto("");
+      setPhoto(null);
       invalidate();
     },
   });
@@ -280,17 +285,15 @@ function ReportPage() {
             {t("reports.photo")}
             <input
               type="file"
-              accept="image/*"
+              accept="image/jpeg,image/png"
               capture="environment"
-              disabled={uploading}
-              onChange={async (e) => {
+              onChange={(e) => {
                 const file = e.target.files?.[0];
                 e.target.value = "";
                 if (!file) return;
                 setPhotoError(null);
-                setUploading(true);
                 try {
-                  setPhoto(await uploadReportPhoto(file));
+                  setPhoto(createReportPhotoDraft(file));
                 } catch (error) {
                   const code = error instanceof Error ? error.message : "";
                   setPhotoError(
@@ -300,8 +303,6 @@ function ReportPage() {
                         ? t("reports.photoBadType")
                         : t("reports.photoFailed"),
                   );
-                } finally {
-                  setUploading(false);
                 }
               }}
               className="mt-1 w-full rounded-md border border-border bg-background px-2 py-1.5 text-sm font-normal text-foreground"
@@ -310,7 +311,7 @@ function ReportPage() {
           <p className="text-xs text-muted-foreground">
             {t("reports.photoHint")}
           </p>
-          {uploading ? (
+          {submit.isPending && photo ? (
             <p className="text-xs text-muted-foreground">
               {t("reports.photoUploading")}
             </p>
@@ -320,10 +321,16 @@ function ReportPage() {
           ) : null}
           {photo ? (
             <div className="flex items-start gap-3">
-              <ReportPhoto photo={photo} />
+              <a href={photo.previewUrl} target="_blank" rel="noreferrer">
+                <img
+                  src={photo.previewUrl}
+                  alt={t("reports.photoAlt")}
+                  className="mt-2 h-28 w-40 rounded-md border border-border object-cover"
+                />
+              </a>
               <button
                 type="button"
-                onClick={() => setPhoto("")}
+                onClick={() => setPhoto(null)}
                 className="mt-2 rounded-md border border-border px-2 py-1 text-xs"
               >
                 {t("reports.photoRemove")}
@@ -347,7 +354,11 @@ function ReportPage() {
           ) : null}
           {submit.isError ? (
             <span className="text-sm text-destructive">
-              {(submit.error as Error).message}
+              {t(
+                submit.error instanceof ReportMutationError
+                  ? submit.error.message
+                  : "reports.submitFailed",
+              )}
             </span>
           ) : null}
         </div>
@@ -356,6 +367,15 @@ function ReportPage() {
       <h2 className="mt-10 font-display text-lg font-semibold">
         {t("reports.mine")}
       </h2>
+      {remove.isError ? (
+        <p className="mt-3 text-sm text-destructive">
+          {t(
+            remove.error instanceof ReportMutationError
+              ? remove.error.message
+              : "reports.deleteFailed",
+          )}
+        </p>
+      ) : null}
       {mine.isLoading ? (
         <p className="mt-3 text-sm text-muted-foreground">
           {t("common.loading")}

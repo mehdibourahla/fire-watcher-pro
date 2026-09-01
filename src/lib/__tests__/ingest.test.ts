@@ -17,13 +17,6 @@ function allowed(table: string, column: string): string[] {
 }
 
 describe("emitted literals satisfy the DB CHECK constraints", () => {
-  it("risk_forecasts.source", () => {
-    const emitted = /const SOURCE = "([^"]+)"/.exec(
-      read("src/lib/ingest/weather.server.ts"),
-    )?.[1];
-    expect(allowed("risk_forecasts", "source")).toContain(emitted);
-  });
-
   it("detections.source", () => {
     const emitted = /source: "([^"]+)"/.exec(
       read("src/lib/ingest/firms.server.ts"),

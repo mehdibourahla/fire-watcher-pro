@@ -503,6 +503,8 @@ export const kab: Translation = {
       "Ayhil ameqqran d times deg tmnaḍt-ik ttɛeddin dima ɣef isragen n tsusmi.",
     save: "Sekles",
     saved: "Yettwasekles",
+    saveFailed:
+      "Ur izmir ara ad isekles iɣewwaren. Senqed tifran sakin ɛreḍ tikkelt nniḍen.",
   },
   reports: {
     title: "Mmel times",
@@ -546,9 +548,18 @@ export const kab: Translation = {
     submit: "Azen aneɣmis",
     submitting: "Tuzna…",
     submitted: "Tanemmirt. Aneɣmis-ik yettraju asenqed.",
+    submitFailed:
+      "Aneɣmis ur yettwazen ara. Senqed-it sakin ɛreḍ tikkelt-nniḍen.",
+    submitCleanupFailed:
+      "Aneɣmis ur yettwazen ara, tawlaft i yulin ur tettwakkes ara. Ɛreḍ ticki.",
+    submitUnknown:
+      "Ur nezmir ara ad nsenqed ma yettwazen uneɣmis. Senqed Ineɣmisen-iw send ad tɛerḍeḍ.",
     mine: "Ineɣmisen-iw",
     empty: "Ur tuzneḍ ula d yiwen n uneɣmis.",
     delete: "Kkes",
+    deleteFailed: "Aneɣmis ur yettwakkes ara. Ɛreḍ tikkelt-nniḍen.",
+    deletePhotoCleanupFailed:
+      "Aneɣmis ur yettwakkes ara acku tawlaft-is tusligt ur tettwakkes ara.",
     statusPending: "Yettraju asenqed",
     statusApproved: "Yettwasentem sɣur umḍebber",
     statusRejected: "Ur yettwaqbel ara",
@@ -568,6 +579,15 @@ export const kab: Translation = {
     revoke: "Kkes {{role}}",
     role_moderator: "aɛessas",
     role_admin: "anedbal",
+    confirmSelfAdminRevoke:
+      "Tebɣiḍ ad tekkseḍ iman-ik seg inedbalen? Ad tesruḥeḍ imir-nni anekcum ɣer usefrek n terbaɛt.",
+    lastAdminDisabled:
+      "Nadhir ilaq ad yesɛu yal ass ma drus yiwen unedbal. Err wayeḍ d anedbal send ad tekkseḍ anekcum-ik.",
+    lastAdminError:
+      "Ilaq ad yeqqim ma drus yiwen unedbal. Tamahilt ur tettwabeddel ara.",
+    updateError: "Ur nezmir ara ad nbeddel tamahilt-a. Ɛreḍ tikkelt-nniḍen.",
+    loadError:
+      "Ur nezmir ara ad d-nawi akk timahilin n terbaɛt. Ɛreḍ tikkelt-nniḍen.",
   },
   admin: {
     tabTranslations: "Tisuqilin",
@@ -831,6 +851,11 @@ export const kab: Translation = {
     save: "Sekles",
     saving: "Asekles…",
     created: "Tansa tettwarna.",
+    kindsRequired: "Fren xerṣum anaw yiwen n ulɣu.",
+    saveFailed:
+      "Ur izmir ara ad isekles tansa. Senqed urtiyen sakin ɛreḍ tikkelt nniḍen.",
+    updateFailed: "Ur izmir ara ad ibeddel tansa. Ɛreḍ tikkelt nniḍen.",
+    deleteFailed: "Ur izmir ara ad yekkes tansa. Ɛreḍ tikkelt nniḍen.",
     httpsOnly: "Ala URL https:// i yettwaqbalen.",
     empty: "Ulac tansa.",
     pause: "Seḥbes",
@@ -929,6 +954,10 @@ export const kab: Translation = {
     wilaya: "Tawilayt",
     severity: "Taẓayert",
     submit: "Zuzer alɣu",
+    warningRequired: "Sekcem tanebbaḍt d uḍris n ulɣu.",
+    warningFailed:
+      "Ur izmir ara ad yettwaqeddec ulɣu. Senqed urtiyen, tɛerḍeḍ tikkelt-nniḍen.",
+    toggleFailed: "Ur izmir ara ad ibeddel uzuzer. Tɛerḍeḍ tikkelt-nniḍen.",
     relayed: "yettwazuzer",
     pendingRelay: "yettraǧu",
     auditTitle: "Aɣmis n usenqed",
@@ -936,6 +965,8 @@ export const kab: Translation = {
     colTime: "Melmi",
     colAction: "Tigawt",
     colReason: "Taɣẓint",
+    colActor: "Ameskar",
+    systemActor: "Anagraw",
     colCommunes: "Tiɣiwanin",
   },
   push: {

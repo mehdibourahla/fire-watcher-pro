@@ -146,6 +146,7 @@ function RootShell({ children }: { children: ReactNode }) {
       lang={locale}
       dir={RTL_LOCALES.includes(locale) ? "rtl" : "ltr"}
       className={theme === "dark" ? "dark" : undefined}
+      suppressHydrationWarning
     >
       <head>
         {/* Must run before paint: SSR cannot know prefers-color-scheme for "system". */}

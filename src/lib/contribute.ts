@@ -32,6 +32,7 @@ export type ContributionIdea = {
   status: IdeaStatus;
   score: number;
   published_at: string | null;
+  moderated_by: string | null;
   moderation_note: string | null;
 };
 
@@ -99,9 +100,8 @@ export const publishedIdeasQuery = queryOptions({
   queryKey: ["contribution-ideas", "published"],
   queryFn: async () => {
     const { data, error } = await supabase
-      .from("contribution_ideas")
+      .from("published_contribution_ideas")
       .select("id, lane, message, score, published_at")
-      .eq("status", "published")
       .order("score", { ascending: false })
       .order("published_at", { ascending: false })
       .limit(50);
@@ -113,11 +113,9 @@ export const publishedIdeasQuery = queryOptions({
 export const ideaQueueQuery = queryOptions({
   queryKey: ["contribution-ideas", "queue"],
   queryFn: async () => {
-    const { data, error } = await supabase
-      .from("contribution_ideas")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(300);
+    const { data, error } = await supabase.rpc(
+      "list_contribution_ideas_for_moderation",
+    );
     if (error) throw new Error(error.message);
     return (data ?? []) as unknown as ContributionIdea[];
   },
@@ -128,13 +126,10 @@ export async function moderateIdea(
   status: IdeaStatus,
   note?: string,
 ) {
-  const { error } = await supabase
-    .from("contribution_ideas")
-    .update({
-      status,
-      published_at: status === "published" ? new Date().toISOString() : null,
-      moderation_note: note ?? null,
-    })
-    .eq("id", id);
+  const { error } = await supabase.rpc("moderate_contribution_idea", {
+    _idea: id,
+    _status: status,
+    ...(note === undefined ? {} : { _moderation_note: note }),
+  });
   if (error) throw new Error(error.message);
 }
