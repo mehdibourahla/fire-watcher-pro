@@ -11,8 +11,17 @@ export const CORS_HEADERS: Record<string, string> = {
   "Cache-Control": "public, max-age=60",
 };
 
+const POST_CORS_HEADERS: Record<string, string> = {
+  ...CORS_HEADERS,
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
+
 export function preflight() {
   return new Response(null, { status: 204, headers: CORS_HEADERS });
+}
+
+export function postPreflight() {
+  return new Response(null, { status: 204, headers: POST_CORS_HEADERS });
 }
 
 export function json(
@@ -32,6 +41,17 @@ export function methodNotAllowed() {
     headers: {
       ...CORS_HEADERS,
       Allow: "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+    },
+  });
+}
+
+export function postMethodNotAllowed() {
+  return new Response(JSON.stringify({ error: "method not allowed" }), {
+    status: 405,
+    headers: {
+      ...POST_CORS_HEADERS,
+      Allow: "POST, OPTIONS",
       "Content-Type": "application/json",
     },
   });

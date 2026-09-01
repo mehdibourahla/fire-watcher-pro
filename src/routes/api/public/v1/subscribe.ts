@@ -6,9 +6,14 @@ const LANGS = ["ar", "fr", "en", "kab"];
 export const Route = createFileRoute("/api/public/v1/subscribe")({
   server: {
     handlers: {
+      ANY: async () => {
+        const { postMethodNotAllowed } =
+          await import("@/lib/public-api.server");
+        return postMethodNotAllowed();
+      },
       OPTIONS: async () => {
-        const { preflight } = await import("@/lib/public-api.server");
-        return preflight();
+        const { postPreflight } = await import("@/lib/public-api.server");
+        return postPreflight();
       },
       POST: async ({ request }) => {
         const { json, enforceRateLimit } =
