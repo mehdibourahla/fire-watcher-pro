@@ -1,11 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute, getRouteApi } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import {
   adminCountQuery,
   adminRevocationGuard,
+  currentUserIdQuery,
   grantRole,
   membersQuery,
   revokeRole,
@@ -27,11 +28,10 @@ export const Route = createFileRoute("/_authenticated/team")({
 });
 
 const MANAGED: AppRole[] = ["moderator", "admin"];
-const authenticatedRoute = getRouteApi("/_authenticated");
 
 function TeamPage() {
   const { t } = useTranslation();
-  const { user } = authenticatedRoute.useRouteContext();
+  const me = useQuery(currentUserIdQuery);
   const qc = useQueryClient();
   const roles = useQuery(myRolesQuery);
   const isAdmin = (roles.data ?? []).includes("admin");
@@ -93,11 +93,11 @@ function TeamPage() {
         className="mt-4 w-full max-w-sm rounded-md border border-border bg-background px-2 py-1.5 text-sm"
       />
 
-      {members.isLoading || adminCount.isLoading ? (
+      {members.isLoading || adminCount.isLoading || me.isLoading ? (
         <p className="mt-6 text-sm text-muted-foreground">
           {t("common.loading")}
         </p>
-      ) : members.isError || adminCount.isError ? (
+      ) : members.isError || adminCount.isError || me.isError || !me.data ? (
         <p className="mt-6 text-sm text-destructive">{t("team.loadError")}</p>
       ) : rows.length === 0 ? (
         <p className="mt-6 text-sm text-muted-foreground">{t("team.empty")}</p>
@@ -105,7 +105,7 @@ function TeamPage() {
         <ul className="mt-4 space-y-2">
           {rows.map((m) => {
             const adminGuard = adminRevocationGuard({
-              currentUserId: user.id,
+              currentUserId: me.data,
               targetUserId: m.id,
               adminCount: authoritativeAdminCount,
             });

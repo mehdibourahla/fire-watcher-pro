@@ -32,6 +32,18 @@ export function roleMutationErrorKey(error: unknown) {
     : ("team.updateError" as const);
 }
 
+/* The session no longer rides in the route context, so the self-revocation guard
+ * has to read the signed-in id itself; an absent id would silently make every row
+ * look like someone else's. */
+export const currentUserIdQuery = queryOptions({
+  queryKey: ["auth", "current-user-id"],
+  queryFn: async () => {
+    const { data, error } = await supabase.auth.getUser();
+    if (error) throw new Error(error.message);
+    return data.user?.id ?? null;
+  },
+});
+
 export const adminCountQuery = queryOptions({
   queryKey: ["roles", "admin-count"],
   queryFn: async () => {
