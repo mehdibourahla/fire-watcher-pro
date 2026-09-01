@@ -136,12 +136,47 @@ select ok(
   and not has_table_privilege('authenticated', 'public.broadcast_audit', 'delete')
   and not has_table_privilege('authenticated', 'public.broadcast_audit', 'truncate')
   and has_table_privilege('service_role', 'public.broadcast_audit', 'select')
-  and has_table_privilege('service_role', 'public.broadcast_audit', 'insert')
+  and not has_table_privilege('service_role', 'public.broadcast_audit', 'insert')
+  and has_column_privilege(
+    'service_role', 'public.broadcast_audit', 'action', 'insert'
+  )
+  and has_column_privilege(
+    'service_role', 'public.broadcast_audit', 'reason', 'insert'
+  )
+  and not has_column_privilege(
+    'service_role', 'public.broadcast_audit', 'actor_id', 'insert'
+  )
   and not has_table_privilege('service_role', 'public.broadcast_audit', 'update')
   and not has_table_privilege('service_role', 'public.broadcast_audit', 'delete')
   and not has_table_privilege('service_role', 'public.broadcast_audit', 'truncate'),
   'audit grants are append-only for every application role'
 );
+
+set local role service_role;
+select throws_ok(
+  $$insert into public.broadcast_audit (action, reason)
+    values ('enabled', 'admin_toggle')$$,
+  '23514',
+  null,
+  'the publisher cannot forge an administrator toggle without an actor'
+);
+select throws_ok(
+  $$insert into public.broadcast_audit (action, reason, actor_id)
+    values (
+      'enabled',
+      'admin_toggle',
+      'ffffffff-ffff-4fff-8fff-ffffffffffff'
+    )$$,
+  '42501',
+  null,
+  'the publisher cannot forge an administrator actor'
+);
+select lives_ok(
+  $$insert into public.broadcast_audit (action, reason)
+    values ('suppressed', 'qa_service_audit')$$,
+  'the publisher can still append a system suppression audit row'
+);
+reset role;
 
 set local role authenticated;
 select set_config(
@@ -219,8 +254,8 @@ select set_config(
 select is(
   pg_temp.qa_scalar(
     $$select to_jsonb(public.set_broadcast_enabled(false))$$
-  ),
-  'true'::jsonb,
+  ) - 'updated_at',
+  '{"changed": true, "enabled": false}'::jsonb,
   'an admin can disable broadcasting'
 );
 
@@ -263,8 +298,8 @@ select set_config(
 select is(
   pg_temp.qa_scalar(
     $$select to_jsonb(public.set_broadcast_enabled(false))$$
-  ),
-  'false'::jsonb,
+  ) - 'updated_at',
+  '{"changed": false, "enabled": false}'::jsonb,
   'repeating the same state is an explicit no-op'
 );
 
@@ -289,8 +324,8 @@ select set_config(
 select is(
   pg_temp.qa_scalar(
     $$select to_jsonb(public.set_broadcast_enabled(true))$$
-  ),
-  'true'::jsonb,
+  ) - 'updated_at',
+  '{"changed": true, "enabled": true}'::jsonb,
   'an admin can re-enable broadcasting'
 );
 

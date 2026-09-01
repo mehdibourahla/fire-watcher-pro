@@ -11,8 +11,10 @@ import { useTranslation } from "react-i18next";
 import type { Locale } from "@/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import {
+  applyBroadcastTransition,
   BroadcastAdminError,
   getBroadcastAudit,
+  hasConfirmedBroadcastSettings,
   setBroadcastEnabled,
   submitAuthorityWarning,
 } from "@/lib/broadcast-admin";
@@ -94,12 +96,7 @@ function BroadcastConsole() {
 
   const toggle = useMutation({
     mutationFn: setBroadcastEnabled,
-    onSuccess: async () => {
-      await Promise.all([
-        qc.invalidateQueries({ queryKey: ["broadcast_settings"] }),
-        qc.invalidateQueries({ queryKey: ["broadcast_audit"] }),
-      ]);
-    },
+    onSuccess: (transition) => applyBroadcastTransition(qc, transition),
   });
 
   const relay = useMutation({
@@ -123,6 +120,15 @@ function BroadcastConsole() {
       </main>
     );
 
+  const confirmedSettings = hasConfirmedBroadcastSettings(
+    settings.data,
+    settings.isError,
+  )
+    ? settings.data
+    : null;
+  const hasSettings = confirmedSettings !== null;
+  const broadcastingEnabled = confirmedSettings?.enabled ?? null;
+
   return (
     <main className="mx-auto flex max-w-4xl flex-col gap-6 px-4 py-8">
       <header>
@@ -141,29 +147,45 @@ function BroadcastConsole() {
               {t("broadcastAdmin.killTitle")}
             </h2>
             <p className="text-xs text-muted-foreground">
-              {settings.data?.enabled
-                ? t("broadcastAdmin.killOn")
-                : t("broadcastAdmin.killOff")}
+              {settings.isLoading
+                ? t("common.loading")
+                : broadcastingEnabled === true
+                  ? t("broadcastAdmin.killOn")
+                  : broadcastingEnabled === false
+                    ? t("broadcastAdmin.killOff")
+                    : t("broadcastAdmin.toggleFailed")}
             </p>
           </div>
           <button
             type="button"
-            disabled={toggle.isPending || settings.isLoading}
-            onClick={() => toggle.mutate(!settings.data?.enabled)}
-            aria-pressed={!settings.data?.enabled}
+            disabled={toggle.isPending || !hasSettings}
+            onClick={() => {
+              if (broadcastingEnabled !== null)
+                toggle.mutate(!broadcastingEnabled);
+            }}
+            aria-pressed={
+              broadcastingEnabled === null ? undefined : !broadcastingEnabled
+            }
             className="rounded-lg px-4 py-2 text-sm font-medium"
             style={
-              settings.data?.enabled
+              broadcastingEnabled === null
                 ? {
-                    backgroundColor: "var(--emergency)",
-                    color: "var(--emergency-foreground, #fff)",
+                    backgroundColor: "var(--muted)",
+                    color: "var(--muted-foreground)",
                   }
-                : { backgroundColor: "var(--accent)", color: "#fff" }
+                : broadcastingEnabled === true
+                  ? {
+                      backgroundColor: "var(--emergency)",
+                      color: "var(--emergency-foreground, #fff)",
+                    }
+                  : { backgroundColor: "var(--accent)", color: "#fff" }
             }
           >
-            {settings.data?.enabled
-              ? t("broadcastAdmin.killStop")
-              : t("broadcastAdmin.killResume")}
+            {broadcastingEnabled === null
+              ? t("status.state.unavailable")
+              : broadcastingEnabled
+                ? t("broadcastAdmin.killStop")
+                : t("broadcastAdmin.killResume")}
           </button>
         </div>
         {toggle.isError ? (
@@ -173,6 +195,11 @@ function BroadcastConsole() {
                 ? toggle.error.message
                 : "broadcastAdmin.toggleFailed",
             )}
+          </p>
+        ) : null}
+        {settings.isError ? (
+          <p className="mt-2 text-xs" style={{ color: "var(--emergency)" }}>
+            {t("broadcastAdmin.toggleFailed")}
           </p>
         ) : null}
       </section>
@@ -311,7 +338,11 @@ function BroadcastConsole() {
         <h2 className="text-sm font-semibold">
           {t("broadcastAdmin.auditTitle")}
         </h2>
-        {audit.data?.length ? (
+        {audit.isError ? (
+          <p className="mt-2 text-xs" style={{ color: "var(--emergency)" }}>
+            {t("broadcastAdmin.toggleFailed")}
+          </p>
+        ) : audit.data?.length ? (
           <div className="mt-2 overflow-x-auto">
             <table className="w-full text-xs">
               <thead className="text-start text-muted-foreground">

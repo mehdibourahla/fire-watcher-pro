@@ -23,6 +23,40 @@ export class BroadcastAdminError extends Error {
   }
 }
 
+export type BroadcastTransition = {
+  changed: boolean;
+  enabled: boolean;
+  updated_at: string;
+};
+
+type BroadcastSettings = Pick<BroadcastTransition, "enabled" | "updated_at">;
+
+type BroadcastQueryClient = {
+  setQueryData: (queryKey: string[], data: BroadcastSettings) => unknown;
+  invalidateQueries: (filters: { queryKey: string[] }) => Promise<unknown>;
+};
+
+export function hasConfirmedBroadcastSettings(
+  settings: { enabled: boolean } | undefined,
+  hasError: boolean,
+): settings is { enabled: boolean } {
+  return settings !== undefined && !hasError;
+}
+
+export async function applyBroadcastTransition(
+  queryClient: BroadcastQueryClient,
+  transition: BroadcastTransition,
+) {
+  queryClient.setQueryData(["broadcast_settings"], {
+    enabled: transition.enabled,
+    updated_at: transition.updated_at,
+  });
+  await Promise.allSettled([
+    queryClient.invalidateQueries({ queryKey: ["broadcast_settings"] }),
+    queryClient.invalidateQueries({ queryKey: ["broadcast_audit"] }),
+  ]);
+}
+
 export async function getBroadcastAudit() {
   const { data, error } = await supabase
     .from("broadcast_audit")
@@ -41,7 +75,16 @@ export async function setBroadcastEnabled(enabled: boolean) {
   });
   if (error)
     throw new BroadcastAdminError("broadcastAdmin.toggleFailed", error);
-  return data === true;
+  if (
+    !data ||
+    typeof data !== "object" ||
+    Array.isArray(data) ||
+    typeof data["changed"] !== "boolean" ||
+    typeof data["enabled"] !== "boolean" ||
+    typeof data["updated_at"] !== "string"
+  )
+    throw new BroadcastAdminError("broadcastAdmin.toggleFailed");
+  return data as BroadcastTransition;
 }
 
 export async function submitAuthorityWarning(input: AuthorityWarningInput) {

@@ -16,7 +16,9 @@ vi.mock("@/integrations/supabase/client", () => ({
 }));
 
 import {
+  applyBroadcastTransition,
   BroadcastAdminError,
+  hasConfirmedBroadcastSettings,
   getBroadcastAudit,
   setBroadcastEnabled,
   submitAuthorityWarning,
@@ -39,14 +41,69 @@ describe("broadcast settings control plane", () => {
   });
 
   it("changes state only through the actor-attributing RPC", async () => {
-    rpcMock.mockResolvedValue({ data: true, error: null });
+    const updatedAt = "2026-09-01T04:00:00.000Z";
+    rpcMock.mockResolvedValue({
+      data: { changed: true, enabled: false, updated_at: updatedAt },
+      error: null,
+    });
 
-    await expect(setBroadcastEnabled(false)).resolves.toBe(true);
+    await expect(setBroadcastEnabled(false)).resolves.toEqual({
+      changed: true,
+      enabled: false,
+      updated_at: updatedAt,
+    });
 
     expect(rpcMock).toHaveBeenCalledWith("set_broadcast_enabled", {
       _enabled: false,
     });
     expect(fromMock).not.toHaveBeenCalledWith("broadcast_settings");
+  });
+
+  it("rejects a malformed transition response instead of guessing the control state", async () => {
+    rpcMock.mockResolvedValue({ data: true, error: null });
+
+    await expect(setBroadcastEnabled(false)).rejects.toMatchObject({
+      message: "broadcastAdmin.toggleFailed",
+    });
+  });
+
+  it("requires confirmed, error-free settings before enabling the control", () => {
+    expect(hasConfirmedBroadcastSettings(undefined, false)).toBe(false);
+    expect(hasConfirmedBroadcastSettings({ enabled: false }, true)).toBe(false);
+    expect(hasConfirmedBroadcastSettings({ enabled: false }, false)).toBe(true);
+    expect(hasConfirmedBroadcastSettings({ enabled: true }, false)).toBe(true);
+  });
+
+  it("writes the authoritative RPC state before refreshing settings and audit", async () => {
+    const calls: string[] = [];
+    const queryClient = {
+      setQueryData: vi.fn(() => calls.push("set")),
+      invalidateQueries: vi.fn(({ queryKey }: { queryKey: string[] }) => {
+        calls.push(`invalidate:${queryKey[0]}`);
+        return queryKey[0] === "broadcast_settings"
+          ? Promise.reject(new Error("refresh failed"))
+          : Promise.resolve();
+      }),
+    };
+    const transition = {
+      changed: true,
+      enabled: false,
+      updated_at: "2026-09-01T04:00:00.000Z",
+    };
+
+    await expect(
+      applyBroadcastTransition(queryClient, transition),
+    ).resolves.toBeUndefined();
+
+    expect(queryClient.setQueryData).toHaveBeenCalledWith(
+      ["broadcast_settings"],
+      { enabled: false, updated_at: transition.updated_at },
+    );
+    expect(calls).toEqual([
+      "set",
+      "invalidate:broadcast_settings",
+      "invalidate:broadcast_audit",
+    ]);
   });
 
   it("maps toggle failures to localized guidance without exposing raw errors", async () => {
