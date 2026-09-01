@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { supabase } from "@/integrations/supabase/client";
+import { authErrorKey } from "@/lib/auth-errors";
 import { titledMeta } from "@/lib/page-meta";
 
 export const Route = createFileRoute("/auth")({
@@ -58,7 +59,8 @@ function AuthPage() {
         if (signInError) throw signInError;
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      console.error(err);
+      setError(t(authErrorKey(err)));
     } finally {
       setBusy(false);
     }

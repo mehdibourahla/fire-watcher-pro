@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronDown, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -218,7 +218,21 @@ function ForecastPage() {
         </div>
       </div>
 
-      {filtered.length === 0 ? (
+      {rows.length === 0 ? (
+        <EmptyState
+          title={t("risk.unavailableTitle")}
+          body={t("risk.unavailableBody")}
+          action={
+            <Link
+              to="/status"
+              className="text-sm font-medium text-primary underline"
+            >
+              {t("nav.status")}
+            </Link>
+          }
+          className="mt-4"
+        />
+      ) : filtered.length === 0 ? (
         <EmptyState title={t("risk.noResults")} className="mt-4" />
       ) : searching ? (
         <ul className="mt-4 flex flex-col gap-2">

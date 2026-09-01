@@ -45,7 +45,11 @@ export const en = {
     enterTitle: "Are you near a fire right now?",
     enterBody:
       "Survival Mode shows one thing to do at a time, keeps your area saved offline, and prepares your position for a call to Civil Protection 14.",
-    enterFetching: "Getting your GPS position · saving your offline pack…",
+    enterFetching: "Getting your GPS position…",
+    enterDenied:
+      "Location is off, so guidance will be general. You can still enter.",
+    enterSaving: "Position found · saving your offline pack…",
+    enterReady: "Position found · offline pack saved.",
     enterYes: "Yes — enter Survival Mode",
     enterCancel: "Cancel",
     enterFootnote:
@@ -277,6 +281,9 @@ export const en = {
     level: "Danger level",
     searchCommune: "Search a commune",
     noResults: "No commune matches that search.",
+    unavailableTitle: "The fire danger forecast is unavailable",
+    unavailableBody:
+      "The latest refresh did not complete, so no forecast is published right now. Check the source status page for details.",
     legend: "Danger scale",
     sixDay: "6-day outlook",
     low: "Low",
@@ -431,6 +438,14 @@ export const en = {
     noAccount: "No account yet? Create one",
     haveAccount: "Already have an account? Sign in",
     checkEmail: "Check your inbox to confirm your address.",
+    errorInvalidCredentials: "That email or password is not correct.",
+    errorEmailNotConfirmed:
+      "Confirm your email address first — check your inbox.",
+    errorUserExists: "An account already exists for this email. Sign in.",
+    errorWeakPassword: "Choose a longer password, at least 8 characters.",
+    errorRateLimited: "Too many attempts. Wait a moment and try again.",
+    errorUnavailable:
+      "Sign-in is temporarily unavailable. Please try again in a moment.",
     zonesTitle: "My watch zones",
     zonesSubtitle:
       "Nadhir watches these places and warns you when fire or danger reaches them.",

@@ -47,8 +47,11 @@ export const fr: Translation = {
     enterTitle: "Êtes-vous près d'un feu en ce moment ?",
     enterBody:
       "Le mode survie montre une seule chose à faire à la fois, garde votre zone enregistrée hors ligne et prépare votre position pour un appel à la Protection Civile au 14.",
-    enterFetching:
-      "Localisation GPS en cours · enregistrement du pack hors ligne…",
+    enterFetching: "Localisation GPS en cours…",
+    enterDenied:
+      "La localisation est désactivée : les conseils seront généraux. Vous pouvez tout de même entrer.",
+    enterSaving: "Position trouvée · enregistrement du pack hors ligne…",
+    enterReady: "Position trouvée · pack hors ligne enregistré.",
     enterYes: "Oui — activer le mode survie",
     enterCancel: "Annuler",
     enterFootnote:
@@ -285,6 +288,9 @@ export const fr: Translation = {
     level: "Niveau de danger",
     searchCommune: "Rechercher une commune",
     noResults: "Aucune commune ne correspond.",
+    unavailableTitle: "La prévision du danger d'incendie est indisponible",
+    unavailableBody:
+      "La dernière actualisation ne s'est pas terminée : aucune prévision n'est publiée pour le moment. Consultez la page d'état des sources.",
     legend: "Échelle de danger",
     sixDay: "Perspective 6 jours",
     low: "Faible",
@@ -446,6 +452,15 @@ export const fr: Translation = {
     noAccount: "Pas encore de compte ? En créer un",
     haveAccount: "Déjà un compte ? Se connecter",
     checkEmail: "Vérifiez votre boîte mail pour confirmer votre adresse.",
+    errorInvalidCredentials: "Cet e-mail ou ce mot de passe est incorrect.",
+    errorEmailNotConfirmed:
+      "Confirmez d'abord votre adresse e-mail — vérifiez votre boîte mail.",
+    errorUserExists: "Un compte existe déjà pour cet e-mail. Connectez-vous.",
+    errorWeakPassword:
+      "Choisissez un mot de passe plus long, au moins 8 caractères.",
+    errorRateLimited: "Trop de tentatives. Patientez un instant et réessayez.",
+    errorUnavailable:
+      "La connexion est momentanément indisponible. Réessayez dans un instant.",
     zonesTitle: "Mes zones surveillées",
     zonesSubtitle:
       "Nadhir surveille ces lieux et vous alerte quand le feu ou le danger s'en approche.",

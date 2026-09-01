@@ -47,7 +47,11 @@ export const kab: Translation = {
     enterTitle: "Aql-ak tura ɣer tama n tmessi?",
     enterBody:
       "Askar n leslak yeskan yiwet n tɣawsa ara txedmeḍ yal tikkelt, iḥerrez tamnaḍt-ik war aẓeṭṭa, iheggi amkan-ik i usiwel ɣer Wemmesten Aɣarim ɣef 14.",
-    enterFetching: "Yessalay amkan GPS · yeḥerrez takemmust war aẓeṭṭa…",
+    enterFetching: "Yessalay amkan GPS…",
+    enterDenied:
+      "Asideg yensa, ihi ineɣmisen ad ilin d imatuten. Tzemreḍ ad tkecmeḍ.",
+    enterSaving: "Yufa-d amkan · yeḥerrez takemmust war aẓeṭṭa…",
+    enterReady: "Yufa-d amkan · takemmust war aẓeṭṭa tettwaḥerz.",
     enterYes: "Ih — rmed askar n leslak",
     enterCancel: "Sefsex",
     enterFootnote:
@@ -279,6 +283,9 @@ export const kab: Translation = {
     level: "Aswir n uɣilif",
     searchCommune: "Nadi taɣiwant",
     noResults: "Ulac taɣiwant i imṣadan.",
+    unavailableTitle: "Asmenyaf n uɣilif n tmessi ulac-it",
+    unavailableBody:
+      "Aleqqem aneggaru ur yemmed ara, ihi ulac asmenyaf yeffɣen tura. Wali asebter n waddad n yiɣbula.",
     legend: "Asalu n uɣilif",
     sixDay: "Asmenyaf n 6 wussan",
     low: "Meẓẓi",
@@ -431,6 +438,13 @@ export const kab: Translation = {
     noAccount: "Ulac amiḍan? Rnu yiwen",
     haveAccount: "Tesɛiḍ amiḍan? Kcem",
     checkEmail: "Wali imayl-ik akken ad tesentmeḍ tansa-k.",
+    errorInvalidCredentials: "Imayl-a neɣ awal uffir-a mačči d ameɣtu.",
+    errorEmailNotConfirmed: "Sentem tansa-k n yimayl uqbel — wali imayl-ik.",
+    errorUserExists: "Yella yakan umiḍan s yimayl-a. Kcem.",
+    errorWeakPassword: "Fren awal uffir ɣezzifen, ma drus 8 n yisekkilen.",
+    errorRateLimited: "Aṭas n yiɛraḍen. Ṛǧu cwiṭ syin ɛreḍ tikkelt-nniḍen.",
+    errorUnavailable:
+      "Anekcum ur yelli ara akka tura. Ɛreḍ tikkelt-nniḍen ticki.",
     zonesTitle: "Temnaḍin-iw yettwaɛussen",
     zonesSubtitle:
       "Nadhir yettɛassa imukan-a, yessalɣay-ik ticki times neɣ ayhil qerben.",
