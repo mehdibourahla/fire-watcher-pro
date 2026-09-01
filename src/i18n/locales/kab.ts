@@ -2,28 +2,28 @@ import type { Translation } from "./en";
 
 export const kab: Translation = {
   common: {
-    close: "Mdel",
-    dismiss: "Ffer",
-    delete: "Kkes",
+    close: "ɣleq",
+    dismiss: "Gumma",
+    delete: "Ekes",
     appName: "Nadhir",
-    tagline: "Alɣu zik ɣef tmessi n teẓgi di Lezzayer",
-    loading: "Yessalay",
-    error: "Tella-d tuccḍa",
-    retry: "Ɛreḍ tikkelt-nniḍen",
+    tagline: "Alerte n tmes tamoqrant g Lezzayer",
+    loading: "Esber",
+    error: "Yeḍra-d wugur",
+    retry: "3awed tikkelt-nniḍen",
     none: "—",
     km: "km",
     ha: "ha",
     mw: "MW",
-    kmh: "km/s",
+    kmh: "km/h",
     updated: "Yettwaleqqem {{time}}",
-    viewAll: "Wali kullec",
+    viewAll: "Wali kullech",
     back: "Uɣal",
     liveMode: "Isefka srid",
     liveModeNote:
-      "Yeqqen ɣer isaduf n usaṭelit NASA FIRMS d EUMETSAT MTG FCI, ttwaleqqmen yal 15 n tesdatin.",
+      "Yeqqen ɣer satellite n la NASA FIRMS d EUMETSAT MTG FCI, ikhedem la mise a jour chaque 15 dqiqa.",
     demoMode: "Isefka n uskan",
     demoModeNote:
-      "Isaduf n usaṭelit ur qqinen ara akka tura. Izwilen d wid n uskan.",
+      "Isaduf n usaṭelit ur qqinen ara akka tura. la7ssabath idefkan toura del Ssinaṛyu n uskan itwakhedmed uqbel en attendant le live.",
   },
   survival: {
     mode: "Askar n leslak",
@@ -63,7 +63,7 @@ export const kab: Translation = {
     fireObserved: "Timess tettwafen ɣef {{km}} km ɣer {{bearing}}",
     seenAgo: "tettwafen {{time}}",
     closer: "teqreb ugar seg uɛeddi yezrin",
-    bySatellite: "asaṭelit",
+    bySatellite: "l satellite",
     wind: "Aḍu {{kmh}} km/s si {{bearing}}",
     windToward: "yesuḍ si tmessi ɣur-k",
     noFreshData:
