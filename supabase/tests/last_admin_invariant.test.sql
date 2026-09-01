@@ -2,7 +2,7 @@ begin;
 
 set local search_path = public, extensions;
 
-select plan(15);
+select plan(18);
 
 insert into auth.users (
   instance_id,
@@ -125,6 +125,11 @@ select set_config(
   'f0140000-0000-4000-8000-000000000001',
   true
 );
+select is(
+  (select count(*)::integer from public.user_roles where role = 'admin'),
+  1,
+  'an admin exact-count query sees every admin role'
+);
 select lives_ok(
   $$insert into public.user_roles (user_id, role)
     values ('f0140000-0000-4000-8000-000000000004', 'moderator')$$,
@@ -149,11 +154,21 @@ select throws_ok(
   null,
   'an ordinary user cannot grant themselves admin'
 );
+select is(
+  (select count(*)::integer from public.user_roles where role = 'admin'),
+  0,
+  'an ordinary user exact-count query exposes no admin membership'
+);
 
 select set_config(
   'request.jwt.claim.sub',
   'f0140000-0000-4000-8000-000000000003',
   true
+);
+select is(
+  (select count(*)::integer from public.user_roles where role = 'admin'),
+  0,
+  'a moderator exact-count query exposes no admin membership'
 );
 select lives_ok(
   $$delete from public.user_roles

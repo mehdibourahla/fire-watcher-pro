@@ -32,6 +32,18 @@ export function roleMutationErrorKey(error: unknown) {
     : ("team.updateError" as const);
 }
 
+export const adminCountQuery = queryOptions({
+  queryKey: ["roles", "admin-count"],
+  queryFn: async () => {
+    const { count, error } = await supabase
+      .from("user_roles")
+      .select("id", { count: "exact", head: true })
+      .eq("role", "admin");
+    if (error) throw new Error(error.message);
+    return count ?? 0;
+  },
+});
+
 /** Admin-only: every profile plus its granted roles. RLS blocks non-admins. */
 export const membersQuery = queryOptions({
   queryKey: ["roles", "members"],

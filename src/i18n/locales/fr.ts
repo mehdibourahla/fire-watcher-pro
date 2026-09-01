@@ -547,6 +547,7 @@ export const fr: Translation = {
     lastAdminError:
       "Au moins un administrateur doit rester. Le rôle n’a pas été modifié.",
     updateError: "Impossible de modifier ce rôle. Réessayez.",
+    loadError: "Impossible de charger tous les rôles de l’équipe. Réessayez.",
   },
   admin: {
     tabTranslations: "Traductions",

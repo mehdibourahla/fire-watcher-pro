@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import {
+  adminCountQuery,
   adminRevocationGuard,
   grantRole,
   membersQuery,
@@ -44,6 +45,7 @@ function TeamPage() {
   const roles = useQuery(myRolesQuery);
   const isAdmin = (roles.data ?? []).includes("admin");
   const members = useQuery({ ...membersQuery, enabled: isAdmin });
+  const adminCount = useQuery({ ...adminCountQuery, enabled: isAdmin });
   const [search, setSearch] = useState("");
 
   const mutate = useMutation({
@@ -86,9 +88,7 @@ function TeamPage() {
       (m.display_name ?? "").toLowerCase().includes(q) ||
       m.id.toLowerCase().includes(q),
   );
-  const adminCount = (members.data ?? []).filter((m) =>
-    m.roles.includes("admin"),
-  ).length;
+  const authoritativeAdminCount = adminCount.data ?? 0;
 
   return (
     <main className="mx-auto w-full max-w-4xl px-4 py-8">
@@ -102,10 +102,12 @@ function TeamPage() {
         className="mt-4 w-full max-w-sm rounded-md border border-border bg-background px-2 py-1.5 text-sm"
       />
 
-      {members.isLoading ? (
+      {members.isLoading || adminCount.isLoading ? (
         <p className="mt-6 text-sm text-muted-foreground">
           {t("common.loading")}
         </p>
+      ) : members.isError || adminCount.isError ? (
+        <p className="mt-6 text-sm text-destructive">{t("team.loadError")}</p>
       ) : rows.length === 0 ? (
         <p className="mt-6 text-sm text-muted-foreground">{t("team.empty")}</p>
       ) : (
@@ -114,7 +116,7 @@ function TeamPage() {
             const adminGuard = adminRevocationGuard({
               currentUserId: user.id,
               targetUserId: m.id,
-              adminCount,
+              adminCount: authoritativeAdminCount,
             });
             const lastAdminMessageId = `last-admin-${m.id}`;
             const soleAdmin = m.roles.includes("admin") && adminGuard.disabled;

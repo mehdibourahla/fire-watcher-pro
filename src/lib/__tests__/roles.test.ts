@@ -1,4 +1,14 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+const { eq, from, select } = vi.hoisted(() => ({
+  eq: vi.fn(),
+  from: vi.fn(),
+  select: vi.fn(),
+}));
+
+vi.mock("@/integrations/supabase/client", () => ({
+  supabase: { from },
+}));
 
 import * as roles from "@/lib/roles";
 
@@ -12,10 +22,47 @@ type RoleMutationErrorKey = (
   error: unknown,
 ) => "team.lastAdminError" | "team.updateError";
 
+type AdminCountQuery = {
+  queryFn: () => Promise<number>;
+};
+
 const adminRevocationGuard = Reflect.get(roles, "adminRevocationGuard") as
   AdminRevocationGuard | undefined;
 const roleMutationErrorKey = Reflect.get(roles, "roleMutationErrorKey") as
   RoleMutationErrorKey | undefined;
+const adminCountQuery = Reflect.get(roles, "adminCountQuery") as unknown as
+  AdminCountQuery | undefined;
+
+describe("adminCountQuery", () => {
+  it("keeps self-revocation available when another admin is outside the 500-profile page", async () => {
+    const visibleMemberIds = [
+      "admin-1",
+      ...Array.from({ length: 499 }, (_, index) => `member-${index}`),
+    ];
+    eq.mockResolvedValueOnce({ data: null, count: 2, error: null });
+    select.mockReturnValueOnce({ eq });
+    from.mockReturnValueOnce({ select });
+
+    const count = await adminCountQuery?.queryFn();
+
+    expect(visibleMemberIds).toHaveLength(500);
+    expect(visibleMemberIds).not.toContain("admin-2");
+    expect(count).toBe(2);
+    expect(
+      adminRevocationGuard?.({
+        currentUserId: "admin-1",
+        targetUserId: "admin-1",
+        adminCount: count ?? 0,
+      }),
+    ).toEqual({ disabled: false, needsConfirmation: true });
+    expect(from).toHaveBeenCalledWith("user_roles");
+    expect(select).toHaveBeenCalledWith("id", {
+      count: "exact",
+      head: true,
+    });
+    expect(eq).toHaveBeenCalledWith("role", "admin");
+  });
+});
 
 describe("adminRevocationGuard", () => {
   it("disables self-revocation for the sole admin", () => {

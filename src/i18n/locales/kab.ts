@@ -529,6 +529,8 @@ export const kab: Translation = {
     lastAdminError:
       "Ilaq ad yeqqim ma drus yiwen unedbal. Tamahilt ur tettwabeddel ara.",
     updateError: "Ur nezmir ara ad nbeddel tamahilt-a. Ɛreḍ tikkelt-nniḍen.",
+    loadError:
+      "Ur nezmir ara ad d-nawi akk timahilin n terbaɛt. Ɛreḍ tikkelt-nniḍen.",
   },
   admin: {
     tabTranslations: "Tisuqilin",

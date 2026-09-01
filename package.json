@@ -11,6 +11,7 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "test": "vitest run",
+    "test:db:last-admin-race": "bash scripts/test-last-admin-race.sh",
     "test:watch": "vitest",
     "seed:geo": "bun run scripts/seed-geo.ts",
     "seed:open-areas": "bun run scripts/seed-open-areas.ts",

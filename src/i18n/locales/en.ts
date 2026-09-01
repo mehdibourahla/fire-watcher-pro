@@ -530,6 +530,7 @@ export const en = {
     lastAdminError:
       "At least one administrator must remain. The role was not changed.",
     updateError: "Could not update this role. Try again.",
+    loadError: "Could not load the complete team roles. Try again.",
   },
   admin: {
     tabTranslations: "Translations",
