@@ -108,4 +108,3 @@ grant execute on function public.set_broadcast_enabled(boolean)
   to authenticated;
 
 commit;
-
