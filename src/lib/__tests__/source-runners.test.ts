@@ -43,9 +43,10 @@ function dependencies() {
       dataThrough: "2026-08-31T19:58:00.000Z",
     }),
     ingestFci: vi.fn().mockResolvedValue({
-      fetched: 3,
+      fetched: 4,
       inserted: 2,
       outside: 1,
+      filtered: 1,
       latestSlot: "2026-08-31T19:50:00.000Z",
       ageMinutes: 10,
     }),
@@ -130,7 +131,8 @@ describe("source runner registry", () => {
       results.find((result) => result.contractKey === "fci"),
     ).toMatchObject({
       upstreamPublishedAt: "2026-08-31T19:50:00.000Z",
-      recordsRejected: 1,
+      recordsRejected: 2,
+      qualityChecks: expect.objectContaining({ outside_watch_area: 1 }),
     });
     expect(
       results.find((result) => result.contractKey === "broadcast_delivery"),
@@ -161,6 +163,7 @@ describe("source runner registry", () => {
       fetched: 0,
       inserted: 0,
       outside: 0,
+      filtered: 0,
       latestSlot: null,
       ageMinutes: null,
       error: "https://secret.provider.invalid returned token=private",
