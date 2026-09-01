@@ -279,6 +279,7 @@ export const clustersQuery = queryOptions({
       await supabase
         .from("fire_clusters")
         .select("*")
+        .neq("state", "false_positive")
         .gte(
           "last_detected_at",
           new Date(Date.now() - 72 * 3600 * 1000).toISOString(),
