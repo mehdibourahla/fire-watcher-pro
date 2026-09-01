@@ -36,7 +36,8 @@ describe("riskForecastsQuery publication boundary", () => {
   it("returns no forecasts when local_fwi has no published checkpoint", async () => {
     let riskReads = 0;
     fromMock.mockImplementation((table: string) => {
-      if (table === "source_health") return query({ data: null, error: null });
+      if (table === "risk_publication_checkpoint")
+        return query({ data: null, error: null });
       riskReads += 1;
       return query({
         data: [
@@ -62,12 +63,12 @@ describe("riskForecastsQuery publication boundary", () => {
   it("rejects a partial checkpoint even when it retains older publication dates", async () => {
     let riskReads = 0;
     fromMock.mockImplementation((table: string) => {
-      if (table === "source_health") {
+      if (table === "risk_publication_checkpoint") {
         return query({
           data: {
             coverage_status: "partial",
-            valid_at: "2026-08-31T00:00:00.000Z",
-            last_success_at: "2026-08-31T00:20:00.000Z",
+            snapshot_id: "f0220000-0000-4000-8000-000000000009",
+            base_date: "2026-08-31",
             published_at: "2026-08-31T00:20:00.000Z",
           },
           error: null,
@@ -85,12 +86,12 @@ describe("riskForecastsQuery publication boundary", () => {
     const riskFilters: [string, unknown][] = [];
     let riskBuilder: Record<string, unknown> | undefined;
     fromMock.mockImplementation((table: string) => {
-      if (table === "source_health") {
+      if (table === "risk_publication_checkpoint") {
         return query({
           data: {
             coverage_status: "complete",
-            valid_at: "2026-08-31T00:00:00.000Z",
-            last_success_at: "2026-08-31T00:20:00.000Z",
+            snapshot_id: "f0220000-0000-4000-8000-000000000001",
+            base_date: "2026-08-31",
             published_at: "2026-08-31T00:20:00.000Z",
           },
           error: null,
@@ -121,6 +122,10 @@ describe("riskForecastsQuery publication boundary", () => {
       { id: "safe", forecast_date: "2026-08-31" },
     ]);
     expect(riskFilters).toContainEqual(["source", "local_fwi"]);
+    expect(riskFilters).toContainEqual([
+      "snapshot_id",
+      "f0220000-0000-4000-8000-000000000001",
+    ]);
     expect(riskBuilder?.["or"]).toHaveBeenCalledWith(
       "and(forecast_date.eq.2026-08-31,horizon_days.eq.0)," +
         "and(forecast_date.eq.2026-09-01,horizon_days.eq.1)," +

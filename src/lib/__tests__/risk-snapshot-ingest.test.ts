@@ -17,6 +17,11 @@ vi.mock("@/lib/ingest/noon-weather", () => ({
 import { refreshRiskForecasts } from "@/lib/ingest/weather.server";
 
 const SNAPSHOT_ID = "f0220000-0000-4000-8000-000000000010";
+const RUN = {
+  snapshotId: SNAPSHOT_ID,
+  baseDate: "2026-08-31",
+  scheduledFor: "2026-08-31T12:00:00.000Z",
+};
 const DAYS = [
   "2026-08-31",
   "2026-09-01",
@@ -28,7 +33,7 @@ const DAYS = [
 
 function query(result: { data: unknown; error: { message: string } | null }) {
   const builder: Record<string, unknown> = {};
-  for (const method of ["select", "eq", "order", "delete", "lt"]) {
+  for (const method of ["select", "eq", "order", "delete", "lt", "update"]) {
     builder[method] = vi.fn(() => builder);
   }
   builder["range"] = vi.fn(async () => result);
@@ -84,7 +89,22 @@ describe("risk snapshot ingest", () => {
       });
       return builder;
     });
-    rpcMock.mockResolvedValue({ data: 156, error: null });
+    rpcMock.mockImplementation((name: string) =>
+      Promise.resolve(
+        name === "begin_risk_forecast_snapshot"
+          ? { data: 0, error: null }
+          : {
+              data: {
+                status: "promoted",
+                rows: 156,
+                snapshot_id: SNAPSHOT_ID,
+                base_date: RUN.baseDate,
+                published_at: "2026-08-31T12:05:00.000Z",
+              },
+              error: null,
+            },
+      ),
+    );
     vi.stubGlobal(
       "fetch",
       vi.fn(async (input: URL) => {
@@ -95,11 +115,15 @@ describe("risk snapshot ingest", () => {
       }),
     );
 
-    const promise = refreshRiskForecasts(SNAPSHOT_ID);
+    const promise = refreshRiskForecasts(RUN);
     await vi.runAllTimersAsync();
     const result = await promise;
 
-    expect(result).toMatchObject({ communes: 26, rows: 156 });
+    expect(result).toMatchObject({
+      communes: 26,
+      rows: 156,
+      publishedAt: "2026-08-31T12:05:00.000Z",
+    });
     expect(tables).not.toContain("risk_forecasts");
     expect(staged.flat()).toHaveLength(156);
     expect(staged.flat()).toEqual(
@@ -109,6 +133,14 @@ describe("risk snapshot ingest", () => {
     );
     expect(rpcMock).toHaveBeenCalledWith("publish_risk_forecast_snapshot", {
       _snapshot_id: SNAPSHOT_ID,
+      _base_date: RUN.baseDate,
+      _scheduled_for: RUN.scheduledFor,
+    });
+    expect(rpcMock).toHaveBeenCalledWith("begin_risk_forecast_snapshot", {
+      _snapshot_id: SNAPSHOT_ID,
+      _base_date: RUN.baseDate,
+      _scheduled_for: RUN.scheduledFor,
+      _stale_before: expect.any(String),
     });
   });
 
@@ -140,13 +172,17 @@ describe("risk snapshot ingest", () => {
       }),
     );
 
-    const promise = refreshRiskForecasts(SNAPSHOT_ID);
+    rpcMock.mockResolvedValueOnce({ data: 0, error: null });
+    const promise = refreshRiskForecasts(RUN);
     await vi.runAllTimersAsync();
     const result = await promise;
 
     expect(result).toMatchObject({ communes: 26, rows: 150 });
     expect(result.error).toContain("open-meteo 400");
-    expect(rpcMock).not.toHaveBeenCalled();
+    expect(rpcMock).not.toHaveBeenCalledWith(
+      "publish_risk_forecast_snapshot",
+      expect.anything(),
+    );
     expect(deletes).toHaveLength(1);
     expect(deletes[0]?.["eq"]).toHaveBeenCalledWith("snapshot_id", SNAPSHOT_ID);
   });
@@ -165,10 +201,12 @@ describe("risk snapshot ingest", () => {
       });
       return builder;
     });
-    rpcMock.mockResolvedValue({
-      data: null,
-      error: { message: "incomplete_risk_snapshot" },
-    });
+    rpcMock
+      .mockResolvedValueOnce({ data: 0, error: null })
+      .mockResolvedValueOnce({
+        data: null,
+        error: { message: "incomplete_risk_snapshot" },
+      });
     vi.stubGlobal(
       "fetch",
       vi.fn(
@@ -177,9 +215,42 @@ describe("risk snapshot ingest", () => {
       ),
     );
 
-    const result = await refreshRiskForecasts(SNAPSHOT_ID);
+    const result = await refreshRiskForecasts(RUN);
 
     expect(result.error).toContain("incomplete_risk_snapshot");
     expect(deletes).toHaveLength(1);
+  });
+
+  it("reports a monotonic supersession without claiming publication", async () => {
+    fromMock.mockImplementation((table: string) => {
+      if (table === "admin_units")
+        return query({ data: [commune(1)], error: null });
+      if (table === "fwi_state") return query({ data: [], error: null });
+      const builder = query({ data: null, error: null });
+      builder["upsert"] = vi.fn(async () => ({ data: null, error: null }));
+      builder["update"] = vi.fn(() => builder);
+      return builder;
+    });
+    rpcMock
+      .mockResolvedValueOnce({ data: 0, error: null })
+      .mockResolvedValueOnce({
+        data: {
+          status: "superseded",
+          rows: 0,
+          snapshot_id: SNAPSHOT_ID,
+          base_date: RUN.baseDate,
+          published_at: null,
+        },
+        error: null,
+      });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(JSON.stringify([{ hourly: {} }]))),
+    );
+
+    const result = await refreshRiskForecasts(RUN);
+
+    expect(result).toMatchObject({ rows: 6, superseded: true });
+    expect(result).not.toHaveProperty("publishedAt");
   });
 });

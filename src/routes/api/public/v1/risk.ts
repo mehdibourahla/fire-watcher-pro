@@ -39,16 +39,18 @@ export const Route = createFileRoute("/api/public/v1/risk")({
           communeId = unit.id;
         }
 
-        const { publishedRiskBaseDate } = await import("@/lib/nadhir");
+        const { publishedRiskSnapshot } = await import("@/lib/nadhir");
         const { data: checkpoint, error: checkpointError } = await supabase
-          .from("source_health")
-          .select("coverage_status, valid_at, last_success_at, published_at")
+          .from("risk_publication_checkpoint")
+          .select("coverage_status, snapshot_id, base_date, published_at")
           .eq("key", "local_fwi")
           .maybeSingle();
-        const base = checkpointError ? null : publishedRiskBaseDate(checkpoint);
-        if (!base) return json({ error: "forecast unavailable" }, 503);
+        const publication = checkpointError
+          ? null
+          : publishedRiskSnapshot(checkpoint);
+        if (!publication) return json({ error: "forecast unavailable" }, 503);
         const date = new Date(
-          Date.parse(`${base}T00:00:00Z`) + horizon * 86_400_000,
+          Date.parse(`${publication.base}T00:00:00Z`) + horizon * 86_400_000,
         )
           .toISOString()
           .slice(0, 10);
@@ -59,6 +61,7 @@ export const Route = createFileRoute("/api/public/v1/risk")({
             "forecast_date, horizon_days, fwi, danger_level, fuel_limited, source, admin_units!inner(code, name_en, name_ar, name_fr, level)",
           )
           .eq("source", "local_fwi")
+          .eq("snapshot_id", publication.snapshotId)
           .eq("horizon_days", horizon)
           .eq("forecast_date", date)
           .order("fuel_limited", { ascending: true })

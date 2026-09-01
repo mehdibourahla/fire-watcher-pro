@@ -81,6 +81,7 @@ export type RiskForecast = {
   fwi: number;
   danger_level: number;
   fuel_limited: boolean;
+  snapshot_id: string | null;
 };
 
 export type EffisDanger = {
@@ -401,8 +402,8 @@ export const HORIZON_DAYS = 6;
 
 type RiskPublicationCheckpoint = {
   coverage_status: string | null;
-  valid_at: string | null;
-  last_success_at: string | null;
+  snapshot_id: string | null;
+  base_date: string | null;
   published_at: string | null;
 };
 
@@ -416,40 +417,48 @@ export function publishedRiskBaseDate(
 ) {
   if (
     checkpoint?.coverage_status !== "complete" ||
-    !isoDate(checkpoint.last_success_at) ||
+    !checkpoint.snapshot_id ||
     !isoDate(checkpoint.published_at)
   )
     return null;
-  return isoDate(checkpoint.valid_at);
+  return isoDate(checkpoint.base_date);
+}
+
+export function publishedRiskSnapshot(
+  checkpoint: RiskPublicationCheckpoint | null | undefined,
+) {
+  const base = publishedRiskBaseDate(checkpoint);
+  if (!base || !checkpoint?.snapshot_id) return null;
+  return { base, snapshotId: checkpoint.snapshot_id };
 }
 
 export function publishedRiskTarget(
   checkpoint: RiskPublicationCheckpoint | null | undefined,
   targetDate: string,
 ) {
-  const base = publishedRiskBaseDate(checkpoint);
+  const publication = publishedRiskSnapshot(checkpoint);
   const targetMs = Date.parse(`${targetDate}T00:00:00Z`);
-  if (!base || !Number.isFinite(targetMs)) return null;
-  const baseMs = Date.parse(`${base}T00:00:00Z`);
+  if (!publication || !Number.isFinite(targetMs)) return null;
+  const baseMs = Date.parse(`${publication.base}T00:00:00Z`);
   const horizon = (targetMs - baseMs) / 86_400_000;
   if (!Number.isInteger(horizon) || horizon < 0 || horizon >= HORIZON_DAYS)
     return null;
-  return { base, forecastDate: targetDate, horizon };
+  return { ...publication, forecastDate: targetDate, horizon };
 }
 
 export const riskForecastsQuery = queryOptions({
   queryKey: ["risk_forecasts"],
   queryFn: async () => {
     const { data: checkpoint, error } = await supabase
-      .from("source_health")
-      .select("coverage_status, valid_at, last_success_at, published_at")
+      .from("risk_publication_checkpoint")
+      .select("coverage_status, snapshot_id, base_date, published_at")
       .eq("key", "local_fwi")
       .maybeSingle();
     if (error) throw new Error(error.message);
-    const base = publishedRiskBaseDate(checkpoint);
-    if (!base) return [] as RiskForecast[];
+    const publication = publishedRiskSnapshot(checkpoint);
+    if (!publication) return [] as RiskForecast[];
 
-    const baseMs = Date.parse(`${base}T00:00:00Z`);
+    const baseMs = Date.parse(`${publication.base}T00:00:00Z`);
     const pairs = Array.from({ length: HORIZON_DAYS }, (_, h) => {
       const d = new Date(baseMs + h * 86_400_000).toISOString().slice(0, 10);
       return `and(forecast_date.eq.${d},horizon_days.eq.${h})`;
@@ -459,6 +468,7 @@ export const riskForecastsQuery = queryOptions({
         .from("risk_forecasts")
         .select("*")
         .eq("source", "local_fwi")
+        .eq("snapshot_id", publication.snapshotId)
         .or(pairs.join(","))
         .order("id")
         .range(from, to),

@@ -1144,6 +1144,7 @@ export type Database = {
           fwi: number;
           horizon_days: number;
           id: string;
+          snapshot_id: string | null;
           source: string;
         };
         Insert: {
@@ -1156,6 +1157,7 @@ export type Database = {
           fwi: number;
           horizon_days: number;
           id?: string;
+          snapshot_id?: string | null;
           source: string;
         };
         Update: {
@@ -1168,6 +1170,7 @@ export type Database = {
           fwi?: number;
           horizon_days?: number;
           id?: string;
+          snapshot_id?: string | null;
           source?: string;
         };
         Relationships: [
@@ -1178,7 +1181,44 @@ export type Database = {
             referencedRelation: "admin_units";
             referencedColumns: ["id"];
           },
+          {
+            foreignKeyName: "risk_forecasts_snapshot_id_fkey";
+            columns: ["snapshot_id"];
+            isOneToOne: false;
+            referencedRelation: "risk_publications";
+            referencedColumns: ["snapshot_id"];
+          },
         ];
+      };
+      risk_forecast_snapshot_runs: {
+        Row: {
+          base_date: string;
+          created_at: string;
+          finished_at: string | null;
+          heartbeat_at: string;
+          scheduled_for: string;
+          snapshot_id: string;
+          status: string;
+        };
+        Insert: {
+          base_date: string;
+          created_at?: string;
+          finished_at?: string | null;
+          heartbeat_at?: string;
+          scheduled_for: string;
+          snapshot_id: string;
+          status?: string;
+        };
+        Update: {
+          base_date?: string;
+          created_at?: string;
+          finished_at?: string | null;
+          heartbeat_at?: string;
+          scheduled_for?: string;
+          snapshot_id?: string;
+          status?: string;
+        };
+        Relationships: [];
       };
       risk_forecast_staging: {
         Row: {
@@ -1223,6 +1263,65 @@ export type Database = {
             referencedColumns: ["id"];
           },
         ];
+      };
+      risk_publication_checkpoint: {
+        Row: {
+          base_date: string;
+          coverage_status: string;
+          key: string;
+          published_at: string;
+          scheduled_for: string;
+          snapshot_id: string;
+        };
+        Insert: {
+          base_date: string;
+          coverage_status?: string;
+          key: string;
+          published_at: string;
+          scheduled_for: string;
+          snapshot_id: string;
+        };
+        Update: {
+          base_date?: string;
+          coverage_status?: string;
+          key?: string;
+          published_at?: string;
+          scheduled_for?: string;
+          snapshot_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "risk_publication_checkpoint_snapshot_id_fkey";
+            columns: ["snapshot_id"];
+            isOneToOne: false;
+            referencedRelation: "risk_publications";
+            referencedColumns: ["snapshot_id"];
+          },
+        ];
+      };
+      risk_publications: {
+        Row: {
+          base_date: string;
+          published_at: string;
+          row_count: number;
+          scheduled_for: string;
+          snapshot_id: string;
+        };
+        Insert: {
+          base_date: string;
+          published_at: string;
+          row_count: number;
+          scheduled_for: string;
+          snapshot_id: string;
+        };
+        Update: {
+          base_date?: string;
+          published_at?: string;
+          row_count?: number;
+          scheduled_for?: string;
+          snapshot_id?: string;
+        };
+        Relationships: [];
       };
       settlements: {
         Row: {
@@ -1947,9 +2046,22 @@ export type Database = {
         };
         Returns: undefined;
       };
-      publish_risk_forecast_snapshot: {
-        Args: { _snapshot_id: string };
+      begin_risk_forecast_snapshot: {
+        Args: {
+          _base_date: string;
+          _scheduled_for: string;
+          _snapshot_id: string;
+          _stale_before: string;
+        };
         Returns: number;
+      };
+      publish_risk_forecast_snapshot: {
+        Args: {
+          _base_date: string;
+          _scheduled_for: string;
+          _snapshot_id: string;
+        };
+        Returns: Json;
       };
       record_source_run: {
         Args: {

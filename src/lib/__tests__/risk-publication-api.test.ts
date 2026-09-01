@@ -60,7 +60,7 @@ describe("public risk publication boundary", () => {
 
   it("returns a stable generic 503 when no complete snapshot is published", async () => {
     fromMock.mockImplementation((table: string) =>
-      table === "source_health"
+      table === "risk_publication_checkpoint"
         ? query({ data: null, error: null })
         : query({
             data: [{ forecast_date: "2026-09-02", horizon_days: 0 }],
@@ -80,12 +80,12 @@ describe("public risk publication boundary", () => {
   it("uses the complete checkpoint base for the requested horizon", async () => {
     const forecastFilters: [string, unknown][] = [];
     fromMock.mockImplementation((table: string) => {
-      if (table === "source_health") {
+      if (table === "risk_publication_checkpoint") {
         return query({
           data: {
             coverage_status: "complete",
-            valid_at: "2026-08-31T00:00:00.000Z",
-            last_success_at: "2026-08-31T00:20:00.000Z",
+            snapshot_id: "f0220000-0000-4000-8000-000000000001",
+            base_date: "2026-08-31",
             published_at: "2026-08-31T00:20:00.000Z",
           },
           error: null,
@@ -112,18 +112,22 @@ describe("public risk publication boundary", () => {
 
     expect(response.status).toBe(200);
     expect(forecastFilters).toContainEqual(["source", "local_fwi"]);
+    expect(forecastFilters).toContainEqual([
+      "snapshot_id",
+      "f0220000-0000-4000-8000-000000000001",
+    ]);
     expect(forecastFilters).toContainEqual(["forecast_date", "2026-09-03"]);
     expect(forecastFilters).toContainEqual(["horizon_days", 3]);
   });
 
   it("does not expose database diagnostics when the published forecast read fails", async () => {
     fromMock.mockImplementation((table: string) =>
-      table === "source_health"
+      table === "risk_publication_checkpoint"
         ? query({
             data: {
               coverage_status: "complete",
-              valid_at: "2026-08-31T00:00:00.000Z",
-              last_success_at: "2026-08-31T00:20:00.000Z",
+              snapshot_id: "f0220000-0000-4000-8000-000000000001",
+              base_date: "2026-08-31",
               published_at: "2026-08-31T00:20:00.000Z",
             },
             error: null,

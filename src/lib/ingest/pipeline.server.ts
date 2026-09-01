@@ -261,17 +261,26 @@ export async function runDetectionPipeline(): Promise<PipelineResult> {
 
 /** Daily FWI outlook refresh, plus the EFFIS external cross-check. */
 export async function runRiskPipeline() {
-  const scheduledFor = new Date().toISOString();
+  const runNow = new Date();
+  const scheduledFor = runNow.toISOString();
+  const baseDate = algiersToday(runNow);
   const riskStartedAt = new Date().toISOString();
-  const risk = await refreshRiskForecasts(crypto.randomUUID());
+  const risk = await refreshRiskForecasts({
+    snapshotId: crypto.randomUUID(),
+    baseDate,
+    scheduledFor,
+  });
   const riskExpected = risk.communes * 6;
   const missingGeography = risk.communes === 0 && !risk.error;
-  const riskHealth = sourceRunOutcome({
-    accepted: risk.rows,
-    expected: riskExpected,
-    error: risk.error ?? (missingGeography ? "no communes available" : null),
-  });
-  const validDate = `${algiersToday()}T00:00:00.000Z`;
+  const riskHealth = risk.superseded
+    ? ({ outcome: "skipped", coverageStatus: "complete" } as const)
+    : sourceRunOutcome({
+        accepted: risk.rows,
+        expected: riskExpected,
+        error:
+          risk.error ?? (missingGeography ? "no communes available" : null),
+      });
+  const validDate = `${baseDate}T00:00:00.000Z`;
   await recordSourceRun({
     contractKey: "local_fwi",
     trigger: "scheduled",
@@ -279,12 +288,14 @@ export async function runRiskPipeline() {
     startedAt: riskStartedAt,
     ...riskHealth,
     dataThrough: validDate,
+    publishedAt: risk.publishedAt ?? null,
     recordsSeen: risk.rows,
-    recordsInserted: risk.rows,
+    recordsInserted: risk.superseded ? 0 : risk.rows,
     recordsExpected: riskExpected || null,
     qualityChecks: {
       communes: risk.communes,
       horizon_days: 6,
+      superseded: risk.superseded ?? false,
     },
     publicReasonCode: risk.error
       ? publicReasonForError(risk.error)

@@ -273,8 +273,8 @@ export async function evaluateAlerts(userId?: string): Promise<AlertRun> {
   ] as string[];
   const { data: checkpoint, error: checkpointError } = communeIds.length
     ? await supabaseAdmin
-        .from("source_health")
-        .select("coverage_status, valid_at, last_success_at, published_at")
+        .from("risk_publication_checkpoint")
+        .select("coverage_status, snapshot_id, base_date, published_at")
         .eq("key", "local_fwi")
         .maybeSingle()
     : { data: null, error: null };
@@ -286,6 +286,7 @@ export async function evaluateAlerts(userId?: string): Promise<AlertRun> {
         .from("risk_forecasts")
         .select("commune_id, forecast_date, danger_level, fuel_limited")
         .eq("source", "local_fwi")
+        .eq("snapshot_id", target.snapshotId)
         .eq("forecast_date", target.forecastDate)
         .eq("horizon_days", target.horizon)
         .in("commune_id", communeIds)
