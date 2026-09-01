@@ -458,6 +458,7 @@ export const fr: Translation = {
     zoneFires:
       "{{count}} incendies actifs dans cette zone — le plus proche à {{km}} km.",
     authTitle: "Se connecter à Nadhir",
+    authMetaTitle: "Se connecter",
     authSubtitle: "Enregistrez les lieux qui comptent et soyez alerté tôt.",
     email: "E-mail",
     password: "Mot de passe",

@@ -438,6 +438,7 @@ export const ar: Translation = {
     zoneFires:
       "{{count}} حريق نشط داخل هذه المنطقة — الأقرب على بعد {{km}} كم.",
     authTitle: "تسجيل الدخول إلى نذير",
+    authMetaTitle: "تسجيل الدخول",
     authSubtitle: "احفظ الأماكن التي تهمّك واحصل على إنذار مبكر.",
     email: "البريد الإلكتروني",
     password: "كلمة المرور",

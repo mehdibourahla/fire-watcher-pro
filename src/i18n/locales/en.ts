@@ -446,6 +446,8 @@ export const en = {
       "You have reached the maximum of 10 zones. Delete one to add another.",
     zoneFires: "{{count}} active fires in this zone — nearest {{km}} km away.",
     authTitle: "Sign in to Nadhir",
+    // authTitle carries the brand for the heading; the head template adds its own
+    authMetaTitle: "Sign in",
     authSubtitle: "Save the places you care about and get warned early.",
     email: "Email",
     password: "Password",
