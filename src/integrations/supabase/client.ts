@@ -1,3 +1,4 @@
+import { createBrowserClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "./types";
 
@@ -51,14 +52,19 @@ function createSupabaseClient() {
     throw new Error(message);
   }
 
-  return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-    global: {
-      fetch: createSupabaseFetch(SUPABASE_PUBLISHABLE_KEY),
-    },
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-    },
+  const global = { fetch: createSupabaseFetch(SUPABASE_PUBLISHABLE_KEY) };
+
+  // The session lives in a cookie so document requests can be routed before any
+  // markup is committed; SSR gets a sessionless client and reads the cookie itself.
+  if (typeof document === "undefined") {
+    return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+      global,
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+  }
+
+  return createBrowserClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+    global,
   });
 }
 
