@@ -48,15 +48,17 @@ export const adminCountQuery = queryOptions({
 export const membersQuery = queryOptions({
   queryKey: ["roles", "members"],
   queryFn: async () => {
-    const [{ data: profiles, error }, { data: roles }] = await Promise.all([
-      supabase
-        .from("profiles")
-        .select("id, display_name, locale, created_at")
-        .order("created_at", { ascending: false })
-        .limit(500),
-      supabase.from("user_roles").select("user_id, role"),
-    ]);
+    const [{ data: profiles, error }, { data: roles, error: rolesError }] =
+      await Promise.all([
+        supabase
+          .from("profiles")
+          .select("id, display_name, locale, created_at")
+          .order("created_at", { ascending: false })
+          .limit(500),
+        supabase.from("user_roles").select("user_id, role"),
+      ]);
     if (error) throw new Error(error.message);
+    if (rolesError) throw new Error(rolesError.message);
     const byUser = new Map<string, AppRole[]>();
     for (const row of roles ?? []) {
       const list = byUser.get(row.user_id) ?? [];

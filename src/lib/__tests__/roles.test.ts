@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const { eq, from, select } = vi.hoisted(() => ({
   eq: vi.fn(),
@@ -26,12 +26,24 @@ type AdminCountQuery = {
   queryFn: () => Promise<number>;
 };
 
+type MembersQuery = {
+  queryFn: () => Promise<unknown>;
+};
+
 const adminRevocationGuard = Reflect.get(roles, "adminRevocationGuard") as
   AdminRevocationGuard | undefined;
 const roleMutationErrorKey = Reflect.get(roles, "roleMutationErrorKey") as
   RoleMutationErrorKey | undefined;
 const adminCountQuery = Reflect.get(roles, "adminCountQuery") as unknown as
   AdminCountQuery | undefined;
+const membersQuery = Reflect.get(
+  roles,
+  "membersQuery",
+) as unknown as MembersQuery;
+
+beforeEach(() => {
+  vi.clearAllMocks();
+});
 
 describe("adminCountQuery", () => {
   it("keeps self-revocation available when another admin is outside the 500-profile page", async () => {
@@ -61,6 +73,25 @@ describe("adminCountQuery", () => {
       head: true,
     });
     expect(eq).toHaveBeenCalledWith("role", "admin");
+  });
+});
+
+describe("membersQuery", () => {
+  it("rejects when role memberships fail after profiles load", async () => {
+    const profileLimit = vi.fn().mockResolvedValue({ data: [], error: null });
+    const profileOrder = vi.fn().mockReturnValue({ limit: profileLimit });
+    const profileSelect = vi.fn().mockReturnValue({ order: profileOrder });
+    const membershipSelect = vi.fn().mockResolvedValue({
+      data: null,
+      error: { message: "role memberships unavailable" },
+    });
+    from
+      .mockReturnValueOnce({ select: profileSelect })
+      .mockReturnValueOnce({ select: membershipSelect });
+
+    await expect(membersQuery.queryFn()).rejects.toThrow(
+      "role memberships unavailable",
+    );
   });
 });
 
