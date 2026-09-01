@@ -98,10 +98,36 @@ from this feed; it would need the Data Store push subscription plus a decode wor
 
 Guards, stated: the layer serves a months-deep archive, so the fetch is time-filtered
 server-side; the CQL BBOX is lat-first, and a run whose features all fall outside the
-watch box errors instead of ingesting the wrong hemisphere. Flare screening applies
-unchanged (cell membership is cadence-free); the offline registry thresholds were
-derived from ~4 looks/day and must be re-derived before FCI detections are ever fed
-into registry _learning_ — today they are not.
+watch box errors instead of ingesting the wrong hemisphere. The offline registry
+thresholds were derived from ~4 looks/day and must be re-derived before FCI detections
+are ever fed into registry _learning_ — today they are not.
+
+**Corrected 2026-09-01.** This section used to claim flare screening applied unchanged.
+It does apply, but it was never sufficient, and the sentence hid a missing guard: FCI
+shipped without the `isInWatchArea` polygon `firms.server.ts` has used since the first
+commit, and its bbox spans lat 18.9–37.6 against the FIRMS feed's 33.2–37.6. Over two
+days that admitted 3,731 Saharan detections; 1,377 cleared the flare registry and
+clustered, and 25 of the 37 "active fires" on the public map were bare sand at solar
+noon. The registry cannot catch this: it is a 1.5 km lookup on recurring sites, and the
+noise does not recur — 88% of 403 desert cells were seen exactly once, against 39%
+one-shot for northern FCI fires on the same 10-minute revisit. Nor would a confidence
+threshold have helped; the artefacts carry median confidence 0.86 against 0.60 for real
+FIRMS detections. Geography was the only available discriminator. Fixed in #58, with 362
+already-clustered false positives retired in #62.
+
+Two consequences of that fix, both shipped the same day: the upstream slot time has to be
+read _before_ the watch-area filter, or freshness only advances when something is alight
+in the north and a quiet evening ages a healthy feed into `stale` (#59); and the live map
+needed the `false_positive` exclusion that `/api/public/v1/fires` and the history query
+already applied (#62).
+
+**Still open — no persistence rule for a staring sensor.** Nothing between ingest and the
+map requires a geostationary detection to be confirmed by a second look, so the watch-area
+polygon is the only defence left, and one missing import cost 25 false fires. Requiring
+_N_ revisits in a cell before a slot-cadence source can seed a cluster would have caught
+this independently of geography. It is not implemented because it trades against warning
+latency on a safety product: any such rule delays a genuine new ignition by at least one
+10-minute slot, and that tradeoff is a decision for the maintainers, not a cleanup.
 
 ## 2. Data quality
 
@@ -148,6 +174,17 @@ The layer only serves its current run, so each row is stamped with the fetch dat
 palette change on their side still degrades the source loudly (the run errors when zero
 communes match).
 
+**Upstream has been down since 2026-08-29** and still is on 2026-09-01: every EFFIS
+endpoint answers `msLoadMap(): Unable to access file` — served as **HTTP 200 with
+`text/html`**, not a 4xx or 5xx. `effis_danger` holds no rows, so §1.1's external
+comparator is unavailable, and the cold-start guard cannot fire either: it needs two
+readable sentinels and `GetFeatureInfo` returns none while the mapserver is broken.
+`res.ok` was therefore the wrong contract check — 590 bytes of HTML reached
+`PNG.sync.read`, threw, and the executor filed a JRC outage as our `internal_error`,
+pointing an on-call reader at the wrong codebase. `pngPayloadError` now checks the PNG
+signature before decoding and reports `upstream_unreachable` (#63). Nothing here brings
+EFFIS back; it recovers when JRC does.
+
 ### 2.3 Commune-to-wilaya assignment — reconciled with Loi 26-06 (2026-08-30)
 
 The law (JORADP N° 25, transcribed with citations in `data/geo/loi-26-06.json`) is now
@@ -188,8 +225,27 @@ run and unrecoverable gap before the consumer drains the newest useful slot.
 Consumers keep polling while a retry is pending, and an expired usefulness window is terminalized
 in bounded 25-row maintenance batches with an audited run plus a replayable or explicitly
 unrecoverable gap. Replayability also respects the provider's retention window.
-This implementation is locally verified but not yet deployed; production observation is still
-required before claiming operational reliability.
+Deployed 2026-08-31 (#52). The production observation this section asked for happened on
+2026-09-01 and found one defect the local verification could not see. `local_fwi` and
+`effis` are the only contracts with `execution_target = 'github'`, so nothing in the
+every-minute Cloudflare path can claim them; their 06:00 slots carried
+`retry_window_minutes = 240`, closing the window at 10:00, while GitHub delivered the
+scheduled workflow at 11:33, 13:09, 11:34 and 12:30 on consecutive days. The runner
+therefore arrived after the claim function's maintenance loop had already expired the job
+it came to do, found nothing, printed `{"claimed":false,"pending":false}` and exited 0 —
+a green workflow over a source that had not run since the cutover. `source_gaps` records
+it exactly: both contracts hold `unrecoverable` rows stamped `detected_at 11:33:19Z`.
+
+The daily fire-danger refresh was consequently stale for a day and its horizon thinned by
+one day per day. The window is now 720 minutes and the workflow cron runs hourly across
+it rather than four times an hour inside four (#63); GitHub drops bunched schedules, which
+is why sixteen requested runs produced roughly one. The adapter itself was never at
+fault — invoked directly it completed all 1,536 communes in 63 requests without error.
+
+Worth carrying into M3/M4: a consumer that reports success when it claimed nothing cannot
+distinguish "drained" from "never arrived", and that is the same shape as the two other
+blind signals found the same day (§2.2's outage filed as our own error, and ONM stuck
+`partial` on one trailing letter).
 
 What is deliberately still open:
 
@@ -205,6 +261,12 @@ window. The inactive database HTTP helper and token table also remain until the 
 release completes its observation window. The contract-release checklist in
 `docs/superpowers/plans/2026-08-31-source-health-contract-cleanup.md` removes them after
 production evidence proves that no deployed code still uses them.
+
+That evidence now exists for the two relations, gathered 2026-09-01: `ingest_runs` has no
+writer and no reader anywhere outside the generated types, and `data_sources` is written
+only by `scripts/seed-geo.ts` and read by nothing, its last row dated 2026-08-31T18:30Z —
+before the cutover. Both still carry public read grants, so they read as live surface to
+anyone reviewing the schema. The checklist can proceed for them.
 
 ## 3. Product surface
 
@@ -345,6 +407,21 @@ Things that cost real debugging time here, none of them obvious from the code.
   by `anon` from 2026-08-28 until 2026-08-30 — enough to exhaust any caller's bucket. Revoke
   from `anon, authenticated` by name, and check with
   `select proname, proacl from pg_proc where proname = '<fn>'`.
+- **A source job is split across two runners by `execution_target`.** `local_fwi` and
+  `effis` run on GitHub; everything else runs on the Worker. `claim_source_job` filters on
+  that column, so a job perfectly visible in `source_jobs` is unclaimable by the scheduler
+  you happen to be reading about, and the consumer that _can_ claim it reports success
+  when it claimed nothing. Check `execution_target` and the matching workflow before
+  concluding a contract is broken, and remember a green _Daily source jobs_ run may mean
+  the queue was empty, not drained.
+- **Freshness computed downstream of a filter stops meaning freshness.** FCI's
+  `latestSlot` was assigned after a row was accepted, so once the watch-area gate rejected
+  the Saharan majority the feed's `upstream_published_at` only advanced when something was
+  alight in the north — a healthy source aged into `stale` in 53 minutes. Any watermark
+  read after a `continue` inherits that filter's semantics. The same class bit the map
+  (`false_positive` excluded by the API and history, not by `clustersQuery`) and ONM
+  (`85/87` forever on one trailing letter). When a signal cannot separate _working and
+  quiet_ from _broken_, it is not a signal.
 - **The CSP blocked the local-stack workflow this file documents.** `connect-src` allowed only
   `https://*.supabase.co`, so a contributor following CONTRIBUTING.md's `supabase start`
   instructions got a browser that silently refused every call to their own database.
