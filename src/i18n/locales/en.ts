@@ -503,9 +503,17 @@ export const en = {
     submit: "Send report",
     submitting: "Sending…",
     submitted: "Thank you. Your report is awaiting moderation.",
+    submitFailed: "The report could not be sent. Check it and try again.",
+    submitCleanupFailed:
+      "The report was not sent, and its uploaded photo could not be removed. Try again later.",
+    submitUnknown:
+      "We could not confirm whether the report was sent. Check My reports before trying again.",
     mine: "My reports",
     empty: "You have not sent any report yet.",
     delete: "Delete",
+    deleteFailed: "The report could not be deleted. Try again.",
+    deletePhotoCleanupFailed:
+      "The report was not deleted because its private photo could not be removed.",
     statusPending: "Awaiting review",
     statusApproved: "Confirmed by moderator",
     statusRejected: "Not retained",

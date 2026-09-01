@@ -493,9 +493,16 @@ export const ar: Translation = {
     submit: "إرسال البلاغ",
     submitting: "جارٍ الإرسال…",
     submitted: "شكراً لك. بلاغك في انتظار المراجعة.",
+    submitFailed: "تعذّر إرسال البلاغ. تحقّق منه وحاول مرة أخرى.",
+    submitCleanupFailed:
+      "لم يُرسل البلاغ وتعذّرت إزالة الصورة المرفوعة. حاول مرة أخرى لاحقاً.",
+    submitUnknown:
+      "تعذّر تأكيد إرسال البلاغ. تحقّق من بلاغاتي قبل المحاولة مرة أخرى.",
     mine: "بلاغاتي",
     empty: "لم ترسل أي بلاغ بعد.",
     delete: "حذف",
+    deleteFailed: "تعذّر حذف البلاغ. حاول مرة أخرى.",
+    deletePhotoCleanupFailed: "لم يُحذف البلاغ لأن إزالة صورته الخاصة تعذّرت.",
     statusPending: "في انتظار المراجعة",
     statusApproved: "مؤكَّد من المشرف",
     statusRejected: "غير معتمد",

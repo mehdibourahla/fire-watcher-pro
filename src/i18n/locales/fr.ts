@@ -520,9 +520,18 @@ export const fr: Translation = {
     submit: "Envoyer le signalement",
     submitting: "Envoi…",
     submitted: "Merci. Votre signalement est en attente de modération.",
+    submitFailed:
+      "Le signalement n’a pas pu être envoyé. Vérifiez-le et réessayez.",
+    submitCleanupFailed:
+      "Le signalement n’a pas été envoyé et sa photo téléversée n’a pas pu être supprimée. Réessayez plus tard.",
+    submitUnknown:
+      "Impossible de confirmer l’envoi. Consultez Mes signalements avant de réessayer.",
     mine: "Mes signalements",
     empty: "Vous n'avez encore envoyé aucun signalement.",
     delete: "Supprimer",
+    deleteFailed: "Le signalement n’a pas pu être supprimé. Réessayez.",
+    deletePhotoCleanupFailed:
+      "Le signalement n’a pas été supprimé car sa photo privée n’a pas pu être retirée.",
     statusPending: "En attente de vérification",
     statusApproved: "Confirmé par un modérateur",
     statusRejected: "Non retenu",

@@ -502,9 +502,18 @@ export const kab: Translation = {
     submit: "Azen aneɣmis",
     submitting: "Tuzna…",
     submitted: "Tanemmirt. Aneɣmis-ik yettraju asenqed.",
+    submitFailed:
+      "Aneɣmis ur yettwazen ara. Senqed-it sakin ɛreḍ tikkelt-nniḍen.",
+    submitCleanupFailed:
+      "Aneɣmis ur yettwazen ara, tawlaft i yulin ur tettwakkes ara. Ɛreḍ ticki.",
+    submitUnknown:
+      "Ur nezmir ara ad nsenqed ma yettwazen uneɣmis. Senqed Ineɣmisen-iw send ad tɛerḍeḍ.",
     mine: "Ineɣmisen-iw",
     empty: "Ur tuzneḍ ula d yiwen n uneɣmis.",
     delete: "Kkes",
+    deleteFailed: "Aneɣmis ur yettwakkes ara. Ɛreḍ tikkelt-nniḍen.",
+    deletePhotoCleanupFailed:
+      "Aneɣmis ur yettwakkes ara acku tawlaft-is tusligt ur tettwakkes ara.",
     statusPending: "Yettraju asenqed",
     statusApproved: "Yettwasentem sɣur umḍebber",
     statusRejected: "Ur yettwaqbel ara",
