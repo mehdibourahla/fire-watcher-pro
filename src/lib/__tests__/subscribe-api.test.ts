@@ -1,13 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { adminRpc, fcmConfigured, fcmSubscribeTopics } = vi.hoisted(() => ({
-  adminRpc: vi.fn(),
-  fcmConfigured: vi.fn(),
-  fcmSubscribeTopics: vi.fn(),
-}));
+const { adminFrom, adminRpc, fcmConfigured, fcmSubscribeTopics } = vi.hoisted(
+  () => ({
+    adminFrom: vi.fn(),
+    adminRpc: vi.fn(),
+    fcmConfigured: vi.fn(),
+    fcmSubscribeTopics: vi.fn(),
+  }),
+);
 
 vi.mock("@/integrations/supabase/client.server", () => ({
-  supabaseAdmin: { rpc: adminRpc },
+  supabaseAdmin: { from: adminFrom, rpc: adminRpc },
 }));
 
 vi.mock("@/lib/ingest/fcm.server", () => ({
@@ -29,6 +32,7 @@ function handlers() {
 
 describe("public push subscription API", () => {
   beforeEach(() => {
+    adminFrom.mockReset();
     adminRpc.mockReset();
     fcmConfigured.mockReset();
     fcmSubscribeTopics.mockReset();
@@ -95,6 +99,26 @@ describe("public push subscription API", () => {
     await expect(response.json()).resolves.toEqual({
       error: "push delivery is not configured",
     });
+    expect(response.headers.get("Access-Control-Allow-Methods")).toBe(
+      "POST, OPTIONS",
+    );
+    expect(fcmSubscribeTopics).not.toHaveBeenCalled();
+  });
+
+  it("advertises POST when rate limiting rejects the request", async () => {
+    adminRpc.mockResolvedValueOnce({ data: false, error: null });
+
+    const response = await handlers().POST({
+      request: new Request("https://nadhir.test/api/public/v1/subscribe", {
+        method: "POST",
+      }),
+    });
+
+    expect(response.status).toBe(429);
+    expect(response.headers.get("Access-Control-Allow-Methods")).toBe(
+      "POST, OPTIONS",
+    );
+    expect(fcmConfigured).not.toHaveBeenCalled();
     expect(fcmSubscribeTopics).not.toHaveBeenCalled();
   });
 
@@ -114,6 +138,49 @@ describe("public push subscription API", () => {
     await expect(response.json()).resolves.toEqual({
       error: "invalid JSON body",
     });
+    expect(response.headers.get("Access-Control-Allow-Methods")).toBe(
+      "POST, OPTIONS",
+    );
     expect(fcmSubscribeTopics).not.toHaveBeenCalled();
+  });
+
+  it("advertises POST on successful subscription responses", async () => {
+    adminRpc.mockResolvedValueOnce({ data: true, error: null });
+    fcmConfigured.mockReturnValueOnce(true);
+    fcmSubscribeTopics.mockResolvedValueOnce(undefined);
+    adminFrom.mockReturnValueOnce({
+      select: () => ({
+        eq: () => ({
+          in: async () => ({ data: [{ code: "1601" }], error: null }),
+        }),
+      }),
+    });
+
+    const response = await handlers().POST({
+      request: new Request("https://nadhir.test/api/public/v1/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          token: "test-registration-token",
+          communes: ["1601"],
+          lang: "en",
+          action: "subscribe",
+        }),
+      }),
+    });
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({
+      ok: true,
+      topics: ["v1.commune.1601.en"],
+    });
+    expect(response.headers.get("Access-Control-Allow-Methods")).toBe(
+      "POST, OPTIONS",
+    );
+    expect(fcmSubscribeTopics).toHaveBeenCalledWith(
+      "test-registration-token",
+      ["v1.commune.1601.en"],
+      true,
+    );
   });
 });

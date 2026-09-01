@@ -16,9 +16,9 @@ export const Route = createFileRoute("/api/public/v1/subscribe")({
         return postPreflight();
       },
       POST: async ({ request }) => {
-        const { json, enforceRateLimit } =
+        const { postJson: json, enforcePostRateLimit } =
           await import("@/lib/public-api.server");
-        const limited = await enforceRateLimit(request);
+        const limited = await enforcePostRateLimit(request);
         if (limited) return limited;
 
         const { fcmConfigured, fcmSubscribeTopics } =
