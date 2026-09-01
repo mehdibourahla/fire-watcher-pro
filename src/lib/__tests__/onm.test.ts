@@ -69,6 +69,22 @@ describe("matchWilaya", () => {
       "m",
     );
   });
+
+  // ONM publishes TIMIMOUN; admin_units spells it Timimoune in French and
+  // Timimoun in English, and an exact match on one column silences the wilaya
+  it("falls back to the English spelling when the French one differs", () => {
+    expect(
+      matchWilaya("TIMIMOUN", [
+        { id: "t", name_fr: "Timimoune", name_en: "Timimoun" },
+      ])?.id,
+    ).toBe("t");
+  });
+
+  it("still matches when no English name is recorded", () => {
+    expect(
+      matchWilaya("ALGER", [{ id: "c", name_fr: "Alger", name_en: null }])?.id,
+    ).toBe("c");
+  });
 });
 
 describe("parseCapDetail", () => {

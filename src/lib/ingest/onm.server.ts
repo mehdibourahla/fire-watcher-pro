@@ -62,12 +62,19 @@ export function normalizeName(name: string): string {
     .replace(/[^A-Z0-9]+/g, "");
 }
 
-export function matchWilaya<T extends { name_fr: string }>(
-  areaDesc: string,
-  wilayas: T[],
-): T | null {
+export function matchWilaya<
+  T extends { name_fr: string; name_en?: string | null },
+>(areaDesc: string, wilayas: T[]): T | null {
   const target = normalizeName(areaDesc);
-  return wilayas.find((w) => normalizeName(w.name_fr) === target) ?? null;
+  // ONM's romanisation follows the English column for some wilayas (TIMIMOUN vs
+  // the French Timimoune), and one silent mismatch degrades the whole run
+  return (
+    wilayas.find(
+      (w) =>
+        normalizeName(w.name_fr) === target ||
+        (w.name_en != null && normalizeName(w.name_en) === target),
+    ) ?? null
+  );
 }
 
 export type CapDetail = {
@@ -174,13 +181,16 @@ export async function ingestOnm(): Promise<OnmRun> {
       error: "ONM feed returned no CAP entries",
     };
 
-  const wilayas = await fetchAllPages<{ id: string; name_fr: string }>(
-    (from, to) =>
-      supabaseAdmin
-        .from("admin_units")
-        .select("id, name_fr")
-        .eq("level", "wilaya")
-        .range(from, to),
+  const wilayas = await fetchAllPages<{
+    id: string;
+    name_fr: string;
+    name_en: string | null;
+  }>((from, to) =>
+    supabaseAdmin
+      .from("admin_units")
+      .select("id, name_fr, name_en")
+      .eq("level", "wilaya")
+      .range(from, to),
   );
 
   let unmatched = 0;
