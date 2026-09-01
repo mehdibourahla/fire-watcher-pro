@@ -465,8 +465,7 @@ export const riskForecastsQuery = queryOptions({
     });
     return fetchAllPages<RiskForecast>((from, to) =>
       supabase
-        .from("risk_forecasts")
-        .select("*")
+        .rpc("current_risk_forecasts")
         .eq("source", "local_fwi")
         .eq("snapshot_id", publication.snapshotId)
         .or(pairs.join(","))

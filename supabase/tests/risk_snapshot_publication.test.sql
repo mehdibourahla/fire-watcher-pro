@@ -1,10 +1,11 @@
 begin;
 set local search_path = public, extensions;
-select plan(39);
+select plan(48);
 
 select has_table('public', 'risk_publications', 'immutable publication metadata exists');
 select has_table('public', 'risk_publication_checkpoint', 'authoritative publication pointer exists');
 select has_table('public', 'risk_forecast_snapshot_runs', 'snapshot lifecycle registry exists');
+select has_function('public', 'current_risk_forecasts', array[]::text[], 'clients have a curated current publication RPC');
 select has_column('public', 'risk_forecasts', 'snapshot_id', 'live rows identify their generation');
 select ok(
   exists (
@@ -45,6 +46,18 @@ select ok(
   and not has_table_privilege('anon', 'public.risk_publication_checkpoint', 'insert')
   and not has_table_privilege('authenticated', 'public.risk_publication_checkpoint', 'update'),
   'clients can read but cannot move the pointer'
+);
+select ok(
+  not has_table_privilege('anon', 'public.risk_forecasts', 'select')
+  and not has_table_privilege('authenticated', 'public.risk_forecasts', 'select')
+  and has_table_privilege('service_role', 'public.risk_forecasts', 'select'),
+  'base forecast rows are service-only'
+);
+select ok(
+  has_function_privilege('anon', 'public.current_risk_forecasts()', 'execute')
+  and has_function_privilege('authenticated', 'public.current_risk_forecasts()', 'execute')
+  and has_function_privilege('service_role', 'public.current_risk_forecasts()', 'execute'),
+  'all readers can reach the curated current surface'
 );
 select has_function('public', 'begin_risk_forecast_snapshot', array['uuid', 'date', 'timestamp with time zone', 'timestamp with time zone'], 'generation start is atomic');
 select has_function('public', 'publish_risk_forecast_snapshot', array['uuid', 'date', 'timestamp with time zone'], 'promotion receives captured identity');
@@ -99,6 +112,41 @@ select results_eq(
   'promotion atomically publishes the public source checkpoint before run reporting'
 );
 
+set local role anon;
+select throws_ok(
+  $$select id from public.risk_forecasts limit 1$$,
+  '42501', 'permission denied for table risk_forecasts',
+  'anonymous clients cannot query legacy, partial, or historical base rows'
+);
+select results_eq(
+  $$select count(*)::bigint from public.current_risk_forecasts()$$,
+  $$select count(*) * 6 from public.admin_units where level = 'commune'$$,
+  'anonymous clients can read exactly the current complete generation'
+);
+reset role;
+
+set local role authenticated;
+select throws_ok(
+  $$select id from public.risk_forecasts limit 1$$,
+  '42501', 'permission denied for table risk_forecasts',
+  'authenticated clients cannot query legacy, partial, or historical base rows'
+);
+select results_eq(
+  $$select count(*)::bigint from public.current_risk_forecasts()$$,
+  $$select count(*) * 6 from public.admin_units where level = 'commune'$$,
+  'authenticated clients can read exactly the current complete generation'
+);
+reset role;
+
+set local role service_role;
+select results_eq(
+  $$select count(*)::bigint from public.risk_forecasts
+    where snapshot_id = 'f0220000-0000-4000-8000-000000000001'$$,
+  $$select count(*) * 6 from public.admin_units where level = 'commune'$$,
+  'the ingest service retains direct base-table access'
+);
+reset role;
+
 select is(public.begin_risk_forecast_snapshot('f0220000-0000-4000-8000-000000000002', '2099-01-01', '2099-01-01 01:00Z', now() - interval '6 hours'), 0, 'same-base rerun starts');
 insert into public.risk_forecast_staging(snapshot_id, commune_id, forecast_date, horizon_days, fwi, danger_level)
 select 'f0220000-0000-4000-8000-000000000002', u.id, date '2099-01-01' + h, h, 99, 5
@@ -152,6 +200,11 @@ select is(
    where snapshot_id = 'f0220000-0000-4000-8000-000000000001' and fwi = 10),
   (select count(*)::integer * 6 from public.admin_units where level = 'commune'),
   'publishing a rerun does not mutate prior values'
+);
+select results_eq(
+  $$select distinct snapshot_id from public.current_risk_forecasts()$$,
+  $$values ('f0220000-0000-4000-8000-000000000002'::uuid)$$,
+  'the curated surface hides the prior complete generation after pointer advance'
 );
 select throws_ok(
   $$update public.risk_forecasts set fwi = 77

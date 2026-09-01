@@ -1976,6 +1976,27 @@ export type Database = {
       };
     };
     Functions: {
+      current_risk_forecasts: {
+        Args: never;
+        Returns: {
+          admin_level: string;
+          commune_code: string;
+          commune_id: string;
+          components: Json;
+          created_at: string;
+          danger_level: number;
+          forecast_date: string;
+          fuel_limited: boolean;
+          fwi: number;
+          horizon_days: number;
+          id: string;
+          name_ar: string;
+          name_en: string;
+          name_fr: string;
+          snapshot_id: string;
+          source: string;
+        }[];
+      };
       consume_rate_limit: {
         Args: { _bucket: string; _limit: number; _window_seconds: number };
         Returns: boolean;

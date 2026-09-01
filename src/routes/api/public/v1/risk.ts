@@ -56,9 +56,9 @@ export const Route = createFileRoute("/api/public/v1/risk")({
           .slice(0, 10);
 
         let query = supabase
-          .from("risk_forecasts")
+          .rpc("current_risk_forecasts")
           .select(
-            "forecast_date, horizon_days, fwi, danger_level, fuel_limited, source, admin_units!inner(code, name_en, name_ar, name_fr, level)",
+            "forecast_date, horizon_days, fwi, danger_level, fuel_limited, source, commune_code, name_en, name_ar, name_fr, admin_level",
           )
           .eq("source", "local_fwi")
           .eq("snapshot_id", publication.snapshotId)
@@ -71,6 +71,21 @@ export const Route = createFileRoute("/api/public/v1/risk")({
 
         const { data, error } = await query;
         if (error) return json({ error: "forecast unavailable" }, 503);
+        const forecasts = (data ?? []).map((forecast) => ({
+          forecast_date: forecast.forecast_date,
+          horizon_days: forecast.horizon_days,
+          fwi: forecast.fwi,
+          danger_level: forecast.danger_level,
+          fuel_limited: forecast.fuel_limited,
+          source: forecast.source,
+          admin_units: {
+            code: forecast.commune_code,
+            name_en: forecast.name_en,
+            name_ar: forecast.name_ar,
+            name_fr: forecast.name_fr,
+            level: forecast.admin_level,
+          },
+        }));
 
         return json({
           licence: "CC-BY 4.0 — Nadhir, FWI computed from Open-Meteo forecasts",
@@ -78,8 +93,8 @@ export const Route = createFileRoute("/api/public/v1/risk")({
           horizon_days: horizon,
           limit,
           offset,
-          count: data?.length ?? 0,
-          forecasts: data ?? [],
+          count: forecasts.length,
+          forecasts,
         });
       },
     },

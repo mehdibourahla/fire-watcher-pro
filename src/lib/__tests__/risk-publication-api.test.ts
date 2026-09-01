@@ -1,9 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { fromMock } = vi.hoisted(() => ({ fromMock: vi.fn() }));
+const { fromMock, rpcMock } = vi.hoisted(() => ({
+  fromMock: vi.fn(),
+  rpcMock: vi.fn(),
+}));
 
 vi.mock("@/lib/public-api.server", () => ({
-  publicSupabase: () => ({ from: fromMock }),
+  publicSupabase: () => ({ from: fromMock, rpc: rpcMock }),
   json: (body: unknown, status = 200) =>
     new Response(JSON.stringify(body), {
       status,
@@ -56,7 +59,10 @@ async function get(url = "https://nadhir.test/api/public/v1/risk") {
 }
 
 describe("public risk publication boundary", () => {
-  beforeEach(() => fromMock.mockReset());
+  beforeEach(() => {
+    fromMock.mockReset();
+    rpcMock.mockReset();
+  });
 
   it.each([
     ["missing", null, null],
@@ -78,11 +84,11 @@ describe("public risk publication boundary", () => {
       fromMock.mockImplementation((table: string) => {
         if (table === "risk_publication_checkpoint")
           return query({ data: checkpoint, error: checkpointError });
+        return query({ data: [], error: null });
+      });
+      rpcMock.mockImplementation(() => {
         riskReads += 1;
-        return query({
-          data: [{ forecast_date: "2026-09-02", horizon_days: 0 }],
-          error: null,
-        });
+        return query({ data: [{ id: "must-not-leak" }], error: null });
       });
 
       const response = await get();
@@ -110,26 +116,38 @@ describe("public risk publication boundary", () => {
           error: null,
         });
       }
-      return query(
+      return query({ data: [], error: null });
+    });
+    rpcMock.mockReturnValue(
+      query(
         {
           data: [
             {
               forecast_date: "2026-09-03",
               horizon_days: 3,
+              fwi: 25,
+              danger_level: 3,
+              fuel_limited: false,
               source: "local_fwi",
+              commune_code: "1601",
+              name_en: "Algiers",
+              name_ar: "الجزائر",
+              name_fr: "Alger",
+              admin_level: "commune",
             },
           ],
           error: null,
         },
         forecastFilters,
-      );
-    });
+      ),
+    );
 
     const response = await get(
       "https://nadhir.test/api/public/v1/risk?horizon=3",
     );
 
     expect(response.status).toBe(200);
+    expect(rpcMock).toHaveBeenCalledWith("current_risk_forecasts");
     expect(forecastFilters).toContainEqual(["source", "local_fwi"]);
     expect(forecastFilters).toContainEqual([
       "snapshot_id",
@@ -137,6 +155,26 @@ describe("public risk publication boundary", () => {
     ]);
     expect(forecastFilters).toContainEqual(["forecast_date", "2026-09-03"]);
     expect(forecastFilters).toContainEqual(["horizon_days", 3]);
+    await expect(response.json()).resolves.toMatchObject({
+      count: 1,
+      forecasts: [
+        {
+          forecast_date: "2026-09-03",
+          horizon_days: 3,
+          fwi: 25,
+          danger_level: 3,
+          fuel_limited: false,
+          source: "local_fwi",
+          admin_units: {
+            code: "1601",
+            name_en: "Algiers",
+            name_ar: "الجزائر",
+            name_fr: "Alger",
+            level: "commune",
+          },
+        },
+      ],
+    });
   });
 
   it("does not expose database diagnostics when the published forecast read fails", async () => {
@@ -151,10 +189,13 @@ describe("public risk publication boundary", () => {
             },
             error: null,
           })
-        : query({
-            data: null,
-            error: { message: "relation secret_table does not exist" },
-          }),
+        : query({ data: [], error: null }),
+    );
+    rpcMock.mockReturnValue(
+      query({
+        data: null,
+        error: { message: "relation secret_table does not exist" },
+      }),
     );
 
     const response = await get();

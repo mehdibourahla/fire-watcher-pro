@@ -1,9 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { fromMock } = vi.hoisted(() => ({ fromMock: vi.fn() }));
+const { fromMock, rpcMock } = vi.hoisted(() => ({
+  fromMock: vi.fn(),
+  rpcMock: vi.fn(),
+}));
 
 vi.mock("@/integrations/supabase/client", () => ({
-  supabase: { from: fromMock },
+  supabase: { from: fromMock, rpc: rpcMock },
 }));
 
 import { riskForecastsQuery } from "@/lib/nadhir";
@@ -31,29 +34,21 @@ async function runRiskQuery() {
 }
 
 describe("riskForecastsQuery publication boundary", () => {
-  beforeEach(() => fromMock.mockReset());
+  beforeEach(() => {
+    fromMock.mockReset();
+    rpcMock.mockReset();
+  });
 
   it("returns no forecasts when local_fwi has no published checkpoint", async () => {
     let riskReads = 0;
     fromMock.mockImplementation((table: string) => {
       if (table === "risk_publication_checkpoint")
         return query({ data: null, error: null });
+      return query({ data: [], error: null });
+    });
+    rpcMock.mockImplementation(() => {
       riskReads += 1;
-      return query({
-        data: [
-          {
-            id: "partial",
-            commune_id: "c1",
-            forecast_date: "2026-09-02",
-            horizon_days: 0,
-            source: "local_fwi",
-            fwi: 55,
-            danger_level: 5,
-            fuel_limited: false,
-          },
-        ],
-        error: null,
-      });
+      return query({ data: [{ id: "partial" }], error: null });
     });
 
     await expect(runRiskQuery()).resolves.toEqual([]);
@@ -74,6 +69,9 @@ describe("riskForecastsQuery publication boundary", () => {
           error: null,
         });
       }
+      return query({ data: [], error: null });
+    });
+    rpcMock.mockImplementation(() => {
       riskReads += 1;
       return query({ data: [], error: null });
     });
@@ -87,6 +85,9 @@ describe("riskForecastsQuery publication boundary", () => {
     fromMock.mockImplementation((table: string) => {
       if (table === "risk_publication_checkpoint")
         return query({ data: null, error: { message: "checkpoint failed" } });
+      return query({ data: [], error: null });
+    });
+    rpcMock.mockImplementation(() => {
       riskReads += 1;
       return query({ data: [], error: null });
     });
@@ -97,7 +98,6 @@ describe("riskForecastsQuery publication boundary", () => {
 
   it("pins all six pairs to the published complete base and ignores newer partial rows", async () => {
     const riskFilters: [string, unknown][] = [];
-    let riskBuilder: Record<string, unknown> | undefined;
     fromMock.mockImplementation((table: string) => {
       if (table === "risk_publication_checkpoint") {
         return query({
@@ -110,31 +110,33 @@ describe("riskForecastsQuery publication boundary", () => {
           error: null,
         });
       }
-      riskBuilder = query(
-        {
-          data: [
-            {
-              id: "safe",
-              commune_id: "c1",
-              forecast_date: "2026-08-31",
-              horizon_days: 0,
-              source: "local_fwi",
-              fwi: 25,
-              danger_level: 3,
-              fuel_limited: false,
-            },
-          ],
-          error: null,
-        },
-        riskFilters,
-      );
-      return riskBuilder;
+      return query({ data: [], error: null });
     });
+    const riskBuilder = query(
+      {
+        data: [
+          {
+            id: "safe",
+            commune_id: "c1",
+            forecast_date: "2026-08-31",
+            horizon_days: 0,
+            source: "local_fwi",
+            fwi: 25,
+            danger_level: 3,
+            fuel_limited: false,
+          },
+        ],
+        error: null,
+      },
+      riskFilters,
+    );
+    rpcMock.mockReturnValue(riskBuilder);
 
     await expect(runRiskQuery()).resolves.toMatchObject([
       { id: "safe", forecast_date: "2026-08-31" },
     ]);
     expect(riskFilters).toContainEqual(["source", "local_fwi"]);
+    expect(rpcMock).toHaveBeenCalledWith("current_risk_forecasts");
     expect(riskFilters).toContainEqual([
       "snapshot_id",
       "f0220000-0000-4000-8000-000000000001",
@@ -162,11 +164,14 @@ describe("riskForecastsQuery publication boundary", () => {
           error: null,
         });
       }
-      return query({
+      return query({ data: [], error: null });
+    });
+    rpcMock.mockReturnValue(
+      query({
         data: [{ id: "must-not-leak" }],
         error: { message: "forecast failed" },
-      });
-    });
+      }),
+    );
 
     await expect(runRiskQuery()).rejects.toThrow("forecast failed");
   });
