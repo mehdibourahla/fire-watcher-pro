@@ -46,6 +46,23 @@ export function classifyPixel(
   return null;
 }
 
+const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+
+/** JRC answers mapserver failures with HTTP 200 and an HTML body, so res.ok
+ * alone would hand the error page to the PNG decoder and throw. */
+export function pngPayloadError(
+  contentType: string | null,
+  body: Uint8Array,
+): string | null {
+  if (
+    body.length >= PNG_SIGNATURE.length &&
+    PNG_SIGNATURE.every((byte, i) => body[i] === byte)
+  )
+    return null;
+  const kind = contentType?.split(";")[0]?.trim() || "an unknown content type";
+  return `EFFIS upstream served ${kind}, not image/png`;
+}
+
 export function parseFeatureInfoDc(html: string): number | null {
   const m = html.match(/Drought Code \(DC\)<\/td><td>([0-9.eE+-]+)/);
   if (!m) return null;
@@ -134,7 +151,10 @@ export async function ingestEffis(): Promise<EffisRun> {
   const res = await fetch(EFFIS_URL);
   if (!res.ok)
     return { communes: 0, classified: 0, error: `EFFIS WMS ${res.status}` };
-  const png = PNG.sync.read(Buffer.from(await res.arrayBuffer()));
+  const body = new Uint8Array(await res.arrayBuffer());
+  const payloadError = pngPayloadError(res.headers.get("content-type"), body);
+  if (payloadError) return { communes: 0, classified: 0, error: payloadError };
+  const png = PNG.sync.read(Buffer.from(body));
   if (png.width !== EFFIS_WIDTH || png.height !== EFFIS_HEIGHT)
     return {
       communes: 0,
