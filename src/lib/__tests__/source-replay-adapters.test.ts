@@ -79,7 +79,7 @@ describe("recorded source interval replay", () => {
         },
       },
       {
-        geometry: { coordinates: [3.3, 36.9] },
+        geometry: { coordinates: [3.3, 36.6] },
         properties: {
           FRP: 12,
           Confidence: 82,

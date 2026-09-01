@@ -1,6 +1,8 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import type { SourceReplayInterval } from "@/lib/source-jobs";
 
+import { isInWatchArea } from "./geo";
+
 /* MTG FCI active-fire detections via EUMETSAT's public WFS: the same product the
  * Data Store serves as netCDF, pre-decoded to GeoJSON points, anonymous, ~25 min
  * behind real time at 10-minute cadence. The layer serves a long archive, so the
@@ -9,8 +11,9 @@ import type { SourceReplayInterval } from "@/lib/source-jobs";
  * wrong hemisphere, hence the parse-side watch-box guard. */
 const WFS_URL = "https://view.eumetsat.int/geoserver/wfs";
 const LAYER = "mtg_fd:frp";
-/* Same cross-border watch area as the FIRMS ingest: fires just over the Tunisian
- * and Moroccan borders matter; fusion only assigns communes inside Algeria. */
+/* Server-side prefilter and axis-order sentinel only. It spans the whole country
+ * on purpose, so a lon-first response lands outside it and trips the guard below;
+ * isInWatchArea is what decides a detection is on burnable ground. */
 const WATCH = { south: 18.9, west: -8.7, north: 37.6, east: 12.0 };
 const WINDOW_MIN = 40;
 const SLOT_MIN = 10;
@@ -43,10 +46,12 @@ export type FciRow = {
 export function parseFciFeatures(json: FciFeatureCollection): {
   rows: FciRow[];
   outside: number;
+  filtered: number;
   latestSlot: string | null;
 } {
   const rows: FciRow[] = [];
   let outside = 0;
+  let filtered = 0;
   let latestSlot: string | null = null;
   for (const f of json.features ?? []) {
     const [lon, lat] = f.geometry?.coordinates ?? [NaN, NaN];
@@ -59,6 +64,10 @@ export function parseFciFeatures(json: FciFeatureCollection): {
       lon > WATCH.east
     ) {
       outside += 1;
+      continue;
+    }
+    if (!isInWatchArea(lat, lon)) {
+      filtered += 1;
       continue;
     }
     const pixelMs = Date.parse(
@@ -82,13 +91,14 @@ export function parseFciFeatures(json: FciFeatureCollection): {
     });
     if (!latestSlot || slot > latestSlot) latestSlot = slot;
   }
-  return { rows, outside, latestSlot };
+  return { rows, outside, filtered, latestSlot };
 }
 
 export type FciRun = {
   fetched: number;
   inserted: number;
   outside: number;
+  filtered: number;
   latestSlot: string | null;
   ageMinutes: number | null;
   dataFrom?: string;
@@ -127,6 +137,7 @@ export async function ingestFci(
     fetched: 0,
     inserted: 0,
     outside: 0,
+    filtered: 0,
     latestSlot: null,
     ageMinutes: null,
   };
@@ -159,8 +170,8 @@ export async function ingestFci(
         }),
       }
     : json;
-  const { rows, outside, latestSlot } = parseFciFeatures(bounded);
-  if (!rows.length && outside > 0)
+  const { rows, outside, filtered, latestSlot } = parseFciFeatures(bounded);
+  if (!rows.length && !filtered && outside > 0)
     return {
       ...empty,
       fetched: json.features?.length ?? 0,
@@ -190,9 +201,10 @@ export async function ingestFci(
   }
 
   return {
-    fetched: rows.length + outside,
+    fetched: rows.length + outside + filtered,
     inserted,
     outside,
+    filtered,
     latestSlot,
     ageMinutes: latestSlot
       ? Math.round((Date.now() - Date.parse(latestSlot)) / 60_000)

@@ -139,7 +139,7 @@ export function createSourceRunners(
     },
     fci: async (job) => {
       const run = await dependencies.ingestFci(replayInterval(job));
-      const accepted = Math.max(run.fetched - run.outside, 0);
+      const accepted = Math.max(run.fetched - run.outside - run.filtered, 0);
       const health = adapterHealth({ accepted, error: run.error });
       return {
         ...baseReport(job),
@@ -153,9 +153,10 @@ export function createSourceRunners(
             : null,
         recordsSeen: run.fetched,
         recordsInserted: run.inserted,
-        recordsRejected: run.outside,
+        recordsRejected: run.outside + run.filtered,
         qualityChecks: {
           inside_watch_box: run.outside === 0,
+          outside_watch_area: run.filtered,
           latest_slot_age_minutes: run.ageMinutes,
         },
       };
