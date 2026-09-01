@@ -16,7 +16,6 @@ import {
 
 const HORIZON_DAYS = 6;
 const SPINUP_DAYS = 92;
-const SOURCE = "local_fwi";
 const BATCH = 25;
 const RETRY_LIMIT = 5;
 const RETRY_BASE_MS = 2000;
@@ -175,7 +174,9 @@ export function seriesFwi(
   return { days: out, carried };
 }
 
-export async function refreshRiskForecasts(): Promise<RiskRun> {
+export async function refreshRiskForecasts(
+  snapshotId = crypto.randomUUID(),
+): Promise<RiskRun> {
   const communes = await fetchAllPages<{
     id: string;
     lat: number;
@@ -227,10 +228,10 @@ export async function refreshRiskForecasts(): Promise<RiskRun> {
   }
 
   type Row = {
+    snapshot_id: string;
     commune_id: string;
     forecast_date: string;
     horizon_days: number;
-    source: string;
     fwi: number;
     danger_level: number;
     fuel_limited: boolean;
@@ -243,12 +244,12 @@ export async function refreshRiskForecasts(): Promise<RiskRun> {
   ) => {
     for (let i = 0; i < rows.length; i += 500) {
       const { error } = await supabaseAdmin
-        .from("risk_forecasts")
+        .from("risk_forecast_staging")
         .upsert(rows.slice(i, i + 500), {
-          onConflict: "commune_id,forecast_date,horizon_days,source",
+          onConflict: "snapshot_id,commune_id,forecast_date,horizon_days",
         });
       if (error)
-        throw new Error(`risk_forecasts upsert failed: ${error.message}`);
+        throw new Error(`risk forecast staging failed: ${error.message}`);
     }
     for (let i = 0; i < states.length; i += 500) {
       const { error } = await supabaseAdmin.from("fwi_state").upsert(
@@ -261,6 +262,27 @@ export async function refreshRiskForecasts(): Promise<RiskRun> {
 
   let written = 0;
   let requests = 0;
+
+  const fail = async (error: unknown): Promise<RiskRun> => {
+    const message =
+      typeof error === "string"
+        ? error
+        : error instanceof Error
+          ? error.message
+          : "refresh failed";
+    const { error: cleanupError } = await supabaseAdmin
+      .from("risk_forecast_staging")
+      .delete()
+      .eq("snapshot_id", snapshotId);
+    return {
+      communes: communes.length,
+      rows: written,
+      requests,
+      error: cleanupError
+        ? `${message}; staging cleanup failed: ${cleanupError.message}`
+        : message,
+    };
+  };
 
   for (const [pastDays, members] of groups) {
     for (let i = 0; i < members.length; i += BATCH) {
@@ -275,14 +297,7 @@ export async function refreshRiskForecasts(): Promise<RiskRun> {
         );
         requests += 1;
       } catch (e) {
-        // whatever already flushed stays committed, so the next run resumes
-        // from stored state instead of restarting the whole bootstrap
-        return {
-          communes: communes.length,
-          rows: written,
-          requests,
-          error: e instanceof Error ? e.message : "fetch failed",
-        };
+        return fail(e);
       }
       const rows: Row[] = [];
       const nextState: (StoredState & { commune_id: string })[] = [];
@@ -309,10 +324,10 @@ export async function refreshRiskForecasts(): Promise<RiskRun> {
           );
           if (horizon < 0 || horizon >= HORIZON_DAYS) return;
           rows.push({
+            snapshot_id: snapshotId,
             commune_id: commune.id,
             forecast_date: day.date,
             horizon_days: horizon,
-            source: SOURCE,
             fwi: day.fwi,
             danger_level: day.level,
             fuel_limited: fuelLimited,
@@ -320,10 +335,25 @@ export async function refreshRiskForecasts(): Promise<RiskRun> {
           });
         });
       });
-      await flush(rows, nextState);
+      try {
+        await flush(rows, nextState);
+      } catch (error) {
+        return fail(error);
+      }
       written += rows.length;
     }
   }
+
+  const { data: promoted, error: promotionError } = await supabaseAdmin.rpc(
+    "publish_risk_forecast_snapshot",
+    { _snapshot_id: snapshotId },
+  );
+  if (promotionError)
+    return fail(`risk snapshot promotion failed: ${promotionError.message}`);
+  if (promoted !== written)
+    return fail(
+      `risk snapshot promotion count mismatch: expected ${written}, got ${promoted}`,
+    );
 
   return { communes: communes.length, rows: written, requests };
 }

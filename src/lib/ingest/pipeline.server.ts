@@ -263,7 +263,7 @@ export async function runDetectionPipeline(): Promise<PipelineResult> {
 export async function runRiskPipeline() {
   const scheduledFor = new Date().toISOString();
   const riskStartedAt = new Date().toISOString();
-  const risk = await refreshRiskForecasts();
+  const risk = await refreshRiskForecasts(crypto.randomUUID());
   const riskExpected = risk.communes * 6;
   const missingGeography = risk.communes === 0 && !risk.error;
   const riskHealth = sourceRunOutcome({

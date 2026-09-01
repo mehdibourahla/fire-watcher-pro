@@ -1173,6 +1173,50 @@ export type Database = {
           },
         ];
       };
+      risk_forecast_staging: {
+        Row: {
+          commune_id: string;
+          components: Json | null;
+          danger_level: number;
+          forecast_date: string;
+          fuel_limited: boolean;
+          fwi: number;
+          horizon_days: number;
+          snapshot_id: string;
+          staged_at: string;
+        };
+        Insert: {
+          commune_id: string;
+          components?: Json | null;
+          danger_level: number;
+          forecast_date: string;
+          fuel_limited?: boolean;
+          fwi: number;
+          horizon_days: number;
+          snapshot_id: string;
+          staged_at?: string;
+        };
+        Update: {
+          commune_id?: string;
+          components?: Json | null;
+          danger_level?: number;
+          forecast_date?: string;
+          fuel_limited?: boolean;
+          fwi?: number;
+          horizon_days?: number;
+          snapshot_id?: string;
+          staged_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "risk_forecast_staging_commune_id_fkey";
+            columns: ["commune_id"];
+            isOneToOne: false;
+            referencedRelation: "admin_units";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       settlements: {
         Row: {
           commune_id: string | null;
@@ -1812,6 +1856,10 @@ export type Database = {
           _user_id: string;
         };
         Returns: boolean;
+      };
+      publish_risk_forecast_snapshot: {
+        Args: { _snapshot_id: string };
+        Returns: number;
       };
       record_source_run: {
         Args: {
