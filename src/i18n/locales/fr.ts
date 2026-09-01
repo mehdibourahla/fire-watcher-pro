@@ -540,6 +540,13 @@ export const fr: Translation = {
     revoke: "Retirer {{role}}",
     role_moderator: "modérateur",
     role_admin: "administrateur",
+    confirmSelfAdminRevoke:
+      "Retirer votre propre accès administrateur ? Vous perdrez immédiatement l’accès à la gestion de l’équipe.",
+    lastAdminDisabled:
+      "Nadhir doit toujours avoir un administrateur. Nommez-en un autre avant de retirer votre accès.",
+    lastAdminError:
+      "Au moins un administrateur doit rester. Le rôle n’a pas été modifié.",
+    updateError: "Impossible de modifier ce rôle. Réessayez.",
   },
   admin: {
     tabTranslations: "Traductions",

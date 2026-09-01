@@ -523,6 +523,13 @@ export const en = {
     revoke: "Remove {{role}}",
     role_moderator: "moderator",
     role_admin: "admin",
+    confirmSelfAdminRevoke:
+      "Remove your own administrator access? You will immediately lose access to team administration.",
+    lastAdminDisabled:
+      "Nadhir must always have an administrator. Add another administrator before removing your access.",
+    lastAdminError:
+      "At least one administrator must remain. The role was not changed.",
+    updateError: "Could not update this role. Try again.",
   },
   admin: {
     tabTranslations: "Translations",

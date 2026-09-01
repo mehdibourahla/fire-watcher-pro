@@ -1,9 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, getRouteApi } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { grantRole, membersQuery, revokeRole, type AppRole } from "@/lib/roles";
+import {
+  adminRevocationGuard,
+  grantRole,
+  membersQuery,
+  revokeRole,
+  roleMutationErrorKey,
+  type AppRole,
+} from "@/lib/roles";
 import { myRolesQuery } from "@/lib/reports";
 
 export const Route = createFileRoute("/_authenticated/team")({
@@ -28,9 +35,11 @@ export const Route = createFileRoute("/_authenticated/team")({
 });
 
 const MANAGED: AppRole[] = ["moderator", "admin"];
+const authenticatedRoute = getRouteApi("/_authenticated");
 
 function TeamPage() {
   const { t } = useTranslation();
+  const { user } = authenticatedRoute.useRouteContext();
   const qc = useQueryClient();
   const roles = useQuery(myRolesQuery);
   const isAdmin = (roles.data ?? []).includes("admin");
@@ -77,6 +86,9 @@ function TeamPage() {
       (m.display_name ?? "").toLowerCase().includes(q) ||
       m.id.toLowerCase().includes(q),
   );
+  const adminCount = (members.data ?? []).filter((m) =>
+    m.roles.includes("admin"),
+  ).length;
 
   return (
     <main className="mx-auto w-full max-w-4xl px-4 py-8">
@@ -98,53 +110,87 @@ function TeamPage() {
         <p className="mt-6 text-sm text-muted-foreground">{t("team.empty")}</p>
       ) : (
         <ul className="mt-4 space-y-2">
-          {rows.map((m) => (
-            <li
-              key={m.id}
-              className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-card p-3"
-            >
-              <div className="min-w-0">
-                <p className="truncate text-sm font-medium">
-                  {m.display_name || t("team.unnamed")}
-                </p>
-                <p className="truncate font-mono text-xs text-muted-foreground">
-                  {m.id}
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {m.roles.length ? m.roles.join(" · ") : t("team.roleUser")}
-                </p>
-              </div>
-              <div className="flex gap-2">
-                {MANAGED.map((role) => {
-                  const has = m.roles.includes(role);
-                  return (
-                    <button
-                      key={role}
-                      type="button"
-                      disabled={mutate.isPending}
-                      onClick={() =>
-                        mutate.mutate({ userId: m.id, role, grant: !has })
-                      }
-                      className={
-                        has
-                          ? "rounded-md border border-border px-2 py-1 text-xs text-muted-foreground hover:text-destructive"
-                          : "rounded-md bg-primary px-2 py-1 text-xs text-primary-foreground"
-                      }
+          {rows.map((m) => {
+            const adminGuard = adminRevocationGuard({
+              currentUserId: user.id,
+              targetUserId: m.id,
+              adminCount,
+            });
+            const lastAdminMessageId = `last-admin-${m.id}`;
+            const soleAdmin = m.roles.includes("admin") && adminGuard.disabled;
+            return (
+              <li
+                key={m.id}
+                className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-card p-3"
+              >
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium">
+                    {m.display_name || t("team.unnamed")}
+                  </p>
+                  <p className="truncate font-mono text-xs text-muted-foreground">
+                    {m.id}
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {m.roles.length ? m.roles.join(" · ") : t("team.roleUser")}
+                  </p>
+                  {soleAdmin ? (
+                    <p
+                      id={lastAdminMessageId}
+                      className="mt-2 max-w-xl text-xs text-muted-foreground"
                     >
-                      {has
-                        ? t("team.revoke", { role: t(`team.role_${role}`) })
-                        : t("team.grant", { role: t(`team.role_${role}`) })}
-                    </button>
-                  );
-                })}
-              </div>
-            </li>
-          ))}
+                      {t("team.lastAdminDisabled")}
+                    </p>
+                  ) : null}
+                </div>
+                <div className="flex gap-2">
+                  {MANAGED.map((role) => {
+                    const has = m.roles.includes(role);
+                    const guard =
+                      role === "admin" && has
+                        ? adminGuard
+                        : { disabled: false, needsConfirmation: false };
+                    return (
+                      <button
+                        key={role}
+                        type="button"
+                        disabled={mutate.isPending || guard.disabled}
+                        aria-describedby={
+                          guard.disabled ? lastAdminMessageId : undefined
+                        }
+                        onClick={() => {
+                          if (
+                            guard.needsConfirmation &&
+                            !window.confirm(t("team.confirmSelfAdminRevoke"))
+                          ) {
+                            return;
+                          }
+                          mutate.mutate({
+                            userId: m.id,
+                            role,
+                            grant: !has,
+                          });
+                        }}
+                        className={
+                          has
+                            ? "rounded-md border border-border px-2 py-1 text-xs text-muted-foreground enabled:hover:text-destructive disabled:cursor-not-allowed disabled:opacity-50"
+                            : "rounded-md bg-primary px-2 py-1 text-xs text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                        }
+                      >
+                        {has
+                          ? t("team.revoke", { role: t(`team.role_${role}`) })
+                          : t("team.grant", { role: t(`team.role_${role}`) })}
+                      </button>
+                    );
+                  })}
+                </div>
+              </li>
+            );
+          })}
         </ul>
       )}
       {mutate.isError ? (
         <p className="mt-3 text-sm text-destructive">
-          {(mutate.error as Error).message}
+          {t(roleMutationErrorKey(mutate.error))}
         </p>
       ) : null}
     </main>

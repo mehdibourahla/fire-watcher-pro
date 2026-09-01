@@ -514,6 +514,12 @@ export const ar: Translation = {
     revoke: "سحب {{role}}",
     role_moderator: "مشرف",
     role_admin: "مدير",
+    confirmSelfAdminRevoke:
+      "هل تريد سحب صلاحية الإدارة من حسابك؟ ستفقد فوراً إمكانية إدارة الفريق.",
+    lastAdminDisabled:
+      "يجب أن يبقى لنذير مدير واحد على الأقل. عيّن مديراً آخر قبل سحب صلاحيتك.",
+    lastAdminError: "يجب أن يبقى مدير واحد على الأقل. لم يتغير الدور.",
+    updateError: "تعذر تعديل هذا الدور. حاول مرة أخرى.",
   },
   admin: {
     tabTranslations: "الترجمات",

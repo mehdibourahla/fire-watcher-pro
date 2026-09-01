@@ -522,6 +522,13 @@ export const kab: Translation = {
     revoke: "Kkes {{role}}",
     role_moderator: "aɛessas",
     role_admin: "anedbal",
+    confirmSelfAdminRevoke:
+      "Tebɣiḍ ad tekkseḍ iman-ik seg inedbalen? Ad tesruḥeḍ imir-nni anekcum ɣer usefrek n terbaɛt.",
+    lastAdminDisabled:
+      "Nadhir ilaq ad yesɛu yal ass ma drus yiwen unedbal. Err wayeḍ d anedbal send ad tekkseḍ anekcum-ik.",
+    lastAdminError:
+      "Ilaq ad yeqqim ma drus yiwen unedbal. Tamahilt ur tettwabeddel ara.",
+    updateError: "Ur nezmir ara ad nbeddel tamahilt-a. Ɛreḍ tikkelt-nniḍen.",
   },
   admin: {
     tabTranslations: "Tisuqilin",

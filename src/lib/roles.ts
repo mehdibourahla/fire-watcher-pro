@@ -12,6 +12,26 @@ export type Member = {
   roles: AppRole[];
 };
 
+export function adminRevocationGuard(input: {
+  currentUserId: string;
+  targetUserId: string;
+  adminCount: number;
+}) {
+  const selfRevocation = input.currentUserId === input.targetUserId;
+  const disabled = selfRevocation && input.adminCount <= 1;
+  return {
+    disabled,
+    needsConfirmation: selfRevocation && !disabled,
+  };
+}
+
+export function roleMutationErrorKey(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
+  return message.includes("last_admin_required")
+    ? ("team.lastAdminError" as const)
+    : ("team.updateError" as const);
+}
+
 /** Admin-only: every profile plus its granted roles. RLS blocks non-admins. */
 export const membersQuery = queryOptions({
   queryKey: ["roles", "members"],
