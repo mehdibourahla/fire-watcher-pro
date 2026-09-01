@@ -445,6 +445,7 @@ export const kab: Translation = {
     zoneFires:
       "{{count}} n times yeddren deg temnaḍt-a — tamezwarut ɣef {{km}} km.",
     authTitle: "Kcem ɣer Nadhir",
+    authMetaTitle: "Kcem",
     authSubtitle: "Sekles imukan i k-yecqan, tesɛuḍ alɣu zik.",
     email: "Imayl",
     password: "Awal uffir",

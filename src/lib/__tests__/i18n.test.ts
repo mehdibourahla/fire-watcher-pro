@@ -40,6 +40,37 @@ describe("locale parity", () => {
   }
 });
 
+describe("head titles", () => {
+  const BRAND: Record<string, string> = {
+    en: "Nadhir",
+    fr: "Nadhir",
+    kab: "Nadhir",
+    ar: "نذير",
+  };
+
+  // titledMeta appends the brand, so a page key carrying it renders it twice
+  it("no titledMeta key repeats the brand", () => {
+    const keys = new Set<string>();
+    for (const file of walk("src")) {
+      const src = readFileSync(file, "utf8");
+      for (const m of src.matchAll(/titledMeta\(\s*"([a-zA-Z0-9_.]+)"/g))
+        keys.add(m[1]!);
+    }
+    expect(keys.size).toBeGreaterThan(0);
+
+    const duplicated: string[] = [];
+    for (const [lng, brand] of Object.entries(BRAND)) {
+      const t = i18n.getFixedT(lng);
+      for (const key of keys) {
+        const title = t("meta.titleTemplate", { page: t(key) });
+        if (title.split(brand).length - 1 > 1)
+          duplicated.push(`${lng} ${key}: ${title}`);
+      }
+    }
+    expect(duplicated).toEqual([]);
+  });
+});
+
 describe("counted labels", () => {
   const COUNTED = [
     "map.fireCount",

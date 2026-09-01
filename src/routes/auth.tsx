@@ -8,7 +8,7 @@ import { titledMeta } from "@/lib/page-meta";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
-    meta: titledMeta("account.authTitle", "account.authSubtitle"),
+    meta: titledMeta("account.authMetaTitle", "account.authSubtitle"),
   }),
   component: AuthPage,
 });
