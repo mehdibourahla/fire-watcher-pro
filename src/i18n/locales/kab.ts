@@ -352,6 +352,7 @@ export const kab: Translation = {
     },
     reason: {
       credentials_missing: "Inekcam n umefki ur ttwasbadun ara",
+      licence_invalid: "Turagt n umefki d tarameɣtut neɣ tfat",
       upstream_unreachable: "Ur nezmir ara ad naweḍ ɣer umefki n yisefka",
       schema_invalid: "Amasal n yisefka ur yekfi ara asenqed",
       data_delayed: "Isefka yetturaǧun ur d-wwiḍen ara",

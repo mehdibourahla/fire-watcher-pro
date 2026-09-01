@@ -26,10 +26,11 @@ Overpass rather than geoBoundaries or GADM — those have incomplete Algerian AD
 
 ## Stack
 
-TanStack Start (SSR React) with TypeScript and Tailwind, on Supabase Postgres. Ingestion
-runs as server routes driven by `pg_cron` rather than a separate worker process. Geometry is
-stored as plain lat/lon columns instead of PostGIS (ADR-001), so distance work happens in
-application code.
+TanStack Start (SSR React) with TypeScript and Tailwind, on Supabase Postgres. Source work
+runs as isolated per-contract jobs from a durable Postgres queue. Cloudflare Workers consumes
+short jobs; GitHub Actions consumes the CPU-heavy daily FWI and EFFIS jobs. Geometry is stored
+as plain lat/lon columns instead of PostGIS (ADR-001), so distance work happens in application
+code.
 
 Package manager is **bun**, not npm — the lockfile is `bun.lock` and every script below
 assumes it.
@@ -67,21 +68,26 @@ bun run seed:geo            # add --prune to drop units no longer in data/geo/
 
 ## Commands
 
-| Command                 | Purpose                                             |
-| ----------------------- | --------------------------------------------------- |
-| `bun run dev`           | dev server on :8080                                 |
-| `bun run build`         | production build                                    |
-| `bun run test`          | vitest suite                                        |
-| `bun run lint`          | eslint                                              |
-| `bun run format`        | prettier                                            |
-| `bun run seed:geo`      | reseed admin units and settlements from `data/geo/` |
-| `bun run bootstrap:fwi` | fill `fwi_state` for communes that have none        |
+| Command                               | Purpose                                                     |
+| ------------------------------------- | ----------------------------------------------------------- |
+| `bun run dev`                         | dev server on :8080                                         |
+| `bun run build`                       | production build                                            |
+| `bun run test`                        | vitest suite                                                |
+| `bun run lint`                        | eslint                                                      |
+| `bun run format`                      | prettier                                                    |
+| `bun run seed:geo`                    | reseed admin units and settlements from `data/geo/`         |
+| `bun run bootstrap:fwi`               | fill `fwi_state` for communes that have none                |
+| `bun run source:job -- --target ...`  | consume at most one queued job for the named execution tier |
+| `bun run watchdog:sources`            | fail when the private source watchdog reports an issue      |
+| `bun run replay:source -- <gap-uuid>` | enqueue one previously recorded gap for replay              |
 
 ## How it fits together
 
-Detections arrive from FIRMS and are clustered into `fire_clusters`, each resolved to a
-commune. Separately, the risk pipeline pulls daily weather per commune and advances the
-Canadian Forest Fire Weather Index.
+Detections arrive from FIRMS and FCI, then independent jobs screen persistent heat sources,
+cluster accepted points into `fire_clusters`, enrich wind, publish broadcasts, deliver them,
+and evaluate alert rules. Separately, daily jobs pull weather per commune, advance the Canadian
+Forest Fire Weather Index, and ingest the EFFIS comparator. Dependencies are explicit in the
+queue, so an optional-source failure does not consume another contract's lease or retry budget.
 
 The FWI codes are **stateful**: yesterday's fuel-moisture codes are persisted in `fwi_state`
 so each run advances one day instead of re-fetching months of history. This matters because
@@ -91,9 +97,20 @@ a fresh commune set is therefore rate-limited by the Open-Meteo free tier, which
 `bootstrap:fwi` exists to work around: it retries in passes, and progress is durable because
 each batch is flushed as it completes.
 
-Scheduling is `pg_cron` calling back into the deployed app over HTTP. The target host is the
-vault secret `nadhir_app_url`; the cron function raises if it is unset, so the jobs fail
-loudly rather than silently doing nothing when the app is not deployed.
+Supabase cron and Cloudflare's minute Cron Trigger independently enqueue the same normalized
+contract slots. A unique contract/slot key makes duplicate triggers harmless. Cloudflare
+dispatches bounded one-job Worker requests; expired leases are recovered in Postgres. An
+independent GitHub Actions watchdog reads the private queue view every five minutes. A watchdog
+failure means the database has evidence of a breached contract—such as a late job, expired lease,
+or missing run—not that it has inferred which process failed. Retries are bounded by each
+contract's attempt count and usefulness window. Gaps are recorded durably. FIRMS and FCI gaps
+inside their provider retention windows can be replayed exactly, only by ID, through
+`bun run replay:source -- <gap-uuid>`; terminal gaps for other contracts are marked unrecoverable.
+Current-only jobs never run a fresh payload against an old interval: older queued slots are
+audited as unrecoverable, and the FWI/EFFIS consumers drain through the newest useful job. A
+not-yet-available retry keeps its consumer polling; once its usefulness window closes, it is
+terminalized and audited in bounded maintenance batches instead of being executed late. A gap is
+offered for replay only while the provider can still serve its recorded interval.
 
 A public read API is exposed at `/api/public/v1/fires`, `/api/public/v1/risk`,
 `/api/public/v1/stats` and `/api/public/v1/status`. The status endpoint is the same sanitized,
@@ -116,9 +133,8 @@ Live at <https://nadhir.app> (plus `www`). The custom domains are declared as `r
 itself — there are no DNS records to add.
 
 Declaring `routes` also flips wrangler's `workers_dev` default to false, so
-`nadhir.mehdibrhl4.workers.dev` now returns 404 (Cloudflare error 1042). That is deliberate —
-one canonical host — but it means the scheduler's `nadhir_app_url` must be updated in the same
-change, or `pg_cron` keeps calling a hostname that no longer resolves to the Worker.
+`nadhir.mehdibrhl4.workers.dev` now returns 404 (Cloudflare error 1042). That is deliberate:
+scheduled Worker dispatch uses the canonical `NADHIR_APP_URL` configured in `vite.config.ts`.
 
 **This needs the Workers Paid plan.** React SSR costs more than the free plan's 10ms CPU
 budget, so on the free plan roughly 70% of page loads return 503 `exceededCpu` while the JSON
@@ -130,16 +146,15 @@ build time. Everything else is a runtime secret set with `wrangler secret put <N
 `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `FIRMS_MAP_KEY`,
 `EUMETSAT_CONSUMER_KEY`, `EUMETSAT_CONSUMER_SECRET`, `NADHIR_CRON_SECRET`.
 
-After deploying, point the scheduler at the new host by setting the vault secret
-`nadhir_app_url` to the deployment URL; until then every `pg_cron` job fails by design.
-`NADHIR_CRON_SECRET` authenticates external callers of `/api/public/cron/*`; `pg_cron` itself
-authenticates with the separate token in `public.internal_cron_token`.
+`NADHIR_CRON_SECRET` authenticates only the private one-job execution route. There are no
+`/api/public/cron/*` execution endpoints. `source_jobs`, `source_job_leases`, `source_gaps`,
+raw runs, and replay controls are service-role-only.
 
-`pg_cron` drives ingest and alerts. The daily FWI refresh does **not** run there — it is a
-CPU-bound batch over 1536 communes that takes minutes, so it lives in
-`.github/workflows/risk-refresh.yml` and the `nadhir-risk` job is unscheduled. Each Actions
-run also gets a fresh IP, which matters because Open-Meteo's free quota is per-IP; dispatching
-that workflow is the fastest way to fill `fwi_state` for a new commune set.
+The daily FWI and EFFIS jobs are CPU-bound, so separate matrix consumers in
+`.github/workflows/risk-refresh.yml` claim them independently throughout their 06:00–10:00 UTC
+retry window. GitHub-hosted runners may use a different egress IP, but matrix jobs can share
+runner IPs, so this is only a best-effort aid for Open-Meteo's per-IP quota. Dispatching the
+workflow remains the fastest way to fill `fwi_state` for a new commune set.
 
 ## Known limitations
 

@@ -53,11 +53,15 @@ export default defineConfig(({ command }) => ({
       ? [
           nitro({
             preset: "cloudflare-module",
+            plugins: ["./src/lib/source-scheduler.plugin.server.ts"],
             cloudflare: {
               nodeCompat: true,
               deployConfig: true,
               wrangler: {
                 name: "nadhir",
+                compatibility_date: "2026-08-31",
+                triggers: { crons: ["* * * * *"] },
+                vars: { NADHIR_APP_URL: "https://nadhir.app" },
                 // paid default is 50ms, which React SSR over 1536 communes exceeds
                 limits: { cpu_ms: 30000 },
                 // SSR makes several Supabase round-trips, so run near the database

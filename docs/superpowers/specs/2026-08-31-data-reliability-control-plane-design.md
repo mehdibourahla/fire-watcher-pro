@@ -74,14 +74,14 @@ The existing system has useful pieces but no end-to-end reliability contract.
 Reliability applies to signal families, not a rule that every enrichment must have two
 providers.
 
-| Family                   | Members at launch                                       | Required behavior                                                                                            |
-| ------------------------ | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| Fire detection           | FCI, FIRMS                                              | Continue with either source, visibly degraded; neither source is interpreted as proof of no fire.            |
-| Detection processing     | persistent-source screen, fusion, wind enrichment       | Screening and fusion are required before a fire can alert. Wind may degrade without blocking detection.      |
-| Official warnings        | ONM                                                     | No substitute may impersonate the authority. Distinguish a successful empty poll from an unreachable feed.   |
-| Fire danger              | local FWI, EFFIS comparator                             | Local FWI is the operational product. EFFIS may validate it but cannot replace an incomplete local snapshot. |
-| Broadcast delivery       | FCM, Telegram                                           | Persist once, attempt channels independently, retry failures, and expose per-channel delivery state.         |
-| Reference and enrichment | geography, land cover, future NDVI/SWI/GHSL/burned area | Serve the latest valid version with its age or omit it. Never block critical families.                       |
+| Family                   | Members at launch                                                   | Required behavior                                                                                            |
+| ------------------------ | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Fire detection           | FCI, FIRMS                                                          | Continue with either source, visibly degraded; neither source is interpreted as proof of no fire.            |
+| Detection processing     | persistent-source screen, fusion, wind enrichment, alert evaluation | Screening and fusion are required before a fire can alert. Wind may degrade without blocking detection.      |
+| Official warnings        | ONM                                                                 | No substitute may impersonate the authority. Distinguish a successful empty poll from an unreachable feed.   |
+| Fire danger              | local FWI, EFFIS comparator                                         | Local FWI is the operational product. EFFIS may validate it but cannot replace an incomplete local snapshot. |
+| Broadcast delivery       | FCM, Telegram                                                       | Persist once, attempt channels independently, retry failures, and expose per-channel delivery state.         |
+| Reference and enrichment | geography, land cover, future NDVI/SWI/GHSL/burned area             | Serve the latest valid version with its age or omit it. Never block critical families.                       |
 
 Each member is classified as `critical`, `supporting`, or `optional`. Critical means its
 failure changes user-facing capability and opens an incident; it does not mean fail the
@@ -226,12 +226,20 @@ area product whose valid date advances.
   keys for idempotency.
 - Snapshot products rebuild a complete staging snapshot; they do not patch the currently
   published snapshot in place.
-- Replays use the same adapter and validation path as scheduled runs.
+- Exact replays use the same adapter and validation path as scheduled runs, but are enabled only
+  where the provider can supply the requested historical interval. Unsupported or expired gaps
+  are marked unrecoverable rather than silently substituting current data.
+- For current-only adapters, an older queued slot is audited as missed and unrecoverable when a
+  newer useful slot exists; consumers drain to the newest slot instead of mislabelling current
+  data with the old interval.
+- A future retry remains pending so a consumer cannot mistake backoff for a drained queue. A job
+  is never claimed after its usefulness deadline; expiry is audited and preserves either an open
+  replayable gap still inside provider retention or an explicitly unrecoverable one. Expiry and
+  supersession maintenance is processed in bounded batches, and every terminal job links its gap.
 
-The existing direct cron endpoints are removed after the queue-backed runners and both
-triggers are live. A GitHub Actions watchdog reads the run ledger and queue without using
-the application host, so it can detect a dead Worker as well as a dead scheduler. No
-parallel legacy scheduler remains.
+The direct cron endpoints are removed. A GitHub Actions watchdog reads the run ledger and queue
+without using the application host. It reports breached database evidence without inferring that
+a particular Worker or scheduler process died. No parallel legacy scheduler remains.
 
 ## Fallback behavior
 

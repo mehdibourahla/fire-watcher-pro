@@ -352,6 +352,7 @@ export const en = {
     },
     reason: {
       credentials_missing: "Provider credentials are not configured",
+      licence_invalid: "The provider licence is invalid or expired",
       upstream_unreachable: "The upstream provider could not be reached",
       schema_invalid: "The upstream data format failed validation",
       data_delayed: "The expected upstream data has not arrived",

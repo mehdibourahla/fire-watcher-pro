@@ -363,6 +363,7 @@ export const fr: Translation = {
     reason: {
       credentials_missing:
         "Les identifiants du fournisseur ne sont pas configurés",
+      licence_invalid: "La licence du fournisseur est invalide ou expirée",
       upstream_unreachable: "Le fournisseur en amont est injoignable",
       schema_invalid: "Le format des données en amont a échoué à la validation",
       data_delayed: "Les données attendues ne sont pas encore arrivées",

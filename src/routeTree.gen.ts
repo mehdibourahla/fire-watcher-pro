@@ -35,13 +35,11 @@ import { Route as SurvivalAreasRouteImport } from './routes/survival/areas'
 import { Route as SurvivalCheckinRouteImport } from './routes/survival/checkin'
 import { Route as SurvivalSosRouteImport } from './routes/survival/sos'
 import { Route as ContributeLanguageLocaleRouteImport } from './routes/contribute_.language.$locale'
+import { Route as ApiInternalSourceJobsRunRouteImport } from './routes/api/internal/source-jobs/run'
 import { Route as ApiPublicContributeIdeaRouteImport } from './routes/api/public/contribute/idea'
 import { Route as ApiPublicContributeMyTranslationsRouteImport } from './routes/api/public/contribute/my-translations'
 import { Route as ApiPublicContributeTranslationRouteImport } from './routes/api/public/contribute/translation'
 import { Route as ApiPublicContributeVoteRouteImport } from './routes/api/public/contribute/vote'
-import { Route as ApiPublicCronAlertsRouteImport } from './routes/api/public/cron/alerts'
-import { Route as ApiPublicCronIngestRouteImport } from './routes/api/public/cron/ingest'
-import { Route as ApiPublicCronRiskRouteImport } from './routes/api/public/cron/risk'
 import { Route as ApiPublicV1IndexRouteImport } from './routes/api/public/v1/index'
 import { Route as ApiPublicV1FiresRouteImport } from './routes/api/public/v1/fires'
 import { Route as ApiPublicV1RiskRouteImport } from './routes/api/public/v1/risk'
@@ -180,6 +178,12 @@ const ContributeLanguageLocaleRoute =
     path: '/contribute/language/$locale',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiInternalSourceJobsRunRoute =
+  ApiInternalSourceJobsRunRouteImport.update({
+    id: '/api/internal/source-jobs/run',
+    path: '/api/internal/source-jobs/run',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicContributeIdeaRoute = ApiPublicContributeIdeaRouteImport.update({
   id: '/api/public/contribute/idea',
   path: '/api/public/contribute/idea',
@@ -200,21 +204,6 @@ const ApiPublicContributeTranslationRoute =
 const ApiPublicContributeVoteRoute = ApiPublicContributeVoteRouteImport.update({
   id: '/api/public/contribute/vote',
   path: '/api/public/contribute/vote',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicCronAlertsRoute = ApiPublicCronAlertsRouteImport.update({
-  id: '/api/public/cron/alerts',
-  path: '/api/public/cron/alerts',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicCronIngestRoute = ApiPublicCronIngestRouteImport.update({
-  id: '/api/public/cron/ingest',
-  path: '/api/public/cron/ingest',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicCronRiskRoute = ApiPublicCronRiskRouteImport.update({
-  id: '/api/public/cron/risk',
-  path: '/api/public/cron/risk',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicV1IndexRoute = ApiPublicV1IndexRouteImport.update({
@@ -279,13 +268,11 @@ export interface FileRoutesByFullPath {
   '/survival/sos': typeof SurvivalSosRoute
   '/survival/': typeof SurvivalIndexRoute
   '/contribute/language/$locale': typeof ContributeLanguageLocaleRoute
+  '/api/internal/source-jobs/run': typeof ApiInternalSourceJobsRunRoute
   '/api/public/contribute/idea': typeof ApiPublicContributeIdeaRoute
   '/api/public/contribute/my-translations': typeof ApiPublicContributeMyTranslationsRoute
   '/api/public/contribute/translation': typeof ApiPublicContributeTranslationRoute
   '/api/public/contribute/vote': typeof ApiPublicContributeVoteRoute
-  '/api/public/cron/alerts': typeof ApiPublicCronAlertsRoute
-  '/api/public/cron/ingest': typeof ApiPublicCronIngestRoute
-  '/api/public/cron/risk': typeof ApiPublicCronRiskRoute
   '/api/public/v1/fires': typeof ApiPublicV1FiresRoute
   '/api/public/v1/risk': typeof ApiPublicV1RiskRoute
   '/api/public/v1/sources': typeof ApiPublicV1SourcesRoute
@@ -319,13 +306,11 @@ export interface FileRoutesByTo {
   '/survival/sos': typeof SurvivalSosRoute
   '/survival': typeof SurvivalIndexRoute
   '/contribute/language/$locale': typeof ContributeLanguageLocaleRoute
+  '/api/internal/source-jobs/run': typeof ApiInternalSourceJobsRunRoute
   '/api/public/contribute/idea': typeof ApiPublicContributeIdeaRoute
   '/api/public/contribute/my-translations': typeof ApiPublicContributeMyTranslationsRoute
   '/api/public/contribute/translation': typeof ApiPublicContributeTranslationRoute
   '/api/public/contribute/vote': typeof ApiPublicContributeVoteRoute
-  '/api/public/cron/alerts': typeof ApiPublicCronAlertsRoute
-  '/api/public/cron/ingest': typeof ApiPublicCronIngestRoute
-  '/api/public/cron/risk': typeof ApiPublicCronRiskRoute
   '/api/public/v1/fires': typeof ApiPublicV1FiresRoute
   '/api/public/v1/risk': typeof ApiPublicV1RiskRoute
   '/api/public/v1/sources': typeof ApiPublicV1SourcesRoute
@@ -362,13 +347,11 @@ export interface FileRoutesById {
   '/survival/sos': typeof SurvivalSosRoute
   '/survival/': typeof SurvivalIndexRoute
   '/contribute_/language/$locale': typeof ContributeLanguageLocaleRoute
+  '/api/internal/source-jobs/run': typeof ApiInternalSourceJobsRunRoute
   '/api/public/contribute/idea': typeof ApiPublicContributeIdeaRoute
   '/api/public/contribute/my-translations': typeof ApiPublicContributeMyTranslationsRoute
   '/api/public/contribute/translation': typeof ApiPublicContributeTranslationRoute
   '/api/public/contribute/vote': typeof ApiPublicContributeVoteRoute
-  '/api/public/cron/alerts': typeof ApiPublicCronAlertsRoute
-  '/api/public/cron/ingest': typeof ApiPublicCronIngestRoute
-  '/api/public/cron/risk': typeof ApiPublicCronRiskRoute
   '/api/public/v1/fires': typeof ApiPublicV1FiresRoute
   '/api/public/v1/risk': typeof ApiPublicV1RiskRoute
   '/api/public/v1/sources': typeof ApiPublicV1SourcesRoute
@@ -405,13 +388,11 @@ export interface FileRouteTypes {
     | '/survival/sos'
     | '/survival/'
     | '/contribute/language/$locale'
+    | '/api/internal/source-jobs/run'
     | '/api/public/contribute/idea'
     | '/api/public/contribute/my-translations'
     | '/api/public/contribute/translation'
     | '/api/public/contribute/vote'
-    | '/api/public/cron/alerts'
-    | '/api/public/cron/ingest'
-    | '/api/public/cron/risk'
     | '/api/public/v1/fires'
     | '/api/public/v1/risk'
     | '/api/public/v1/sources'
@@ -445,13 +426,11 @@ export interface FileRouteTypes {
     | '/survival/sos'
     | '/survival'
     | '/contribute/language/$locale'
+    | '/api/internal/source-jobs/run'
     | '/api/public/contribute/idea'
     | '/api/public/contribute/my-translations'
     | '/api/public/contribute/translation'
     | '/api/public/contribute/vote'
-    | '/api/public/cron/alerts'
-    | '/api/public/cron/ingest'
-    | '/api/public/cron/risk'
     | '/api/public/v1/fires'
     | '/api/public/v1/risk'
     | '/api/public/v1/sources'
@@ -487,13 +466,11 @@ export interface FileRouteTypes {
     | '/survival/sos'
     | '/survival/'
     | '/contribute_/language/$locale'
+    | '/api/internal/source-jobs/run'
     | '/api/public/contribute/idea'
     | '/api/public/contribute/my-translations'
     | '/api/public/contribute/translation'
     | '/api/public/contribute/vote'
-    | '/api/public/cron/alerts'
-    | '/api/public/cron/ingest'
-    | '/api/public/cron/risk'
     | '/api/public/v1/fires'
     | '/api/public/v1/risk'
     | '/api/public/v1/sources'
@@ -518,13 +495,11 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   FireIdRoute: typeof FireIdRoute
   ContributeLanguageLocaleRoute: typeof ContributeLanguageLocaleRoute
+  ApiInternalSourceJobsRunRoute: typeof ApiInternalSourceJobsRunRoute
   ApiPublicContributeIdeaRoute: typeof ApiPublicContributeIdeaRoute
   ApiPublicContributeMyTranslationsRoute: typeof ApiPublicContributeMyTranslationsRoute
   ApiPublicContributeTranslationRoute: typeof ApiPublicContributeTranslationRoute
   ApiPublicContributeVoteRoute: typeof ApiPublicContributeVoteRoute
-  ApiPublicCronAlertsRoute: typeof ApiPublicCronAlertsRoute
-  ApiPublicCronIngestRoute: typeof ApiPublicCronIngestRoute
-  ApiPublicCronRiskRoute: typeof ApiPublicCronRiskRoute
   ApiPublicV1FiresRoute: typeof ApiPublicV1FiresRoute
   ApiPublicV1RiskRoute: typeof ApiPublicV1RiskRoute
   ApiPublicV1SourcesRoute: typeof ApiPublicV1SourcesRoute
@@ -718,6 +693,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContributeLanguageLocaleRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/internal/source-jobs/run': {
+      id: '/api/internal/source-jobs/run'
+      path: '/api/internal/source-jobs/run'
+      fullPath: '/api/internal/source-jobs/run'
+      preLoaderRoute: typeof ApiInternalSourceJobsRunRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/contribute/idea': {
       id: '/api/public/contribute/idea'
       path: '/api/public/contribute/idea'
@@ -744,27 +726,6 @@ declare module '@tanstack/react-router' {
       path: '/api/public/contribute/vote'
       fullPath: '/api/public/contribute/vote'
       preLoaderRoute: typeof ApiPublicContributeVoteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/cron/alerts': {
-      id: '/api/public/cron/alerts'
-      path: '/api/public/cron/alerts'
-      fullPath: '/api/public/cron/alerts'
-      preLoaderRoute: typeof ApiPublicCronAlertsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/cron/ingest': {
-      id: '/api/public/cron/ingest'
-      path: '/api/public/cron/ingest'
-      fullPath: '/api/public/cron/ingest'
-      preLoaderRoute: typeof ApiPublicCronIngestRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/cron/risk': {
-      id: '/api/public/cron/risk'
-      path: '/api/public/cron/risk'
-      fullPath: '/api/public/cron/risk'
-      preLoaderRoute: typeof ApiPublicCronRiskRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/v1/': {
@@ -877,14 +838,12 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   FireIdRoute: FireIdRoute,
   ContributeLanguageLocaleRoute: ContributeLanguageLocaleRoute,
+  ApiInternalSourceJobsRunRoute: ApiInternalSourceJobsRunRoute,
   ApiPublicContributeIdeaRoute: ApiPublicContributeIdeaRoute,
   ApiPublicContributeMyTranslationsRoute:
     ApiPublicContributeMyTranslationsRoute,
   ApiPublicContributeTranslationRoute: ApiPublicContributeTranslationRoute,
   ApiPublicContributeVoteRoute: ApiPublicContributeVoteRoute,
-  ApiPublicCronAlertsRoute: ApiPublicCronAlertsRoute,
-  ApiPublicCronIngestRoute: ApiPublicCronIngestRoute,
-  ApiPublicCronRiskRoute: ApiPublicCronRiskRoute,
   ApiPublicV1FiresRoute: ApiPublicV1FiresRoute,
   ApiPublicV1RiskRoute: ApiPublicV1RiskRoute,
   ApiPublicV1SourcesRoute: ApiPublicV1SourcesRoute,

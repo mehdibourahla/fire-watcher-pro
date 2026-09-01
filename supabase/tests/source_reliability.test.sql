@@ -38,12 +38,13 @@ select is(
       'openmeteo_wind',
       'local_fwi',
       'effis',
+      'alert_evaluation',
       'broadcast_publish',
       'broadcast_delivery',
       'geo'
     ])
   ),
-  11,
+  12,
   'every current external source and derived stage has a contract'
 );
 

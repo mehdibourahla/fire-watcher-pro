@@ -8,6 +8,7 @@ export type SourceCoverageStatus = "complete" | "partial" | "unknown";
 
 export type PublicSourceReason =
   | "credentials_missing"
+  | "licence_invalid"
   | "upstream_unreachable"
   | "schema_invalid"
   | "data_delayed"
@@ -64,10 +65,14 @@ export function publicReasonForError(error: string): PublicSourceReason {
     message.includes("fetch") ||
     message.includes("network") ||
     message.includes("upstream") ||
-    message.includes("provider") ||
-    message.includes("feed") ||
     /\b[45]\d\d\b/.test(message)
   )
+    return "upstream_unreachable";
+
+  if (message.includes("licence") || message.includes("license"))
+    return "licence_invalid";
+
+  if (message.includes("provider") || message.includes("feed"))
     return "upstream_unreachable";
 
   return "internal_error";
@@ -142,8 +147,24 @@ export function deliveryRunOutcome(input: {
   };
 }
 
-export type SourceRunRpcArgs =
+type GeneratedSourceRunRpcArgs =
   Database["public"]["Functions"]["record_source_run"]["Args"];
+type NullableSourceRunArg =
+  | "_data_from"
+  | "_data_through"
+  | "_private_diagnostic"
+  | "_public_reason_code"
+  | "_published_at"
+  | "_records_expected"
+  | "_upstream_published_at"
+  | "_validated_at";
+
+export type SourceRunRpcArgs = Omit<
+  GeneratedSourceRunRpcArgs,
+  NullableSourceRunArg
+> & {
+  [Key in NullableSourceRunArg]: GeneratedSourceRunRpcArgs[Key] | null;
+};
 
 export function sourceRunRpcArgs(
   report: SourceRunReport,

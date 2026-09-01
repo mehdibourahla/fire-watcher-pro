@@ -18,7 +18,7 @@ count() {
 }
 
 for pass in $(seq 1 40); do
-  out=$(bun -e 'const {runRiskPipeline}=await import("./src/lib/ingest/pipeline.server.ts");console.log(JSON.stringify(await runRiskPipeline()))' 2>&1 | tail -1)
+  out=$(bun -e 'const {refreshRiskForecasts}=await import("./src/lib/ingest/weather.server.ts");console.log(JSON.stringify(await refreshRiskForecasts()))' 2>&1 | tail -1)
   n=$(count)
   echo "[pass $pass] fwi_state=$n/1536 :: $out"
   if [ "$n" -ge 1536 ] 2>/dev/null; then echo "BOOTSTRAP COMPLETE"; exit 0; fi

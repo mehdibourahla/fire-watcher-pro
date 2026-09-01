@@ -349,6 +349,7 @@ export const ar: Translation = {
     },
     reason: {
       credentials_missing: "بيانات اعتماد المزود غير مضبوطة",
+      licence_invalid: "ترخيص مزود البيانات غير صالح أو منتهي الصلاحية",
       upstream_unreachable: "تعذر الوصول إلى مزود البيانات",
       schema_invalid: "فشل التحقق من تنسيق بيانات المزود",
       data_delayed: "لم تصل البيانات المتوقعة بعد",

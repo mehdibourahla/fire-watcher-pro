@@ -41,7 +41,21 @@ including its `service_role` key — is a documented constant, worthless outside
 machine. Outbound email lands in the local test inbox (`supabase status` shows the URL),
 so account signup and login are fully testable locally, which the live project cannot do
 yet. Add your own FIRMS/EUMETSAT keys and any string as `NADHIR_CRON_SECRET` to exercise
-ingestion end to end.
+isolated source jobs end to end. Supabase and Cloudflare enqueue normalized slots; Workers
+claim one short job at a time, while `local_fwi` and `effis` are claimed by separate GitHub
+Actions consumers.
+
+Queue, lease, gap, watchdog, and raw-run data are service-role-only. Exact interval replay is
+currently supported for FIRMS (10 days) and FCI (90 days). To replay a supported gap inside its
+retention window, first identify an existing `source_gaps.id`, then run:
+
+```sh
+SUPABASE_URL=<local-url> SUPABASE_SERVICE_ROLE_KEY=<local-key> \
+  bun run replay:source -- <gap-uuid>
+```
+
+The command deliberately accepts neither a contract key nor an arbitrary interval. It rejects
+unsupported gaps; once a supported gap ages beyond provider retention, it becomes unrecoverable.
 
 ## Migrations
 

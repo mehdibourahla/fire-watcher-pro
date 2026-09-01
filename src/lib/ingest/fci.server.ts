@@ -1,4 +1,5 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import type { SourceReplayInterval } from "@/lib/source-jobs";
 
 /* MTG FCI active-fire detections via EUMETSAT's public WFS: the same product the
  * Data Store serves as netCDF, pre-decoded to GeoJSON points, anonymous, ~25 min
@@ -12,6 +13,7 @@ const LAYER = "mtg_fd:frp";
  * and Moroccan borders matter; fusion only assigns communes inside Algeria. */
 const WATCH = { south: 18.9, west: -8.7, north: 37.6, east: 12.0 };
 const WINDOW_MIN = 40;
+const SLOT_MIN = 10;
 
 export type FciFeatureCollection = {
   features: {
@@ -89,13 +91,28 @@ export type FciRun = {
   outside: number;
   latestSlot: string | null;
   ageMinutes: number | null;
+  dataFrom?: string;
+  dataThrough?: string;
   error?: string;
 };
 
-export async function ingestFci(): Promise<FciRun> {
-  const since = new Date(Date.now() - WINDOW_MIN * 60_000)
-    .toISOString()
-    .slice(0, 19);
+function wfsTime(value: string): string {
+  return new Date(value).toISOString().replace(/\.\d{3}Z$/, "Z");
+}
+
+export async function ingestFci(
+  interval?: SourceReplayInterval,
+): Promise<FciRun> {
+  const since = interval
+    ? wfsTime(
+        new Date(
+          Date.parse(interval.dataFrom) - SLOT_MIN * 60_000,
+        ).toISOString(),
+      ).slice(0, -1)
+    : new Date(Date.now() - WINDOW_MIN * 60_000).toISOString().slice(0, 19);
+  const timeFilter = interval
+    ? `time >= '${since}Z' AND time <= '${wfsTime(interval.dataThrough)}'`
+    : `time >= '${since}Z'`;
   const url = new URL(WFS_URL);
   url.search = new URLSearchParams({
     service: "WFS",
@@ -103,7 +120,7 @@ export async function ingestFci(): Promise<FciRun> {
     request: "GetFeature",
     typeNames: LAYER,
     outputFormat: "application/json",
-    cql_filter: `time >= '${since}Z' AND BBOX(geom, ${WATCH.south}, ${WATCH.west}, ${WATCH.north}, ${WATCH.east})`,
+    cql_filter: `${timeFilter} AND BBOX(geom, ${WATCH.south}, ${WATCH.west}, ${WATCH.north}, ${WATCH.east})`,
   }).toString();
 
   const empty: FciRun = {
@@ -125,7 +142,24 @@ export async function ingestFci(): Promise<FciRun> {
     };
   }
 
-  const { rows, outside, latestSlot } = parseFciFeatures(json);
+  const bounded = interval
+    ? {
+        ...json,
+        features: json.features.filter((feature) => {
+          const pixelMs = Date.parse(
+            `${feature.properties.Datetime ?? ""}Z`.replace(" ", "T"),
+          );
+          const detectedMs = Number.isFinite(pixelMs)
+            ? pixelMs
+            : Date.parse(feature.properties.time ?? "");
+          return (
+            detectedMs >= Date.parse(interval.dataFrom) &&
+            detectedMs <= Date.parse(interval.dataThrough)
+          );
+        }),
+      }
+    : json;
+  const { rows, outside, latestSlot } = parseFciFeatures(bounded);
   if (!rows.length && outside > 0)
     return {
       ...empty,
@@ -163,5 +197,8 @@ export async function ingestFci(): Promise<FciRun> {
     ageMinutes: latestSlot
       ? Math.round((Date.now() - Date.parse(latestSlot)) / 60_000)
       : null,
+    ...(interval === undefined
+      ? {}
+      : { dataFrom: interval.dataFrom, dataThrough: interval.dataThrough }),
   };
 }

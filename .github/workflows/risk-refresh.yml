@@ -1,21 +1,21 @@
-name: Daily FWI refresh
+name: Daily source jobs
 
-# The pipeline is CPU-bound over 1536 communes and exceeds the Cloudflare Worker
-# CPU limit, so it runs here instead of the /api/public/cron/risk endpoint.
 on:
   schedule:
-    - cron: "0 6 * * *"
+    - cron: "5,20,35,50 6-9 * * *"
   workflow_dispatch:
 
-# the job only talks to Supabase and Open-Meteo, so it needs no GitHub API access
 permissions: {}
 
-concurrency:
-  group: risk-refresh
-  cancel-in-progress: false
-
 jobs:
-  refresh:
+  consume:
+    strategy:
+      fail-fast: false
+      matrix:
+        contract: [local_fwi, effis]
+    concurrency:
+      group: daily-source-${{ matrix.contract }}
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -27,22 +27,23 @@ jobs:
 
       - run: bun install --frozen-lockfile
 
-      - name: Refresh risk forecasts
+      - name: Consume ${{ matrix.contract }} job
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          set -euo pipefail
-          out=$(bun -e 'const {runRiskPipeline}=await import("./src/lib/ingest/pipeline.server.ts");console.log(JSON.stringify(await runRiskPipeline()))' | tail -1)
-          echo "$out"
-          err=$(echo "$out" | grep -oE '"error":"[^"]*"' || true)
-          rows=$(echo "$out" | grep -oE '"rows":[0-9]+' | grep -oE '[0-9]+' || echo 0)
-          if [ -n "$err" ]; then
-            # the free quota stops a run partway; that is only a failure if nothing landed
-            if [ "$rows" -gt 0 ] && echo "$err" | grep -q 429; then
-              echo "::warning::partial refresh — Open-Meteo quota reached after $rows rows"
-            else
-              echo "::error::$err"
+          deadline=$((SECONDS + 1740))
+          while true; do
+            set +e
+            bun run source:job -- --target github --contract "${{ matrix.contract }}"
+            status=$?
+            set -e
+            if [ "$status" -eq 0 ]; then exit 0; fi
+            if [ "$SECONDS" -ge "$deadline" ]; then
+              echo "::error::source job drain window exceeded"
               exit 1
             fi
-          fi
+            if [ "$status" -eq 76 ]; then continue; fi
+            if [ "$status" -ne 75 ]; then exit "$status"; fi
+            sleep 60
+          done
