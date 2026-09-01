@@ -16,21 +16,12 @@ import { zonesQuery } from "@/lib/account";
 import { RiskChip } from "@/components/nadhir/RiskChip";
 import { riskSolid } from "@/components/nadhir/risk-visuals";
 import { relativeTime } from "@/lib/nadhir";
+import { titledMeta } from "@/lib/page-meta";
 
 export const Route = createFileRoute("/_authenticated/alerts")({
   head: () => ({
     meta: [
-      { title: "My wildfire alerts — Nadhir" },
-      {
-        name: "description",
-        content:
-          "Alerts raised for your Nadhir watch zones: nearby fire detections and high fire-danger days.",
-      },
-      { property: "og:title", content: "My wildfire alerts — Nadhir" },
-      {
-        property: "og:description",
-        content: "Every warning Nadhir raised for the places you watch.",
-      },
+      ...titledMeta("alerts.title", "alerts.subtitle"),
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],

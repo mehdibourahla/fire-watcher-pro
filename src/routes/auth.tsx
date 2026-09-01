@@ -3,23 +3,11 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { supabase } from "@/integrations/supabase/client";
+import { titledMeta } from "@/lib/page-meta";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
-    meta: [
-      { title: "Sign in — Nadhir wildfire alerts" },
-      {
-        name: "description",
-        content:
-          "Create a free Nadhir account to save watch zones around your village and receive wildfire alerts for Algeria.",
-      },
-      { property: "og:title", content: "Sign in — Nadhir wildfire alerts" },
-      {
-        property: "og:description",
-        content:
-          "Save watch zones and get early wildfire warnings for your area in Algeria.",
-      },
-    ],
+    meta: titledMeta("account.authTitle", "account.authSubtitle"),
   }),
   component: AuthPage,
 });

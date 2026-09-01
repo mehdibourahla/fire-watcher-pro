@@ -1,21 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
+import { pageMeta } from "@/lib/page-meta";
+
 export const Route = createFileRoute("/terms")({
   head: () => ({
     meta: [
-      { title: "Terms of use & disclaimer — Nadhir" },
-      {
-        name: "description",
-        content:
-          "Nadhir is an informational wildfire early-warning service for Algeria. Read the terms of use, limitations and safety disclaimer.",
-      },
-      { property: "og:title", content: "Terms of use & disclaimer — Nadhir" },
-      {
-        property: "og:description",
-        content:
-          "Terms, limitations and safety disclaimer for the Nadhir wildfire service.",
-      },
+      ...pageMeta("legal.termsMetaTitle", "legal.termsMetaDescription"),
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],

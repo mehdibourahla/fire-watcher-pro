@@ -8,22 +8,11 @@ import { requestNotificationPermission } from "@/components/AlertNotifier";
 import { supabase } from "@/integrations/supabase/client";
 import { LOCALES, LOCALE_LABELS, applyLocale, type Locale } from "@/i18n";
 import { profileQuery } from "@/lib/account";
+import { titledMeta } from "@/lib/page-meta";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({
-    meta: [
-      { title: "Alert settings — Nadhir" },
-      {
-        name: "description",
-        content:
-          "Choose your language, alert channels and quiet hours for Nadhir wildfire warnings.",
-      },
-      { property: "og:title", content: "Alert settings — Nadhir" },
-      {
-        property: "og:description",
-        content: "Control how and when Nadhir warns you about wildfires.",
-      },
-    ],
+    meta: titledMeta("nav.settings"),
   }),
   component: SettingsPage,
 });

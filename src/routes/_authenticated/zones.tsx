@@ -7,6 +7,7 @@ import { RiskLegend } from "@/components/SiteChrome";
 import { supabase } from "@/integrations/supabase/client";
 import type { Locale } from "@/i18n";
 import { zonesQuery, type Zone } from "@/lib/account";
+import { titledMeta } from "@/lib/page-meta";
 import {
   LIVE_STATES,
   adminUnitsQuery,
@@ -19,19 +20,7 @@ import {
 
 export const Route = createFileRoute("/_authenticated/zones")({
   head: () => ({
-    meta: [
-      { title: "My watch zones — Nadhir" },
-      {
-        name: "description",
-        content:
-          "Manage the villages, farms and forests you want Nadhir to watch for wildfires in Algeria.",
-      },
-      { property: "og:title", content: "My watch zones — Nadhir" },
-      {
-        property: "og:description",
-        content: "Save places and choose when Nadhir should warn you.",
-      },
-    ],
+    meta: titledMeta("nav.account"),
   }),
   component: ZonesPage,
 });

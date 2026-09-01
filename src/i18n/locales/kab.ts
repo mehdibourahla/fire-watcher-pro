@@ -25,6 +25,20 @@ export const kab: Translation = {
     demoModeNote:
       "Isaduf n usaṭelit ur qqinen ara akka tura. Izwilen d wid n uskan.",
   },
+  meta: {
+    defaultTitle: "Nadhir — Alɣu azawar n tmessi n teẓgi di Lezzayer",
+    titleTemplate: "{{page}} — Nadhir",
+  },
+  notFound: {
+    metaTitle: "Ur nufi ara asebter — Nadhir",
+    title: "Ur nufi ara asebter",
+    body: "Asebter i tettnadiḍ ulac-it neɣ yettwabeddel umidag-is.",
+    home: "Uɣal ɣer usebter agejdan",
+  },
+  errorPage: {
+    title: "Asebter-a ur d-yuli ara",
+    body: "Tella-d tuccḍa ɣer idis-nneɣ. Tzemreḍ ad tsmireḍ neɣ ad tuɣaleḍ ɣer usebter agejdan.",
+  },
   survival: {
     mode: "Askar n leslak",
     online: "Yeqqen",
@@ -819,6 +833,12 @@ export const kab: Translation = {
   legal: {
     terms: "Tiwtilin n useqdec",
     privacy: "Tabaḍnit",
+    termsMetaTitle: "Tiwtilin n useqdec d ulɣu — Nadhir",
+    termsMetaDescription:
+      "Nadhir d ameẓlu n telɣut d ulɣu azawar ɣef tmessi n teẓgi di Lezzayer. Ẓer tiwtilin n useqdec, tilisa-ines d ulɣu n tɣellist.",
+    privacyMetaTitle: "Tasertit n tbaḍnit — Nadhir",
+    privacyMetaDescription:
+      "Anwa isefka udmawanen i yeṭṭef Nadhir i yilɣa, acḥal ara qqimen, d wamek ara tekkseḍ isefka n umiḍan-inek.",
     termsTitle: "Tiwtilin n useqdec d ulɣu",
     terms_purpose_title: "D acu-t Nadhir",
     terms_purpose_body:

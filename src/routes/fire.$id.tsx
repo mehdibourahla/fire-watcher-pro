@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { Wind } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -10,6 +10,7 @@ import { EmptyState, Skeleton } from "@/components/nadhir/states";
 import { EmergencyNumbers } from "@/components/SiteChrome";
 import type { Locale } from "@/i18n";
 import { downwindSettlement } from "@/lib/alerts-rules";
+import { pageMeta } from "@/lib/page-meta";
 import {
   adminUnitsQuery,
   algiersTime,
@@ -25,23 +26,17 @@ import {
 
 export const Route = createFileRoute("/fire/$id")({
   head: ({ params }) => ({
-    meta: [
-      { title: `Fire ${params.id} — Nadhir Algeria` },
-      {
-        name: "description",
-        content:
-          "Detection timeline, spread direction and nearby settlements for a detected fire in Algeria.",
-      },
-      { property: "og:title", content: `Fire ${params.id} — Nadhir Algeria` },
-      {
-        property: "og:description",
-        content:
-          "Satellite detection timeline and nearby settlements for this fire cluster.",
-      },
-    ],
+    meta: pageMeta("fire.metaTitle", "fire.metaDescription", {
+      id: params.id,
+    }),
   }),
-  loader: ({ context, params }) =>
-    context.queryClient.ensureQueryData(clusterDetailQuery(params.id)),
+  loader: async ({ context, params }) => {
+    const detail = await context.queryClient.ensureQueryData(
+      clusterDetailQuery(params.id),
+    );
+    if (!detail) throw notFound();
+    return detail;
+  },
   component: FireDetail,
 });
 

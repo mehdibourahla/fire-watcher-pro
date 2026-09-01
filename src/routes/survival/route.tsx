@@ -12,11 +12,12 @@ import type { Locale } from "@/i18n";
 import { relativeTime } from "@/lib/nadhir";
 import { SURVIVAL_ACTIVE_KEY } from "@/lib/survival";
 import { loadPack, savePack, type SurvivalPack } from "@/lib/survival-pack";
+import { titledMeta } from "@/lib/page-meta";
 
 export const Route = createFileRoute("/survival")({
   ssr: false,
   head: () => ({
-    meta: [{ title: "Nadhir — Survival Mode" }],
+    meta: titledMeta("survival.mode"),
   }),
   component: SurvivalLayout,
 });

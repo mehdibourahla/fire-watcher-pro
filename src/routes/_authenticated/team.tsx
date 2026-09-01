@@ -5,21 +5,12 @@ import { useTranslation } from "react-i18next";
 
 import { grantRole, membersQuery, revokeRole, type AppRole } from "@/lib/roles";
 import { myRolesQuery } from "@/lib/reports";
+import { titledMeta } from "@/lib/page-meta";
 
 export const Route = createFileRoute("/_authenticated/team")({
   head: () => ({
     meta: [
-      { title: "Team & roles — Nadhir" },
-      {
-        name: "description",
-        content:
-          "Grant or revoke moderator and administrator access for the Nadhir wildfire platform.",
-      },
-      { property: "og:title", content: "Team & roles — Nadhir" },
-      {
-        property: "og:description",
-        content: "Administer moderator and admin access on Nadhir.",
-      },
+      ...titledMeta("team.title", "team.subtitle"),
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],

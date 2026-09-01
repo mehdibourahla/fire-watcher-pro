@@ -23,6 +23,20 @@ export const en = {
     demoModeNote:
       "Live satellite feeds are not connected yet. Figures shown come from a seeded demonstration scenario.",
   },
+  meta: {
+    defaultTitle: "Nadhir — Wildfire early warning for Algeria",
+    titleTemplate: "{{page}} — Nadhir",
+  },
+  notFound: {
+    metaTitle: "Page not found — Nadhir",
+    title: "Page not found",
+    body: "The page you're looking for doesn't exist or has been moved.",
+    home: "Go home",
+  },
+  errorPage: {
+    title: "This page didn't load",
+    body: "Something went wrong on our end. You can try refreshing or head back home.",
+  },
   survival: {
     mode: "Survival Mode",
     online: "Online",
@@ -824,6 +838,12 @@ export const en = {
   legal: {
     terms: "Terms of use",
     privacy: "Privacy",
+    termsMetaTitle: "Terms of use & disclaimer — Nadhir",
+    termsMetaDescription:
+      "Nadhir is an informational wildfire early-warning service for Algeria. Read the terms of use, limitations and safety disclaimer.",
+    privacyMetaTitle: "Privacy policy — Nadhir",
+    privacyMetaDescription:
+      "What personal data Nadhir stores for wildfire alerts, how long it is kept, and how to delete your account data.",
     termsTitle: "Terms of use & disclaimer",
     terms_purpose_title: "What Nadhir is",
     terms_purpose_body:

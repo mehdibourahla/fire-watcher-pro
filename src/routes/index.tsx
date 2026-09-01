@@ -21,6 +21,7 @@ import {
 } from "@/components/SiteChrome";
 import type { Locale } from "@/i18n";
 import { alertsQuery } from "@/lib/alerts";
+import { pageMeta } from "@/lib/page-meta";
 import {
   LIVE_STATES,
   adminUnitsQuery,
@@ -44,23 +45,7 @@ import {
 
 export const Route = createFileRoute("/")({
   head: () => ({
-    meta: [
-      { title: "Nadhir — Live wildfire map for Algeria" },
-      {
-        name: "description",
-        content:
-          "Live satellite fire detections, fused fire clusters and daily fire danger levels across Algeria's wilayas and communes.",
-      },
-      {
-        property: "og:title",
-        content: "Nadhir — Live wildfire map for Algeria",
-      },
-      {
-        property: "og:description",
-        content:
-          "Satellite wildfire detection and daily fire danger forecasting for Algeria, free and open source.",
-      },
-    ],
+    meta: pageMeta("map.metaTitle", "map.metaDescription"),
   }),
   loader: ({ context }) =>
     Promise.all([

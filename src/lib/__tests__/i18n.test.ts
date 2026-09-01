@@ -51,4 +51,19 @@ describe("every referenced key exists", () => {
     }
     expect(missing).toEqual([]);
   });
+
+  it("no route head references a missing translation key", () => {
+    const missing: string[] = [];
+    for (const file of walk("src")) {
+      const src = readFileSync(file, "utf8");
+      for (const m of src.matchAll(
+        /\b(?:pageMeta|titledMeta)\(\s*"([a-zA-Z0-9_.]+)"(?:\s*,\s*"([a-zA-Z0-9_.]+)")?/g,
+      )) {
+        for (const key of [m[1], m[2]]) {
+          if (key && !KEYS.has(key)) missing.push(`${file}: ${key}`);
+        }
+      }
+    }
+    expect(missing).toEqual([]);
+  });
 });

@@ -20,26 +20,11 @@ import {
   wilayaGroups,
   type AdminUnit,
 } from "@/lib/nadhir";
+import { pageMeta } from "@/lib/page-meta";
 
 export const Route = createFileRoute("/forecast")({
   head: () => ({
-    meta: [
-      { title: "Fire danger forecast — Nadhir Algeria" },
-      {
-        name: "description",
-        content:
-          "Six-day Fire Weather Index outlook and plain-language safety guidance for every commune covered by Nadhir.",
-      },
-      {
-        property: "og:title",
-        content: "Fire danger forecast — Nadhir Algeria",
-      },
-      {
-        property: "og:description",
-        content:
-          "Daily fire danger levels and 6-day FWI outlook for Algerian communes.",
-      },
-    ],
+    meta: pageMeta("risk.metaTitle", "risk.metaDescription"),
   }),
   loader: ({ context }) =>
     Promise.all([

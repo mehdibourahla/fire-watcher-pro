@@ -1,24 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
+import { titledMeta } from "@/lib/page-meta";
+
 export const Route = createFileRoute("/developers")({
   head: () => ({
     meta: [
-      { title: "Public API for Algeria wildfire data — Nadhir" },
-      {
-        name: "description",
-        content:
-          "Free read-only JSON API for live wildfire clusters and daily fire danger forecasts in Algeria, plus signed alert webhooks.",
-      },
-      {
-        property: "og:title",
-        content: "Public API for Algeria wildfire data — Nadhir",
-      },
-      {
-        property: "og:description",
-        content:
-          "Open JSON endpoints for fire clusters and FWI danger levels across Algeria, CC-BY 4.0.",
-      },
+      ...titledMeta("dev.title", "dev.subtitle"),
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],

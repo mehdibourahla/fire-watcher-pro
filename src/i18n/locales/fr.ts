@@ -25,6 +25,20 @@ export const fr: Translation = {
     demoModeNote:
       "Les flux satellites en direct ne sont pas encore connectés. Les chiffres affichés proviennent d'un scénario de démonstration.",
   },
+  meta: {
+    defaultTitle: "Nadhir — Alerte précoce aux feux de forêt en Algérie",
+    titleTemplate: "{{page}} — Nadhir",
+  },
+  notFound: {
+    metaTitle: "Page introuvable — Nadhir",
+    title: "Page introuvable",
+    body: "La page que vous cherchez n'existe pas ou a été déplacée.",
+    home: "Retour à l'accueil",
+  },
+  errorPage: {
+    title: "Cette page n'a pas pu se charger",
+    body: "Un problème est survenu de notre côté. Vous pouvez actualiser ou revenir à l'accueil.",
+  },
   survival: {
     mode: "Mode survie",
     online: "En ligne",
@@ -844,6 +858,12 @@ export const fr: Translation = {
   legal: {
     terms: "Conditions d'utilisation",
     privacy: "Confidentialité",
+    termsMetaTitle: "Conditions d'utilisation et avertissement — Nadhir",
+    termsMetaDescription:
+      "Nadhir est un service d'information et d'alerte précoce aux feux de forêt en Algérie. Consultez les conditions d'utilisation, les limites et l'avertissement de sécurité.",
+    privacyMetaTitle: "Politique de confidentialité — Nadhir",
+    privacyMetaDescription:
+      "Quelles données personnelles Nadhir conserve pour les alertes, pendant combien de temps, et comment supprimer les données de votre compte.",
     termsTitle: "Conditions d'utilisation et avertissement",
     terms_purpose_title: "Ce qu'est Nadhir",
     terms_purpose_body:
