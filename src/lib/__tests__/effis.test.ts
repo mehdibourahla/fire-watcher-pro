@@ -9,6 +9,7 @@ import {
   isColdStart,
   parseFeatureInfoDc,
   pixelFor,
+  pngPayloadError,
 } from "@/lib/ingest/effis.server";
 
 describe("EFFIS palette", () => {
@@ -75,6 +76,30 @@ describe("cold-start guard", () => {
 
   it("still flags with two of three sentinels readable", () => {
     expect(isColdStart([17.3, 16.4], 8)).toBe(true);
+  });
+});
+
+describe("pngPayloadError", () => {
+  const png = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+
+  it("accepts a body carrying the PNG signature", () => {
+    expect(pngPayloadError("image/png", png)).toBeNull();
+  });
+
+  // JRC serves mapserver failures as 200 text/html, so res.ok is not a contract
+  it("rejects the MapServer error page JRC returns with HTTP 200", () => {
+    const html = new TextEncoder().encode("<HTML>\n<HEAD><TITLE>MapServer");
+    const error = pngPayloadError("text/html; charset=UTF-8", html);
+    expect(error).toContain("text/html");
+    expect(error).toContain("upstream");
+  });
+
+  it("rejects a body too short to carry a signature", () => {
+    expect(pngPayloadError("image/png", new Uint8Array([0x89]))).not.toBeNull();
+  });
+
+  it("names the failure even when no content type is given", () => {
+    expect(pngPayloadError(null, new Uint8Array())).toContain("upstream");
   });
 });
 
