@@ -176,6 +176,12 @@ function RootComponent() {
   }, []);
 
   useEffect(() => {
+    void import("@/integrations/supabase/legacy-session")
+      .then(({ migrateLegacySession }) => migrateLegacySession())
+      .catch(() => undefined);
+  }, []);
+
+  useEffect(() => {
     if (import.meta.env.PROD && "serviceWorker" in navigator)
       void navigator.serviceWorker.register("/sw.js").catch(() => undefined);
   }, []);
