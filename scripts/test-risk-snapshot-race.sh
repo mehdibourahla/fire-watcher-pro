@@ -10,6 +10,15 @@ case "$QA_DATABASE_URL" in
   *127.0.0.1* | *localhost*) ;;
   *) echo "refusing non-local database" >&2; exit 2 ;;
 esac
+if [[ ! "$QA_REST_URL" =~ ^http://(localhost|127[.]0[.]0[.]1):([0-9]{1,5})$ ]]; then
+  echo "refusing non-local Data API URL" >&2
+  exit 2
+fi
+qa_rest_port="${BASH_REMATCH[2]}"
+if (( 10#$qa_rest_port < 1 || 10#$qa_rest_port > 65535 )); then
+  echo "refusing non-local Data API URL" >&2
+  exit 2
+fi
 
 snapshot_a="f0220000-0000-4000-8000-000000000101"
 snapshot_b="f0220000-0000-4000-8000-000000000102"
