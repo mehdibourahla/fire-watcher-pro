@@ -534,6 +534,13 @@ export type Database = {
             referencedRelation: "contribution_ideas";
             referencedColumns: ["id"];
           },
+          {
+            foreignKeyName: "contribution_idea_votes_idea_id_fkey";
+            columns: ["idea_id"];
+            isOneToOne: false;
+            referencedRelation: "published_contribution_ideas";
+            referencedColumns: ["id"];
+          },
         ];
       };
       contribution_ideas: {
@@ -1806,6 +1813,30 @@ export type Database = {
         };
         Relationships: [];
       };
+      published_contribution_ideas: {
+        Row: {
+          id: string | null;
+          lane: string | null;
+          message: string | null;
+          published_at: string | null;
+          score: number | null;
+        };
+        Insert: {
+          id?: string | null;
+          lane?: string | null;
+          message?: string | null;
+          published_at?: string | null;
+          score?: number | null;
+        };
+        Update: {
+          id?: string | null;
+          lane?: string | null;
+          message?: string | null;
+          published_at?: string | null;
+          score?: number | null;
+        };
+        Relationships: [];
+      };
       source_health: {
         Row: {
           age_minutes: number | null;
@@ -1856,6 +1887,65 @@ export type Database = {
           _user_id: string;
         };
         Returns: boolean;
+      };
+      list_contribution_ideas_for_moderation: {
+        Args: never;
+        Returns: {
+          contact: string | null;
+          created_at: string;
+          id: string;
+          lane: string;
+          locale: string;
+          message: string;
+          moderated_by: string | null;
+          moderation_note: string | null;
+          published_at: string | null;
+          score: number;
+          status: string;
+        }[];
+        SetofOptions: {
+          from: "*";
+          to: "contribution_ideas";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
+      list_translation_suggestions_for_moderation: {
+        Args: never;
+        Returns: {
+          created_at: string;
+          current_text: string;
+          id: string;
+          key_path: string;
+          locale: string;
+          moderated_by: string | null;
+          moderation_note: string | null;
+          note: string | null;
+          reviewer_key: string;
+          reviewer_name: string | null;
+          source_text: string;
+          status: string;
+          suggestion: string | null;
+          verdict: string;
+        }[];
+        SetofOptions: {
+          from: "*";
+          to: "translation_suggestions";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
+      moderate_contribution_idea: {
+        Args: { _idea: string; _moderation_note?: string; _status: string };
+        Returns: undefined;
+      };
+      moderate_translation_suggestion: {
+        Args: {
+          _moderation_note?: string;
+          _status: string;
+          _suggestion: string;
+        };
+        Returns: undefined;
       };
       publish_risk_forecast_snapshot: {
         Args: { _snapshot_id: string };
