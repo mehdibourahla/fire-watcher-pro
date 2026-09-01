@@ -155,6 +155,51 @@ describe("isDeliverableUrl", () => {
       isDeliverableUrl("https://[2606:4700:4700::1111]/x", resolver),
     ).resolves.toBe(true);
   });
+
+  it("defaults reserved and non-global IPv6 space to rejection", async () => {
+    const resolver = dnsAnswers();
+    for (const address of [
+      "::2",
+      "400::1",
+      "fec0::1",
+      "100:0:0:1::1",
+      "1fff:ffff:ffff:ffff:ffff:ffff:ffff:ffff",
+      "4000::1",
+    ]) {
+      await expect(
+        isDeliverableUrl(`https://[${address}]/x`, resolver),
+        address,
+      ).resolves.toBe(false);
+    }
+  });
+
+  it("uses the most-specific IANA reachability allocation", async () => {
+    const resolver = dnsAnswers();
+    const expectations = [
+      ["192.0.0.8", false],
+      ["192.0.0.9", true],
+      ["192.0.0.10", true],
+      ["192.0.0.11", false],
+      ["64:ff9b::1", true],
+      ["64:ff9b:1::1", false],
+      ["2001:1::1", true],
+      ["2001:1::4", false],
+      ["2001:2::1", false],
+      ["2001:3::1", true],
+      ["2001:20::1", true],
+      ["2001:30::1", true],
+      ["2001:db8::1", false],
+      ["3fff::1", false],
+    ] as const;
+
+    for (const [address, expected] of expectations) {
+      const host = address.includes(":") ? `[${address}]` : address;
+      await expect(
+        isDeliverableUrl(`https://${host}/x`, resolver),
+        address,
+      ).resolves.toBe(expected);
+    }
+  });
 });
 
 describe("sendWebhookRequest", () => {
