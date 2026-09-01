@@ -49,5 +49,9 @@ assert_rejected "postgresql://postgres@db.example.test:5432/postgres?note=localh
 assert_rejected "postgresql://postgres@db.example.test:5432/localhost" "http://127.0.0.1:54821" "refusing non-local database"
 assert_rejected "postgresql://postgres@127.0.0.1:54822@db.example.test:5432/postgres" "http://127.0.0.1:54821" "refusing non-local database"
 assert_rejected "postgresql://postgres@localhost:70000/postgres" "http://127.0.0.1:54821" "refusing non-local database"
+assert_rejected "postgresql://postgres@127.0.0.1:54822/postgres?host=db.example.test" "http://127.0.0.1:54821" "refusing database query overrides"
+assert_rejected "postgresql://postgres@127.0.0.1:54822/postgres?HOSTADDR=203.0.113.9" "http://127.0.0.1:54821" "refusing database query overrides"
+assert_rejected "postgresql://postgres@127.0.0.1:54822/postgres?sslmode=disable&Port=5432" "http://127.0.0.1:54821" "refusing database query overrides"
+assert_rejected "postgresql://postgres@127.0.0.1:54822/postgres?%68ost=db.example.test" "http://127.0.0.1:54821" "refusing database query overrides"
 
 echo "spoofed database and Data API URLs fail before external requests"

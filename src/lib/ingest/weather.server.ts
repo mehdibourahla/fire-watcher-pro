@@ -382,14 +382,21 @@ export async function refreshRiskForecasts({
     }
   }
 
-  const { data: promoted, error: promotionError } = await supabaseAdmin.rpc(
+  const promotionArgs = {
+    _snapshot_id: snapshotId,
+    _base_date: baseDate,
+    _scheduled_for: scheduledFor,
+  };
+  let promotion = await supabaseAdmin.rpc(
     "publish_risk_forecast_snapshot",
-    {
-      _snapshot_id: snapshotId,
-      _base_date: baseDate,
-      _scheduled_for: scheduledFor,
-    },
+    promotionArgs,
   );
+  if (promotion.error)
+    promotion = await supabaseAdmin.rpc(
+      "publish_risk_forecast_snapshot",
+      promotionArgs,
+    );
+  const { data: promoted, error: promotionError } = promotion;
   if (promotionError)
     return fail(`risk snapshot promotion failed: ${promotionError.message}`);
   const publication = promoted as {

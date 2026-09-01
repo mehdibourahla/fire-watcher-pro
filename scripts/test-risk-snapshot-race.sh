@@ -11,9 +11,27 @@ if [[ ! "$QA_DATABASE_URL" =~ ^postgres(ql)?://([^/?#@]+(:[^/?#@]*)?@)?(localhos
   exit 2
 fi
 qa_database_port="${BASH_REMATCH[5]}"
+qa_database_query="${BASH_REMATCH[6]:-}"
 if (( 10#$qa_database_port < 1 || 10#$qa_database_port > 65535 )); then
   echo "refusing non-local database" >&2
   exit 2
+fi
+if [[ "$qa_database_query" == *%* ]]; then
+  echo "refusing database query overrides" >&2
+  exit 2
+fi
+if [ -n "$qa_database_query" ]; then
+  IFS='&' read -r -a qa_database_parameters <<<"${qa_database_query#\?}"
+  for qa_database_parameter in "${qa_database_parameters[@]}"; do
+    qa_database_key="${qa_database_parameter%%=*}"
+    qa_database_key_lower="$(printf '%s' "$qa_database_key" | tr '[:upper:]' '[:lower:]')"
+    case "$qa_database_key_lower" in
+      host | hostaddr | port)
+        echo "refusing database query overrides" >&2
+        exit 2
+        ;;
+    esac
+  done
 fi
 if [[ ! "$QA_REST_URL" =~ ^http://(localhost|127[.]0[.]0[.]1):([0-9]{1,5})$ ]]; then
   echo "refusing non-local Data API URL" >&2
@@ -30,6 +48,13 @@ snapshot_b="f0220000-0000-4000-8000-000000000102"
 base_date="2098-01-01"
 scheduled_a="2098-01-01T00:00:00Z"
 scheduled_b="2098-01-01T01:00:00Z"
+connected_server="$(psql "$QA_DATABASE_URL" -X -Atc '\conninfo')"
+connected_host="$(printf '%s\n' "$connected_server" | awk -F '|' '$1 == "Host" { print $2 }')"
+connected_port="$(printf '%s\n' "$connected_server" | awk -F '|' '$1 == "Server Port" { print $2 }')"
+case "$connected_host|$connected_port" in
+  "127.0.0.1|$qa_database_port" | "localhost|$qa_database_port") ;;
+  *) echo "refusing unexpected connected database server" >&2; exit 2 ;;
+esac
 source_checkpoint_backup="$(psql "$QA_DATABASE_URL" -v ON_ERROR_STOP=1 -Atc "
   select encode(convert_to(row_to_json(checkpoint)::text, 'UTF8'), 'base64')
   from public.source_checkpoints checkpoint

@@ -110,6 +110,9 @@ from public.admin_units where level = 'commune' limit 1;
 insert into public.risk_forecast_staging(snapshot_id, commune_id, forecast_date, horizon_days, fwi, danger_level)
 select 'f0220000-0000-4000-8000-000000000091', id, date '2098-12-02', 0, 1, 1
 from public.admin_units where level = 'commune' limit 1;
+insert into public.risk_forecast_staging(snapshot_id, commune_id, forecast_date, horizon_days, fwi, danger_level)
+select 'f0220000-0000-4000-8000-000000000092', id, date '2098-12-03', 0, 1, 1
+from public.admin_units where level = 'commune' limit 1;
 select is(public.begin_risk_forecast_snapshot('f0220000-0000-4000-8000-000000000001', '2099-01-01', '2099-01-01Z', now() - interval '6 hours'), 1, 'start reclaims one crashed run');
 select results_eq(
   $$select status, (select count(*)::integer from public.risk_forecast_staging where snapshot_id = r.snapshot_id)
@@ -121,6 +124,11 @@ select is(
   (select count(*)::integer from public.risk_forecast_staging where snapshot_id = 'f0220000-0000-4000-8000-000000000091'),
   0,
   'begin permanently purges staging owned by every non-active run'
+);
+select is(
+  (select count(*)::integer from public.risk_forecast_staging where snapshot_id = 'f0220000-0000-4000-8000-000000000092'),
+  0,
+  'begin permanently purges orphan staging without a run record'
 );
 set local role service_role;
 select throws_ok(
@@ -393,6 +401,43 @@ select results_eq(
     where snapshot_id = 'f0220000-0000-4000-8000-000000000003'$$,
   $$values ('promoted'::text, true)$$,
   'committed promotion remains promoted after ambiguous discard'
+);
+select lives_ok(
+  $$select public.record_source_run(
+    _contract_key => 'local_fwi',
+    _trigger_kind => 'scheduled',
+    _idempotency_key => 'f022-equal-schedule-response-loss',
+    _scheduled_for => timestamptz '2099-01-02Z',
+    _started_at => timestamptz '2099-01-02Z',
+    _finished_at => timestamptz '2099-01-02 00:10Z',
+    _outcome => 'partial',
+    _upstream_published_at => null,
+    _data_from => null,
+    _data_through => null,
+    _validated_at => null,
+    _published_at => null,
+    _records_seen => 0,
+    _records_inserted => 0,
+    _records_updated => 0,
+    _records_rejected => 0,
+    _records_expected => 9216,
+    _coverage_status => 'partial',
+    _quality_checks => '{}'::jsonb,
+    _public_reason_code => 'coverage_partial',
+    _private_diagnostic => 'promotion response lost'
+  )$$,
+  'equal-schedule response loss can still be recorded'
+);
+select results_eq(
+  $$select source.last_scheduled_for, source.last_success_at,
+      source.data_through, source.published_at, source.coverage_status,
+      source.consecutive_failures, source.last_public_reason_code
+    from public.source_checkpoints source where contract_key = 'local_fwi'$$,
+  $$select checkpoint.scheduled_for, checkpoint.published_at,
+      checkpoint.base_date::timestamptz, checkpoint.published_at,
+      'complete'::text, 0, null::text
+    from public.risk_publication_checkpoint checkpoint where key = 'local_fwi'$$,
+  'equal-schedule partial reporting cannot demote a committed publication'
 );
 
 create temporary table qa_current_risk_digest as

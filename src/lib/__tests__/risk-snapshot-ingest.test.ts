@@ -248,6 +248,50 @@ describe("risk snapshot ingest", () => {
     });
   });
 
+  it("reconciles a committed promotion after its first response is lost", async () => {
+    fromMock.mockImplementation((table: string) => {
+      if (table === "admin_units")
+        return query({ data: [commune(1)], error: null });
+      if (table === "fwi_state") return query({ data: [], error: null });
+      return query({ data: null, error: null });
+    });
+    let publicationAttempts = 0;
+    rpcMock.mockImplementation((name: string) => {
+      if (name === "publish_risk_forecast_snapshot") {
+        publicationAttempts += 1;
+        return Promise.resolve(
+          publicationAttempts === 1
+            ? { data: null, error: { message: "transport response lost" } }
+            : {
+                data: {
+                  status: "promoted",
+                  rows: 6,
+                  snapshot_id: SNAPSHOT_ID,
+                  base_date: RUN.baseDate,
+                  published_at: "2026-08-31T12:05:00.000Z",
+                },
+                error: null,
+              },
+        );
+      }
+      return Promise.resolve({ data: 0, error: null });
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(JSON.stringify([{ hourly: {} }]))),
+    );
+
+    await expect(refreshRiskForecasts(RUN)).resolves.toMatchObject({
+      rows: 6,
+      publishedAt: "2026-08-31T12:05:00.000Z",
+    });
+    expect(publicationAttempts).toBe(2);
+    expect(rpcMock).not.toHaveBeenCalledWith(
+      "discard_risk_forecast_snapshot",
+      expect.anything(),
+    );
+  });
+
   it("reports a monotonic supersession without claiming publication", async () => {
     fromMock.mockImplementation((table: string) => {
       if (table === "admin_units")
