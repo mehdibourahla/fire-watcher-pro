@@ -6,7 +6,13 @@ set -euo pipefail
 : "${QA_ANON_KEY:?set QA_ANON_KEY to the isolated local anon key}"
 : "${QA_SERVICE_ROLE_KEY:?set QA_SERVICE_ROLE_KEY to the isolated local service key}"
 : "${QA_JWT_SECRET:?set QA_JWT_SECRET to the isolated local JWT secret}"
-if [[ ! "$QA_DATABASE_URL" =~ ^postgres(ql)?://([^/?#@]+(:[^/?#@]*)?@)?(localhost|127[.]0[.]0[.]1):([0-9]{1,5})/[^/?#]+([?][^#]*)?$ ]]; then
+for qa_pg_override in PGHOST PGHOSTADDR PGPORT PGDATABASE PGUSER PGSERVICE PGSERVICEFILE; do
+  if printenv "$qa_pg_override" >/dev/null 2>&1; then
+    echo "refusing database environment overrides" >&2
+    exit 2
+  fi
+done
+if [[ ! "$QA_DATABASE_URL" =~ ^postgres(ql)?://([^/?#@]+(:[^/?#@]*)?@)?(127[.]0[.]0[.]1):([0-9]{1,5})/[^/?#]+([?][^#]*)?$ ]]; then
   echo "refusing non-local database" >&2
   exit 2
 fi
@@ -50,11 +56,14 @@ scheduled_a="2098-01-01T00:00:00Z"
 scheduled_b="2098-01-01T01:00:00Z"
 connected_server="$(psql "$QA_DATABASE_URL" -X -Atc '\conninfo')"
 connected_host="$(printf '%s\n' "$connected_server" | awk -F '|' '$1 == "Host" { print $2 }')"
+connected_address="$(printf '%s\n' "$connected_server" | awk -F '|' '$1 == "Host Address" { print $2 }')"
 connected_port="$(printf '%s\n' "$connected_server" | awk -F '|' '$1 == "Server Port" { print $2 }')"
-case "$connected_host|$connected_port" in
-  "127.0.0.1|$qa_database_port" | "localhost|$qa_database_port") ;;
-  *) echo "refusing unexpected connected database server" >&2; exit 2 ;;
-esac
+if [[ "$connected_host" != "127.0.0.1" \
+  || "$connected_port" != "$qa_database_port" \
+  || (-n "$connected_address" && "$connected_address" != "127.0.0.1") ]]; then
+  echo "refusing unexpected connected database server" >&2
+  exit 2
+fi
 source_checkpoint_backup="$(psql "$QA_DATABASE_URL" -v ON_ERROR_STOP=1 -Atc "
   select encode(convert_to(row_to_json(checkpoint)::text, 'UTF8'), 'base64')
   from public.source_checkpoints checkpoint
