@@ -129,6 +129,23 @@ this independently of geography. It is not implemented because it trades against
 latency on a safety product: any such rule delays a genuine new ignition by at least one
 10-minute slot, and that tradeoff is a decision for the maintainers, not a cleanup.
 
+Two variants were measured on 2026-09-01 against the 31 Aug – 1 Sep detections, and both
+fail — record this before proposing either again:
+
+- **Plain "require two looks"** would suppress real fires. 39% of northern FCI cells (28
+  of 72) were one-shot, so the rule cannot separate a first detection of a genuine
+  ignition from an artefact using persistence alone.
+- **Gating it on `isFuelLimited`** to spare vegetated ground fixes that, but leaves almost
+  nothing to act on and does not work as a backstop. Of 472 detections inside the watch
+  area only 9 (1.9%) fall in a fuel-limited commune. And of the 4,239 the polygon now
+  rejects — the flood the rule was meant to catch if the polygon were ever missing again —
+  **60% are not within 60 km of any commune at all**, so there is no landcover to test and
+  the rule silently passes them. It would have caught 40% and let 2,538 through.
+
+A workable version would apply persistence to slot-cadence sources without a commune
+lookup, so it does not fail in empty terrain, and would need an FRP or confidence
+dimension to avoid the one-shot problem above. That is design work, not a patch.
+
 ## 2. Data quality
 
 ### 2.1 Land cover and terrain — populated 2026-08-30
