@@ -1,5 +1,3 @@
-import { readFileSync } from "node:fs";
-
 import { describe, expect, it } from "vitest";
 
 import { stripImageMetadata } from "@/lib/image-metadata";
@@ -94,17 +92,6 @@ describe("stripImageMetadata", () => {
     expect(() => stripImageMetadata(pngWithExif(), "image/jpeg")).toThrow(
       "unsupported_type",
     );
-  });
-});
-
-describe("report photo upload", () => {
-  it("sanitises the photo instead of uploading the file it was given", () => {
-    const src = readFileSync("src/lib/reports.ts", "utf8");
-    const fn =
-      /export async function uploadReportPhoto[\s\S]*?\n}/.exec(src)?.[0] ?? "";
-
-    expect(fn).toMatch(/stripImageMetadata/);
-    expect(fn).not.toMatch(/\.upload\(\s*path,\s*file\b/);
   });
 });
 

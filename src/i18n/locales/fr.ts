@@ -520,6 +520,8 @@ export const fr: Translation = {
       "Le danger extrême et les feux dans une zone passent toujours outre les heures calmes.",
     save: "Enregistrer",
     saved: "Enregistré",
+    saveFailed:
+      "Impossible d’enregistrer les paramètres. Vérifiez vos choix et réessayez.",
   },
   reports: {
     title: "Signaler un feu",
@@ -564,9 +566,18 @@ export const fr: Translation = {
     submit: "Envoyer le signalement",
     submitting: "Envoi…",
     submitted: "Merci. Votre signalement est en attente de modération.",
+    submitFailed:
+      "Le signalement n’a pas pu être envoyé. Vérifiez-le et réessayez.",
+    submitCleanupFailed:
+      "Le signalement n’a pas été envoyé et sa photo téléversée n’a pas pu être supprimée. Réessayez plus tard.",
+    submitUnknown:
+      "Impossible de confirmer l’envoi. Consultez Mes signalements avant de réessayer.",
     mine: "Mes signalements",
     empty: "Vous n'avez encore envoyé aucun signalement.",
     delete: "Supprimer",
+    deleteFailed: "Le signalement n’a pas pu être supprimé. Réessayez.",
+    deletePhotoCleanupFailed:
+      "Le signalement n’a pas été supprimé car sa photo privée n’a pas pu être retirée.",
     statusPending: "En attente de vérification",
     statusApproved: "Confirmé par un modérateur",
     statusRejected: "Non retenu",
@@ -586,6 +597,14 @@ export const fr: Translation = {
     revoke: "Retirer {{role}}",
     role_moderator: "modérateur",
     role_admin: "administrateur",
+    confirmSelfAdminRevoke:
+      "Retirer votre propre accès administrateur ? Vous perdrez immédiatement l’accès à la gestion de l’équipe.",
+    lastAdminDisabled:
+      "Nadhir doit toujours avoir un administrateur. Nommez-en un autre avant de retirer votre accès.",
+    lastAdminError:
+      "Au moins un administrateur doit rester. Le rôle n’a pas été modifié.",
+    updateError: "Impossible de modifier ce rôle. Réessayez.",
+    loadError: "Impossible de charger tous les rôles de l’équipe. Réessayez.",
   },
   admin: {
     tabTranslations: "Traductions",
@@ -853,6 +872,11 @@ export const fr: Translation = {
     save: "Enregistrer",
     saving: "Enregistrement…",
     created: "Point de réception créé.",
+    kindsRequired: "Sélectionnez au moins un type d’alerte.",
+    saveFailed:
+      "Impossible d’enregistrer le point de réception. Vérifiez les champs et réessayez.",
+    updateFailed: "Impossible de modifier le point de réception. Réessayez.",
+    deleteFailed: "Impossible de supprimer le point de réception. Réessayez.",
     httpsOnly: "Seules les URL https:// sont acceptées.",
     empty: "Aucun point de réception.",
     pause: "Suspendre",
@@ -959,6 +983,10 @@ export const fr: Translation = {
     wilaya: "Wilaya",
     severity: "Sévérité",
     submit: "Relayer l'avertissement",
+    warningRequired: "Saisissez l'autorité et le texte de l'avertissement.",
+    warningFailed:
+      "Impossible de mettre l'avertissement en attente. Vérifiez les champs et réessayez.",
+    toggleFailed: "Impossible de modifier la diffusion. Réessayez.",
     relayed: "diffusé",
     pendingRelay: "en attente",
     auditTitle: "Journal d'audit",
@@ -966,6 +994,8 @@ export const fr: Translation = {
     colTime: "Quand",
     colAction: "Action",
     colReason: "Motif",
+    colActor: "Auteur",
+    systemActor: "Système",
     colCommunes: "Communes",
   },
   push: {

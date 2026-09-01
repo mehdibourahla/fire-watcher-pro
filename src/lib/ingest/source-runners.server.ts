@@ -13,6 +13,7 @@ import {
   type SourceRunReport,
 } from "@/lib/source-runs";
 
+import { algiersToday } from "./algiers-date";
 import { publishBroadcasts } from "./broadcast.server";
 import { deliverBroadcasts } from "./delivery.server";
 import { ingestEffis } from "./effis.server";
@@ -231,17 +232,28 @@ export function createSourceRunners(
       };
     },
     local_fwi: async (job) => {
-      const run = await dependencies.refreshRiskForecasts();
+      // the refresh stages into its own snapshot; a newer one supersedes this run
+      const run = await dependencies.refreshRiskForecasts({
+        snapshotId: crypto.randomUUID(),
+        baseDate: algiersToday(new Date(job.scheduled_for)),
+        scheduledFor: job.scheduled_for,
+      });
       const expected = run.communes * 6;
       const missingGeography = run.communes === 0 && !run.error;
       const error =
         run.error ?? (missingGeography ? "no communes available" : undefined);
-      const health = adapterHealth({
-        accepted: run.rows,
-        expected,
-        error,
-        partialReason: missingGeography ? "dependency_failed" : undefined,
-      });
+      const health = run.superseded
+        ? ({
+            outcome: "skipped",
+            coverageStatus: "complete",
+            retryDisposition: "none",
+          } as const)
+        : adapterHealth({
+            accepted: run.rows,
+            expected,
+            error,
+            partialReason: missingGeography ? "dependency_failed" : undefined,
+          });
       return {
         ...baseReport(job),
         ...health,

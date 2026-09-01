@@ -507,6 +507,8 @@ export const en = {
       "Extreme danger and fires inside a zone always break through quiet hours.",
     save: "Save",
     saved: "Saved",
+    saveFailed:
+      "Settings could not be saved. Check your choices and try again.",
   },
   reports: {
     title: "Report a fire",
@@ -550,9 +552,17 @@ export const en = {
     submit: "Send report",
     submitting: "Sending…",
     submitted: "Thank you. Your report is awaiting moderation.",
+    submitFailed: "The report could not be sent. Check it and try again.",
+    submitCleanupFailed:
+      "The report was not sent, and its uploaded photo could not be removed. Try again later.",
+    submitUnknown:
+      "We could not confirm whether the report was sent. Check My reports before trying again.",
     mine: "My reports",
     empty: "You have not sent any report yet.",
     delete: "Delete",
+    deleteFailed: "The report could not be deleted. Try again.",
+    deletePhotoCleanupFailed:
+      "The report was not deleted because its private photo could not be removed.",
     statusPending: "Awaiting review",
     statusApproved: "Confirmed by moderator",
     statusRejected: "Not retained",
@@ -572,6 +582,14 @@ export const en = {
     revoke: "Remove {{role}}",
     role_moderator: "moderator",
     role_admin: "admin",
+    confirmSelfAdminRevoke:
+      "Remove your own administrator access? You will immediately lose access to team administration.",
+    lastAdminDisabled:
+      "Nadhir must always have an administrator. Add another administrator before removing your access.",
+    lastAdminError:
+      "At least one administrator must remain. The role was not changed.",
+    updateError: "Could not update this role. Try again.",
+    loadError: "Could not load the complete team roles. Try again.",
   },
   admin: {
     tabTranslations: "Translations",
@@ -836,6 +854,11 @@ export const en = {
     save: "Save endpoint",
     saving: "Saving…",
     created: "Endpoint created.",
+    kindsRequired: "Select at least one alert type.",
+    saveFailed:
+      "The endpoint could not be saved. Check the fields and try again.",
+    updateFailed: "The endpoint could not be updated. Try again.",
+    deleteFailed: "The endpoint could not be deleted. Try again.",
     httpsOnly: "Only https:// URLs are accepted.",
     empty: "No endpoint yet.",
     pause: "Pause",
@@ -941,6 +964,10 @@ export const en = {
     wilaya: "Wilaya",
     severity: "Severity",
     submit: "Relay warning",
+    warningRequired: "Enter an authority and warning text.",
+    warningFailed:
+      "Could not queue the warning. Check the fields and try again.",
+    toggleFailed: "Could not change broadcasting. Try again.",
     relayed: "relayed",
     pendingRelay: "queued",
     auditTitle: "Audit log",
@@ -948,6 +975,8 @@ export const en = {
     colTime: "When",
     colAction: "Action",
     colReason: "Reason",
+    colActor: "Actor",
+    systemActor: "System",
     colCommunes: "Communes",
   },
   push: {

@@ -492,6 +492,7 @@ export const ar: Translation = {
     quietNote: "الخطر الأقصى والحرائق داخل منطقتك تتجاوز دائماً ساعات الهدوء.",
     save: "حفظ",
     saved: "تم الحفظ",
+    saveFailed: "تعذّر حفظ الإعدادات. تحقّق من الخيارات وحاول مرة أخرى.",
   },
   reports: {
     title: "الإبلاغ عن حريق",
@@ -535,9 +536,16 @@ export const ar: Translation = {
     submit: "إرسال البلاغ",
     submitting: "جارٍ الإرسال…",
     submitted: "شكراً لك. بلاغك في انتظار المراجعة.",
+    submitFailed: "تعذّر إرسال البلاغ. تحقّق منه وحاول مرة أخرى.",
+    submitCleanupFailed:
+      "لم يُرسل البلاغ وتعذّرت إزالة الصورة المرفوعة. حاول مرة أخرى لاحقاً.",
+    submitUnknown:
+      "تعذّر تأكيد إرسال البلاغ. تحقّق من بلاغاتي قبل المحاولة مرة أخرى.",
     mine: "بلاغاتي",
     empty: "لم ترسل أي بلاغ بعد.",
     delete: "حذف",
+    deleteFailed: "تعذّر حذف البلاغ. حاول مرة أخرى.",
+    deletePhotoCleanupFailed: "لم يُحذف البلاغ لأن إزالة صورته الخاصة تعذّرت.",
     statusPending: "في انتظار المراجعة",
     statusApproved: "مؤكَّد من المشرف",
     statusRejected: "غير معتمد",
@@ -557,6 +565,13 @@ export const ar: Translation = {
     revoke: "سحب {{role}}",
     role_moderator: "مشرف",
     role_admin: "مدير",
+    confirmSelfAdminRevoke:
+      "هل تريد سحب صلاحية الإدارة من حسابك؟ ستفقد فوراً إمكانية إدارة الفريق.",
+    lastAdminDisabled:
+      "يجب أن يبقى لنذير مدير واحد على الأقل. عيّن مديراً آخر قبل سحب صلاحيتك.",
+    lastAdminError: "يجب أن يبقى مدير واحد على الأقل. لم يتغير الدور.",
+    updateError: "تعذر تعديل هذا الدور. حاول مرة أخرى.",
+    loadError: "تعذر تحميل جميع أدوار الفريق. حاول مرة أخرى.",
   },
   admin: {
     tabTranslations: "الترجمات",
@@ -818,6 +833,10 @@ export const ar: Translation = {
     save: "حفظ",
     saving: "جارٍ الحفظ…",
     created: "تم إنشاء الوجهة.",
+    kindsRequired: "اختر نوع تنبيه واحدًا على الأقل.",
+    saveFailed: "تعذّر حفظ وجهة الإشعار. تحقّق من الحقول وحاول مرة أخرى.",
+    updateFailed: "تعذّر تحديث وجهة الإشعار. حاول مرة أخرى.",
+    deleteFailed: "تعذّر حذف وجهة الإشعار. حاول مرة أخرى.",
     httpsOnly: "تُقبل روابط https:// فقط.",
     empty: "لا توجد وجهة بعد.",
     pause: "إيقاف مؤقت",
@@ -919,6 +938,9 @@ export const ar: Translation = {
     wilaya: "الولاية",
     severity: "الشدة",
     submit: "نقل التحذير",
+    warningRequired: "أدخل اسم السلطة ونص التحذير.",
+    warningFailed: "تعذر وضع التحذير في الانتظار. راجع الحقول وأعد المحاولة.",
+    toggleFailed: "تعذر تغيير حالة البث. أعد المحاولة.",
     relayed: "بُثّ",
     pendingRelay: "في الانتظار",
     auditTitle: "سجل التدقيق",
@@ -926,6 +948,8 @@ export const ar: Translation = {
     colTime: "متى",
     colAction: "الإجراء",
     colReason: "السبب",
+    colActor: "المنفذ",
+    systemActor: "النظام",
     colCommunes: "البلديات",
   },
   push: {

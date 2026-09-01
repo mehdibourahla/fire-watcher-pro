@@ -81,6 +81,7 @@ export type RiskForecast = {
   fwi: number;
   danger_level: number;
   fuel_limited: boolean;
+  snapshot_id: string | null;
 };
 
 export type EffisDanger = {
@@ -238,8 +239,8 @@ export function intlLocale(locale: AnyLocale): string {
   return locale === "kab" ? "fr" : locale;
 }
 
-export function relativeTime(iso: string, locale: AnyLocale) {
-  const diffMs = Date.now() - new Date(iso).getTime();
+export function relativeTime(iso: string, locale: AnyLocale, now = Date.now()) {
+  const diffMs = now - new Date(iso).getTime();
   const mins = Math.round(diffMs / 60000);
   const rtf = new Intl.RelativeTimeFormat(intlLocale(locale), {
     numeric: "auto",
@@ -398,39 +399,76 @@ export const sourceHealthQuery = queryOptions({
     ),
 });
 
-/* The table accumulates one 9216-row set per forecast date, so an unfiltered
- * limit both truncates communes and mixes dates. Pin to the newest date and
- * page through all of it. */
 export const HORIZON_DAYS = 6;
+
+type RiskPublicationCheckpoint = {
+  coverage_status: string | null;
+  snapshot_id: string | null;
+  base_date: string | null;
+  published_at: string | null;
+};
+
+function isoDate(value: string | null) {
+  if (!value || !Number.isFinite(Date.parse(value))) return null;
+  return new Date(value).toISOString().slice(0, 10);
+}
+
+export function publishedRiskBaseDate(
+  checkpoint: RiskPublicationCheckpoint | null | undefined,
+) {
+  if (
+    checkpoint?.coverage_status !== "complete" ||
+    !checkpoint.snapshot_id ||
+    !isoDate(checkpoint.published_at)
+  )
+    return null;
+  return isoDate(checkpoint.base_date);
+}
+
+export function publishedRiskSnapshot(
+  checkpoint: RiskPublicationCheckpoint | null | undefined,
+) {
+  const base = publishedRiskBaseDate(checkpoint);
+  if (!base || !checkpoint?.snapshot_id) return null;
+  return { base, snapshotId: checkpoint.snapshot_id };
+}
+
+export function publishedRiskTarget(
+  checkpoint: RiskPublicationCheckpoint | null | undefined,
+  targetDate: string,
+) {
+  const publication = publishedRiskSnapshot(checkpoint);
+  const targetMs = Date.parse(`${targetDate}T00:00:00Z`);
+  if (!publication || !Number.isFinite(targetMs)) return null;
+  const baseMs = Date.parse(`${publication.base}T00:00:00Z`);
+  const horizon = (targetMs - baseMs) / 86_400_000;
+  if (!Number.isInteger(horizon) || horizon < 0 || horizon >= HORIZON_DAYS)
+    return null;
+  return { ...publication, forecastDate: targetDate, horizon };
+}
 
 export const riskForecastsQuery = queryOptions({
   queryKey: ["risk_forecasts"],
   queryFn: async () => {
-    // forecast_date is the day a forecast is FOR, so a horizon-5 row is dated five days
-    // ahead. Anchoring on max(forecast_date) selects the furthest horizon and returns no
-    // horizon-0 row at all, which renders today's national danger as the seed value.
-    const { data: latest, error } = await supabase
-      .from("risk_forecasts")
-      .select("forecast_date")
-      .eq("horizon_days", 0)
-      .order("forecast_date", { ascending: false })
-      .limit(1);
+    const { data: checkpoint, error } = await supabase
+      .from("risk_publication_checkpoint")
+      .select("coverage_status, snapshot_id, base_date, published_at")
+      .eq("key", "local_fwi")
+      .maybeSingle();
     if (error) throw new Error(error.message);
-    const base = (latest?.[0] as { forecast_date?: string } | undefined)
-      ?.forecast_date;
-    if (!base) return [] as RiskForecast[];
+    const publication = publishedRiskSnapshot(checkpoint);
+    if (!publication) return [] as RiskForecast[];
 
-    // Runs overlap in this table — a given date carries both today's horizon h and
-    // yesterday's h+1 — so the current run is pinned date-by-date, not by range.
-    const baseMs = Date.parse(`${base}T00:00:00Z`);
+    const baseMs = Date.parse(`${publication.base}T00:00:00Z`);
     const pairs = Array.from({ length: HORIZON_DAYS }, (_, h) => {
       const d = new Date(baseMs + h * 86_400_000).toISOString().slice(0, 10);
       return `and(forecast_date.eq.${d},horizon_days.eq.${h})`;
     });
     return fetchAllPages<RiskForecast>((from, to) =>
       supabase
-        .from("risk_forecasts")
-        .select("*")
+        .rpc("current_risk_forecasts")
+        .eq("source", "local_fwi")
+        .eq("snapshot_id", publication.snapshotId)
         .or(pairs.join(","))
         .order("id")
         .range(from, to),

@@ -14,6 +14,28 @@ export type Profile = {
   min_danger_level: number;
 };
 
+export type ProfileSettingsInput = Pick<
+  Profile,
+  | "display_name"
+  | "phone"
+  | "locale"
+  | "alert_email"
+  | "alert_push"
+  | "quiet_hours_start"
+  | "quiet_hours_end"
+  | "min_danger_level"
+>;
+
+export class ProfileSettingsError extends Error {
+  override cause?: unknown;
+
+  constructor(cause?: unknown) {
+    super("account.saveFailed");
+    this.name = "ProfileSettingsError";
+    this.cause = cause;
+  }
+}
+
 export type Zone = {
   id: string;
   user_id: string;
@@ -66,3 +88,14 @@ export const profileQuery = queryOptions({
     return (inserted.data ?? null) as unknown as Profile | null;
   },
 });
+
+export async function saveProfileSettings(input: ProfileSettingsInput) {
+  const { data: auth, error: authError } = await supabase.auth.getUser();
+  if (authError || !auth.user) throw new ProfileSettingsError(authError);
+
+  const { error } = await supabase
+    .from("profiles")
+    .update(input)
+    .eq("id", auth.user.id);
+  if (error) throw new ProfileSettingsError(error);
+}

@@ -235,6 +235,7 @@ export type Database = {
       broadcast_audit: {
         Row: {
           action: string;
+          actor_id: string | null;
           at: string;
           cluster_id: string | null;
           commune_codes: string[] | null;
@@ -248,6 +249,7 @@ export type Database = {
         };
         Insert: {
           action: string;
+          actor_id?: string | null;
           at?: string;
           cluster_id?: string | null;
           commune_codes?: string[] | null;
@@ -261,6 +263,7 @@ export type Database = {
         };
         Update: {
           action?: string;
+          actor_id?: string | null;
           at?: string;
           cluster_id?: string | null;
           commune_codes?: string[] | null;
@@ -1162,6 +1165,7 @@ export type Database = {
           fwi: number;
           horizon_days: number;
           id: string;
+          snapshot_id: string | null;
           source: string;
         };
         Insert: {
@@ -1174,6 +1178,7 @@ export type Database = {
           fwi: number;
           horizon_days: number;
           id?: string;
+          snapshot_id?: string | null;
           source: string;
         };
         Update: {
@@ -1186,6 +1191,7 @@ export type Database = {
           fwi?: number;
           horizon_days?: number;
           id?: string;
+          snapshot_id?: string | null;
           source?: string;
         };
         Relationships: [
@@ -1195,6 +1201,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "admin_units";
             referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "risk_forecasts_snapshot_id_fkey";
+            columns: ["snapshot_id"];
+            isOneToOne: false;
+            referencedRelation: "risk_publications";
+            referencedColumns: ["snapshot_id"];
           },
         ];
       };
@@ -2008,6 +2021,140 @@ export type Database = {
           },
         ];
       };
+
+      risk_forecast_snapshot_runs: {
+        Row: {
+          base_date: string;
+          created_at: string;
+          finished_at: string | null;
+          heartbeat_at: string;
+          scheduled_for: string;
+          snapshot_id: string;
+          status: string;
+        };
+        Insert: {
+          base_date: string;
+          created_at?: string;
+          finished_at?: string | null;
+          heartbeat_at?: string;
+          scheduled_for: string;
+          snapshot_id: string;
+          status?: string;
+        };
+        Update: {
+          base_date?: string;
+          created_at?: string;
+          finished_at?: string | null;
+          heartbeat_at?: string;
+          scheduled_for?: string;
+          snapshot_id?: string;
+          status?: string;
+        };
+        Relationships: [];
+      };
+      risk_forecast_staging: {
+        Row: {
+          commune_id: string;
+          components: Json | null;
+          danger_level: number;
+          forecast_date: string;
+          fuel_limited: boolean;
+          fwi: number;
+          horizon_days: number;
+          snapshot_id: string;
+          staged_at: string;
+        };
+        Insert: {
+          commune_id: string;
+          components?: Json | null;
+          danger_level: number;
+          forecast_date: string;
+          fuel_limited?: boolean;
+          fwi: number;
+          horizon_days: number;
+          snapshot_id: string;
+          staged_at?: string;
+        };
+        Update: {
+          commune_id?: string;
+          components?: Json | null;
+          danger_level?: number;
+          forecast_date?: string;
+          fuel_limited?: boolean;
+          fwi?: number;
+          horizon_days?: number;
+          snapshot_id?: string;
+          staged_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "risk_forecast_staging_commune_id_fkey";
+            columns: ["commune_id"];
+            isOneToOne: false;
+            referencedRelation: "admin_units";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      risk_publication_checkpoint: {
+        Row: {
+          base_date: string;
+          coverage_status: string;
+          key: string;
+          published_at: string;
+          scheduled_for: string;
+          snapshot_id: string;
+        };
+        Insert: {
+          base_date: string;
+          coverage_status?: string;
+          key: string;
+          published_at: string;
+          scheduled_for: string;
+          snapshot_id: string;
+        };
+        Update: {
+          base_date?: string;
+          coverage_status?: string;
+          key?: string;
+          published_at?: string;
+          scheduled_for?: string;
+          snapshot_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "risk_publication_checkpoint_snapshot_id_fkey";
+            columns: ["snapshot_id"];
+            isOneToOne: false;
+            referencedRelation: "risk_publications";
+            referencedColumns: ["snapshot_id"];
+          },
+        ];
+      };
+      risk_publications: {
+        Row: {
+          base_date: string;
+          published_at: string;
+          row_count: number;
+          scheduled_for: string;
+          snapshot_id: string;
+        };
+        Insert: {
+          base_date: string;
+          published_at: string;
+          row_count: number;
+          scheduled_for: string;
+          snapshot_id: string;
+        };
+        Update: {
+          base_date?: string;
+          published_at?: string;
+          row_count?: number;
+          scheduled_for?: string;
+          snapshot_id?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       hazard_reports: {
@@ -2089,6 +2236,31 @@ export type Database = {
           lease_expires_at: string | null;
           observed_at: string | null;
           scheduled_for: string | null;
+        };
+        Relationships: [];
+      };
+
+      published_contribution_ideas: {
+        Row: {
+          id: string | null;
+          lane: string | null;
+          message: string | null;
+          published_at: string | null;
+          score: number | null;
+        };
+        Insert: {
+          id?: string | null;
+          lane?: string | null;
+          message?: string | null;
+          published_at?: string | null;
+          score?: number | null;
+        };
+        Update: {
+          id?: string | null;
+          lane?: string | null;
+          message?: string | null;
+          published_at?: string | null;
+          score?: number | null;
         };
         Relationships: [];
       };
@@ -2247,6 +2419,120 @@ export type Database = {
       };
       vote_on_idea: {
         Args: { _idea: string; _value: number; _voter: string };
+        Returns: number;
+      };
+
+      begin_risk_forecast_snapshot: {
+        Args: {
+          _base_date: string;
+          _scheduled_for: string;
+          _snapshot_id: string;
+          _stale_before: string;
+        };
+        Returns: number;
+      };
+      current_risk_forecasts: {
+        Args: never;
+        Returns: {
+          admin_level: string;
+          commune_code: string;
+          commune_id: string;
+          components: Json;
+          created_at: string;
+          danger_level: number;
+          forecast_date: string;
+          fuel_limited: boolean;
+          fwi: number;
+          horizon_days: number;
+          id: string;
+          name_ar: string;
+          name_en: string;
+          name_fr: string;
+          snapshot_id: string;
+          source: string;
+        }[];
+      };
+      discard_risk_forecast_snapshot: {
+        Args: {
+          _base_date: string;
+          _scheduled_for: string;
+          _snapshot_id: string;
+        };
+        Returns: boolean;
+      };
+      list_contribution_ideas_for_moderation: {
+        Args: never;
+        Returns: {
+          contact: string | null;
+          created_at: string;
+          id: string;
+          lane: string;
+          locale: string;
+          message: string;
+          moderated_by: string | null;
+          moderation_note: string | null;
+          published_at: string | null;
+          score: number;
+          status: string;
+        }[];
+        SetofOptions: {
+          from: "*";
+          to: "contribution_ideas";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
+      list_translation_suggestions_for_moderation: {
+        Args: never;
+        Returns: {
+          created_at: string;
+          current_text: string;
+          id: string;
+          key_path: string;
+          locale: string;
+          moderated_by: string | null;
+          moderation_note: string | null;
+          note: string | null;
+          reviewer_key: string;
+          reviewer_name: string | null;
+          source_text: string;
+          status: string;
+          suggestion: string | null;
+          verdict: string;
+        }[];
+        SetofOptions: {
+          from: "*";
+          to: "translation_suggestions";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
+      moderate_contribution_idea: {
+        Args: { _idea: string; _moderation_note?: string; _status: string };
+        Returns: undefined;
+      };
+      moderate_translation_suggestion: {
+        Args: {
+          _moderation_note?: string;
+          _status: string;
+          _suggestion: string;
+        };
+        Returns: undefined;
+      };
+      publish_risk_forecast_snapshot: {
+        Args: {
+          _base_date: string;
+          _scheduled_for: string;
+          _snapshot_id: string;
+        };
+        Returns: Json;
+      };
+      set_broadcast_enabled: {
+        Args: { _enabled: boolean };
+        Returns: Json;
+      };
+      stage_risk_forecast_batch: {
+        Args: { _rows: Json; _snapshot_id: string };
         Returns: number;
       };
     };
