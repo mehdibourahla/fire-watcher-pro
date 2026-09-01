@@ -3,7 +3,7 @@ set -euo pipefail
 
 qa_script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 qa_repo_root="$(cd -- "$qa_script_dir/.." && pwd)"
-qa_migration="$qa_repo_root/supabase/migrations/20260901033100_enforce_profile_webhook_integrity.sql"
+qa_migration="$qa_repo_root/supabase/migrations/20260901192500_enforce_profile_webhook_integrity.sql"
 qa_database_url="${QA_DATABASE_URL:-postgresql://postgres:postgres@127.0.0.1:54822/postgres}"
 qa_psql_bin="${QA_PSQL_BIN:-psql}"
 qa_database_prefix="qa_profile_webhook_preflight_${$}_${RANDOM}"
