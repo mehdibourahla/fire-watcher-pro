@@ -176,9 +176,9 @@ function RootComponent() {
   }, []);
 
   useEffect(() => {
-    void import("@/integrations/supabase/legacy-session").then(
-      ({ migrateLegacySession }) => migrateLegacySession(),
-    );
+    void import("@/integrations/supabase/legacy-session")
+      .then(({ migrateLegacySession }) => migrateLegacySession())
+      .catch(() => undefined);
   }, []);
 
   useEffect(() => {

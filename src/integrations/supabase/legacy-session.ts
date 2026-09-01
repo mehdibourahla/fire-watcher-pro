@@ -8,14 +8,16 @@ import { hasAuthCookie } from "./session-cookie";
  */
 export async function migrateLegacySession(): Promise<boolean> {
   if (typeof window === "undefined") return false;
-  if (hasAuthCookie(document.cookie)) return false;
-
-  const key = Object.keys(window.localStorage).find((k) =>
-    /^sb-.*-auth-token$/.test(k),
-  );
-  if (!key) return false;
 
   try {
+    // reading cookies or localStorage throws in sandboxed and storage-blocked contexts
+    if (hasAuthCookie(document.cookie)) return false;
+
+    const key = Object.keys(window.localStorage).find((k) =>
+      /^sb-.*-auth-token$/.test(k),
+    );
+    if (!key) return false;
+
     const raw = window.localStorage.getItem(key);
     const stored = raw ? JSON.parse(raw) : null;
     const access_token = stored?.access_token;
