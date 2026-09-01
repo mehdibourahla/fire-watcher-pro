@@ -60,6 +60,7 @@ export default defineConfig(({ command }) => ({
               wrangler: {
                 name: "nadhir",
                 compatibility_date: "2026-08-31",
+                compatibility_flags: ["global_fetch_strictly_public"],
                 triggers: { crons: ["* * * * *"] },
                 vars: { NADHIR_APP_URL: "https://nadhir.app" },
                 // paid default is 50ms, which React SSR over 1536 communes exceeds
