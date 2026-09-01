@@ -915,6 +915,10 @@ export const fr: Translation = {
     wilaya: "Wilaya",
     severity: "Sévérité",
     submit: "Relayer l'avertissement",
+    warningRequired: "Saisissez l'autorité et le texte de l'avertissement.",
+    warningFailed:
+      "Impossible de mettre l'avertissement en attente. Vérifiez les champs et réessayez.",
+    toggleFailed: "Impossible de modifier la diffusion. Réessayez.",
     relayed: "diffusé",
     pendingRelay: "en attente",
     auditTitle: "Journal d'audit",
@@ -922,6 +926,8 @@ export const fr: Translation = {
     colTime: "Quand",
     colAction: "Action",
     colReason: "Motif",
+    colActor: "Auteur",
+    systemActor: "Système",
     colCommunes: "Communes",
   },
   push: {

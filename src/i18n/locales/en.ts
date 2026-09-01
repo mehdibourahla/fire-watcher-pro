@@ -894,6 +894,10 @@ export const en = {
     wilaya: "Wilaya",
     severity: "Severity",
     submit: "Relay warning",
+    warningRequired: "Enter an authority and warning text.",
+    warningFailed:
+      "Could not queue the warning. Check the fields and try again.",
+    toggleFailed: "Could not change broadcasting. Try again.",
     relayed: "relayed",
     pendingRelay: "queued",
     auditTitle: "Audit log",
@@ -901,6 +905,8 @@ export const en = {
     colTime: "When",
     colAction: "Action",
     colReason: "Reason",
+    colActor: "Actor",
+    systemActor: "System",
     colCommunes: "Communes",
   },
   push: {

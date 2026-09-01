@@ -877,6 +877,9 @@ export const ar: Translation = {
     wilaya: "الولاية",
     severity: "الشدة",
     submit: "نقل التحذير",
+    warningRequired: "أدخل اسم السلطة ونص التحذير.",
+    warningFailed: "تعذر وضع التحذير في الانتظار. راجع الحقول وأعد المحاولة.",
+    toggleFailed: "تعذر تغيير حالة البث. أعد المحاولة.",
     relayed: "بُثّ",
     pendingRelay: "في الانتظار",
     auditTitle: "سجل التدقيق",
@@ -884,6 +887,8 @@ export const ar: Translation = {
     colTime: "متى",
     colAction: "الإجراء",
     colReason: "السبب",
+    colActor: "المنفذ",
+    systemActor: "النظام",
     colCommunes: "البلديات",
   },
   push: {

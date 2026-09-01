@@ -10,6 +10,12 @@ import { useTranslation } from "react-i18next";
 
 import type { Locale } from "@/i18n";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  BroadcastAdminError,
+  getBroadcastAudit,
+  setBroadcastEnabled,
+  submitAuthorityWarning,
+} from "@/lib/broadcast-admin";
 import { adminUnitsQuery, relativeTime, unitName } from "@/lib/nadhir";
 import { myRolesQuery } from "@/lib/reports";
 
@@ -42,15 +48,7 @@ const settingsQuery = queryOptions({
 
 const auditQuery = queryOptions({
   queryKey: ["broadcast_audit"],
-  queryFn: async () => {
-    const { data, error } = await supabase
-      .from("broadcast_audit")
-      .select("id, at, action, reason, kind, phase, severity, commune_codes")
-      .order("at", { ascending: false })
-      .limit(200);
-    if (error) throw new Error(error.message);
-    return data ?? [];
-  },
+  queryFn: getBroadcastAudit,
 });
 
 const warningsQuery = queryOptions({
@@ -95,29 +93,17 @@ function BroadcastConsole() {
   });
 
   const toggle = useMutation({
-    mutationFn: async (enabled: boolean) => {
-      const { error } = await supabase
-        .from("broadcast_settings")
-        .update({ enabled, updated_at: new Date().toISOString() })
-        .eq("id", true);
-      if (error) throw new Error(error.message);
+    mutationFn: setBroadcastEnabled,
+    onSuccess: async () => {
+      await Promise.all([
+        qc.invalidateQueries({ queryKey: ["broadcast_settings"] }),
+        qc.invalidateQueries({ queryKey: ["broadcast_audit"] }),
+      ]);
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["broadcast_settings"] }),
   });
 
   const relay = useMutation({
-    mutationFn: async () => {
-      const { data: auth } = await supabase.auth.getUser();
-      const { error } = await supabase.from("authority_warnings").insert({
-        source: form.source.trim(),
-        received_via: form.received_via,
-        body: form.body.trim(),
-        severity: form.severity,
-        wilaya_id: form.wilaya_id || null,
-        created_by: auth.user?.id ?? null,
-      });
-      if (error) throw new Error(error.message);
-    },
+    mutationFn: () => submitAuthorityWarning(form),
     onSuccess: () => {
       setForm({ ...form, source: "", body: "" });
       void qc.invalidateQueries({ queryKey: ["authority_warnings"] });
@@ -180,6 +166,15 @@ function BroadcastConsole() {
               : t("broadcastAdmin.killResume")}
           </button>
         </div>
+        {toggle.isError ? (
+          <p className="mt-2 text-xs" style={{ color: "var(--emergency)" }}>
+            {t(
+              toggle.error instanceof BroadcastAdminError
+                ? toggle.error.message
+                : "broadcastAdmin.toggleFailed",
+            )}
+          </p>
+        ) : null}
       </section>
 
       <section className="rounded-xl border border-border p-4">
@@ -273,7 +268,11 @@ function BroadcastConsole() {
                 className="ms-3 text-xs"
                 style={{ color: "var(--emergency)" }}
               >
-                {relay.error.message}
+                {t(
+                  relay.error instanceof BroadcastAdminError
+                    ? relay.error.message
+                    : "broadcastAdmin.warningFailed",
+                )}
               </span>
             ) : null}
           </div>
@@ -327,6 +326,9 @@ function BroadcastConsole() {
                     {t("broadcastAdmin.colReason")}
                   </th>
                   <th className="py-1 pe-3 text-start">
+                    {t("broadcastAdmin.colActor")}
+                  </th>
+                  <th className="py-1 pe-3 text-start">
                     {t("broadcastAdmin.colCommunes")}
                   </th>
                 </tr>
@@ -351,6 +353,9 @@ function BroadcastConsole() {
                       {row.reason}
                       {row.kind ? ` · ${row.kind}` : ""}
                       {row.severity ? ` · ${row.severity}` : ""}
+                    </td>
+                    <td className="py-1.5 pe-3 font-mono text-[11px]">
+                      {row.actor_id ?? t("broadcastAdmin.systemActor")}
                     </td>
                     <td className="py-1.5 pe-3 tabular">
                       {row.commune_codes?.length ?? 0}

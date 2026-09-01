@@ -886,6 +886,10 @@ export const kab: Translation = {
     wilaya: "Tawilayt",
     severity: "Taẓayert",
     submit: "Zuzer alɣu",
+    warningRequired: "Sekcem tanebbaḍt d uḍris n ulɣu.",
+    warningFailed:
+      "Ur izmir ara ad yettwaqeddec ulɣu. Senqed urtiyen, tɛerḍeḍ tikkelt-nniḍen.",
+    toggleFailed: "Ur izmir ara ad ibeddel uzuzer. Tɛerḍeḍ tikkelt-nniḍen.",
     relayed: "yettwazuzer",
     pendingRelay: "yettraǧu",
     auditTitle: "Aɣmis n usenqed",
@@ -893,6 +897,8 @@ export const kab: Translation = {
     colTime: "Melmi",
     colAction: "Tigawt",
     colReason: "Taɣẓint",
+    colActor: "Ameskar",
+    systemActor: "Anagraw",
     colCommunes: "Tiɣiwanin",
   },
   push: {

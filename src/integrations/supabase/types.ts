@@ -210,6 +210,7 @@ export type Database = {
       broadcast_audit: {
         Row: {
           action: string;
+          actor_id: string | null;
           at: string;
           cluster_id: string | null;
           commune_codes: string[] | null;
@@ -223,6 +224,7 @@ export type Database = {
         };
         Insert: {
           action: string;
+          actor_id?: string | null;
           at?: string;
           cluster_id?: string | null;
           commune_codes?: string[] | null;
@@ -236,6 +238,7 @@ export type Database = {
         };
         Update: {
           action?: string;
+          actor_id?: string | null;
           at?: string;
           cluster_id?: string | null;
           commune_codes?: string[] | null;
@@ -2109,6 +2112,10 @@ export type Database = {
           _validated_at: string | null;
         };
         Returns: string;
+      };
+      set_broadcast_enabled: {
+        Args: { _enabled: boolean };
+        Returns: boolean;
       };
       vote_on_idea: {
         Args: { _idea: string; _value: number; _voter: string };
