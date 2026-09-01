@@ -211,4 +211,24 @@ describe("source runner registry", () => {
     ).resolves.toMatchObject({ outcome: "succeeded" });
     expect(deps.publishBroadcasts).toHaveBeenCalledOnce();
   });
+
+  // the slot, not the clock: a refresh that starts before Algiers midnight and
+  // finishes after it must still publish under the day the job was scheduled for
+  it("derives the risk base date from the job slot", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-08-31T23:30:00.000Z"));
+    const deps = dependencies();
+
+    await createSourceRunners(deps).local_fwi({
+      ...job("local_fwi"),
+      scheduled_for: "2026-08-31T22:59:59.900Z",
+    });
+
+    expect(deps.refreshRiskForecasts).toHaveBeenCalledWith({
+      snapshotId: expect.any(String),
+      baseDate: "2026-08-31",
+      scheduledFor: "2026-08-31T22:59:59.900Z",
+    });
+    vi.useRealTimers();
+  });
 });
