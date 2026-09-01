@@ -12,9 +12,19 @@ snapshot_b="f0220000-0000-4000-8000-000000000102"
 base_date="2098-01-01"
 scheduled_a="2098-01-01T00:00:00Z"
 scheduled_b="2098-01-01T01:00:00Z"
+source_checkpoint_backup="$(psql "$QA_DATABASE_URL" -v ON_ERROR_STOP=1 -Atc "
+  select encode(convert_to(row_to_json(checkpoint)::text, 'UTF8'), 'base64')
+  from public.source_checkpoints checkpoint
+  where contract_key = 'local_fwi';
+" | tr -d '[:space:]')"
+if [ -z "$source_checkpoint_backup" ]; then
+  echo "missing local_fwi source checkpoint" >&2
+  exit 2
+fi
 
 cleanup() {
   psql "$QA_DATABASE_URL" -v ON_ERROR_STOP=1 -q -c "
+    set session_replication_role = replica;
     delete from public.risk_forecast_staging
     where snapshot_id in ('$snapshot_a', '$snapshot_b');
     delete from public.risk_publication_checkpoint
@@ -25,6 +35,34 @@ cleanup() {
     where snapshot_id in ('$snapshot_a', '$snapshot_b');
     delete from public.risk_forecast_snapshot_runs
     where snapshot_id in ('$snapshot_a', '$snapshot_b');
+    with backup as (
+      select jsonb_populate_record(
+        null::public.source_checkpoints,
+        convert_from(decode('$source_checkpoint_backup', 'base64'), 'UTF8')::jsonb
+      ) as checkpoint
+    )
+    update public.source_checkpoints current
+    set
+      last_scheduled_for = (backup.checkpoint).last_scheduled_for,
+      last_attempt_at = (backup.checkpoint).last_attempt_at,
+      last_success_at = (backup.checkpoint).last_success_at,
+      upstream_published_at = (backup.checkpoint).upstream_published_at,
+      data_from = (backup.checkpoint).data_from,
+      data_through = (backup.checkpoint).data_through,
+      validated_at = (backup.checkpoint).validated_at,
+      published_at = (backup.checkpoint).published_at,
+      replay_cursor = (backup.checkpoint).replay_cursor,
+      consecutive_failures = (backup.checkpoint).consecutive_failures,
+      schema_fingerprint = (backup.checkpoint).schema_fingerprint,
+      records_accepted = (backup.checkpoint).records_accepted,
+      records_expected = (backup.checkpoint).records_expected,
+      coverage_status = (backup.checkpoint).coverage_status,
+      fallback_contract_key = (backup.checkpoint).fallback_contract_key,
+      last_public_reason_code = (backup.checkpoint).last_public_reason_code,
+      updated_at = (backup.checkpoint).updated_at
+    from backup
+    where current.contract_key = 'local_fwi';
+    set session_replication_role = origin;
   "
 }
 trap cleanup EXIT
@@ -106,13 +144,34 @@ test "$(cat "$result_b_file")" = "promoted"
 result="$({ psql "$QA_DATABASE_URL" -v ON_ERROR_STOP=1 -AtF '|' -c "
   select
     count(*), count(distinct fwi), min(fwi), max(fwi),
-    count(distinct snapshot_id), min(snapshot_id::text),
-    (select snapshot_id::text from public.risk_publication_checkpoint where key = 'local_fwi')
-  from public.risk_forecasts
-  where source = 'local_fwi'
-    and forecast_date between date '$base_date' and date '$base_date' + 5;
+    count(distinct forecast.snapshot_id), min(forecast.snapshot_id::text),
+    checkpoint.snapshot_id::text,
+    source.last_scheduled_for = checkpoint.scheduled_for,
+    source.data_through = checkpoint.base_date::timestamptz,
+    source.published_at = checkpoint.published_at,
+    source.coverage_status
+  from public.risk_publication_checkpoint checkpoint
+  join public.source_checkpoints source on source.contract_key = checkpoint.key
+  join public.risk_forecasts forecast on forecast.snapshot_id = checkpoint.snapshot_id
+  where checkpoint.key = 'local_fwi'
+  group by checkpoint.snapshot_id, checkpoint.scheduled_for,
+    checkpoint.base_date, checkpoint.published_at,
+    source.last_scheduled_for, source.data_through,
+    source.published_at, source.coverage_status;
 "; } | tr -d '[:space:]')"
 
-test "$result" = "$expected|1|72|72|1|$snapshot_b|$snapshot_b"
+test "$result" = "$expected|1|72|72|1|$snapshot_b|$snapshot_b|t|t|t|complete"
 
-echo "concurrent promotions remained atomic and monotonic: $result"
+generations="$({ psql "$QA_DATABASE_URL" -v ON_ERROR_STOP=1 -AtF '|' -c "
+  select snapshot_id, count(*), count(distinct fwi)
+  from public.risk_forecasts
+  where snapshot_id in ('$snapshot_a', '$snapshot_b')
+  group by snapshot_id
+  order by snapshot_id;
+"; } | tr '\n' ';')"
+case "$generations" in
+  "$snapshot_b|$expected|1;" | "$snapshot_a|$expected|1;$snapshot_b|$expected|1;") ;;
+  *) echo "invalid immutable generations: $generations" >&2; exit 1 ;;
+esac
+
+echo "concurrent immutable promotions remained atomic and monotonic: $result"

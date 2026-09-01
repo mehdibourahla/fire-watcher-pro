@@ -58,24 +58,43 @@ async function get(url = "https://nadhir.test/api/public/v1/risk") {
 describe("public risk publication boundary", () => {
   beforeEach(() => fromMock.mockReset());
 
-  it("returns a stable generic 503 when no complete snapshot is published", async () => {
-    fromMock.mockImplementation((table: string) =>
-      table === "risk_publication_checkpoint"
-        ? query({ data: null, error: null })
-        : query({
-            data: [{ forecast_date: "2026-09-02", horizon_days: 0 }],
-            error: null,
-          }),
-    );
+  it.each([
+    ["missing", null, null],
+    [
+      "partial",
+      {
+        coverage_status: "partial",
+        snapshot_id: "f0220000-0000-4000-8000-000000000009",
+        base_date: "2026-08-31",
+        published_at: "2026-08-31T00:20:00.000Z",
+      },
+      null,
+    ],
+    ["errored", null, { message: "checkpoint secret diagnostic" }],
+  ])(
+    "returns a stable generic 503 without reading forecasts for a %s checkpoint",
+    async (_label, checkpoint, checkpointError) => {
+      let riskReads = 0;
+      fromMock.mockImplementation((table: string) => {
+        if (table === "risk_publication_checkpoint")
+          return query({ data: checkpoint, error: checkpointError });
+        riskReads += 1;
+        return query({
+          data: [{ forecast_date: "2026-09-02", horizon_days: 0 }],
+          error: null,
+        });
+      });
 
-    const response = await get();
+      const response = await get();
 
-    expect(response.status).toBe(503);
-    await expect(response.json()).resolves.toEqual({
-      error: "forecast unavailable",
-    });
-    expect(response.headers.get("Access-Control-Allow-Origin")).toBe("*");
-  });
+      expect(response.status).toBe(503);
+      await expect(response.json()).resolves.toEqual({
+        error: "forecast unavailable",
+      });
+      expect(response.headers.get("Access-Control-Allow-Origin")).toBe("*");
+      expect(riskReads).toBe(0);
+    },
+  );
 
   it("uses the complete checkpoint base for the requested horizon", async () => {
     const forecastFilters: [string, unknown][] = [];

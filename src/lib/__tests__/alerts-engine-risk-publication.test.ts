@@ -177,4 +177,50 @@ describe("alert risk publication boundary", () => {
       expect(dispatchWebhooks).not.toHaveBeenCalled();
     },
   );
+
+  it("creates no risk alert when the published forecast read fails", async () => {
+    vi.setSystemTime(new Date("2026-09-03T23:30:00.000Z"));
+    const data: Record<string, unknown> = {
+      zones: [
+        {
+          id: "z1",
+          user_id: "u1",
+          commune_id: "c1",
+          name: "Zone 1",
+          active: true,
+          notify_fires: false,
+          notify_risk: true,
+          min_danger_level: 3,
+          lat: 36.7,
+          lon: 3.1,
+          radius_km: 10,
+        },
+      ],
+      profiles: [{ id: "u1", locale: "en", min_danger_level: 3 }],
+      fire_clusters: [],
+      settlements: [],
+      risk_publication_checkpoint: {
+        coverage_status: "complete",
+        snapshot_id: "f0220000-0000-4000-8000-000000000001",
+        base_date: "2026-08-31",
+        published_at: "2026-08-31T00:20:00.000Z",
+      },
+      alerts: [],
+    };
+    fromMock.mockImplementation((table: string) => {
+      const result =
+        table === "risk_forecasts"
+          ? {
+              data: [{ commune_id: "c1", danger_level: 5 }],
+              error: { message: "forecast failed" },
+            }
+          : { data: data[table] ?? [], error: null };
+      return query(table, result, []);
+    });
+
+    const result = await evaluateAlerts("u1");
+
+    expect(result.created).toBe(0);
+    expect(dispatchWebhooks).not.toHaveBeenCalled();
+  });
 });

@@ -1,6 +1,6 @@
 begin;
 set local search_path = public, extensions;
-select plan(28);
+select plan(39);
 
 select has_table('public', 'risk_publications', 'immutable publication metadata exists');
 select has_table('public', 'risk_publication_checkpoint', 'authoritative publication pointer exists');
@@ -16,6 +16,15 @@ select ok(
   'live generation identity is enforced'
 );
 select has_index('public', 'risk_forecasts', 'risk_forecasts_snapshot_horizon_date_commune_idx', 'generation reads are indexed');
+select has_index('public', 'risk_forecasts', 'risk_forecasts_snapshot_identity_idx', 'each generation has independent row identity');
+select ok(
+  not exists (
+    select 1 from pg_constraint
+    where conrelid = 'public.risk_forecasts'::regclass
+      and conname = 'risk_forecasts_commune_id_forecast_date_horizon_days_source_key'
+  ),
+  'legacy cross-generation uniqueness no longer permits overwrite promotion'
+);
 select has_index('public', 'risk_forecast_snapshot_runs', 'risk_forecast_snapshot_runs_stale_active_idx', 'stale active runs have an age index');
 select ok(
   coalesce((select relrowsecurity from pg_class where oid = 'public.risk_publications'::regclass), false)
@@ -74,6 +83,21 @@ select results_eq(
   $$select count(*) * 6 from public.admin_units where level = 'commune'$$,
   'all live rows carry the promoted identity'
 );
+select results_eq(
+  $$select last_scheduled_for, data_through, published_at, coverage_status, records_accepted, records_expected
+    from public.source_checkpoints where contract_key = 'local_fwi'$$,
+  $$select
+      checkpoint.scheduled_for,
+      checkpoint.base_date::timestamptz,
+      checkpoint.published_at,
+      'complete'::text,
+      publication.row_count,
+      publication.row_count
+    from public.risk_publication_checkpoint checkpoint
+    join public.risk_publications publication using (snapshot_id)
+    where checkpoint.key = 'local_fwi'$$,
+  'promotion atomically publishes the public source checkpoint before run reporting'
+);
 
 select is(public.begin_risk_forecast_snapshot('f0220000-0000-4000-8000-000000000002', '2099-01-01', '2099-01-01 01:00Z', now() - interval '6 hours'), 0, 'same-base rerun starts');
 insert into public.risk_forecast_staging(snapshot_id, commune_id, forecast_date, horizon_days, fwi, danger_level)
@@ -94,6 +118,54 @@ select results_eq(
   'failed promotion leaves the last complete pointer intact'
 );
 
+insert into public.risk_forecast_staging(snapshot_id, commune_id, forecast_date, horizon_days, fwi, danger_level)
+select 'f0220000-0000-4000-8000-000000000002', u.id, date '2099-01-01' + h, h, 99, 5
+from public.admin_units u cross join generate_series(0,5) h where u.level = 'commune'
+on conflict (snapshot_id, commune_id, forecast_date, horizon_days)
+do update set fwi = excluded.fwi, danger_level = excluded.danger_level;
+select is(
+  public.publish_risk_forecast_snapshot(
+    'f0220000-0000-4000-8000-000000000002', '2099-01-01', '2099-01-01 01:00Z'
+  )->>'status',
+  'promoted',
+  'a complete same-base rerun publishes as a distinct generation'
+);
+select results_eq(
+  $$select snapshot_id, count(*)::bigint from public.risk_forecasts
+    where snapshot_id in (
+      'f0220000-0000-4000-8000-000000000001',
+      'f0220000-0000-4000-8000-000000000002'
+    ) group by snapshot_id order by snapshot_id$$,
+  $$select snapshot_id, expected.communes * 6
+    from (values
+      ('f0220000-0000-4000-8000-000000000001'::uuid),
+      ('f0220000-0000-4000-8000-000000000002'::uuid)
+    ) snapshots(snapshot_id)
+    cross join lateral (
+      select count(*) as communes from public.admin_units where level = 'commune'
+    ) expected
+    order by snapshot_id$$,
+  'same-base publication retains both complete generations'
+);
+select is(
+  (select count(*)::integer from public.risk_forecasts
+   where snapshot_id = 'f0220000-0000-4000-8000-000000000001' and fwi = 10),
+  (select count(*)::integer * 6 from public.admin_units where level = 'commune'),
+  'publishing a rerun does not mutate prior values'
+);
+select throws_ok(
+  $$update public.risk_forecasts set fwi = 77
+    where snapshot_id = 'f0220000-0000-4000-8000-000000000001'$$,
+  '55000', 'published_risk_forecast_is_immutable',
+  'published generation rows cannot be updated'
+);
+select throws_ok(
+  $$delete from public.risk_forecasts
+    where snapshot_id = 'f0220000-0000-4000-8000-000000000001'$$,
+  '55000', 'published_risk_forecast_is_immutable',
+  'published generation rows cannot be deleted or left dangling'
+);
+
 select is(public.begin_risk_forecast_snapshot('f0220000-0000-4000-8000-000000000003', '2099-01-02', '2099-01-02Z', now() - interval '6 hours'), 0, 'newer run starts');
 insert into public.risk_forecast_staging(snapshot_id, commune_id, forecast_date, horizon_days, fwi, danger_level)
 select 'f0220000-0000-4000-8000-000000000003', u.id, date '2099-01-02' + h, h, 30, 3
@@ -108,6 +180,52 @@ select results_eq(
   $$select snapshot_id, scheduled_for from public.risk_publication_checkpoint where key = 'local_fwi'$$,
   $$values ('f0220000-0000-4000-8000-000000000003'::uuid, timestamptz '2099-01-02Z')$$,
   'pointer advancement is monotonic'
+);
+select results_eq(
+  $$select checkpoint.snapshot_id, checkpoint.scheduled_for, source.data_through,
+      source.published_at, source.coverage_status
+    from public.risk_publication_checkpoint checkpoint
+    join public.source_checkpoints source on source.contract_key = checkpoint.key
+    where checkpoint.key = 'local_fwi'$$,
+  $$select checkpoint.snapshot_id, checkpoint.scheduled_for,
+      checkpoint.base_date::timestamptz, checkpoint.published_at, 'complete'::text
+    from public.risk_publication_checkpoint checkpoint where checkpoint.key = 'local_fwi'$$,
+  'risk and public source checkpoints advance together to the newer publication'
+);
+select lives_ok(
+  $$select public.record_source_run(
+    _contract_key => 'local_fwi',
+    _trigger_kind => 'scheduled',
+    _idempotency_key => 'f022-late-partial',
+    _scheduled_for => timestamptz '2099-01-01 12:00Z',
+    _started_at => timestamptz '2099-01-01 12:00Z',
+    _finished_at => timestamptz '2099-01-01 12:10Z',
+    _outcome => 'partial',
+    _upstream_published_at => null,
+    _data_from => null,
+    _data_through => null,
+    _validated_at => null,
+    _published_at => null,
+    _records_seen => 10,
+    _records_inserted => 0,
+    _records_updated => 0,
+    _records_rejected => 0,
+    _records_expected => (
+      select count(*)::integer * 6 from public.admin_units where level = 'commune'
+    ),
+    _coverage_status => 'partial',
+    _quality_checks => '{}'::jsonb,
+    _public_reason_code => 'coverage_partial',
+    _private_diagnostic => 'late partial attempt'
+  )$$,
+  'late source-run reporting is accepted without regressing publication state'
+);
+select results_eq(
+  $$select last_scheduled_for, data_through, published_at, coverage_status
+    from public.source_checkpoints where contract_key = 'local_fwi'$$,
+  $$select scheduled_for, base_date::timestamptz, published_at, 'complete'::text
+    from public.risk_publication_checkpoint where key = 'local_fwi'$$,
+  'late older reporting cannot detach the public source checkpoint'
 );
 select is(public.publish_risk_forecast_snapshot('f0220000-0000-4000-8000-000000000003', '2099-01-02', '2099-01-02Z')->>'status', 'promoted', 'winning promotion replay is idempotent');
 

@@ -281,7 +281,7 @@ export async function evaluateAlerts(userId?: string): Promise<AlertRun> {
   const target = checkpointError
     ? null
     : publishedRiskTarget(checkpoint, today);
-  const { data: forecasts } = target
+  const { data: forecasts, error: forecastError } = target
     ? await supabaseAdmin
         .from("risk_forecasts")
         .select("commune_id, forecast_date, danger_level, fuel_limited")
@@ -296,9 +296,10 @@ export async function evaluateAlerts(userId?: string): Promise<AlertRun> {
           danger_level: number;
           fuel_limited: boolean;
         }[],
+        error: null,
       };
   const forecastByCommune = new Map(
-    (forecasts ?? []).map((f) => [f.commune_id, f]),
+    (forecastError ? [] : (forecasts ?? [])).map((f) => [f.commune_id, f]),
   );
 
   const placeByCluster = new Map<string, string>();

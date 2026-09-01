@@ -82,6 +82,19 @@ describe("riskForecastsQuery publication boundary", () => {
     expect(riskReads).toBe(0);
   });
 
+  it("does not read forecasts when the checkpoint read fails", async () => {
+    let riskReads = 0;
+    fromMock.mockImplementation((table: string) => {
+      if (table === "risk_publication_checkpoint")
+        return query({ data: null, error: { message: "checkpoint failed" } });
+      riskReads += 1;
+      return query({ data: [], error: null });
+    });
+
+    await expect(runRiskQuery()).rejects.toThrow("checkpoint failed");
+    expect(riskReads).toBe(0);
+  });
+
   it("pins all six pairs to the published complete base and ignores newer partial rows", async () => {
     const riskFilters: [string, unknown][] = [];
     let riskBuilder: Record<string, unknown> | undefined;
@@ -134,5 +147,27 @@ describe("riskForecastsQuery publication boundary", () => {
         "and(forecast_date.eq.2026-09-04,horizon_days.eq.4)," +
         "and(forecast_date.eq.2026-09-05,horizon_days.eq.5)",
     );
+  });
+
+  it("rejects a failed forecast read without returning partial rows", async () => {
+    fromMock.mockImplementation((table: string) => {
+      if (table === "risk_publication_checkpoint") {
+        return query({
+          data: {
+            coverage_status: "complete",
+            snapshot_id: "f0220000-0000-4000-8000-000000000001",
+            base_date: "2026-08-31",
+            published_at: "2026-08-31T00:20:00.000Z",
+          },
+          error: null,
+        });
+      }
+      return query({
+        data: [{ id: "must-not-leak" }],
+        error: { message: "forecast failed" },
+      });
+    });
+
+    await expect(runRiskQuery()).rejects.toThrow("forecast failed");
   });
 });
