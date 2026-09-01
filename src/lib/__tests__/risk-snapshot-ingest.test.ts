@@ -89,20 +89,23 @@ describe("risk snapshot ingest", () => {
       });
       return builder;
     });
-    rpcMock.mockImplementation((name: string) =>
+    rpcMock.mockImplementation((name: string, args: Record<string, unknown>) =>
       Promise.resolve(
         name === "begin_risk_forecast_snapshot"
           ? { data: 0, error: null }
-          : {
-              data: {
-                status: "promoted",
-                rows: 156,
-                snapshot_id: SNAPSHOT_ID,
-                base_date: RUN.baseDate,
-                published_at: "2026-08-31T12:05:00.000Z",
+          : name === "stage_risk_forecast_batch"
+            ? (staged.push(args["_rows"] as unknown[]),
+              { data: 156, error: null })
+            : {
+                data: {
+                  status: "promoted",
+                  rows: 156,
+                  snapshot_id: SNAPSHOT_ID,
+                  base_date: RUN.baseDate,
+                  published_at: "2026-08-31T12:05:00.000Z",
+                },
+                error: null,
               },
-              error: null,
-            },
       ),
     );
     vi.stubGlobal(
@@ -125,6 +128,8 @@ describe("risk snapshot ingest", () => {
       publishedAt: "2026-08-31T12:05:00.000Z",
     });
     expect(tables).not.toContain("risk_forecasts");
+    expect(tables).not.toContain("risk_forecast_staging");
+    expect(tables).not.toContain("risk_forecast_snapshot_runs");
     expect(staged.flat()).toHaveLength(156);
     expect(staged.flat()).toEqual(
       expect.arrayContaining([
@@ -135,6 +140,10 @@ describe("risk snapshot ingest", () => {
       _snapshot_id: SNAPSHOT_ID,
       _base_date: RUN.baseDate,
       _scheduled_for: RUN.scheduledFor,
+    });
+    expect(rpcMock).toHaveBeenCalledWith("stage_risk_forecast_batch", {
+      _snapshot_id: SNAPSHOT_ID,
+      _rows: expect.any(Array),
     });
     expect(rpcMock).toHaveBeenCalledWith("begin_risk_forecast_snapshot", {
       _snapshot_id: SNAPSHOT_ID,
@@ -172,7 +181,13 @@ describe("risk snapshot ingest", () => {
       }),
     );
 
-    rpcMock.mockResolvedValueOnce({ data: 0, error: null });
+    rpcMock.mockImplementation((name: string) =>
+      Promise.resolve(
+        name === "discard_risk_forecast_snapshot"
+          ? { data: true, error: null }
+          : { data: 0, error: null },
+      ),
+    );
     const promise = refreshRiskForecasts(RUN);
     await vi.runAllTimersAsync();
     const result = await promise;
@@ -183,8 +198,12 @@ describe("risk snapshot ingest", () => {
       "publish_risk_forecast_snapshot",
       expect.anything(),
     );
-    expect(deletes).toHaveLength(1);
-    expect(deletes[0]?.["eq"]).toHaveBeenCalledWith("snapshot_id", SNAPSHOT_ID);
+    expect(deletes).toHaveLength(0);
+    expect(rpcMock).toHaveBeenCalledWith("discard_risk_forecast_snapshot", {
+      _snapshot_id: SNAPSHOT_ID,
+      _base_date: RUN.baseDate,
+      _scheduled_for: RUN.scheduledFor,
+    });
   });
 
   it("records a promotion failure and discards its staged generation", async () => {
@@ -201,12 +220,15 @@ describe("risk snapshot ingest", () => {
       });
       return builder;
     });
-    rpcMock
-      .mockResolvedValueOnce({ data: 0, error: null })
-      .mockResolvedValueOnce({
-        data: null,
-        error: { message: "incomplete_risk_snapshot" },
-      });
+    rpcMock.mockImplementation((name: string) =>
+      Promise.resolve(
+        name === "publish_risk_forecast_snapshot"
+          ? { data: null, error: { message: "incomplete_risk_snapshot" } }
+          : name === "discard_risk_forecast_snapshot"
+            ? { data: true, error: null }
+            : { data: 0, error: null },
+      ),
+    );
     vi.stubGlobal(
       "fetch",
       vi.fn(
@@ -218,7 +240,12 @@ describe("risk snapshot ingest", () => {
     const result = await refreshRiskForecasts(RUN);
 
     expect(result.error).toContain("incomplete_risk_snapshot");
-    expect(deletes).toHaveLength(1);
+    expect(deletes).toHaveLength(0);
+    expect(rpcMock).toHaveBeenCalledWith("discard_risk_forecast_snapshot", {
+      _snapshot_id: SNAPSHOT_ID,
+      _base_date: RUN.baseDate,
+      _scheduled_for: RUN.scheduledFor,
+    });
   });
 
   it("reports a monotonic supersession without claiming publication", async () => {
@@ -231,18 +258,22 @@ describe("risk snapshot ingest", () => {
       builder["update"] = vi.fn(() => builder);
       return builder;
     });
-    rpcMock
-      .mockResolvedValueOnce({ data: 0, error: null })
-      .mockResolvedValueOnce({
-        data: {
-          status: "superseded",
-          rows: 0,
-          snapshot_id: SNAPSHOT_ID,
-          base_date: RUN.baseDate,
-          published_at: null,
-        },
-        error: null,
-      });
+    rpcMock.mockImplementation((name: string) =>
+      Promise.resolve(
+        name === "publish_risk_forecast_snapshot"
+          ? {
+              data: {
+                status: "superseded",
+                rows: 0,
+                snapshot_id: SNAPSHOT_ID,
+                base_date: RUN.baseDate,
+                published_at: null,
+              },
+              error: null,
+            }
+          : { data: 0, error: null },
+      ),
+    );
     vi.stubGlobal(
       "fetch",
       vi.fn(async () => new Response(JSON.stringify([{ hourly: {} }]))),

@@ -1,6 +1,6 @@
 begin;
 set local search_path = public, extensions;
-select plan(48);
+select no_plan();
 
 select has_table('public', 'risk_publications', 'immutable publication metadata exists');
 select has_table('public', 'risk_publication_checkpoint', 'authoritative publication pointer exists');
@@ -61,18 +61,54 @@ select ok(
 );
 select has_function('public', 'begin_risk_forecast_snapshot', array['uuid', 'date', 'timestamp with time zone', 'timestamp with time zone'], 'generation start is atomic');
 select has_function('public', 'publish_risk_forecast_snapshot', array['uuid', 'date', 'timestamp with time zone'], 'promotion receives captured identity');
+select has_function('public', 'stage_risk_forecast_batch', array['uuid', 'jsonb'], 'staging and heartbeat share one lifecycle RPC');
+select has_function('public', 'discard_risk_forecast_snapshot', array['uuid', 'date', 'timestamp with time zone'], 'discard is an atomic lifecycle transition');
 select ok(
   has_function_privilege('service_role', 'public.begin_risk_forecast_snapshot(uuid,date,timestamp with time zone,timestamp with time zone)', 'execute')
   and not has_function_privilege('anon', 'public.begin_risk_forecast_snapshot(uuid,date,timestamp with time zone,timestamp with time zone)', 'execute')
   and has_function_privilege('service_role', 'public.publish_risk_forecast_snapshot(uuid,date,timestamp with time zone)', 'execute')
-  and not has_function_privilege('authenticated', 'public.publish_risk_forecast_snapshot(uuid,date,timestamp with time zone)', 'execute'),
+  and not has_function_privilege('authenticated', 'public.publish_risk_forecast_snapshot(uuid,date,timestamp with time zone)', 'execute')
+  and has_function_privilege('service_role', 'public.stage_risk_forecast_batch(uuid,jsonb)', 'execute')
+  and not has_function_privilege('authenticated', 'public.stage_risk_forecast_batch(uuid,jsonb)', 'execute')
+  and has_function_privilege('service_role', 'public.discard_risk_forecast_snapshot(uuid,date,timestamp with time zone)', 'execute')
+  and not has_function_privilege('anon', 'public.discard_risk_forecast_snapshot(uuid,date,timestamp with time zone)', 'execute'),
   'publication lifecycle RPCs are service-only'
+);
+select ok(
+  (
+    select bool_and(prosecdef and proconfig = array['search_path=""'])
+    from pg_proc
+    where oid in (
+      'public.begin_risk_forecast_snapshot(uuid,date,timestamptz,timestamptz)'::regprocedure,
+      'public.publish_risk_forecast_snapshot(uuid,date,timestamptz)'::regprocedure,
+      'public.stage_risk_forecast_batch(uuid,jsonb)'::regprocedure,
+      'public.discard_risk_forecast_snapshot(uuid,date,timestamptz)'::regprocedure
+    )
+  ),
+  'lifecycle definer RPCs use an empty search path'
+);
+select ok(
+  not has_table_privilege('service_role', 'public.risk_forecasts', 'insert')
+  and not has_table_privilege('service_role', 'public.risk_forecasts', 'update')
+  and not has_table_privilege('service_role', 'public.risk_forecasts', 'delete')
+  and not has_table_privilege('service_role', 'public.risk_forecast_staging', 'insert')
+  and not has_table_privilege('service_role', 'public.risk_forecast_staging', 'update')
+  and not has_table_privilege('service_role', 'public.risk_forecast_staging', 'delete')
+  and not has_table_privilege('service_role', 'public.risk_forecast_snapshot_runs', 'insert')
+  and not has_table_privilege('service_role', 'public.risk_forecast_snapshot_runs', 'update')
+  and not has_table_privilege('service_role', 'public.risk_forecast_snapshot_runs', 'delete'),
+  'service publication can mutate lifecycle tables only through RPCs'
 );
 
 insert into public.risk_forecast_snapshot_runs(snapshot_id, base_date, scheduled_for, status, heartbeat_at)
 values ('f0220000-0000-4000-8000-000000000090', date '2098-12-01', '2098-12-01Z', 'active', now() - interval '2 days');
+insert into public.risk_forecast_snapshot_runs(snapshot_id, base_date, scheduled_for, status, heartbeat_at)
+values ('f0220000-0000-4000-8000-000000000091', date '2098-12-02', '2098-12-02Z', 'discarded', now());
 insert into public.risk_forecast_staging(snapshot_id, commune_id, forecast_date, horizon_days, fwi, danger_level)
 select 'f0220000-0000-4000-8000-000000000090', id, date '2098-12-01', 0, 1, 1
+from public.admin_units where level = 'commune' limit 1;
+insert into public.risk_forecast_staging(snapshot_id, commune_id, forecast_date, horizon_days, fwi, danger_level)
+select 'f0220000-0000-4000-8000-000000000091', id, date '2098-12-02', 0, 1, 1
 from public.admin_units where level = 'commune' limit 1;
 select is(public.begin_risk_forecast_snapshot('f0220000-0000-4000-8000-000000000001', '2099-01-01', '2099-01-01Z', now() - interval '6 hours'), 1, 'start reclaims one crashed run');
 select results_eq(
@@ -81,6 +117,51 @@ select results_eq(
   $$values ('discarded'::text, 0)$$,
   'crash remnants are discarded while the new run stays active'
 );
+select is(
+  (select count(*)::integer from public.risk_forecast_staging where snapshot_id = 'f0220000-0000-4000-8000-000000000091'),
+  0,
+  'begin permanently purges staging owned by every non-active run'
+);
+set local role service_role;
+select throws_ok(
+  $$select public.stage_risk_forecast_batch(
+    'f0220000-0000-4000-8000-000000000090',
+    jsonb_build_array(jsonb_build_object(
+      'commune_id', (select id from public.admin_units where level = 'commune' limit 1),
+      'forecast_date', '2098-12-01', 'horizon_days', 0, 'fwi', 9,
+      'danger_level', 1, 'fuel_limited', false, 'components', '{}'::jsonb
+    ))
+  )$$,
+  '22023', 'risk_snapshot_not_active',
+  'a reclaimed worker cannot stage or heartbeat again'
+);
+reset role;
+
+set local role service_role;
+select is(
+  public.stage_risk_forecast_batch(
+    'f0220000-0000-4000-8000-000000000001',
+    jsonb_build_array(jsonb_build_object(
+      'commune_id', (select id from public.admin_units where level = 'commune' limit 1),
+      'forecast_date', '2099-01-01', 'horizon_days', 0, 'fwi', 10,
+      'danger_level', 1, 'fuel_limited', false, 'components', '{}'::jsonb
+    ))
+  ),
+  1,
+  'active staging succeeds through the lifecycle RPC'
+);
+reset role;
+select ok(
+  (select heartbeat_at >= created_at from public.risk_forecast_snapshot_runs
+   where snapshot_id = 'f0220000-0000-4000-8000-000000000001')
+  and exists (
+    select 1 from public.risk_forecast_staging
+    where snapshot_id = 'f0220000-0000-4000-8000-000000000001'
+  ),
+  'staging and active-run heartbeat commit together'
+);
+delete from public.risk_forecast_staging
+where snapshot_id = 'f0220000-0000-4000-8000-000000000001';
 
 insert into public.risk_forecast_staging(snapshot_id, commune_id, forecast_date, horizon_days, fwi, danger_level)
 select 'f0220000-0000-4000-8000-000000000001', u.id, date '2099-01-01' + h, h, 10, 1
@@ -144,6 +225,21 @@ select results_eq(
     where snapshot_id = 'f0220000-0000-4000-8000-000000000001'$$,
   $$select count(*) * 6 from public.admin_units where level = 'commune'$$,
   'the ingest service retains direct base-table access'
+);
+select throws_ok(
+  $$insert into public.risk_forecasts (
+      commune_id, forecast_date, horizon_days, source, fwi, danger_level, snapshot_id
+    ) select commune_id, forecast_date, horizon_days, source, fwi, danger_level, snapshot_id
+      from public.risk_forecasts limit 1$$,
+  '42501', null, 'service cannot insert around the publication RPC'
+);
+select throws_ok(
+  $$update public.risk_forecasts set fwi = fwi where snapshot_id is not null$$,
+  '42501', null, 'service cannot update a published generation'
+);
+select throws_ok(
+  $$delete from public.risk_forecasts where snapshot_id is not null$$,
+  '42501', null, 'service cannot delete a published generation'
 );
 reset role;
 
@@ -281,6 +377,34 @@ select results_eq(
   'late older reporting cannot detach the public source checkpoint'
 );
 select is(public.publish_risk_forecast_snapshot('f0220000-0000-4000-8000-000000000003', '2099-01-02', '2099-01-02Z')->>'status', 'promoted', 'winning promotion replay is idempotent');
+select is(
+  public.discard_risk_forecast_snapshot(
+    'f0220000-0000-4000-8000-000000000003', '2099-01-02', '2099-01-02Z'
+  ),
+  false,
+  'ambiguous cleanup cannot demote a committed publication'
+);
+select results_eq(
+  $$select status, exists (
+      select 1 from public.risk_publications publication
+      where publication.snapshot_id = run.snapshot_id
+    )
+    from public.risk_forecast_snapshot_runs run
+    where snapshot_id = 'f0220000-0000-4000-8000-000000000003'$$,
+  $$values ('promoted'::text, true)$$,
+  'committed promotion remains promoted after ambiguous discard'
+);
+
+create temporary table qa_current_risk_digest as
+select md5(string_agg(row_to_json(current_row)::text, ',' order by current_row.id)) as digest
+from public.current_risk_forecasts() current_row;
+select count(*) from public.current_risk_forecasts();
+select results_eq(
+  $$select md5(string_agg(row_to_json(current_row)::text, ',' order by current_row.id))
+    from public.current_risk_forecasts() current_row$$,
+  $$select digest from qa_current_risk_digest$$,
+  'the public read RPC never mutates its pinned generation'
+);
 
 select * from finish();
 rollback;

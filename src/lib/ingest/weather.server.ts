@@ -203,6 +203,18 @@ export async function refreshRiskForecasts({
       error: `risk snapshot start failed: ${startError.message}`,
     };
 
+  const discard = async () => {
+    const { error } = await supabaseAdmin.rpc(
+      "discard_risk_forecast_snapshot",
+      {
+        _snapshot_id: snapshotId,
+        _base_date: baseDate,
+        _scheduled_for: scheduledFor,
+      },
+    );
+    return error;
+  };
+
   const communes = await fetchAllPages<{
     id: string;
     lat: number;
@@ -217,10 +229,7 @@ export async function refreshRiskForecasts({
       .range(from, to),
   );
   if (!communes.length) {
-    await supabaseAdmin
-      .from("risk_forecast_snapshot_runs")
-      .update({ status: "discarded", finished_at: new Date().toISOString() })
-      .eq("snapshot_id", snapshotId);
+    await discard();
     return { communes: 0, rows: 0 };
   }
 
@@ -275,11 +284,10 @@ export async function refreshRiskForecasts({
     states: (StoredState & { commune_id: string })[],
   ) => {
     for (let i = 0; i < rows.length; i += 500) {
-      const { error } = await supabaseAdmin
-        .from("risk_forecast_staging")
-        .upsert(rows.slice(i, i + 500), {
-          onConflict: "snapshot_id,commune_id,forecast_date,horizon_days",
-        });
+      const { error } = await supabaseAdmin.rpc("stage_risk_forecast_batch", {
+        _snapshot_id: snapshotId,
+        _rows: rows.slice(i, i + 500),
+      });
       if (error)
         throw new Error(`risk forecast staging failed: ${error.message}`);
     }
@@ -302,15 +310,8 @@ export async function refreshRiskForecasts({
         : error instanceof Error
           ? error.message
           : "refresh failed";
-    const { error: cleanupError } = await supabaseAdmin
-      .from("risk_forecast_staging")
-      .delete()
-      .eq("snapshot_id", snapshotId);
-    const { error: runCleanupError } = await supabaseAdmin
-      .from("risk_forecast_snapshot_runs")
-      .update({ status: "discarded", finished_at: new Date().toISOString() })
-      .eq("snapshot_id", snapshotId);
-    const cleanupMessage = cleanupError?.message ?? runCleanupError?.message;
+    const cleanupError = await discard();
+    const cleanupMessage = cleanupError?.message;
     return {
       communes: communes.length,
       rows: written,
@@ -374,14 +375,6 @@ export async function refreshRiskForecasts({
       });
       try {
         await flush(rows, nextState);
-        const { error: heartbeatError } = await supabaseAdmin
-          .from("risk_forecast_snapshot_runs")
-          .update({ heartbeat_at: new Date().toISOString() })
-          .eq("snapshot_id", snapshotId);
-        if (heartbeatError)
-          throw new Error(
-            `risk snapshot heartbeat failed: ${heartbeatError.message}`,
-          );
       } catch (error) {
         return fail(error);
       }

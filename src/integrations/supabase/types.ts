@@ -2000,6 +2000,14 @@ export type Database = {
           source: string;
         }[];
       };
+      discard_risk_forecast_snapshot: {
+        Args: {
+          _base_date: string;
+          _scheduled_for: string;
+          _snapshot_id: string;
+        };
+        Returns: boolean;
+      };
       consume_rate_limit: {
         Args: { _bucket: string; _limit: number; _window_seconds: number };
         Returns: boolean;
@@ -2115,7 +2123,11 @@ export type Database = {
       };
       set_broadcast_enabled: {
         Args: { _enabled: boolean };
-        Returns: boolean;
+        Returns: Json;
+      };
+      stage_risk_forecast_batch: {
+        Args: { _rows: Json; _snapshot_id: string };
+        Returns: number;
       };
       vote_on_idea: {
         Args: { _idea: string; _value: number; _voter: string };
