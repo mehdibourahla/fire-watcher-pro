@@ -1,8 +1,11 @@
 name: Daily source jobs
 
 on:
+  # hourly across the contract's whole 720-minute usefulness window: GitHub drops
+  # bunched schedules, and four-per-hour in a short window delivered roughly one
+  # run a day, always after the old window had expired the job
   schedule:
-    - cron: "5,20,35,50 6-9 * * *"
+    - cron: "5 6-17 * * *"
   workflow_dispatch:
 
 permissions: {}
