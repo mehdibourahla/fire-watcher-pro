@@ -39,7 +39,7 @@ begin
   ) then
     alter table public.zones
       add constraint zones_name_valid
-      check (char_length(btrim(name)) between 1 and 80);
+      check (char_length(name) <= 80 and name ~ '[^[:space:]]');
   end if;
 
   if not exists (

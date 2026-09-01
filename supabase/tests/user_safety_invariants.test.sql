@@ -2,7 +2,7 @@ begin;
 
 set local search_path = public, extensions;
 
-select plan(33);
+select plan(34);
 
 insert into auth.users (
   instance_id,
@@ -37,6 +37,15 @@ select throws_ok(
   '23514',
   null,
   'zones reject blank names'
+);
+delete from public.zones where user_id = 'f09f1000-0000-4000-8000-000000000001';
+
+select throws_ok(
+  $$insert into public.zones (user_id, name, lat, lon)
+    values ('f09f1000-0000-4000-8000-000000000001', E'\t\n', 0, 0)$$,
+  '23514',
+  null,
+  'zones reject tab and newline only names'
 );
 delete from public.zones where user_id = 'f09f1000-0000-4000-8000-000000000001';
 
