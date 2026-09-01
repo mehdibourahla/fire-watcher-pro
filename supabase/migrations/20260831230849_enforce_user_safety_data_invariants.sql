@@ -205,7 +205,6 @@ declare
   recent_reports integer;
 begin
   new.created_at := now();
-  new.updated_at := new.created_at;
 
   perform pg_catalog.pg_advisory_xact_lock(
     pg_catalog.hashtext('nadhir:citizen-report-limit'),

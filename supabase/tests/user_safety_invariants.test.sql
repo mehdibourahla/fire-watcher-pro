@@ -249,11 +249,13 @@ values (
 );
 select ok(
   (
-    select created_at = now() and updated_at = now()
+    select
+      created_at = now()
+      and updated_at = '2000-01-01 00:00:00+00'::timestamptz
     from public.citizen_reports
     where note = 'daily-1'
   ),
-  'report creation timestamps are server-authoritative'
+  'report creation time is server-authoritative without rewriting updated time'
 );
 
 update public.citizen_reports
