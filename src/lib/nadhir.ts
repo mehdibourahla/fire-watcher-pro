@@ -447,6 +447,20 @@ export function publishedRiskTarget(
   return { ...publication, forecastDate: targetDate, horizon };
 }
 
+export function nationalMaximum(forecasts: RiskForecast[]) {
+  let max: { level: number; fwi: number } | null = null;
+  for (const r of forecasts) {
+    if (r.horizon_days !== 0 || r.fuel_limited) continue;
+    if (
+      !max ||
+      r.danger_level > max.level ||
+      (r.danger_level === max.level && r.fwi > max.fwi)
+    )
+      max = { level: r.danger_level, fwi: r.fwi };
+  }
+  return max;
+}
+
 export const riskForecastsQuery = queryOptions({
   queryKey: ["risk_forecasts"],
   queryFn: async () => {
