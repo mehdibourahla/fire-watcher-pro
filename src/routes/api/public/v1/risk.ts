@@ -39,16 +39,14 @@ export const Route = createFileRoute("/api/public/v1/risk")({
           communeId = unit.id;
         }
 
-        // horizon-0 rows accumulate one per run, so the query must pin the
-        // current run's date or it ranks yesterday's forecasts beside today's
-        const { data: latest } = await supabase
-          .from("risk_forecasts")
-          .select("forecast_date")
-          .eq("horizon_days", 0)
-          .order("forecast_date", { ascending: false })
-          .limit(1);
-        const base = latest?.[0]?.forecast_date;
-        if (!base) return json({ error: "no forecast available" }, 503);
+        const { publishedRiskBaseDate } = await import("@/lib/nadhir");
+        const { data: checkpoint, error: checkpointError } = await supabase
+          .from("source_health")
+          .select("coverage_status, valid_at, last_success_at, published_at")
+          .eq("key", "local_fwi")
+          .maybeSingle();
+        const base = checkpointError ? null : publishedRiskBaseDate(checkpoint);
+        if (!base) return json({ error: "forecast unavailable" }, 503);
         const date = new Date(
           Date.parse(`${base}T00:00:00Z`) + horizon * 86_400_000,
         )
@@ -60,6 +58,7 @@ export const Route = createFileRoute("/api/public/v1/risk")({
           .select(
             "forecast_date, horizon_days, fwi, danger_level, fuel_limited, source, admin_units!inner(code, name_en, name_ar, name_fr, level)",
           )
+          .eq("source", "local_fwi")
           .eq("horizon_days", horizon)
           .eq("forecast_date", date)
           .order("fuel_limited", { ascending: true })
@@ -68,7 +67,7 @@ export const Route = createFileRoute("/api/public/v1/risk")({
         if (communeId) query = query.eq("commune_id", communeId);
 
         const { data, error } = await query;
-        if (error) return json({ error: error.message }, 502);
+        if (error) return json({ error: "forecast unavailable" }, 503);
 
         return json({
           licence: "CC-BY 4.0 — Nadhir, FWI computed from Open-Meteo forecasts",
