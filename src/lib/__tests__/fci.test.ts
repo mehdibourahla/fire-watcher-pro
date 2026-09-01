@@ -69,4 +69,21 @@ describe("parseFciFeatures", () => {
     expect(outside).toBe(0);
     expect(filtered).toBeGreaterThan(0);
   });
+
+  // freshness must track what EUMETSAT published, not whether anything burned:
+  // a quiet night would otherwise age a healthy source into "stale"
+  it("reports the newest slot even when every feature is filtered out", () => {
+    const { rows, latestSlot } = parseFciFeatures(sample);
+    expect(rows).toHaveLength(0);
+    expect(latestSlot).toBe("2026-08-30T16:40:00Z");
+  });
+
+  it("ignores out-of-box features when reporting the newest slot", () => {
+    const flipped = structuredClone(sample);
+    for (const feature of flipped.features)
+      feature.geometry.coordinates = [30.0, 10.0];
+    const { latestSlot, outside } = parseFciFeatures(flipped);
+    expect(outside).toBe(4);
+    expect(latestSlot).toBeNull();
+  });
 });
