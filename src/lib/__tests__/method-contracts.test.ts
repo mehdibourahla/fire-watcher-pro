@@ -3,7 +3,10 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { methodNotAllowed } from "@/lib/public-api.server";
+import {
+  methodNotAllowed,
+  postMethodNotAllowed,
+} from "@/lib/public-api.server";
 import { postOnlyMethodNotAllowed } from "@/lib/post-only.server";
 
 function routeFiles(dir: string): string[] {
@@ -28,9 +31,11 @@ describe("405 responses", () => {
     expect(res.status).toBe(405);
     expect(res.headers.get("Allow")).toBe("POST");
     await expect(res.json()).resolves.toEqual({ error: "method not allowed" });
-    expect(postOnlyMethodNotAllowed("POST, OPTIONS").headers.get("Allow")).toBe(
-      "POST, OPTIONS",
-    );
+
+    // subscribe answers preflight, so its 405 must advertise OPTIONS too
+    const cors = postMethodNotAllowed();
+    expect(cors.status).toBe(405);
+    expect(cors.headers.get("Allow")).toBe("POST, OPTIONS");
   });
 });
 
