@@ -100,6 +100,25 @@ select ok(
   'only the service role can enqueue due work'
 );
 select ok(
+  has_schema_privilege('service_role', 'private', 'usage')
+  and has_function_privilege(
+    'service_role',
+    'private.record_source_run(text,text,text,timestamp with time zone,timestamp with time zone,timestamp with time zone,text,timestamp with time zone,timestamp with time zone,timestamp with time zone,timestamp with time zone,timestamp with time zone,integer,integer,integer,integer,integer,text,jsonb,text,text,uuid,integer)',
+    'execute'
+  )
+  and not has_function_privilege(
+    'anon',
+    'private.record_source_run(text,text,text,timestamp with time zone,timestamp with time zone,timestamp with time zone,text,timestamp with time zone,timestamp with time zone,timestamp with time zone,timestamp with time zone,timestamp with time zone,integer,integer,integer,integer,integer,text,jsonb,text,text,uuid,integer)',
+    'execute'
+  )
+  and not has_function_privilege(
+    'authenticated',
+    'private.record_source_run(text,text,text,timestamp with time zone,timestamp with time zone,timestamp with time zone,text,timestamp with time zone,timestamp with time zone,timestamp with time zone,timestamp with time zone,timestamp with time zone,integer,integer,integer,integer,integer,text,jsonb,text,text,uuid,integer)',
+    'execute'
+  ),
+  'the service role alone can reach the private run recorder'
+);
+select ok(
   not has_function_privilege(
     'anon',
     'public.claim_source_job(text,text,text,timestamp with time zone)',

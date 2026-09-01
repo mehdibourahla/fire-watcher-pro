@@ -151,9 +151,10 @@ build time. Everything else is a runtime secret set with `wrangler secret put <N
 raw runs, and replay controls are service-role-only.
 
 The daily FWI and EFFIS jobs are CPU-bound, so separate matrix consumers in
-`.github/workflows/risk-refresh.yml` claim them independently at 06:05 UTC. Each Actions run
-also gets a fresh IP, which matters because Open-Meteo's free quota is per-IP; dispatching that
-workflow is the fastest way to fill `fwi_state` for a new commune set.
+`.github/workflows/risk-refresh.yml` claim them independently throughout their 06:00–10:00 UTC
+retry window. GitHub-hosted runners may use a different egress IP, but matrix jobs can share
+runner IPs, so this is only a best-effort aid for Open-Meteo's per-IP quota. Dispatching the
+workflow remains the fastest way to fill `fwi_state` for a new commune set.
 
 ## Known limitations
 

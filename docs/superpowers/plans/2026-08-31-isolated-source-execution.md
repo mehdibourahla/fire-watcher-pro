@@ -110,7 +110,7 @@ retry_window_minutes integer not null default 30 check (retry_window_minutes > 0
 overlap_minutes integer not null default 0 check (overlap_minutes >= 0)
 ```
 
-Set `geo.schedule_enabled = false`. Set `local_fwi` and `effis` to target `github`, offset 360 minutes, a 1,800-second lease, and a four-hour retry window. Insert `alert_evaluation` as a critical `detection_processing` contract with 15-minute cadence, five-minute offset, dependencies `fusion` and `local_fwi`, and parser version `alert-rules-v1`.
+Set `geo.schedule_enabled = false`. Set `local_fwi` and `effis` to target `github`, offset 360 minutes, a 1,800-second lease, and a four-hour retry window. Keep GitHub consumers recurring through that full retry window so an expired lease or delayed retry remains claimable. Insert `alert_evaluation` as a critical `detection_processing` contract with 15-minute cadence, five-minute offset, dependencies `fusion` and `local_fwi`, and parser version `alert-rules-v1`.
 
 - [ ] **Step 5: Add the three private reliability tables.**
 

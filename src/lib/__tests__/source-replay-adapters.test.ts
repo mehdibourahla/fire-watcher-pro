@@ -78,6 +78,16 @@ describe("recorded source interval replay", () => {
           time: "2026-08-31T20:00:00Z",
         },
       },
+      {
+        geometry: { coordinates: [3.3, 36.9] },
+        properties: {
+          FRP: 12,
+          Confidence: 82,
+          SZA: 52,
+          Datetime: "2026-08-31 19:55:00",
+          time: "2026-08-31T19:40:00Z",
+        },
+      },
     ];
     const fetchMock = vi.fn(async (_input: RequestInfo | URL) =>
       Response.json({ type: "FeatureCollection", features }),
@@ -89,11 +99,11 @@ describe("recorded source interval replay", () => {
 
     const url = new URL(String(fetchMock.mock.calls[0]?.[0]));
     expect(url.searchParams.get("cql_filter")).toBe(
-      "time >= '2026-08-31T19:50:00Z' AND time <= '2026-08-31T20:00:00Z' AND BBOX(geom, 18.9, -8.7, 37.6, 12)",
+      "time >= '2026-08-31T19:40:00Z' AND time <= '2026-08-31T20:00:00Z' AND BBOX(geom, 18.9, -8.7, 37.6, 12)",
     );
     expect(first).toMatchObject({
-      fetched: 1,
-      inserted: 1,
+      fetched: 2,
+      inserted: 2,
       dataFrom: interval.dataFrom,
       dataThrough: interval.dataThrough,
     });

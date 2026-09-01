@@ -13,6 +13,7 @@ const LAYER = "mtg_fd:frp";
  * and Moroccan borders matter; fusion only assigns communes inside Algeria. */
 const WATCH = { south: 18.9, west: -8.7, north: 37.6, east: 12.0 };
 const WINDOW_MIN = 40;
+const SLOT_MIN = 10;
 
 export type FciFeatureCollection = {
   features: {
@@ -103,7 +104,11 @@ export async function ingestFci(
   interval?: SourceReplayInterval,
 ): Promise<FciRun> {
   const since = interval
-    ? wfsTime(interval.dataFrom).slice(0, -1)
+    ? wfsTime(
+        new Date(
+          Date.parse(interval.dataFrom) - SLOT_MIN * 60_000,
+        ).toISOString(),
+      ).slice(0, -1)
     : new Date(Date.now() - WINDOW_MIN * 60_000).toISOString().slice(0, 19);
   const timeFilter = interval
     ? `time >= '${since}Z' AND time <= '${wfsTime(interval.dataThrough)}'`

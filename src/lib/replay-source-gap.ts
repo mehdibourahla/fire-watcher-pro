@@ -39,7 +39,11 @@ export async function runReplayCommand(
   const { data: jobId, error } = await client.rpc("enqueue_source_replay", {
     _gap_id: gapId,
   });
-  if (error || !jobId) throw new Error("Could not enqueue source replay");
+  if (error) throw new Error("Could not enqueue source replay");
+  if (!jobId) {
+    write(JSON.stringify({ gapId, jobId: null, state: "unrecoverable" }));
+    return 0;
+  }
 
   write(JSON.stringify({ gapId, jobId, state: "queued" }));
   return 0;

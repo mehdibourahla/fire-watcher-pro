@@ -156,8 +156,9 @@ Slices, in dependency order:
       from every current pipeline stage, four-language status UI, and the sanitized
       `/api/public/v1/status` endpoint. The legacy `data_sources` and `ingest_runs` relations
       remain dormant for one expand/contract deploy window; their removal is the next release.
-- [x] M2 Isolated execution: per-contract queue jobs and leases, bounded retries, recorded
-      gaps, ID-only replay, Cloudflare plus database triggers, independent GitHub consumers
+- [ ] M2 Isolated execution: implementation is complete for per-contract queue jobs and leases,
+      bounded retries, recorded gaps, ID-only replay, Cloudflare plus database triggers,
+      independent GitHub consumers
       for FWI/EFFIS, and an out-of-band watchdog. The old direct cron endpoints and combined
       pipeline are removed. Production rollout and its observation window remain operator gates.
 - [ ] M3 Atomic daily risk: stage a complete 1,536-commune × 6-horizon snapshot, publish one

@@ -41,4 +41,18 @@ describe("runReplayCommand", () => {
       environment.SUPABASE_SERVICE_ROLE_KEY,
     );
   });
+
+  it("reports an expired replay window as unrecoverable", async () => {
+    const gapId = "11111111-1111-4111-8111-111111111111";
+    const rpc = vi.fn().mockResolvedValue({ data: null, error: null });
+    const createClient = vi.fn().mockReturnValue({ rpc });
+    const write = vi.fn();
+
+    await expect(
+      runReplayCommand([gapId], environment, createClient, write),
+    ).resolves.toBe(0);
+    expect(write).toHaveBeenCalledWith(
+      JSON.stringify({ gapId, jobId: null, state: "unrecoverable" }),
+    );
+  });
 });

@@ -44,9 +44,6 @@ export type SourceRunReport = {
 export function publicReasonForError(error: string): PublicSourceReason {
   const message = error.toLowerCase();
 
-  if (message.includes("licence") || message.includes("license"))
-    return "licence_invalid";
-
   if (
     message.includes("missing") ||
     message.includes("not configured") ||
@@ -68,10 +65,14 @@ export function publicReasonForError(error: string): PublicSourceReason {
     message.includes("fetch") ||
     message.includes("network") ||
     message.includes("upstream") ||
-    message.includes("provider") ||
-    message.includes("feed") ||
     /\b[45]\d\d\b/.test(message)
   )
+    return "upstream_unreachable";
+
+  if (message.includes("licence") || message.includes("license"))
+    return "licence_invalid";
+
+  if (message.includes("provider") || message.includes("feed"))
     return "upstream_unreachable";
 
   return "internal_error";

@@ -578,7 +578,34 @@ revoke all on function private.record_source_run(
   text,
   uuid,
   integer
-) from public, anon, authenticated, service_role;
+) from public, anon, authenticated;
+
+grant usage on schema private to service_role;
+grant execute on function private.record_source_run(
+  text,
+  text,
+  text,
+  timestamptz,
+  timestamptz,
+  timestamptz,
+  text,
+  timestamptz,
+  timestamptz,
+  timestamptz,
+  timestamptz,
+  timestamptz,
+  integer,
+  integer,
+  integer,
+  integer,
+  integer,
+  text,
+  jsonb,
+  text,
+  text,
+  uuid,
+  integer
+) to service_role;
 
 alter table public.source_gaps enable row level security;
 alter table public.source_jobs enable row level security;

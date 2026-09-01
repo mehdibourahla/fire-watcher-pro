@@ -9,7 +9,8 @@ select plan(10);
 select extensions.dblink_connect(
   'claim_a',
   format(
-    'host=supabase_db_kuukthyenirwgdfkltlm port=%s dbname=%I user=postgres password=postgres',
+    'hostaddr=%s port=%s dbname=%I user=postgres password=postgres',
+    inet_server_addr(),
     current_setting('port'),
     current_database()
   )
@@ -17,7 +18,8 @@ select extensions.dblink_connect(
 select extensions.dblink_connect(
   'claim_b',
   format(
-    'host=supabase_db_kuukthyenirwgdfkltlm port=%s dbname=%I user=postgres password=postgres',
+    'hostaddr=%s port=%s dbname=%I user=postgres password=postgres',
+    inet_server_addr(),
     current_setting('port'),
     current_database()
   )
