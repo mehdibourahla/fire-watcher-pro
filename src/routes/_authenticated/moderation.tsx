@@ -23,21 +23,12 @@ import {
   type CitizenReport,
   type ReportStatus,
 } from "@/lib/reports";
+import { pageMeta } from "@/lib/page-meta";
 
 export const Route = createFileRoute("/_authenticated/moderation")({
   head: () => ({
     meta: [
-      { title: "Moderation console — Nadhir" },
-      {
-        name: "description",
-        content:
-          "Review, approve or reject citizen fire reports submitted to Nadhir moderators.",
-      },
-      { property: "og:title", content: "Moderation console — Nadhir" },
-      {
-        property: "og:description",
-        content: "Citizen report review queue for Nadhir moderators.",
-      },
+      ...pageMeta("admin.metaTitle", "admin.metaDescription"),
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],

@@ -6,23 +6,12 @@ import { SourceHealth } from "@/components/nadhir/SourceHealth";
 import { SkeletonList } from "@/components/nadhir/states";
 import type { Locale } from "@/i18n";
 import { sourceHealthQuery } from "@/lib/nadhir";
+import { pageMeta } from "@/lib/page-meta";
 import { summariseSourceHealth } from "@/lib/source-health";
 
 export const Route = createFileRoute("/status")({
   head: () => ({
-    meta: [
-      { title: "Data source health — Nadhir Algeria" },
-      {
-        name: "description",
-        content:
-          "Live health of the satellite, weather and geodata feeds powering Nadhir's wildfire warnings.",
-      },
-      { property: "og:title", content: "Data source health — Nadhir Algeria" },
-      {
-        property: "og:description",
-        content: "Honest status reporting for every data feed behind Nadhir.",
-      },
-    ],
+    meta: pageMeta("status.metaTitle", "status.metaDescription"),
   }),
   loader: ({ context }) =>
     context.queryClient.ensureQueryData(sourceHealthQuery),

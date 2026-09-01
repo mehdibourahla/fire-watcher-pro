@@ -12,17 +12,11 @@ import type { Locale } from "@/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { adminUnitsQuery, relativeTime, unitName } from "@/lib/nadhir";
 import { myRolesQuery } from "@/lib/reports";
+import { titledMeta } from "@/lib/page-meta";
 
 export const Route = createFileRoute("/_authenticated/broadcasts")({
   head: () => ({
-    meta: [
-      { title: "Broadcast console — Nadhir" },
-      {
-        name: "description",
-        content:
-          "Kill-switch, audit log and manual authority-warning relay for Nadhir broadcast alerts.",
-      },
-    ],
+    meta: titledMeta("broadcastAdmin.title", "broadcastAdmin.subtitle"),
   }),
   component: BroadcastConsole,
 });

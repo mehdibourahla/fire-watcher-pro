@@ -3,6 +3,7 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
+import i18n from "@/i18n";
 import { ar } from "@/i18n/locales/ar";
 import { en } from "@/i18n/locales/en";
 import { fr } from "@/i18n/locales/fr";
@@ -39,6 +40,37 @@ describe("locale parity", () => {
   }
 });
 
+describe("counted labels", () => {
+  const COUNTED = [
+    "map.fireCount",
+    "risk.communeCount",
+    "history.unlocated",
+    "history.fireCount",
+    "status.degradedCount",
+    "account.zoneFires",
+  ];
+
+  it("uses singular grammar for one in English", () => {
+    const t = i18n.getFixedT("en");
+    expect(t("map.fireCount", { count: 1 })).toBe("1 fire");
+    expect(t("map.fireCount", { count: 3 })).toBe("3 fires");
+    expect(t("risk.communeCount", { count: 1 })).toBe("1 commune");
+    expect(t("history.fireCount", { count: 1 })).toBe("1 fire");
+  });
+
+  // Arabic has plural categories en never generates; a missing one renders the key
+  it("never renders a raw key for any locale or count", () => {
+    for (const lng of ["ar", "fr", "en", "kab"]) {
+      const t = i18n.getFixedT(lng);
+      for (const key of COUNTED) {
+        for (const count of [0, 1, 2, 3, 11, 100]) {
+          expect(t(key, { count, km: "1.0" })).not.toBe(key);
+        }
+      }
+    }
+  });
+});
+
 describe("every referenced key exists", () => {
   it("no component references a missing translation key", () => {
     const missing: string[] = [];
@@ -47,6 +79,21 @@ describe("every referenced key exists", () => {
       for (const m of src.matchAll(/\bt\(\s*"([a-zA-Z0-9_.]+)"/g)) {
         const key = m[1]!;
         if (!KEYS.has(key)) missing.push(`${file}: ${key}`);
+      }
+    }
+    expect(missing).toEqual([]);
+  });
+
+  it("no route head references a missing translation key", () => {
+    const missing: string[] = [];
+    for (const file of walk("src")) {
+      const src = readFileSync(file, "utf8");
+      for (const m of src.matchAll(
+        /\b(?:pageMeta|titledMeta)\(\s*"([a-zA-Z0-9_.]+)"(?:\s*,\s*"([a-zA-Z0-9_.]+)")?/g,
+      )) {
+        for (const key of [m[1], m[2]]) {
+          if (key && !KEYS.has(key)) missing.push(`${file}: ${key}`);
+        }
       }
     }
     expect(missing).toEqual([]);

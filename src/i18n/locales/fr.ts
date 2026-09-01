@@ -25,6 +25,20 @@ export const fr: Translation = {
     demoModeNote:
       "Les flux satellites en direct ne sont pas encore connectés. Les chiffres affichés proviennent d'un scénario de démonstration.",
   },
+  meta: {
+    defaultTitle: "Nadhir — Alerte précoce aux feux de forêt en Algérie",
+    titleTemplate: "{{page}} — Nadhir",
+  },
+  notFound: {
+    metaTitle: "Page introuvable — Nadhir",
+    title: "Page introuvable",
+    body: "La page que vous cherchez n'existe pas ou a été déplacée.",
+    home: "Retour à l'accueil",
+  },
+  errorPage: {
+    title: "Cette page n'a pas pu se charger",
+    body: "Un problème est survenu de notre côté. Vous pouvez actualiser ou revenir à l'accueil.",
+  },
   survival: {
     mode: "Mode survie",
     online: "En ligne",
@@ -33,8 +47,11 @@ export const fr: Translation = {
     enterTitle: "Êtes-vous près d'un feu en ce moment ?",
     enterBody:
       "Le mode survie montre une seule chose à faire à la fois, garde votre zone enregistrée hors ligne et prépare votre position pour un appel à la Protection Civile au 14.",
-    enterFetching:
-      "Localisation GPS en cours · enregistrement du pack hors ligne…",
+    enterFetching: "Localisation GPS en cours…",
+    enterDenied:
+      "La localisation est désactivée : les conseils seront généraux. Vous pouvez tout de même entrer.",
+    enterSaving: "Position trouvée · enregistrement du pack hors ligne…",
+    enterReady: "Position trouvée · pack hors ligne enregistré.",
     enterYes: "Oui — activer le mode survie",
     enterCancel: "Annuler",
     enterFootnote:
@@ -179,6 +196,8 @@ export const fr: Translation = {
     searchFires: "Rechercher un feu par lieu ou wilaya",
     unassigned: "Hors wilayas d'Algérie",
     fireCount: "{{count}} feux",
+    fireCount_one: "{{count}} feu",
+    fireCount_other: "{{count}} feux",
     unverifiedHint:
       "Les détections non vérifiées apparaissent automatiquement à partir du zoom 9.",
     title: "Carte des feux en direct",
@@ -271,6 +290,9 @@ export const fr: Translation = {
     level: "Niveau de danger",
     searchCommune: "Rechercher une commune",
     noResults: "Aucune commune ne correspond.",
+    unavailableTitle: "La prévision du danger d'incendie est indisponible",
+    unavailableBody:
+      "La dernière actualisation ne s'est pas terminée : aucune prévision n'est publiée pour le moment. Consultez la page d'état des sources.",
     legend: "Échelle de danger",
     sixDay: "Perspective 6 jours",
     low: "Faible",
@@ -279,6 +301,8 @@ export const fr: Translation = {
     very_high: "Très élevé",
     extreme: "Extrême",
     communeCount: "{{count}} communes",
+    communeCount_one: "{{count}} commune",
+    communeCount_other: "{{count}} communes",
     groupWorst: "Niveau de la commune la plus exposée de la wilaya",
     effis: "EFFIS/GWIS (autorité européenne) classe cette commune : {{class}}",
     fuelLimited: "Non évalué — végétation combustible négligeable",
@@ -309,7 +333,14 @@ export const fr: Translation = {
     noWilaya:
       "Aucun incendie de cette période n'a pu être rattaché à une wilaya.",
     unlocated:
-      "{{count}} incendie(s) n'ont pas pu être rattachés à une wilaya et sont exclus de ce classement.",
+      "{{count}} incendies n'ont pas pu être rattachés à une wilaya et sont exclus de ce classement.",
+    unlocated_one:
+      "{{count}} incendie n'a pas pu être rattaché à une wilaya et est exclu de ce classement.",
+    unlocated_other:
+      "{{count}} incendies n'ont pas pu être rattachés à une wilaya et sont exclus de ce classement.",
+    fireCount: "{{count}} feux",
+    fireCount_one: "{{count}} feu",
+    fireCount_other: "{{count}} feux",
     metaTitle: "Historique et statistiques des feux — Nadhir Algérie",
     metaDescription:
       "Archive des foyers détectés, surfaces estimées et wilayas les plus touchées en Algérie.",
@@ -334,7 +365,11 @@ export const fr: Translation = {
   },
   status: {
     degradedCount:
-      "{{count}} source(s) de données affectée(s) — la capacité actuelle peut être réduite.",
+      "{{count}} sources de données affectées — la capacité actuelle peut être réduite.",
+    degradedCount_one:
+      "{{count}} source de données affectée — la capacité actuelle peut être réduite.",
+    degradedCount_other:
+      "{{count}} sources de données affectées — la capacité actuelle peut être réduite.",
     metaTitle: "État des sources de données — Nadhir",
     metaDescription:
       "État en direct des flux satellites, météo et géodonnées qui alimentent les alertes Nadhir.",
@@ -421,7 +456,7 @@ export const fr: Translation = {
     zoneLimit:
       "Vous avez atteint le maximum de 10 zones. Supprimez-en une pour en ajouter une autre.",
     zoneFires:
-      "{{count}} incendie(s) actif(s) à proximité — le plus proche à {{km}} km",
+      "{{count}} incendies actifs dans cette zone — le plus proche à {{km}} km.",
     authTitle: "Se connecter à Nadhir",
     authSubtitle: "Enregistrez les lieux qui comptent et soyez alerté tôt.",
     email: "E-mail",
@@ -432,6 +467,15 @@ export const fr: Translation = {
     noAccount: "Pas encore de compte ? En créer un",
     haveAccount: "Déjà un compte ? Se connecter",
     checkEmail: "Vérifiez votre boîte mail pour confirmer votre adresse.",
+    errorInvalidCredentials: "Cet e-mail ou ce mot de passe est incorrect.",
+    errorEmailNotConfirmed:
+      "Confirmez d'abord votre adresse e-mail — vérifiez votre boîte mail.",
+    errorUserExists: "Un compte existe déjà pour cet e-mail. Connectez-vous.",
+    errorWeakPassword:
+      "Choisissez un mot de passe plus long, au moins 8 caractères.",
+    errorRateLimited: "Trop de tentatives. Patientez un instant et réessayez.",
+    errorUnavailable:
+      "La connexion est momentanément indisponible. Réessayez dans un instant.",
     zonesTitle: "Mes zones surveillées",
     zonesSubtitle:
       "Nadhir surveille ces lieux et vous alerte quand le feu ou le danger s'en approche.",
@@ -844,6 +888,12 @@ export const fr: Translation = {
   legal: {
     terms: "Conditions d'utilisation",
     privacy: "Confidentialité",
+    termsMetaTitle: "Conditions d'utilisation et avertissement — Nadhir",
+    termsMetaDescription:
+      "Nadhir est un service d'information et d'alerte précoce aux feux de forêt en Algérie. Consultez les conditions d'utilisation, les limites et l'avertissement de sécurité.",
+    privacyMetaTitle: "Politique de confidentialité — Nadhir",
+    privacyMetaDescription:
+      "Quelles données personnelles Nadhir conserve pour les alertes, pendant combien de temps, et comment supprimer les données de votre compte.",
     termsTitle: "Conditions d'utilisation et avertissement",
     terms_purpose_title: "Ce qu'est Nadhir",
     terms_purpose_body:

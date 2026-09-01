@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   SURVIVAL_AUTO_KM,
   checkInMessage,
+  entryStatusKey,
   nearestThreat,
   positionCard,
 } from "@/lib/survival";
@@ -211,5 +212,18 @@ describe("checkInMessage", () => {
       t,
     });
     expect(msg).toContain("28.0000 N · 1.0000 E");
+  });
+});
+
+describe("entryStatusKey", () => {
+  it("never claims a saved pack or a position it does not have", () => {
+    expect(entryStatusKey(false, false, false)).toBe("survival.enterFetching");
+    expect(entryStatusKey(false, true, false)).toBe("survival.enterDenied");
+    expect(entryStatusKey(true, false, false)).toBe("survival.enterSaving");
+    expect(entryStatusKey(true, false, true)).toBe("survival.enterReady");
+  });
+
+  it("reports denial even once a stale pack exists", () => {
+    expect(entryStatusKey(false, true, true)).toBe("survival.enterDenied");
   });
 });

@@ -22,6 +22,7 @@ import {
   uploadReportPhoto,
   type SizeHint,
 } from "@/lib/reports";
+import { pageMeta } from "@/lib/page-meta";
 
 type ReportSearch = { kind?: "sighting" | "smoke" | ReportKind };
 
@@ -37,17 +38,7 @@ export const Route = createFileRoute("/_authenticated/report")({
   },
   head: () => ({
     meta: [
-      { title: "Report a wildfire — Nadhir" },
-      {
-        name: "description",
-        content:
-          "Send a geolocated fire sighting to Nadhir moderators and help confirm satellite detections across Algeria.",
-      },
-      { property: "og:title", content: "Report a wildfire — Nadhir" },
-      {
-        property: "og:description",
-        content: "Help confirm satellite detections with a ground report.",
-      },
+      ...pageMeta("reports.metaTitle", "reports.metaDescription"),
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],

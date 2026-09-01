@@ -23,6 +23,20 @@ export const en = {
     demoModeNote:
       "Live satellite feeds are not connected yet. Figures shown come from a seeded demonstration scenario.",
   },
+  meta: {
+    defaultTitle: "Nadhir — Wildfire early warning for Algeria",
+    titleTemplate: "{{page}} — Nadhir",
+  },
+  notFound: {
+    metaTitle: "Page not found — Nadhir",
+    title: "Page not found",
+    body: "The page you're looking for doesn't exist or has been moved.",
+    home: "Go home",
+  },
+  errorPage: {
+    title: "This page didn't load",
+    body: "Something went wrong on our end. You can try refreshing or head back home.",
+  },
   survival: {
     mode: "Survival Mode",
     online: "Online",
@@ -31,7 +45,11 @@ export const en = {
     enterTitle: "Are you near a fire right now?",
     enterBody:
       "Survival Mode shows one thing to do at a time, keeps your area saved offline, and prepares your position for a call to Civil Protection 14.",
-    enterFetching: "Getting your GPS position · saving your offline pack…",
+    enterFetching: "Getting your GPS position…",
+    enterDenied:
+      "Location is off, so guidance will be general. You can still enter.",
+    enterSaving: "Position found · saving your offline pack…",
+    enterReady: "Position found · offline pack saved.",
     enterYes: "Yes — enter Survival Mode",
     enterCancel: "Cancel",
     enterFootnote:
@@ -174,7 +192,11 @@ export const en = {
     nearPlace: "near {{place}}",
     searchFires: "Search fires by place or wilaya",
     unassigned: "Outside Algeria's wilayas",
+    // base stays: Arabic needs _few/_many, which parity with en cannot carry,
+    // and i18next renders the raw key when a plural category is missing
     fireCount: "{{count}} fires",
+    fireCount_one: "{{count}} fire",
+    fireCount_other: "{{count}} fires",
     unverifiedHint: "Unverified detections appear automatically from zoom 9.",
     title: "Live fire map",
     metaTitle: "Nadhir — Live wildfire map for Algeria",
@@ -263,6 +285,9 @@ export const en = {
     level: "Danger level",
     searchCommune: "Search a commune",
     noResults: "No commune matches that search.",
+    unavailableTitle: "The fire danger forecast is unavailable",
+    unavailableBody:
+      "The latest refresh did not complete, so no forecast is published right now. Check the source status page for details.",
     legend: "Danger scale",
     sixDay: "6-day outlook",
     low: "Low",
@@ -271,6 +296,8 @@ export const en = {
     very_high: "Very high",
     extreme: "Extreme",
     communeCount: "{{count}} communes",
+    communeCount_one: "{{count}} commune",
+    communeCount_other: "{{count}} communes",
     groupWorst: "Highest commune level in this wilaya",
     effis: "EFFIS/GWIS (European fire authority) rates this commune: {{class}}",
     fuelLimited: "Not rated — negligible burnable vegetation",
@@ -300,7 +327,14 @@ export const en = {
     empty: "No fires recorded for this filter.",
     noWilaya: "No fire in this period could be matched to a wilaya.",
     unlocated:
-      "{{count}} fire(s) could not be matched to a wilaya and are excluded from this ranking.",
+      "{{count}} fires could not be matched to a wilaya and are excluded from this ranking.",
+    unlocated_one:
+      "{{count}} fire could not be matched to a wilaya and is excluded from this ranking.",
+    unlocated_other:
+      "{{count}} fires could not be matched to a wilaya and are excluded from this ranking.",
+    fireCount: "{{count}} fires",
+    fireCount_one: "{{count}} fire",
+    fireCount_other: "{{count}} fires",
     metaTitle: "Fire history & statistics — Nadhir Algeria",
     metaDescription:
       "Archive of detected fire clusters, estimated burned area and worst-affected wilayas in Algeria.",
@@ -325,7 +359,11 @@ export const en = {
   },
   status: {
     degradedCount:
-      "{{count}} data source(s) affected — current capability may be reduced.",
+      "{{count}} data sources affected — current capability may be reduced.",
+    degradedCount_one:
+      "{{count}} data source affected — current capability may be reduced.",
+    degradedCount_other:
+      "{{count}} data sources affected — current capability may be reduced.",
     metaTitle: "Data source health — Nadhir",
     metaDescription:
       "Live health of the satellite, weather and geodata feeds that power Nadhir's fire warnings.",
@@ -406,7 +444,7 @@ export const en = {
     zoneCount: "{{used}} of {{max}} zones used",
     zoneLimit:
       "You have reached the maximum of 10 zones. Delete one to add another.",
-    zoneFires: "{{count}} active fire(s) nearby — closest {{km}} km",
+    zoneFires: "{{count}} active fires in this zone — nearest {{km}} km away.",
     authTitle: "Sign in to Nadhir",
     authSubtitle: "Save the places you care about and get warned early.",
     email: "Email",
@@ -417,6 +455,14 @@ export const en = {
     noAccount: "No account yet? Create one",
     haveAccount: "Already have an account? Sign in",
     checkEmail: "Check your inbox to confirm your address.",
+    errorInvalidCredentials: "That email or password is not correct.",
+    errorEmailNotConfirmed:
+      "Confirm your email address first — check your inbox.",
+    errorUserExists: "An account already exists for this email. Sign in.",
+    errorWeakPassword: "Choose a longer password, at least 8 characters.",
+    errorRateLimited: "Too many attempts. Wait a moment and try again.",
+    errorUnavailable:
+      "Sign-in is temporarily unavailable. Please try again in a moment.",
     zonesTitle: "My watch zones",
     zonesSubtitle:
       "Nadhir watches these places and warns you when fire or danger reaches them.",
@@ -824,6 +870,12 @@ export const en = {
   legal: {
     terms: "Terms of use",
     privacy: "Privacy",
+    termsMetaTitle: "Terms of use & disclaimer — Nadhir",
+    termsMetaDescription:
+      "Nadhir is an informational wildfire early-warning service for Algeria. Read the terms of use, limitations and safety disclaimer.",
+    privacyMetaTitle: "Privacy policy — Nadhir",
+    privacyMetaDescription:
+      "What personal data Nadhir stores for wildfire alerts, how long it is kept, and how to delete your account data.",
     termsTitle: "Terms of use & disclaimer",
     terms_purpose_title: "What Nadhir is",
     terms_purpose_body:

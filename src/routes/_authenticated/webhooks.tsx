@@ -12,23 +12,11 @@ import {
   webhookDeliveriesQuery,
   webhookEndpointsQuery,
 } from "@/lib/webhooks";
+import { titledMeta } from "@/lib/page-meta";
 
 export const Route = createFileRoute("/_authenticated/webhooks")({
   head: () => ({
-    meta: [
-      { title: "Alert webhooks — Nadhir" },
-      {
-        name: "description",
-        content:
-          "Forward your Nadhir zone alerts to another system with signed HTTP webhooks.",
-      },
-      { property: "og:title", content: "Alert webhooks — Nadhir" },
-      {
-        property: "og:description",
-        content:
-          "Signed HTTP delivery of wildfire zone alerts to your own systems.",
-      },
-    ],
+    meta: titledMeta("webhooks.title", "webhooks.subtitle"),
   }),
   component: WebhooksPage,
 });

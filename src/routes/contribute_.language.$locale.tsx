@@ -32,6 +32,7 @@ import {
   type StringRow,
 } from "@/lib/translate";
 import { cn } from "@/lib/utils";
+import { titledMeta } from "@/lib/page-meta";
 
 export const Route = createFileRoute("/contribute_/language/$locale")({
   beforeLoad: ({ params }) => {
@@ -39,14 +40,7 @@ export const Route = createFileRoute("/contribute_/language/$locale")({
       throw notFound();
   },
   head: () => ({
-    meta: [
-      { title: "Review a translation — Nadhir" },
-      {
-        name: "description",
-        content:
-          "Read Nadhir's interface strings beside their English source and suggest corrections. No account needed.",
-      },
-    ],
+    meta: titledMeta("translate.title"),
   }),
   component: ReviewPage,
 });

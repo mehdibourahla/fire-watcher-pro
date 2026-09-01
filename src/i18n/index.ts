@@ -97,6 +97,15 @@ export function localeInstance(locale: Locale) {
   return i18n;
 }
 
+/**
+ * Route `head` runs outside React, so it cannot use hooks. getFixedT binds a
+ * translator to one language without mutating the instance shared by in-flight
+ * server requests.
+ */
+export function headTranslator() {
+  return i18n.getFixedT(readLocaleCookie());
+}
+
 /** Runs on both server and client before render so SSR and hydration agree. */
 export function initLocale(): Locale {
   const locale = readLocaleCookie();

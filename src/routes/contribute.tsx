@@ -32,23 +32,13 @@ import {
   type Lane,
 } from "@/lib/contribute";
 import { getDeficits } from "@/lib/contribute.functions";
+import { pageMeta } from "@/lib/page-meta";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/contribute")({
   head: () => ({
     meta: [
-      { title: "Contribute to Nadhir" },
-      {
-        name: "description",
-        content:
-          "What is missing from Nadhir today, and how to help — verifying places, reviewing Kabyle, recording guidance, opening institutional doors, and code.",
-      },
-      { property: "og:title", content: "Contribute to Nadhir" },
-      {
-        property: "og:description",
-        content:
-          "The gaps in an Algerian wildfire warning service, and how to close them.",
-      },
+      ...pageMeta("contribute.metaTitle", "contribute.metaDescription"),
       { property: "og:type", content: "website" },
     ],
   }),

@@ -26,6 +26,7 @@ import { hazardReportsQuery, openAreasQuery } from "@/lib/open-areas";
 import {
   SURVIVAL_ACTIVE_KEY,
   SURVIVAL_LAST_CHECK_KEY,
+  entryStatusKey,
   nearestThreat,
   positionCard,
 } from "@/lib/survival";
@@ -143,6 +144,9 @@ function SurvivalHub() {
   if (!active) {
     return (
       <EnterSheet
+        hasPosition={!!position}
+        denied={positionDenied}
+        hasPack={!!pack}
         onEnter={() => {
           localStorage.setItem(SURVIVAL_ACTIVE_KEY, new Date().toISOString());
           setActive(true);
@@ -349,7 +353,17 @@ function FactRow({
   );
 }
 
-function EnterSheet({ onEnter }: { onEnter: () => void }) {
+function EnterSheet({
+  onEnter,
+  hasPosition,
+  denied,
+  hasPack,
+}: {
+  onEnter: () => void;
+  hasPosition: boolean;
+  denied: boolean;
+  hasPack: boolean;
+}) {
   const { t } = useTranslation();
   return (
     <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/50">
@@ -361,7 +375,7 @@ function EnterSheet({ onEnter }: { onEnter: () => void }) {
         </p>
         <p className="mt-3 flex items-center gap-2 rounded-lg bg-muted px-3 py-2 text-xs text-muted-foreground">
           <MapPin aria-hidden className="size-3.5 shrink-0" />
-          {t("survival.enterFetching")}
+          {t(entryStatusKey(hasPosition, denied, hasPack))}
         </p>
         <button
           type="button"
