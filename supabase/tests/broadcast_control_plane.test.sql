@@ -171,6 +171,20 @@ select throws_ok(
   null,
   'the publisher cannot forge an administrator actor'
 );
+select throws_ok(
+  $$insert into public.broadcast_audit (action, reason)
+    values ('published', 'admin_toggle')$$,
+  '23514',
+  null,
+  'the publisher cannot label a publication as an administrator toggle'
+);
+select throws_ok(
+  $$insert into public.broadcast_audit (action, reason)
+    values ('suppressed', 'admin_toggle')$$,
+  '23514',
+  null,
+  'the publisher cannot label a suppression as an administrator toggle'
+);
 select lives_ok(
   $$insert into public.broadcast_audit (action, reason)
     values ('suppressed', 'qa_service_audit')$$,
