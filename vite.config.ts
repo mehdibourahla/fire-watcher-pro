@@ -58,6 +58,7 @@ export default defineConfig(({ command }) => ({
               deployConfig: true,
               wrangler: {
                 name: "nadhir",
+                compatibility_flags: ["global_fetch_strictly_public"],
                 // paid default is 50ms, which React SSR over 1536 communes exceeds
                 limits: { cpu_ms: 30000 },
                 // SSR makes several Supabase round-trips, so run near the database
