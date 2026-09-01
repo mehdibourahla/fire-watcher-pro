@@ -457,6 +457,8 @@ export const kab: Translation = {
       "Ayhil ameqqran d times deg tmnaḍt-ik ttɛeddin dima ɣef isragen n tsusmi.",
     save: "Sekles",
     saved: "Yettwasekles",
+    saveFailed:
+      "Ur izmir ara ad isekles iɣewwaren. Senqed tifran sakin ɛreḍ tikkelt nniḍen.",
   },
   reports: {
     title: "Mmel times",
@@ -794,6 +796,11 @@ export const kab: Translation = {
     save: "Sekles",
     saving: "Asekles…",
     created: "Tansa tettwarna.",
+    kindsRequired: "Fren xerṣum anaw yiwen n ulɣu.",
+    saveFailed:
+      "Ur izmir ara ad isekles tansa. Senqed urtiyen sakin ɛreḍ tikkelt nniḍen.",
+    updateFailed: "Ur izmir ara ad ibeddel tansa. Ɛreḍ tikkelt nniḍen.",
+    deleteFailed: "Ur izmir ara ad yekkes tansa. Ɛreḍ tikkelt nniḍen.",
     httpsOnly: "Ala URL https:// i yettwaqbalen.",
     empty: "Ulac tansa.",
     pause: "Seḥbes",

@@ -458,6 +458,8 @@ export const en = {
       "Extreme danger and fires inside a zone always break through quiet hours.",
     save: "Save",
     saved: "Saved",
+    saveFailed:
+      "Settings could not be saved. Check your choices and try again.",
   },
   reports: {
     title: "Report a fire",
@@ -795,6 +797,11 @@ export const en = {
     save: "Save endpoint",
     saving: "Saving…",
     created: "Endpoint created.",
+    kindsRequired: "Select at least one alert type.",
+    saveFailed:
+      "The endpoint could not be saved. Check the fields and try again.",
+    updateFailed: "The endpoint could not be updated. Try again.",
+    deleteFailed: "The endpoint could not be deleted. Try again.",
     httpsOnly: "Only https:// URLs are accepted.",
     empty: "No endpoint yet.",
     pause: "Pause",

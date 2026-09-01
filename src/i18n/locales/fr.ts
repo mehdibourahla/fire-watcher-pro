@@ -474,6 +474,8 @@ export const fr: Translation = {
       "Le danger extrême et les feux dans une zone passent toujours outre les heures calmes.",
     save: "Enregistrer",
     saved: "Enregistré",
+    saveFailed:
+      "Impossible d’enregistrer les paramètres. Vérifiez vos choix et réessayez.",
   },
   reports: {
     title: "Signaler un feu",
@@ -815,6 +817,11 @@ export const fr: Translation = {
     save: "Enregistrer",
     saving: "Enregistrement…",
     created: "Point de réception créé.",
+    kindsRequired: "Sélectionnez au moins un type d’alerte.",
+    saveFailed:
+      "Impossible d’enregistrer le point de réception. Vérifiez les champs et réessayez.",
+    updateFailed: "Impossible de modifier le point de réception. Réessayez.",
+    deleteFailed: "Impossible de supprimer le point de réception. Réessayez.",
     httpsOnly: "Seules les URL https:// sont acceptées.",
     empty: "Aucun point de réception.",
     pause: "Suspendre",
