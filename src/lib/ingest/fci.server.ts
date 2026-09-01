@@ -66,6 +66,9 @@ export function parseFciFeatures(json: FciFeatureCollection): {
       outside += 1;
       continue;
     }
+    // upstream freshness, so it must not depend on anything being alight inside
+    // the watch area — a quiet night would otherwise read as a stalled feed
+    if (!latestSlot || slot > latestSlot) latestSlot = slot;
     if (!isInWatchArea(lat, lon)) {
       filtered += 1;
       continue;
@@ -89,7 +92,6 @@ export function parseFciFeatures(json: FciFeatureCollection): {
       daynight: sza === undefined ? null : sza < 90 ? "D" : "N",
       natural_key: `fci:FCI:${lat.toFixed(5)}:${lon.toFixed(5)}:${slot}`,
     });
-    if (!latestSlot || slot > latestSlot) latestSlot = slot;
   }
   return { rows, outside, filtered, latestSlot };
 }
