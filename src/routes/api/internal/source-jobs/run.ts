@@ -42,6 +42,11 @@ export async function handleSourceJobRequest(
 export const Route = createFileRoute("/api/internal/source-jobs/run")({
   server: {
     handlers: {
+      ANY: async () => {
+        const { postOnlyMethodNotAllowed } =
+          await import("@/lib/post-only.server");
+        return postOnlyMethodNotAllowed();
+      },
       POST: ({ request }) => handleSourceJobRequest(request),
     },
   },

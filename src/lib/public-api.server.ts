@@ -14,6 +14,17 @@ export function preflight() {
   return new Response(null, { status: 204, headers: CORS_HEADERS });
 }
 
+export function methodNotAllowed() {
+  return new Response(JSON.stringify({ error: "method not allowed" }), {
+    status: 405,
+    headers: {
+      ...CORS_HEADERS,
+      Allow: "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+    },
+  });
+}
+
 export function json(
   body: unknown,
   status = 200,
