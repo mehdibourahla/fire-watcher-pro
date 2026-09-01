@@ -374,7 +374,7 @@ function HistoryPage() {
                     <div className="flex items-baseline justify-between text-sm">
                       <span>{unitName(r.wilaya!, locale)}</span>
                       <span className="tabular text-muted-foreground">
-                        {r.fires} {t("history.fires")} ·{" "}
+                        {t("history.fireCount", { count: r.fires })} ·{" "}
                         {Math.round(r.area).toLocaleString()} {t("common.ha")}
                       </span>
                     </div>

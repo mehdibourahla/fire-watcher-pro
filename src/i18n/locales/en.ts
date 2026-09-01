@@ -192,7 +192,11 @@ export const en = {
     nearPlace: "near {{place}}",
     searchFires: "Search fires by place or wilaya",
     unassigned: "Outside Algeria's wilayas",
+    // base stays: Arabic needs _few/_many, which parity with en cannot carry,
+    // and i18next renders the raw key when a plural category is missing
     fireCount: "{{count}} fires",
+    fireCount_one: "{{count}} fire",
+    fireCount_other: "{{count}} fires",
     unverifiedHint: "Unverified detections appear automatically from zoom 9.",
     title: "Live fire map",
     metaTitle: "Nadhir — Live wildfire map for Algeria",
@@ -292,6 +296,8 @@ export const en = {
     very_high: "Very high",
     extreme: "Extreme",
     communeCount: "{{count}} communes",
+    communeCount_one: "{{count}} commune",
+    communeCount_other: "{{count}} communes",
     groupWorst: "Highest commune level in this wilaya",
     effis: "EFFIS/GWIS (European fire authority) rates this commune: {{class}}",
     fuelLimited: "Not rated — negligible burnable vegetation",
@@ -321,7 +327,14 @@ export const en = {
     empty: "No fires recorded for this filter.",
     noWilaya: "No fire in this period could be matched to a wilaya.",
     unlocated:
-      "{{count}} fire(s) could not be matched to a wilaya and are excluded from this ranking.",
+      "{{count}} fires could not be matched to a wilaya and are excluded from this ranking.",
+    unlocated_one:
+      "{{count}} fire could not be matched to a wilaya and is excluded from this ranking.",
+    unlocated_other:
+      "{{count}} fires could not be matched to a wilaya and are excluded from this ranking.",
+    fireCount: "{{count}} fires",
+    fireCount_one: "{{count}} fire",
+    fireCount_other: "{{count}} fires",
     metaTitle: "Fire history & statistics — Nadhir Algeria",
     metaDescription:
       "Archive of detected fire clusters, estimated burned area and worst-affected wilayas in Algeria.",
@@ -346,7 +359,11 @@ export const en = {
   },
   status: {
     degradedCount:
-      "{{count}} data source(s) affected — current capability may be reduced.",
+      "{{count}} data sources affected — current capability may be reduced.",
+    degradedCount_one:
+      "{{count}} data source affected — current capability may be reduced.",
+    degradedCount_other:
+      "{{count}} data sources affected — current capability may be reduced.",
     metaTitle: "Data source health — Nadhir",
     metaDescription:
       "Live health of the satellite, weather and geodata feeds that power Nadhir's fire warnings.",
@@ -427,7 +444,7 @@ export const en = {
     zoneCount: "{{used}} of {{max}} zones used",
     zoneLimit:
       "You have reached the maximum of 10 zones. Delete one to add another.",
-    zoneFires: "{{count}} active fire(s) nearby — closest {{km}} km",
+    zoneFires: "{{count}} active fires in this zone — nearest {{km}} km away.",
     authTitle: "Sign in to Nadhir",
     authSubtitle: "Save the places you care about and get warned early.",
     email: "Email",

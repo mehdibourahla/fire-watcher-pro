@@ -195,6 +195,8 @@ export const kab: Translation = {
     searchFires: "Nadi times s wemkan neɣ tawilayt",
     unassigned: "Beṛṛa n twilayin n Lezzayer",
     fireCount: "{{count}} n tmes",
+    fireCount_one: "{{count}} n tmes",
+    fireCount_other: "{{count}} n tmes",
     unverifiedHint:
       "Tifin ur nettwasenqden ara ttbanent s wudem awurman seg zoom 9.",
     title: "Takarḍa n tmessi srid",
@@ -294,6 +296,8 @@ export const kab: Translation = {
     very_high: "Ɛlay aṭas",
     extreme: "Amtawi",
     communeCount: "{{count}} n tɣiwanin",
+    communeCount_one: "{{count}} n tɣiwant",
+    communeCount_other: "{{count}} n tɣiwanin",
     groupWorst: "Aswir afellay n tɣiwant deg twilayt",
     effis: "EFFIS/GWIS (tadbelt tuṛufit) tsemma taɣiwant-a: {{class}}",
     fuelLimited: "Ur yettwasemma ara — drus n yimɣan i yettarɣen",
@@ -323,6 +327,13 @@ export const kab: Translation = {
     noWilaya: "Ulac times deg tallit-a i yezmren ad yettwaqqen ɣer twilayt.",
     unlocated:
       "{{count}} n times ur nezmir ara ad ttwaqqnen ɣer twilayt, ttwakksen seg usmizzwer-a.",
+    unlocated_one:
+      "{{count}} n tmes ur nezmir ara ad tettwaqqen ɣer twilayt, tettwakkes seg usmizzwer-a.",
+    unlocated_other:
+      "{{count}} n times ur nezmir ara ad ttwaqqnen ɣer twilayt, ttwakksen seg usmizzwer-a.",
+    fireCount: "{{count}} n tmes",
+    fireCount_one: "{{count}} n tmes",
+    fireCount_other: "{{count}} n tmes",
     metaTitle: "Amazray d tiddadanin n tmessi — Nadhir",
     metaDescription:
       "Amazray n tmessi yettwafen, tijumma yeṛɣan d twilayin yettwaɣen aṭas.",
@@ -346,6 +357,10 @@ export const kab: Translation = {
   },
   status: {
     degradedCount:
+      "{{count}} n yiɣbula n yisefka ttwaseḥbes — tazmert tamirant tezmer ad tenqes.",
+    degradedCount_one:
+      "{{count}} n uɣbalu n yisefka yettwaseḥbes — tazmert tamirant tezmer ad tenqes.",
+    degradedCount_other:
       "{{count}} n yiɣbula n yisefka ttwaseḥbes — tazmert tamirant tezmer ad tenqes.",
     metaTitle: "Addad n yiɣbula n isefka — Nadhir",
     metaDescription:
@@ -427,7 +442,8 @@ export const kab: Translation = {
     zoneCount: "{{used}} seg {{max}} n temnaḍin i yettwasqedcen",
     zoneLimit:
       "Tewwḍeḍ ɣer talast n 10 n temnaḍin. Kkes yiwet akken ad ternuḍ tayeḍ.",
-    zoneFires: "{{count}} n times yeddren ɣer tama — amezwaru ɣef {{km}} km",
+    zoneFires:
+      "{{count}} n times yeddren deg temnaḍt-a — tamezwarut ɣef {{km}} km.",
     authTitle: "Kcem ɣer Nadhir",
     authSubtitle: "Sekles imukan i k-yecqan, tesɛuḍ alɣu zik.",
     email: "Imayl",

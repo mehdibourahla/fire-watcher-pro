@@ -196,6 +196,8 @@ export const fr: Translation = {
     searchFires: "Rechercher un feu par lieu ou wilaya",
     unassigned: "Hors wilayas d'Algérie",
     fireCount: "{{count}} feux",
+    fireCount_one: "{{count}} feu",
+    fireCount_other: "{{count}} feux",
     unverifiedHint:
       "Les détections non vérifiées apparaissent automatiquement à partir du zoom 9.",
     title: "Carte des feux en direct",
@@ -299,6 +301,8 @@ export const fr: Translation = {
     very_high: "Très élevé",
     extreme: "Extrême",
     communeCount: "{{count}} communes",
+    communeCount_one: "{{count}} commune",
+    communeCount_other: "{{count}} communes",
     groupWorst: "Niveau de la commune la plus exposée de la wilaya",
     effis: "EFFIS/GWIS (autorité européenne) classe cette commune : {{class}}",
     fuelLimited: "Non évalué — végétation combustible négligeable",
@@ -329,7 +333,14 @@ export const fr: Translation = {
     noWilaya:
       "Aucun incendie de cette période n'a pu être rattaché à une wilaya.",
     unlocated:
-      "{{count}} incendie(s) n'ont pas pu être rattachés à une wilaya et sont exclus de ce classement.",
+      "{{count}} incendies n'ont pas pu être rattachés à une wilaya et sont exclus de ce classement.",
+    unlocated_one:
+      "{{count}} incendie n'a pas pu être rattaché à une wilaya et est exclu de ce classement.",
+    unlocated_other:
+      "{{count}} incendies n'ont pas pu être rattachés à une wilaya et sont exclus de ce classement.",
+    fireCount: "{{count}} feux",
+    fireCount_one: "{{count}} feu",
+    fireCount_other: "{{count}} feux",
     metaTitle: "Historique et statistiques des feux — Nadhir Algérie",
     metaDescription:
       "Archive des foyers détectés, surfaces estimées et wilayas les plus touchées en Algérie.",
@@ -354,7 +365,11 @@ export const fr: Translation = {
   },
   status: {
     degradedCount:
-      "{{count}} source(s) de données affectée(s) — la capacité actuelle peut être réduite.",
+      "{{count}} sources de données affectées — la capacité actuelle peut être réduite.",
+    degradedCount_one:
+      "{{count}} source de données affectée — la capacité actuelle peut être réduite.",
+    degradedCount_other:
+      "{{count}} sources de données affectées — la capacité actuelle peut être réduite.",
     metaTitle: "État des sources de données — Nadhir",
     metaDescription:
       "État en direct des flux satellites, météo et géodonnées qui alimentent les alertes Nadhir.",
@@ -441,7 +456,7 @@ export const fr: Translation = {
     zoneLimit:
       "Vous avez atteint le maximum de 10 zones. Supprimez-en une pour en ajouter une autre.",
     zoneFires:
-      "{{count}} incendie(s) actif(s) à proximité — le plus proche à {{km}} km",
+      "{{count}} incendies actifs dans cette zone — le plus proche à {{km}} km.",
     authTitle: "Se connecter à Nadhir",
     authSubtitle: "Enregistrez les lieux qui comptent et soyez alerté tôt.",
     email: "E-mail",

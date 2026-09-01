@@ -192,6 +192,8 @@ export const ar: Translation = {
     searchFires: "ابحث عن حريق بالمكان أو الولاية",
     unassigned: "خارج ولايات الجزائر",
     fireCount: "{{count}} حرائق",
+    fireCount_one: "حريق واحد",
+    fireCount_other: "{{count}} حريقًا",
     unverifiedHint:
       "تظهر الرصدات غير المؤكدة تلقائيًا ابتداءً من مستوى التكبير 9.",
     title: "خريطة الحرائق المباشرة",
@@ -291,6 +293,8 @@ export const ar: Translation = {
     very_high: "مرتفع جدًا",
     extreme: "أقصى",
     communeCount: "{{count}} بلدية",
+    communeCount_one: "بلدية واحدة",
+    communeCount_other: "{{count}} بلدية",
     groupWorst: "أعلى مستوى بين بلديات الولاية",
     effis: "‏EFFIS/GWIS (المرجع الأوروبي) يصنف هذه البلدية: {{class}}",
     fuelLimited: "غير مقيَّم — الغطاء النباتي القابل للاشتعال شبه منعدم",
@@ -319,6 +323,12 @@ export const ar: Translation = {
     empty: "لا توجد حرائق مسجّلة لهذا المرشّح.",
     noWilaya: "لم يُربط أي حريق في هذه الفترة بولاية.",
     unlocated: "{{count}} حريق لم يُربط بولاية وتم استبعاده من هذا الترتيب.",
+    unlocated_one: "حريق واحد لم يُربط بولاية وتم استبعاده من هذا الترتيب.",
+    unlocated_other:
+      "{{count}} حريق لم تُربط بولاية وتم استبعادها من هذا الترتيب.",
+    fireCount: "{{count}} حرائق",
+    fireCount_one: "حريق واحد",
+    fireCount_other: "{{count}} حريقًا",
     metaTitle: "أرشيف وإحصاءات الحرائق — نذير الجزائر",
     metaDescription:
       "أرشيف الحرائق المرصودة والمساحات التقديرية والولايات الأكثر تضررًا في الجزائر.",
@@ -342,7 +352,10 @@ export const ar: Translation = {
   },
   status: {
     degradedCount:
-      "{{count}} من مصادر البيانات متأثر — قد تنخفض القدرة الحالية.",
+      "{{count}} من مصادر البيانات متأثرة — قد تنخفض القدرة الحالية.",
+    degradedCount_one: "مصدر بيانات واحد متأثر — قد تنخفض القدرة الحالية.",
+    degradedCount_other:
+      "{{count}} من مصادر البيانات متأثرة — قد تنخفض القدرة الحالية.",
     metaTitle: "حالة مصادر البيانات — نذير",
     metaDescription:
       "الحالة المباشرة لتدفقات الأقمار الاصطناعية والطقس والبيانات الجغرافية التي تشغّل نذير.",
@@ -422,7 +435,8 @@ export const ar: Translation = {
   account: {
     zoneCount: "{{used}} من {{max}} مناطق مستعملة",
     zoneLimit: "لقد بلغت الحد الأقصى وهو 10 مناطق. احذف واحدة لإضافة أخرى.",
-    zoneFires: "{{count}} حريق نشط قريب — الأقرب على بعد {{km}} كم",
+    zoneFires:
+      "{{count}} حريق نشط داخل هذه المنطقة — الأقرب على بعد {{km}} كم.",
     authTitle: "تسجيل الدخول إلى نذير",
     authSubtitle: "احفظ الأماكن التي تهمّك واحصل على إنذار مبكر.",
     email: "البريد الإلكتروني",
