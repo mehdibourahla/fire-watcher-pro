@@ -27,6 +27,7 @@ import {
   adminUnitsQuery,
   clustersQuery,
   dangerLevelKey,
+  nationalMaximum,
   sourceHealthQuery,
   relativeTime,
   riskForecastsQuery,
@@ -152,18 +153,7 @@ function LiveMapPage() {
     [settlements.data],
   );
 
-  const national = useMemo(() => {
-    const today = (risk.data ?? []).filter(
-      (r) => r.horizon_days === 0 && !r.fuel_limited,
-    );
-    return today.reduce(
-      (acc, r) =>
-        r.danger_level > acc.level
-          ? { level: r.danger_level, fwi: r.fwi }
-          : acc,
-      { level: 1, fwi: 0 },
-    );
-  }, [risk.data]);
+  const national = useMemo(() => nationalMaximum(risk.data ?? []), [risk.data]);
 
   const degraded = sourceHealthCapabilityAffected(
     sources.data ?? [],
@@ -369,13 +359,27 @@ function LiveMapPage() {
         <section className="card p-4">
           <h1 className="text-base">{t("map.todayIn")}</h1>
           <div className="mt-3 flex items-start justify-between gap-4">
-            <DangerScale
-              level={national.level}
-              fwi={national.fwi}
-              size="md"
-              caption={t("map.nationalMax")}
-              className="flex-1"
-            />
+            {national ? (
+              <DangerScale
+                level={national.level}
+                fwi={national.fwi}
+                size="md"
+                caption={t("map.nationalMax")}
+                className="flex-1"
+              />
+            ) : (
+              <div className="flex-1">
+                <p className="text-sm font-medium">
+                  {t("risk.unavailableTitle")}
+                </p>
+                <Link
+                  to="/status"
+                  className="text-xs font-medium text-primary underline"
+                >
+                  {t("nav.status")}
+                </Link>
+              </div>
+            )}
             <div className="text-end">
               <p className="font-display tabular text-3xl leading-none">
                 {activeCount}
@@ -415,9 +419,13 @@ function LiveMapPage() {
           ) : sorted.length === 0 ? (
             <EmptyState
               title={t("map.activeFires_zero")}
-              body={t("map.empty", {
-                level: t(`risk.${dangerLevelKey(national.level)}`),
-              })}
+              {...(national
+                ? {
+                    body: t("map.empty", {
+                      level: t(`risk.${dangerLevelKey(national.level)}`),
+                    }),
+                  }
+                : {})}
               className="border-0"
             />
           ) : railQ ? (
