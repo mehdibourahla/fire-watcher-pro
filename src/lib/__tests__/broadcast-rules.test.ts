@@ -81,10 +81,12 @@ describe("targetCommunes", () => {
 });
 
 describe("fireSeverity", () => {
-  it("escalates on settlement proximity", () => {
-    expect(fireSeverity(4.9)).toBe("Extreme");
-    expect(fireSeverity(5.1)).toBe("Severe");
-    expect(fireSeverity(null)).toBe("Severe");
+  it("is Extreme only for an intense fire near a settlement", () => {
+    expect(fireSeverity(3, 45)).toBe("Extreme");
+    expect(fireSeverity(3, 9.7)).toBe("Severe");
+    expect(fireSeverity(3, null)).toBe("Severe");
+    expect(fireSeverity(12, 45)).toBe("Severe");
+    expect(fireSeverity(null, 45)).toBe("Severe");
   });
 });
 
@@ -131,12 +133,20 @@ describe("planFireBroadcast", () => {
     open: null,
     targets: ["1503", "1510"],
     additions: [],
+    inside: [],
   };
+  const thread = (
+    phase: string,
+    communeCodes: string[],
+    severity = "Severe",
+    atMs = now - HOUR,
+  ) => ({ phase, communeCodes, insideCodes: [], severity, atMs });
 
   it("opens a thread for a confirmed cluster", () => {
     expect(planFireBroadcast(base)).toEqual({
       action: "initial",
       codes: ["1503", "1510"],
+      inside: [],
     });
   });
 
@@ -151,7 +161,7 @@ describe("planFireBroadcast", () => {
         ...base,
         state: "contained_guess",
         lastDetectedMs: now - 13 * HOUR,
-        open: { phase: "initial", communeCodes: ["1503"], severity: "Severe" },
+        open: thread("initial", ["1503"]),
       }),
     ).toEqual({ action: "end" });
   });
@@ -161,7 +171,7 @@ describe("planFireBroadcast", () => {
       planFireBroadcast({
         ...base,
         state: "false_positive",
-        open: { phase: "initial", communeCodes: ["1503"], severity: "Severe" },
+        open: thread("initial", ["1503"]),
       }),
     ).toEqual({ action: "cancel" });
   });
@@ -170,10 +180,15 @@ describe("planFireBroadcast", () => {
     expect(
       planFireBroadcast({
         ...base,
-        open: { phase: "initial", communeCodes: ["1503"], severity: "Severe" },
+        open: thread("initial", ["1503"]),
         additions: ["1510"],
       }),
-    ).toEqual({ action: "update", codes: ["1503", "1510"], added: ["1510"] });
+    ).toEqual({
+      action: "update",
+      codes: ["1503", "1510"],
+      added: ["1510"],
+      inside: [],
+    });
   });
 
   it("updates when severity escalates even without new communes", () => {
@@ -181,28 +196,65 @@ describe("planFireBroadcast", () => {
       planFireBroadcast({
         ...base,
         severity: "Extreme",
-        open: { phase: "update", communeCodes: ["1503"], severity: "Severe" },
+        open: thread("update", ["1503"]),
       }),
-    ).toEqual({ action: "update", codes: ["1503"], added: [] });
+    ).toEqual({ action: "update", codes: ["1503"], added: [], inside: [] });
+  });
+
+  it("updates when the fire enters a covered commune", () => {
+    expect(
+      planFireBroadcast({
+        ...base,
+        inside: ["1503"],
+        open: thread("initial", ["1503", "1510"]),
+      }),
+    ).toEqual({
+      action: "update",
+      codes: ["1503", "1510"],
+      added: [],
+      inside: ["1503"],
+    });
   });
 
   it("stays silent while nothing changed", () => {
     expect(
       planFireBroadcast({
         ...base,
-        open: { phase: "initial", communeCodes: ["1503"], severity: "Severe" },
+        open: thread("initial", ["1503"]),
+        targets: ["1503"],
+      }),
+    ).toBeNull();
+    expect(
+      planFireBroadcast({
+        ...base,
+        inside: ["1503"],
+        open: { ...thread("initial", ["1503"]), insideCodes: ["1503"] },
         targets: ["1503"],
       }),
     ).toBeNull();
   });
 
-  it("reopens a fresh thread if a closed fire flares up again", () => {
+  it("reopens as an update while the end is less than 24 h old", () => {
     expect(
       planFireBroadcast({
         ...base,
-        open: { phase: "end", communeCodes: ["1503"], severity: "Severe" },
+        open: thread("end", ["1503"], "Severe", now - 6 * HOUR),
       }),
-    ).toEqual({ action: "initial", codes: ["1503", "1510"] });
+    ).toEqual({
+      action: "update",
+      codes: ["1503", "1510"],
+      added: ["1510"],
+      inside: [],
+    });
+  });
+
+  it("opens a fresh thread once the end is a day old", () => {
+    expect(
+      planFireBroadcast({
+        ...base,
+        open: thread("end", ["1503"], "Severe", now - 25 * HOUR),
+      }),
+    ).toEqual({ action: "initial", codes: ["1503", "1510"], inside: [] });
   });
 });
 
@@ -258,6 +310,7 @@ describe("planFireBroadcast fuel gate", () => {
     open: null,
     targets: ["3306"],
     additions: [],
+    inside: [],
     fuelLimited: new Set(["3306"]),
   };
 
@@ -269,6 +322,7 @@ describe("planFireBroadcast fuel gate", () => {
     expect(planFireBroadcast({ ...base, targets: ["3306", "1518"] })).toEqual({
       action: "initial",
       codes: ["1518"],
+      inside: [],
     });
   });
 
@@ -277,7 +331,13 @@ describe("planFireBroadcast fuel gate", () => {
       planFireBroadcast({
         ...base,
         lastDetectedMs: now - 13 * HOUR,
-        open: { phase: "initial", communeCodes: ["3306"], severity: "Extreme" },
+        open: {
+          phase: "initial",
+          communeCodes: ["3306"],
+          insideCodes: [],
+          severity: "Extreme",
+          atMs: now - HOUR,
+        },
       }),
     ).toEqual({ action: "end" });
   });

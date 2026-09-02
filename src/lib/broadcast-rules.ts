@@ -125,11 +125,16 @@ export function targetCommunes(
   return head ? [head, ...codes] : codes;
 }
 
+export const EXTREME_MIN_FRP_MW = 20;
+
 export function fireSeverity(
   nearestSettlementKm: number | null,
+  maxFrpMw: number | null,
 ): "Extreme" | "Severe" {
   return nearestSettlementKm !== null &&
-    nearestSettlementKm <= SETTLEMENT_EMERGENCY_KM
+    nearestSettlementKm <= SETTLEMENT_EMERGENCY_KM &&
+    maxFrpMw !== null &&
+    maxFrpMw >= EXTREME_MIN_FRP_MW
     ? "Extreme"
     : "Severe";
 }
@@ -164,9 +169,19 @@ export function fuelLimitedCodes(
   );
 }
 
+export const REOPEN_WINDOW_HOURS = 24;
+
+export type OpenThread = {
+  phase: string;
+  severity: string;
+  communeCodes: string[];
+  insideCodes: string[];
+  atMs: number;
+};
+
 export type FirePlan =
-  | { action: "initial"; codes: string[] }
-  | { action: "update"; codes: string[]; added: string[] }
+  | { action: "initial"; codes: string[]; inside: string[] }
+  | { action: "update"; codes: string[]; added: string[]; inside: string[] }
   | { action: "end" }
   | { action: "cancel" }
   | null;
@@ -177,38 +192,59 @@ export function planFireBroadcast(args: {
   lastDetectedMs: number;
   nowMs: number;
   severity: "Extreme" | "Severe";
-  open: { phase: string; communeCodes: string[]; severity: string } | null;
+  open: OpenThread | null;
   targets: string[];
   additions: string[];
+  inside: string[];
   fuelLimited?: Set<string>;
 }): FirePlan {
   const burnable = (codes: string[]) =>
     args.fuelLimited ? codes.filter((c) => !args.fuelLimited!.has(c)) : codes;
-  const open =
+  const live =
     args.open && (args.open.phase === "initial" || args.open.phase === "update")
       ? args.open
       : null;
+  const reopened =
+    args.open &&
+    args.open.phase === "end" &&
+    args.nowMs - args.open.atMs < REOPEN_WINDOW_HOURS * HOUR
+      ? args.open
+      : null;
 
-  if (open) {
+  if (live) {
     if (args.state === "false_positive") return { action: "cancel" };
     if (args.nowMs - args.lastDetectedMs >= BROADCAST_END_AFTER_HOURS * HOUR)
       return { action: "end" };
     if (args.state !== "active" || args.confidence < MIN_CONFIDENCE)
       return null;
-    const escalated = open.severity === "Severe" && args.severity === "Extreme";
+    const escalated = live.severity === "Severe" && args.severity === "Extreme";
     const additions = burnable(args.additions);
-    if (additions.length || escalated)
+    const codes = [...live.communeCodes, ...additions];
+    const insideNew = burnable(args.inside).filter(
+      (c) => codes.includes(c) && !live.insideCodes.includes(c),
+    );
+    if (additions.length || escalated || insideNew.length)
       return {
         action: "update",
-        codes: [...open.communeCodes, ...additions],
+        codes,
         added: additions,
+        inside: [...live.insideCodes, ...insideNew],
       };
     return null;
   }
 
   if (args.state === "active" && args.confidence >= MIN_CONFIDENCE) {
     const codes = burnable(args.targets);
-    return codes.length ? { action: "initial", codes } : null;
+    if (!codes.length) return null;
+    const inside = burnable(args.inside).filter((c) => codes.includes(c));
+    if (reopened)
+      return {
+        action: "update",
+        codes,
+        added: codes.filter((c) => !reopened.communeCodes.includes(c)),
+        inside,
+      };
+    return { action: "initial", codes, inside };
   }
   return null;
 }
