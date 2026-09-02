@@ -339,8 +339,8 @@ short jobs run on the Worker, while FWI and EFFIS have separate GitHub consumers
 retry windows are bounded, expired leases are recovered, missing intervals become `source_gaps`,
 and exact interval replay accepts only a recorded FIRMS or FCI gap UUID inside provider
 retention. Terminal gaps for other contracts are marked unrecoverable rather than pretending
-they can be reconstructed. A five-minute GitHub watchdog queries Supabase
-directly, so the Worker is not its own monitor. Its failures report breached database evidence,
+they can be reconstructed. A watchdog queries Supabase directly from GitHub
+Actions, so the Worker is not its own monitor. Its failures report breached database evidence,
 not an inferred Worker crash. Queue, lease, gap, run, and replay internals remain service-role-only.
 Current-only backlog is explicit: an older queued slot is failed with an audited `data_delayed`
 run and unrecoverable gap before the consumer drains the newest useful slot.
@@ -363,6 +363,16 @@ one day per day. The window is now 720 minutes and the workflow cron runs hourly
 it rather than four times an hour inside four (#63); GitHub drops bunched schedules, which
 is why sixteen requested runs produced roughly one. The adapter itself was never at
 fault — invoked directly it completed all 1,536 communes in 63 requests without error.
+
+**The watchdog was inside the Worker again, and is not any more (2026-09-02).** #67 moved
+it into the Worker's own cron with a Telegram DM, which is the fastest signal while the
+Worker is alive and no signal at all when it is not — the failure that silences every
+10-minute source at once. A second watchdog now runs in GitHub Actions twice an hour,
+queries Supabase directly, and adds the one issue the in-Worker one cannot raise:
+`worker_silent`, when no `cloudflare`-target contract has started a run in 25 minutes. It
+keeps its own fingerprint (`external_watchdog`), so the two do not overwrite each other's
+transition state. `TELEGRAM_BOT_TOKEN` is now a repository secret; **`NADHIR_OPERATOR_CHAT_ID`
+is not**, and until it is the workflow fails loudly rather than skipping the DM in silence.
 
 Worth carrying into M3/M4: a consumer that reports success when it claimed nothing cannot
 distinguish "drained" from "never arrived", and that is the same shape as the two other

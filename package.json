@@ -30,7 +30,8 @@
     "seed:telegram": "bun run scripts/seed-telegram-channels.ts",
     "source:job": "bun run scripts/run-source-job.ts",
     "replay:source": "bun run scripts/replay-source-gap.ts",
-    "replay:window": "bun run scripts/replay-window.ts"
+    "replay:window": "bun run scripts/replay-window.ts",
+    "watchdog:external": "bun run scripts/external-watchdog.ts"
   },
   "overrides": {
     "rolldown": "1.2.1"
