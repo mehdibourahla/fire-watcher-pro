@@ -22,11 +22,50 @@ _Avoid_: recommendation, guidance (see Standing Guidance)
 
 **Survival Mode**:
 The app state for a person in immediate danger: one primary card, minimal chrome. Entered
-by user self-activation (always available), a fusion-confirmed fire near the user's zone,
-or a relayed official declaration — never by the FWI danger level. Must be fully useful
+by user self-activation (always available), a Detected or Confirmed Fire near the user's
+zone, or a relayed official declaration — never by the FWI danger level. Must be fully useful
 with zero fresh data: no screen in it may assume a recent observation exists.
 _Avoid_: emergency mode, Guardian (internal/docs name for the survival layer — never
 user-facing; the app transforms without introducing a second brand)
+
+### Fires
+
+**Detection**:
+One satellite pixel flagged as burning by one sensor at one instant, with the sensor's own
+confidence and fire radiative power. A Detection is raw evidence, never shown as a fire.
+_Avoid_: hotspot (user-facing), fire (for a single pixel)
+
+**Fire**:
+A group of Detections that fusion judges to be one event in space and time. A Fire has a
+lifecycle: Candidate (one look only), Detected, then quiet and extinguished; and it may be
+Confirmed at any point in that lifecycle. A Fire is Nadhir's own object and is always
+Information.
+_Avoid_: cluster (user-facing), incident (reserved for the authority's object)
+
+**Candidate**:
+A Fire seen by a single look — one slot of a staring sensor or one pass of a polar one. Shown on
+the map with its age; never pushed.
+_Avoid_: unconfirmed (now means "not Confirmed", which is most fires)
+
+**Detected**:
+A Fire whose satellite evidence crosses the publication bar with at least two independent
+looks: two slots, two sensors, or a sensor plus a citizen Hazard Report. A Detected Fire may
+be pushed as a Broadcast Alert in Nadhir's voice, worded as satellite Information ("fire
+detected by satellite"), never as "confirmed".
+_Avoid_: confirmed (reserved for authorities), active (internal state word)
+
+**Confirmed**:
+A Fire, or an Official Incident with no Fire, that an official source has announced — today the
+Protection Civile bulletin naming the commune. Confirmation carries the authority's wording,
+timestamp and status, and is the only path to the word "confirmed" in any language. Nadhir never
+confirms a fire on its own evidence, however strong.
+_Avoid_: fusion-confirmed, satellite-confirmed
+
+**Official Incident**:
+The authority's own object: a fire named in an official source, resolved to a commune, with the
+authority's status vocabulary and timestamp. It exists whether or not a Fire matches it, and
+matching one to a Fire confirms the Fire without merging the two.
+_Avoid_: report (reserved for citizens), cluster
 
 ### Alerting
 
