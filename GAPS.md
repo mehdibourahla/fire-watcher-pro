@@ -429,7 +429,7 @@ Things that cost real debugging time here, none of them obvious from the code.
   that column, so a job perfectly visible in `source_jobs` is unclaimable by the scheduler
   you happen to be reading about, and the consumer that _can_ claim it reports success
   when it claimed nothing. Check `execution_target` and the matching workflow before
-  concluding a contract is broken, and remember a green _Daily source jobs_ run may mean
+  concluding a contract is broken, and remember a green _Source jobs (github target)_ run may mean
   the queue was empty, not drained.
 - **Freshness computed downstream of a filter stops meaning freshness.** FCI's
   `latestSlot` was assigned after a row was accepted, so once the watch-area gate rejected

@@ -81,14 +81,15 @@ waits on the Firebase and Telegram runtime secrets.
   JSON API still answers.
 - Supabase cron and Cloudflare cron independently enqueue the same normalized source slots
   every minute. Cloudflare consumes short jobs; expired leases are recovered in Postgres.
-- Daily FWI and EFFIS use separate GitHub Actions consumers in
-  `.github/workflows/risk-refresh.yml` because they are CPU-bound. Each consumer drains its
-  contract; obsolete current-only slots are audited as unrecoverable instead of running fresh
+- Daily FWI and EFFIS run on GitHub Actions (`.github/workflows/source-jobs-github.yml`)
+  because they are CPU-bound; pg_cron dispatches the workflow per due job through
+  `repository_dispatch`. Each consumer drains its contract; obsolete current-only slots are audited as unrecoverable instead of running fresh
   data against an old interval. Pending backoff keeps the consumer alive, while retries that
   outlive their usefulness window are terminalized and audited in bounded batches. Replay is
   offered only while provider retention can still cover the gap.
-- `.github/workflows/source-watchdog.yml` checks queue delay, expired leases, and missing runs
-  through Supabase every five minutes without depending on the Worker host.
+- The Worker cron evaluates the `source_watchdog` view every five minutes and sends one
+  Telegram message to `NADHIR_OPERATOR_CHAT_ID` per state transition (red with the issue list,
+  then recovered); `operator_alert_state` holds the last announced fingerprint.
 - `bun run seed:geo --prune` — reseed geography from `data/geo/` (monthly, idempotent).
 - FIRMS and FCI gaps replay exact retained intervals only by UUID through
   `bun run replay:source -- <gap-uuid>`; unsupported terminal gaps are unrecoverable.

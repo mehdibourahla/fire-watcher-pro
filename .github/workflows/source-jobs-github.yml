@@ -1,26 +1,28 @@
-name: Daily source jobs
+name: Source jobs (github target)
 
+# Triggered by private.dispatch_github_source_jobs() from pg_cron; GitHub's own
+# schedule trigger delivered 1 of 12 firings on 2026-09-01 and was removed.
 on:
-  # hourly across the contract's whole 720-minute usefulness window: GitHub drops
-  # bunched schedules, and four-per-hour in a short window delivered roughly one
-  # run a day, always after the old window had expired the job
-  schedule:
-    - cron: "5 6-17 * * *"
+  repository_dispatch:
+    types: [source-job]
   workflow_dispatch:
+    inputs:
+      contract:
+        description: Source contract key (local_fwi, effis)
+        required: true
+        type: string
 
 permissions: {}
 
 jobs:
   consume:
-    strategy:
-      fail-fast: false
-      matrix:
-        contract: [local_fwi, effis]
     concurrency:
-      group: daily-source-${{ matrix.contract }}
+      group: daily-source-${{ github.event.client_payload.contract || inputs.contract }}
       cancel-in-progress: false
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      CONTRACT: ${{ github.event.client_payload.contract || inputs.contract }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
@@ -30,7 +32,7 @@ jobs:
 
       - run: bun install --frozen-lockfile
 
-      - name: Consume ${{ matrix.contract }} job
+      - name: Consume ${{ github.event.client_payload.contract || inputs.contract }} job
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
@@ -38,7 +40,7 @@ jobs:
           deadline=$((SECONDS + 1740))
           while true; do
             set +e
-            bun run source:job -- --target github --contract "${{ matrix.contract }}"
+            bun run source:job -- --target github --contract "$CONTRACT"
             status=$?
             set -e
             if [ "$status" -eq 0 ]; then exit 0; fi
