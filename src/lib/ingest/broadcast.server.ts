@@ -298,7 +298,6 @@ export async function publishBroadcasts(): Promise<BroadcastRun> {
   }
 
   let published = 0;
-  const suppressed = 0;
   const errors: string[] = [];
 
   for (const cluster of clusters) {
@@ -492,7 +491,7 @@ export async function publishBroadcasts(): Promise<BroadcastRun> {
       `${errors.length} clusters failed to publish: ${errors[0]}`,
     );
 
-  return { published, suppressed };
+  return { published, suppressed: 0 };
 }
 
 async function relayAuthorityWarnings(): Promise<number> {
