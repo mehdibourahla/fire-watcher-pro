@@ -23,6 +23,7 @@ import {
   resolveWilaya,
   type CommuneCandidate,
 } from "./normalize";
+import { fetchNewRssItems, isFireRelevant } from "./rss";
 import { fetchNewTelegramPosts, type TelegramPost } from "./telegram-public";
 
 export type TextSource = {
@@ -254,6 +255,8 @@ async function mergeMentions(
       updated += 1;
       continue;
     }
+    // only an official source can open an Official Incident; the press corroborates
+    if (source.authority_tier === "media") continue;
     const id = await store.createIncident({
       wilaya_id: row.wilaya_id,
       commune_id: row.commune_id,
@@ -351,8 +354,11 @@ export async function runTextSourceWith(
         drafts.push(...r.drafts);
         pending.push(...r.unresolved);
       }
-    } else {
+    } else if (isFireRelevant(doc.body)) {
       pending.push(doc.body);
+    } else {
+      run.skippedPosts += 1;
+      continue;
     }
 
     for (const text of pending) {
@@ -552,7 +558,10 @@ const supabaseStore: TextSourceStore = {
 export function runTextSource(key: string): Promise<TextSourceRun> {
   return runTextSourceWith(key, {
     store: supabaseStore,
-    fetchPosts: (source, known) => fetchNewTelegramPosts(source.url, known),
+    fetchPosts: (source, known) =>
+      source.kind === "rss"
+        ? fetchNewRssItems(source.url, known)
+        : fetchNewTelegramPosts(source.url, known),
     extractLlm: extractMentionsWithLlm,
   });
 }

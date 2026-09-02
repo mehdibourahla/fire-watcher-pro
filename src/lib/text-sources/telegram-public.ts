@@ -35,7 +35,7 @@ function stripTags(html: string): string {
   return out;
 }
 
-function textOf(html: string): string {
+export function textOf(html: string): string {
   return decodeEntities(
     stripTags(html.replace(/<br\s*\/?>/gi, "\n")).replace(/\r/g, ""),
   )
