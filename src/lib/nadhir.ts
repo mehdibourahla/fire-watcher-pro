@@ -50,6 +50,7 @@ export type FireCluster = {
   nearest_settlement_id: string | null;
   nearest_settlement_km: number | null;
   confirmed_at: string | null;
+  confirmed_mention_id: string | null;
 };
 
 export type FireStage = "candidate" | "detected" | "confirmed";
@@ -632,6 +633,14 @@ export const riskForecastsQuery = queryOptions({
   },
 });
 
+export type FireConfirmation = {
+  as_of: string;
+  evidence: string;
+  status: string;
+  document: { url: string } | null;
+  source: { label: string } | null;
+};
+
 export function clusterDetailQuery(shortId: string) {
   return queryOptions({
     queryKey: ["cluster", shortId],
@@ -657,10 +666,23 @@ export function clusterDetailQuery(shortId: string) {
           .eq("cluster_id", cluster.id)
           .order("at"),
       ]);
+      const confirmation = cluster.confirmed_mention_id
+        ? (
+            await supabase
+              .from("incident_mentions")
+              .select(
+                "as_of, evidence, status, document:source_documents(url), source:text_sources(label)",
+              )
+              .eq("id", cluster.confirmed_mention_id)
+              .maybeSingle()
+          ).data
+        : null;
       return {
         cluster,
         detections: (detections.data ?? []) as unknown as Detection[],
         events: (events.data ?? []) as unknown as ClusterEvent[],
+        confirmation: (confirmation ??
+          null) as unknown as FireConfirmation | null,
       };
     },
   });

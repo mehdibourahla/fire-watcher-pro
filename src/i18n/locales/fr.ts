@@ -281,6 +281,13 @@ export const fr: Translation = {
     commune: "Commune",
     wilaya: "Wilaya",
   },
+  evidence: {
+    title: "Éléments",
+    looks: "{{count}} observation",
+    looks_other: "{{count}} observations",
+    official: "{{status}} — selon le bulletin de {{when}}",
+    note: "Deux pixels voisins d'un même passage satellite comptent pour une observation, pas deux. Seule une source officielle confirme un incendie.",
+  },
   stage: {
     candidate: "Détection unique",
     detected: "Détecté par satellite",

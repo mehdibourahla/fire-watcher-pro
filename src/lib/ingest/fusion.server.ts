@@ -4,6 +4,7 @@ import type { TablesUpdate } from "@/integrations/supabase/types";
 import { fetchAllPages } from "@/lib/paginate";
 
 import { estimateAreaHa, nearestFrom } from "./fusion-geometry";
+import { distinctLooks } from "@/lib/looks";
 import { haversineKm } from "@/lib/nadhir";
 
 const LIVE = ["active", "unconfirmed", "contained_guess"];
@@ -46,19 +47,6 @@ export function confidenceScore(dets: Det[]) {
       Math.min(0.99, 0.45 * mean + 0.3 * volume + 0.25 * multi) * 100,
     ) / 100
   );
-}
-
-export const LOOK_SLOT_MS = 10 * 60_000;
-
-/* Two adjacent pixels of a staring sensor in one slot are one look at one fire,
- * not two independent observations of it. */
-export function distinctLooks(dets: Det[]): number {
-  return new Set(
-    dets.map(
-      (d) =>
-        `${d.sensor}:${Math.floor(Date.parse(d.detected_at) / LOOK_SLOT_MS)}`,
-    ),
-  ).size;
 }
 
 export function stateFor(dets: Det[], lastMs: number, now: number) {

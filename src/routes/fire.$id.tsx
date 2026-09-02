@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 
 import { MapCanvas } from "@/components/MapCanvas";
 import { DetectionStrip } from "@/components/nadhir/DetectionStrip";
+import { FireEvidence } from "@/components/nadhir/FireEvidence";
 import { StatCard } from "@/components/nadhir/StatCard";
 import { EmptyState, Skeleton } from "@/components/nadhir/states";
 import { EmergencyNumbers } from "@/components/SiteChrome";
@@ -76,7 +77,7 @@ function FireDetail() {
     );
   }
 
-  const { cluster, detections } = detail.data;
+  const { cluster, detections, confirmation } = detail.data;
   const wilaya = (units.data ?? []).find((u) => u.id === cluster.wilaya_id);
   const place = placeLabel(
     cluster,
@@ -217,6 +218,13 @@ function FireDetail() {
           <h2 className="text-base">{t("fire.timeline")}</h2>
           <DetectionStrip detections={detections} className="mt-3" />
         </section>
+
+        <FireEvidence
+          detections={detections}
+          confirmation={confirmation}
+          locale={locale}
+          now={Date.now()}
+        />
 
         <section className="card p-4">
           <h2 className="text-base">{t("fire.nearest")}</h2>
