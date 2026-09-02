@@ -187,12 +187,14 @@ export function parseDgpcBulletin(
       }
     }
     if (!communes.length) continue;
+    const status = statusOf(line);
     lines.push({
       wilaya: wilaya ?? header,
       raw: line,
       communes,
       place: placeOf(line),
-      status: statusOf(line),
+      // the important-fires section of a bulletin lists fires still burning at its as-of time
+      status: status === "unknown" && kind === "bulletin" ? "ongoing" : status,
       count: countOf(line, communes.length),
     });
   }

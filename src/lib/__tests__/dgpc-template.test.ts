@@ -92,4 +92,20 @@ describe("parseDgpcBulletin", () => {
     expect(setif.status).toBe("extinguished");
     expect(setif.place).toBe("أولاد دلادج");
   });
+
+  it("treats a bulletin line with no status verb as ongoing", () => {
+    const text = `🔴 الحالة العامة لحرائق الغطاء النباتي ليوم 27 أوت 2026 على الساعة 13سا00د
+🔴 أهم الحرائق
+✅⏮️ حرائق ولاية #تيزي_وزو اندلاع 02 حرائق ببلديات إجر (01)، بونوح (01)`;
+    const b = parseDgpcBulletin(text, "2026-08-27T13:05:36Z");
+    expect(b.lines[0]!.status).toBe("ongoing");
+  });
+
+  it("keeps unknown for a standalone incident post with no status", () => {
+    const text =
+      "حريق غابة ببلدية تاكسنة بالمكان المسمى مشتة الميسة تم اجلاء بعض العائلات";
+    const b = parseDgpcBulletin(text, "2026-08-29T10:00:00Z");
+    expect(b.kind).toBe("incident");
+    expect(b.lines[0]!.status).toBe("unknown");
+  });
 });
