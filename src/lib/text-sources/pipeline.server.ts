@@ -101,6 +101,15 @@ export type TextSourceStore = {
   confirmClusters: (
     rows: { communeId: string; asOf: string; mentionId: string }[],
   ) => Promise<number>;
+  retryableDocuments: (
+    sourceId: string,
+  ) => Promise<(DocumentInsert & { id: string })[]>;
+  mentionKeys: (documentIds: string[]) => Promise<Set<string>>;
+  recordExtractionFailure: (
+    documentId: string,
+    message: string,
+  ) => Promise<void>;
+  clearExtractionFailure: (documentId: string) => Promise<void>;
 };
 
 export type TextSourcePipelineDependencies = {
@@ -123,6 +132,7 @@ export type TextSourceRun = {
   incidentsUpdated: number;
   incidentsUnlisted: number;
   clustersConfirmed: number;
+  retried: number;
   llmSkipped: boolean;
   llmFailed: number;
   error?: string;
@@ -312,6 +322,7 @@ export async function runTextSourceWith(
     incidentsUpdated: 0,
     incidentsUnlisted: 0,
     clustersConfirmed: 0,
+    retried: 0,
     llmSkipped: false,
     llmFailed: 0,
   };
@@ -323,9 +334,11 @@ export async function runTextSourceWith(
   const known = await deps.store.knownExternalIds(source.id);
   const posts = await deps.fetchPosts(source, known);
   run.fetched = posts.length;
-  if (!posts.length) return run;
+  const retryable = await deps.store.retryableDocuments(source.id);
+  run.retried = retryable.length;
+  if (!posts.length && !retryable.length) return run;
 
-  const documents = await deps.store.insertDocuments(
+  const stored = await deps.store.insertDocuments(
     await Promise.all(
       posts.map(async (p) => ({
         text_source_id: source.id,
@@ -337,7 +350,14 @@ export async function runTextSourceWith(
       })),
     ),
   );
-  run.stored = documents.length;
+  run.stored = stored.length;
+  const documents = [...stored, ...retryable];
+  const fresh = new Set(stored.map((d) => d.id));
+  // a retried document's mentions are already partly written: the template half
+  // survived the completion that failed
+  const alreadyWritten = await deps.store.mentionKeys(
+    retryable.map((d) => d.id),
+  );
 
   const gazetteer = await deps.store.loadGazetteer();
   const inserts: MentionInsert[] = [];
@@ -350,6 +370,7 @@ export async function runTextSourceWith(
     const asOf = parsed?.asOf ?? doc.published_at;
     const drafts: Draft[] = [];
     const pending: string[] = [];
+    let failedHere = false;
 
     if (parsed) {
       if (parsed.kind !== "bulletin" && parsed.kind !== "incident") {
@@ -360,7 +381,7 @@ export async function runTextSourceWith(
       // a full bulletin is the authority's complete list of notable fires, so what it
       // omits is no longer listed; a single-incident post says nothing about the rest
       const coverage =
-        parsed.kind === "bulletin"
+        parsed.kind === "bulletin" && fresh.has(doc.id)
           ? { asOf, areaIds: new Set<string>() }
           : null;
       if (coverage) bulletins.push(coverage);
@@ -396,6 +417,7 @@ export async function runTextSourceWith(
         run.llmFailed += 1;
         run.unresolved += 1;
         lastLlmError = error instanceof Error ? error.message : String(error);
+        failedHere = true;
         continue;
       }
       if (result.skipped) {
@@ -419,12 +441,23 @@ export async function runTextSourceWith(
       if (!resolvedAny) run.unresolved += 1;
     }
 
+    if (failedHere)
+      await deps.store.recordExtractionFailure(doc.id, lastLlmError ?? "");
+    else if (!fresh.has(doc.id))
+      await deps.store.clearExtractionFailure(doc.id);
     inserts.push(
-      ...drafts.map((d) => ({
-        ...d,
-        document_id: doc.id,
-        text_source_id: source.id,
-      })),
+      ...drafts
+        .filter(
+          (d) =>
+            !alreadyWritten.has(
+              `${doc.id}:${d.commune_id ?? ""}:${d.evidence}`,
+            ),
+        )
+        .map((d) => ({
+          ...d,
+          document_id: doc.id,
+          text_source_id: source.id,
+        })),
     );
   }
 
@@ -613,6 +646,57 @@ const supabaseStore: TextSourceStore = {
       id: row.id,
       area_id: row.commune_id ?? row.wilaya_id,
     }));
+  },
+  retryableDocuments: async (sourceId) => {
+    const data = must(
+      await supabaseAdmin
+        .from("document_extractions")
+        .select(
+          "document_id, attempts, source_documents!inner(id, text_source_id, external_id, url, published_at, content_hash, body)",
+        )
+        .lt("attempts", 4)
+        .eq("source_documents.text_source_id", sourceId)
+        .order("updated_at")
+        .limit(20),
+      "retryable documents",
+    );
+    return data.flatMap((row) =>
+      row.source_documents ? [row.source_documents] : [],
+    );
+  },
+  mentionKeys: async (documentIds) => {
+    if (!documentIds.length) return new Set<string>();
+    const data = must(
+      await supabaseAdmin
+        .from("incident_mentions")
+        .select("document_id, commune_id, evidence")
+        .in("document_id", documentIds),
+      "existing mentions",
+    );
+    return new Set(
+      data.map((m) => `${m.document_id}:${m.commune_id ?? ""}:${m.evidence}`),
+    );
+  },
+  recordExtractionFailure: async (documentId, message) => {
+    const { data } = await supabaseAdmin
+      .from("document_extractions")
+      .select("attempts")
+      .eq("document_id", documentId)
+      .maybeSingle();
+    const { error } = await supabaseAdmin.from("document_extractions").upsert({
+      document_id: documentId,
+      attempts: (data?.attempts ?? 0) + 1,
+      last_error: message.slice(0, 500),
+      updated_at: new Date().toISOString(),
+    });
+    if (error) throw new Error(`extraction failure record: ${error.message}`);
+  },
+  clearExtractionFailure: async (documentId) => {
+    const { error } = await supabaseAdmin
+      .from("document_extractions")
+      .delete()
+      .eq("document_id", documentId);
+    if (error) throw new Error(`extraction clear: ${error.message}`);
   },
   confirmClusters: async (rows) => {
     let confirmed = 0;

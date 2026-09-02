@@ -711,6 +711,35 @@ export type Database = {
           },
         ];
       };
+      document_extractions: {
+        Row: {
+          attempts: number;
+          document_id: string;
+          last_error: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          attempts?: number;
+          document_id: string;
+          last_error?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          attempts?: number;
+          document_id?: string;
+          last_error?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "document_extractions_document_id_fkey";
+            columns: ["document_id"];
+            isOneToOne: true;
+            referencedRelation: "source_documents";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       effis_danger: {
         Row: {
           commune_id: string;
