@@ -11,9 +11,12 @@ alter table public.incident_mentions enable trigger reject_incident_mention_muta
 alter table public.source_documents enable trigger reject_source_document_mutation;
 
 delete from public.text_sources where kind = 'rss';
+
+-- jobs → gaps → runs → jobs is a reference cycle; cut it at gap_id first
+update public.source_jobs set gap_id = null where contract_key like 'rss\_%';
+delete from public.source_job_leases where contract_key like 'rss\_%';
 delete from public.source_gaps where contract_key like 'rss\_%';
 delete from public.source_runs where contract_key like 'rss\_%';
-delete from public.source_job_leases where contract_key like 'rss\_%';
 delete from public.source_jobs where contract_key like 'rss\_%';
 delete from public.source_checkpoints where contract_key like 'rss\_%';
 delete from public.source_contracts where key like 'rss\_%';
