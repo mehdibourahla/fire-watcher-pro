@@ -46,11 +46,14 @@ Reproduce the seasonality and discrimination numbers: the queries and scripts ar
 in the 2026-08-29 investigation; the distribution itself is
 `select danger_level, count(*) from risk_forecasts where horizon_days=0 group by 1;`
 
-### 1.2 Nobody can register
+### 1.2 Registration works but is rate-capped
 
-`auth.users` is **0**. Sign-up requires an email confirmation, and the project has no custom
-SMTP, so it falls back to Supabase's built-in sender — capped at **2 emails/hour project-wide**
-and documented by Supabase as not for production.
+**Reopened and re-measured 2026-09-02: 29 accounts exist, 16 of them email-confirmed, created
+between 30 Aug and 2 Sep, owning 19 zones across 9 people.** So registration is not the total
+wall this section described. What remains is the ceiling: without custom SMTP the project
+falls back to Supabase's built-in sender, capped at **2 emails/hour project-wide** and
+documented by Supabase as not for production, which is why 13 of 29 sign-ups are still
+unconfirmed. Reproduce: `select count(*), count(email_confirmed_at) from auth.users;`
 
 Login itself is fine, and was verified end to end: password grant issues a token, the app's
 lazy profile creation succeeds, zone creation succeeds, and RLS holds (inserting a zone under
@@ -61,8 +64,8 @@ so every confirmation link was dead, and `uri_allow_list` was empty so the app's
 `emailRedirectTo` was ignored.
 
 Remaining work: configure an SMTP provider (Resend, Postmark, SES) in Supabase Auth. Until
-then no user account can exist, so zones, alerts and the whole authenticated half of the
-product are unreachable.
+then sign-up succeeds only when the hourly quota happens to be free, so roughly half of new
+accounts never confirm and the per-user zone alerts stay unreliable.
 
 ### 1.3 No alert reaches a human
 
@@ -205,8 +208,7 @@ ever registered — and everything official beyond DGPC (wilaya directorates, Ge
 road status every 15 min, Info Trafic Algérie with ~1.9M followers, DGF) sits behind Facebook.
 
 Open: wilaya Civil Protection and forestry pages live
-on Facebook and need Meta page access or a Telegram/RSS surface; the gazetteer is missing
-Adekar (Béjaïa) under any spelling; without `OPENROUTER_API_KEY` roughly one line in six
+on Facebook and need Meta page access or a Telegram/RSS surface; without `OPENROUTER_API_KEY` roughly one line in six
 stays unresolved (24 of 136 on the August sample). Official incidents do not yet feed
 Broadcast Alerts — a deliberate scope line until the recall metric has run for a while.
 
@@ -269,6 +271,31 @@ readable sentinels and `GetFeatureInfo` returns none while the mapserver is brok
 pointing an on-call reader at the wrong codebase. `pngPayloadError` now checks the PNG
 signature before decoding and reports `upstream_unreachable` (#63). Nothing here brings
 EFFIS back; it recovers when JRC does.
+
+### 2.3b Three communes were parented to the wrong wilaya by OSM
+
+Adekar (ONS 0624, chef-lieu of its own daïra in Béjaïa) was seeded under Tizi Ouzou, so
+DGPC bulletins naming it never resolved — the "missing from the gazetteer" symptom this
+file used to record. Fixed 2026-09-02 in `data/geo/algeria-admin.json` and by migration.
+
+Two more have the same shape and are **not** fixed, because the right parent needs a
+source rather than a guess: `2005 Moulay Larbi` sits under Sidi Bel Abbès with a Saïda
+code, and `3017 Benaceur` under El Oued with an Ouargla code — and Benaceur may belong to
+Touggourt (55) since the 2019 reform. Both are outside the fire watch area. Reproduce:
+
+```sql
+select c.code, c.name_fr, w.name_fr as parent
+from admin_units c join admin_units w on w.id = c.parent_id
+where c.level = 'commune' and left(c.code, 2) <> lpad(w.code, 2, '0')
+  and w.code::int <= 48;
+```
+
+A code prefix that disagrees with the parent is normal for the wilayas created in 2019
+(49–58), which kept their communes' historical ONS codes; the query above excludes them.
+
+Separately, "Larbaa" is not an alias gap: three communes carry the name (Batna, Blida,
+Tissemsilt), so a bulletin naming it resolves only when the wilaya is extracted, since the
+national fallback demands a unique name.
 
 ### 2.3 Commune-to-wilaya assignment — reconciled with Loi 26-06 (2026-08-30)
 
