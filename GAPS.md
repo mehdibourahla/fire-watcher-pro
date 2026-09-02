@@ -145,6 +145,22 @@ in the north and a quiet evening ages a healthy feed into `stale` (#59); and the
 needed the `false_positive` exclusion that `/api/public/v1/fires` and the history query
 already applied (#62).
 
+**Chain latency, measured and corrected 2026-09-02.** An earlier note in this file called
+the pipeline "four independent 10-minute polls" whose floor was structural. That was wrong.
+The contracts all carry `schedule_offset_minutes = 0`; what staggers them is the queue's
+dependency gate plus one claim per Cron Event, so production ran ingest → screen → fuse →
+publish → deliver exactly one minute apart:
+
+```
+23:00:14 fci   23:01:14 persistent_screen   23:02:14 fusion
+23:03:14 broadcast_publish   23:04:14 broadcast_delivery
+```
+
+Four minutes, not forty. The dispatcher now claims in five waves of two within a 20-second
+budget instead of four parallel claims, so one Cron Event drains the whole chain; the first
+wave always runs whatever the budget says. The remaining floor is the feed itself: FCI is
+~22 min behind real time and its slot is 10 min wide.
+
 **Persistence rule shipped 2026-09-02.** A Fire is Detected only on two distinct looks —
 two slots of one sensor, or two sensors — so two adjacent FCI pixels in one 10-minute slot
 no longer promote a cluster. Measured on production since 30 Aug: of 362 clusters retired as
