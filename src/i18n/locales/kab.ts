@@ -277,6 +277,13 @@ export const kab: Translation = {
     commune: "Taɣiwant",
     wilaya: "Tawilayt",
   },
+  evidence: {
+    title: "Ttbut",
+    looks: "{{count}} uḍfar",
+    looks_other: "{{count}} yeḍfaren",
+    official: "{{status}} — akken i d-yenna ulɣu n {{when}}",
+    note: "Snat tenqiḍin timyeqriwin deg yiwen n uɛeddi n yigenwan d yiwen uḍfar, mačči d sin. D aɣbalu unṣib kan i yessentemen times.",
+  },
   stage: {
     candidate: "Yiwen uḍfar",
     detected: "Yettwaf s uḍfar n igenwan",

@@ -275,6 +275,13 @@ export const ar: Translation = {
     commune: "البلدية",
     wilaya: "الولاية",
   },
+  evidence: {
+    title: "الأدلة",
+    looks: "{{count}} رصد",
+    looks_other: "{{count}} عمليات رصد",
+    official: "{{status}} — حسب نشرية {{when}}",
+    note: "نقطتان متجاورتان في مرور واحد للقمر الاصطناعي تُعدّان رصدًا واحدًا لا رصدين. الجهة الرسمية وحدها تؤكد الحريق.",
+  },
   stage: {
     candidate: "رصد وحيد",
     detected: "مرصود بالقمر الاصطناعي",

@@ -277,6 +277,13 @@ export const en = {
     commune: "Commune",
     wilaya: "Wilaya",
   },
+  evidence: {
+    title: "Evidence",
+    looks: "{{count}} look",
+    looks_other: "{{count}} looks",
+    official: "{{status}} — as stated in the bulletin of {{when}}",
+    note: "Two adjacent pixels in one satellite pass are one look, not two. Only an official source confirms a fire.",
+  },
   stage: {
     candidate: "Single detection",
     detected: "Detected by satellite",

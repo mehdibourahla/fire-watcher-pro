@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
+import { distinctLooks, evidenceBySensor } from "@/lib/looks";
 import {
   confidenceScore,
-  distinctLooks,
   stateFor,
   type Det,
 } from "@/lib/ingest/fusion.server";
@@ -103,5 +103,26 @@ describe("confidenceScore", () => {
     ]);
     expect(two).toBeGreaterThan(one);
     expect(two).toBeLessThanOrEqual(0.99);
+  });
+});
+
+describe("evidenceBySensor", () => {
+  it("summarises one row per sensor, most recent first", () => {
+    const rows = evidenceBySensor([
+      det({ id: "a", sensor: "FCI", detected_at: "2026-09-02T11:28:00Z" }),
+      det({ id: "b", sensor: "FCI", detected_at: "2026-09-02T11:38:00Z" }),
+      det({ id: "c", sensor: "FCI", detected_at: "2026-09-02T11:38:26Z" }),
+      det({
+        id: "d",
+        sensor: "VIIRS_NOAA20",
+        detected_at: "2026-09-02T13:01:00Z",
+      }),
+    ]);
+    expect(rows.map((r) => r.sensor)).toEqual(["VIIRS_NOAA20", "FCI"]);
+    expect(rows[1]).toMatchObject({
+      looks: 2,
+      firstAt: "2026-09-02T11:28:00Z",
+      lastAt: "2026-09-02T11:38:26Z",
+    });
   });
 });
