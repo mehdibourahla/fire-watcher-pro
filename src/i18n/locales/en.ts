@@ -212,6 +212,11 @@ export const en = {
     layers: "Layers",
     layerFires: "Active fires",
     layerOfficial: "Official incident reports",
+    layerReports: "Citizen hazard reports",
+    reportEyebrow: "Citizen report",
+    reportObserved: "Seen {{time}}",
+    reportUnverified:
+      "Unverified — shown as received, with its age. Moderators can confirm or remove it.",
     layerRisk: "Danger forecast",
     layerUnverified: "Unverified detections",
     layerIndustrialSources: "Known industrial heat sources",

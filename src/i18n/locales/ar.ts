@@ -210,6 +210,11 @@ export const ar: Translation = {
     layers: "الطبقات",
     layerFires: "الحرائق النشطة",
     layerOfficial: "بلاغات رسمية",
+    layerReports: "بلاغات المواطنين",
+    reportEyebrow: "بلاغ مواطن",
+    reportObserved: "شوهد {{time}}",
+    reportUnverified:
+      "غير مؤكد — يُعرض كما ورد مع عمره. يمكن للمشرفين تأكيده أو إزالته.",
     layerRisk: "توقع الخطر",
     layerUnverified: "رصد غير مؤكد",
     layerIndustrialSources: "مصادر حرارية صناعية معروفة",

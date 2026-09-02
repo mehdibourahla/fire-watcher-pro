@@ -15,6 +15,8 @@ type Props = {
   official?: FeatureCollection;
   selectedOfficialId?: string | null;
   onSelectOfficial?: (id: string) => void;
+  reports?: FeatureCollection;
+  onSelectReport?: (id: string) => void;
   center?: [number, number];
   zoom?: number;
   interactive?: boolean;

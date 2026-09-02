@@ -79,20 +79,6 @@ export const myReportsQuery = queryOptions({
   },
 });
 
-export const approvedReportsQuery = queryOptions({
-  queryKey: ["reports", "approved"],
-  queryFn: async () => {
-    const { data, error } = await supabase
-      .from("citizen_reports")
-      .select(SELECT)
-      .eq("status", "approved")
-      .order("observed_at", { ascending: false })
-      .limit(200);
-    if (error) throw new Error(error.message);
-    return (data ?? []) as unknown as CitizenReport[];
-  },
-});
-
 export const moderationQueueQuery = queryOptions({
   queryKey: ["reports", "queue"],
   queryFn: async () => {
