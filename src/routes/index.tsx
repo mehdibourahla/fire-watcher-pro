@@ -10,6 +10,7 @@ import { DangerScale } from "@/components/nadhir/DangerScale";
 import { Explain } from "@/components/nadhir/Explain";
 import { DetailSheet } from "@/components/nadhir/DetailSheet";
 import { LayerToggle } from "@/components/nadhir/LayerToggle";
+import { HazardReportDetail } from "@/components/nadhir/HazardReportDetail";
 import { OfficialIncidentDetail } from "@/components/nadhir/OfficialIncidentDetail";
 import { riskSolid } from "@/components/nadhir/risk-visuals";
 import { BroadcastBanner } from "@/components/nadhir/BroadcastBanner";
@@ -22,6 +23,7 @@ import {
 } from "@/components/SiteChrome";
 import type { Locale } from "@/i18n";
 import { alertsQuery } from "@/lib/alerts";
+import { hazardReportsGeoJSON, hazardReportsQuery } from "@/lib/open-areas";
 import { pageMeta } from "@/lib/page-meta";
 import {
   LIVE_STATES,
@@ -74,6 +76,7 @@ function LiveMapPage() {
   const [now, setNow] = useState(renderedAt);
   const [selected, setSelected] = useState<string | null>(null);
   const [selectedOfficial, setSelectedOfficial] = useState<string | null>(null);
+  const [selectedReport, setSelectedReport] = useState<string | null>(null);
   const [layers, setLayers] = useState<MapLayers>(DEFAULT_MAP_LAYERS);
   const [railSearch, setRailSearch] = useState("");
 
@@ -100,6 +103,13 @@ function LiveMapPage() {
   );
   const selectedIncident =
     (official.data ?? []).find((i) => i.id === selectedOfficial) ?? null;
+  const hazards = useQuery({ ...hazardReportsQuery, retry: false });
+  const hazardGeoJSON = useMemo(
+    () => hazardReportsGeoJSON(hazards.data ?? []),
+    [hazards.data],
+  );
+  const selectedHazard =
+    (hazards.data ?? []).find((r) => r.id === selectedReport) ?? null;
   const settlements = useQuery(settlementsQuery);
   const sources = useQuery(sourceHealthQuery);
   const alerts = useQuery({ ...alertsQuery, retry: false });
@@ -514,13 +524,21 @@ function LiveMapPage() {
           selectedShortId={selected}
           onSelect={(c) => {
             setSelectedOfficial(null);
+            setSelectedReport(null);
             setSelected(c.short_id);
           }}
           official={officialGeoJSON}
           selectedOfficialId={selectedOfficial}
           onSelectOfficial={(id) => {
             setSelected(null);
+            setSelectedReport(null);
             setSelectedOfficial(id);
+          }}
+          reports={hazardGeoJSON}
+          onSelectReport={(id) => {
+            setSelected(null);
+            setSelectedOfficial(null);
+            setSelectedReport(id);
           }}
           layers={layers}
         />
@@ -534,12 +552,20 @@ function LiveMapPage() {
           {t("survival.pill")}
         </Link>
         <DetailSheet
-          open={!!selectedCluster || !!selectedIncident}
+          open={!!selectedCluster || !!selectedIncident || !!selectedHazard}
           onClose={() => {
             setSelected(null);
             setSelectedOfficial(null);
+            setSelectedReport(null);
           }}
         >
+          {selectedHazard ? (
+            <HazardReportDetail
+              report={selectedHazard}
+              locale={locale}
+              now={now}
+            />
+          ) : null}
           {selectedIncident ? (
             <OfficialIncidentDetail
               incident={selectedIncident}

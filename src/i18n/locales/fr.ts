@@ -215,6 +215,11 @@ export const fr: Translation = {
     layers: "Couches",
     layerFires: "Feux actifs",
     layerOfficial: "Signalements officiels",
+    layerReports: "Signalements citoyens",
+    reportEyebrow: "Signalement citoyen",
+    reportObserved: "Vu {{time}}",
+    reportUnverified:
+      "Non vérifié — affiché tel que reçu, avec son ancienneté. La modération peut le confirmer ou le retirer.",
     layerRisk: "Prévision de danger",
     layerUnverified: "Détections non vérifiées",
     layerIndustrialSources: "Sources thermiques industrielles connues",
