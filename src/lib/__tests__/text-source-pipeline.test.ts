@@ -9,8 +9,10 @@ import type { OpenIncident } from "@/lib/text-sources/merge";
 import type { TelegramPost } from "@/lib/text-sources/telegram-public";
 
 const SKIKDA = "w-skikda";
+const OTHER = "w-other";
 const AZZABA = "c-azzaba";
 const AIN_ZOUIT = "c-ain-zouit";
+const FAR = "c-far";
 
 const bulletin = (asOfHour: string, body: string) =>
   `🔴 الحالة العامة لحرائق الغطاء النباتي ليوم 02 سبتمبر 2026 على الساعة ${asOfHour}سا00د
@@ -51,7 +53,10 @@ function memoryStore() {
         return { id, ...r };
       }),
     loadGazetteer: async () => ({
-      wilayas: [{ id: SKIKDA, name_ar: "سكيكدة" }],
+      wilayas: [
+        { id: SKIKDA, name_ar: "سكيكدة" },
+        { id: OTHER, name_ar: "باتنة" },
+      ],
       communesByWilaya: new Map([
         [
           SKIKDA,
@@ -60,6 +65,7 @@ function memoryStore() {
             { id: AIN_ZOUIT, name_ar: "عين زويت", aliases: [] },
           ],
         ],
+        [OTHER, [{ id: FAR, name_ar: "بلدة بعيدة", aliases: [] }]],
       ]),
     }),
     insertMentions: async (rows) =>
@@ -256,6 +262,87 @@ describe("runTextSource", () => {
     expect([...incidents.values()][0]).toMatchObject({
       commune_id: AIN_ZOUIT,
       place_text: "قرية مجهولة",
+    });
+  });
+
+  it("does not duplicate a commune the template already resolved when the LLM re-emits it", async () => {
+    const { store, mentions } = memoryStore();
+    const result = await runTextSourceWith(
+      "dgpc_telegram",
+      deps(
+        [
+          post(
+            "1",
+            "2026-09-02T12:10:00Z",
+            bulletin(
+              "13",
+              "✅⏮️ تسجيل حريقين ببلديتي عزابة وقرية مجهولة، العملية متواصلة...",
+            ),
+          ),
+        ],
+        store,
+        async () => ({
+          skipped: false,
+          mentions: [
+            {
+              wilaya: "سكيكدة",
+              commune: "عزابة",
+              place: null,
+              kind: "vegetation",
+              status: "ongoing",
+              count: 1,
+              evidence: "حريقين ببلديتي عزابة",
+            },
+            {
+              wilaya: "سكيكدة",
+              commune: "عين زويت",
+              place: null,
+              kind: "vegetation",
+              status: "ongoing",
+              count: 1,
+              evidence: "قرية مجهولة",
+            },
+          ],
+        }),
+      ),
+    );
+    expect(result).toMatchObject({ mentions: 2, incidentsCreated: 2 });
+    expect(mentions.filter((m) => m["commune_id"] === AZZABA)).toHaveLength(1);
+  });
+
+  it("resolves an LLM commune nationally when the hinted wilaya does not hold it", async () => {
+    const { store, incidents } = memoryStore();
+    const result = await runTextSourceWith(
+      "dgpc_telegram",
+      deps(
+        [
+          post(
+            "1",
+            "2026-09-02T12:10:00Z",
+            bulletin("13", "✅⏮️ حريق ببلدية بلدة بعيدة، العملية متواصلة..."),
+          ),
+        ],
+        store,
+        async () => ({
+          skipped: false,
+          mentions: [
+            {
+              wilaya: "سكيكدة",
+              commune: "بلدة بعيدة",
+              place: null,
+              kind: "vegetation",
+              status: "ongoing",
+              count: 1,
+              evidence: "حريق ببلدية بلدة بعيدة",
+            },
+          ],
+        }),
+      ),
+    );
+    expect(result).toMatchObject({ mentions: 1, incidentsCreated: 1 });
+    expect([...incidents.values()][0]).toMatchObject({
+      commune_id: FAR,
+      wilaya_id: OTHER,
     });
   });
 

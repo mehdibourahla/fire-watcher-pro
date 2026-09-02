@@ -96,6 +96,26 @@ describe("extractMentionsWithLlm over OpenRouter", () => {
     expect(user.content).toContain(text);
   });
 
+  it("accepts a reply wrapped in a markdown fence", async () => {
+    const d = deps(
+      "```json\n" + JSON.stringify({ mentions: [good] }) + "\n```",
+    );
+    const result = await extractMentionsWithLlm(
+      { text, wilayaHint: null, language: "ar" },
+      d,
+    );
+    expect(result).toMatchObject({
+      skipped: false,
+      mentions: [expect.anything()],
+    });
+  });
+
+  it("asks OpenRouter to route only to providers that honour the schema", async () => {
+    const d = deps(JSON.stringify({ mentions: [] }));
+    await extractMentionsWithLlm({ text, wilayaHint: null, language: "ar" }, d);
+    expect(d.calls[0]!.provider).toEqual({ require_parameters: true });
+  });
+
   it("fails loudly when the reply is not the expected shape", async () => {
     const d = deps(
       JSON.stringify({ mentions: [{ ...good, kind: "volcano" }] }),

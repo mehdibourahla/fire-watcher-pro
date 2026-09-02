@@ -79,6 +79,7 @@ export type OpenRouterRequest = {
   };
   temperature: number;
   max_tokens: number;
+  provider: { require_parameters: true };
 };
 
 export type LlmExtractionDependencies = {
@@ -93,6 +94,12 @@ One mention per named fire location. Do not infer locations that are not written
 Statuses: ongoing (operations continuing), contained (under control / regressing), extinguished (put out), monitoring (guarding, mopping up), unknown.
 Kinds: vegetation (forest, scrub, maquis), agricultural (crops, hay, orchards, palm groves), urban, unknown.
 Leave commune null when only a locality or a wilaya is named. Names stay in the post's language and spelling. count is the number of fires the sentence attributes to that location, at least 1.`;
+
+// cheaper models sometimes wrap the object in a markdown fence despite the schema
+function stripFence(content: string): string {
+  const m = /^\s*```(?:json)?\s*([\s\S]*?)\s*```\s*$/.exec(content);
+  return m ? m[1]! : content;
+}
 
 async function completeWithOpenRouter(
   apiKey: string,
@@ -160,10 +167,11 @@ export async function extractMentionsWithLlm(
     },
     temperature: 0,
     max_tokens: 2048,
+    provider: { require_parameters: true },
   });
   let parsed: unknown;
   try {
-    parsed = JSON.parse(content);
+    parsed = JSON.parse(stripFence(content));
   } catch {
     throw new Error("llm extraction returned non-JSON content");
   }
