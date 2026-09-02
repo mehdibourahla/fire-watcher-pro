@@ -73,7 +73,11 @@ export type IncidentUpdate = Pick<
   | "last_reported_at"
   | "as_of"
   | "place_text"
-> & { latest_mention_id: string | null; evidence: string | null };
+> & {
+  latest_mention_id: string | null;
+  evidence: string | null;
+  unlisted_at: null;
+};
 
 export function nextIncidentState(
   incident: OpenIncident,
@@ -86,6 +90,8 @@ export function nextIncidentState(
   const gainsCommune =
     incident.commune_id === null && mention.commune_id !== null;
   return {
+    // a fresh mention re-lists an incident an earlier bulletin had dropped
+    unlisted_at: null,
     status: setsStatus ? mention.status : incident.status,
     authority_tier: setsStatus
       ? mention.authority_tier

@@ -240,6 +240,9 @@ export const fr: Translation = {
     reports: "Bulletins",
     source: "Source",
     sourceFallback: "Canal officiel",
+    listing: "Mention",
+    unlisted:
+      "Non citée dans le bulletin de {{when}}. La Protection civile ne publie pas de fin d'alerte par commune : ce n'est pas un signe que le feu est éteint.",
     viewPost: "Voir la publication d’origine",
     disclaimer:
       "Relayé depuis un canal officiel, à la précision du bulletin — la zone ombrée est la commune, pas le feu. Nadhir n’ajoute rien au texte.",

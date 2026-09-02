@@ -486,6 +486,7 @@ export type OfficialIncident = {
   first_reported_at: string;
   last_reported_at: string;
   as_of: string;
+  unlisted_at: string | null;
   mention_count: number;
   evidence: string;
   commune: NamedUnit | null;
@@ -506,7 +507,7 @@ export const officialIncidentsQuery = queryOptions({
     const { data, error } = await supabase
       .from("official_incidents")
       .select(
-        "id, wilaya_id, commune_id, kind, status, precision, authority_tier, place_text, first_reported_at, last_reported_at, as_of, mention_count, evidence, commune:admin_units!official_incidents_commune_id_fkey(name_ar, name_fr, name_en, name_kab, lat, lon), wilaya:admin_units!official_incidents_wilaya_id_fkey(name_ar, name_fr, name_en, name_kab, lat, lon), latest_mention:incident_mentions!official_incidents_latest_mention_fkey(document:source_documents(url, published_at), source:text_sources(label))",
+        "id, wilaya_id, commune_id, kind, status, precision, authority_tier, place_text, first_reported_at, last_reported_at, as_of, unlisted_at, mention_count, evidence, commune:admin_units!official_incidents_commune_id_fkey(name_ar, name_fr, name_en, name_kab, lat, lon), wilaya:admin_units!official_incidents_wilaya_id_fkey(name_ar, name_fr, name_en, name_kab, lat, lon), latest_mention:incident_mentions!official_incidents_latest_mention_fkey(document:source_documents(url, published_at), source:text_sources(label))",
       )
       .gte("last_reported_at", since)
       .order("last_reported_at", { ascending: false });
@@ -563,6 +564,7 @@ export function officialIncidentsGeoJSON(
             id: i.id,
             status: i.status,
             precision: i.precision,
+            listed: i.unlisted_at === null,
             area: Boolean(polygon),
           },
         },

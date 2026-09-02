@@ -1065,6 +1065,7 @@ export type Database = {
           place_text: string | null;
           precision: string;
           status: string;
+          unlisted_at: string | null;
           updated_at: string;
           wilaya_id: string;
         };
@@ -1082,6 +1083,7 @@ export type Database = {
           place_text?: string | null;
           precision: string;
           status: string;
+          unlisted_at?: string | null;
           updated_at?: string;
           wilaya_id: string;
         };
@@ -1099,6 +1101,7 @@ export type Database = {
           place_text?: string | null;
           precision?: string;
           status?: string;
+          unlisted_at?: string | null;
           updated_at?: string;
           wilaya_id?: string;
         };

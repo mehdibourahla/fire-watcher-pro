@@ -123,5 +123,10 @@ select results_eq(
   'anon can read incidents, mentions and documents'
 );
 
+select has_column('public', 'official_incidents', 'unlisted_at',
+  'incidents record when a full bulletin stopped naming them');
+select col_is_null('public', 'official_incidents', 'unlisted_at',
+  'a listed incident has no unlisted_at');
+
 select * from finish();
 rollback;

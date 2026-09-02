@@ -33,6 +33,7 @@ function memoryStore() {
     string,
     OpenIncident & { mention_count: number; status: string }
   >();
+  const unlisted = new Map<string, string>();
   let seq = 0;
   const store: TextSourceStore = {
     loadSource: async (key) => ({
@@ -87,18 +88,26 @@ function memoryStore() {
     },
     updateIncident: async (id, update) => {
       const cur = incidents.get(id)!;
+      if (update.unlisted_at === null) unlisted.delete(id);
       incidents.set(id, {
         ...cur,
         ...update,
         mention_count: cur.mention_count + 1,
       });
     },
+    listedIncidents: async (before) =>
+      [...incidents.values()]
+        .filter((i) => !unlisted.has(i.id) && i.last_reported_at < before)
+        .map((i) => ({ id: i.id, area_id: i.area_id })),
+    markUnlisted: async (ids, asOf) => {
+      for (const id of ids) unlisted.set(id, asOf);
+    },
     attachMention: async (mentionId, incidentId) => {
       const m = mentions.find((x) => x["id"] === mentionId)!;
       m["incident_id"] = incidentId;
     },
   };
-  return { store, documents, mentions, incidents };
+  return { store, documents, mentions, incidents, unlisted };
 }
 
 function deps(
@@ -435,5 +444,102 @@ describe("runTextSource LLM failures", () => {
       ),
     );
     expect(dead.error).toMatch(/every llm extraction failed: openrouter 502/);
+  });
+});
+
+describe("bulletin coverage", () => {
+  const bulletinFor = (hour: string, lines: string) => bulletin(hour, lines);
+
+  it("unlists an incident the next full bulletin does not name, and re-lists it when it returns", async () => {
+    const { store, incidents, unlisted } = memoryStore();
+
+    const first = await runTextSourceWith(
+      "dgpc_telegram",
+      deps(
+        [
+          post(
+            "1",
+            "2026-09-02T08:05:00Z",
+            bulletinFor(
+              "07",
+              "✅⏮️ حريق ببلدية عزابة، العملية متواصلة...\n✅⏮️ حريق ببلدية عين زويت، العملية متواصلة...",
+            ),
+          ),
+        ],
+        store,
+      ),
+    );
+    expect(first.incidentsCreated).toBe(2);
+    expect(first.incidentsUnlisted).toBe(0);
+
+    const second = await runTextSourceWith(
+      "dgpc_telegram",
+      deps(
+        [
+          post(
+            "2",
+            "2026-09-02T14:05:00Z",
+            bulletinFor("13", "✅⏮️ حريق ببلدية عزابة، العملية متواصلة..."),
+          ),
+        ],
+        store,
+      ),
+    );
+    expect(second.incidentsUnlisted).toBe(1);
+    const dropped = [...incidents.values()].find(
+      (i) => i.commune_id === AIN_ZOUIT,
+    )!;
+    expect(unlisted.has(dropped.id)).toBe(true);
+    expect(dropped.status).toBe("ongoing");
+
+    const third = await runTextSourceWith(
+      "dgpc_telegram",
+      deps(
+        [
+          post(
+            "3",
+            "2026-09-02T18:05:00Z",
+            bulletinFor(
+              "17",
+              "✅⏮️ حريق ببلدية عزابة، العملية متواصلة...\n✅⏮️ حريق ببلدية عين زويت، العملية متواصلة...",
+            ),
+          ),
+        ],
+        store,
+      ),
+    );
+    expect(third.incidentsUnlisted).toBe(0);
+    expect(unlisted.has(dropped.id)).toBe(false);
+  });
+
+  it("a single-incident post unlists nothing", async () => {
+    const { store } = memoryStore();
+    await runTextSourceWith(
+      "dgpc_telegram",
+      deps(
+        [
+          post(
+            "10",
+            "2026-09-02T08:05:00Z",
+            bulletinFor("07", "✅⏮️ حريق ببلدية عزابة، العملية متواصلة..."),
+          ),
+        ],
+        store,
+      ),
+    );
+    const run = await runTextSourceWith(
+      "dgpc_telegram",
+      deps(
+        [
+          post(
+            "11",
+            "2026-09-02T14:05:00Z",
+            "حريق أحراش ببلدية عين زويت، ولاية سكيكدة، العملية متواصلة...",
+          ),
+        ],
+        store,
+      ),
+    );
+    expect(run.incidentsUnlisted).toBe(0);
   });
 });

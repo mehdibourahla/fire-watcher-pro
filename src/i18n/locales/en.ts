@@ -236,6 +236,9 @@ export const en = {
     reports: "Reports",
     source: "Source",
     sourceFallback: "Official channel",
+    listing: "Listing",
+    unlisted:
+      "Not named in the bulletin of {{when}}. Protection Civile does not publish a per-commune all-clear, so this is not a sign the fire is out.",
     viewPost: "View the original post",
     disclaimer:
       "Relayed from an official channel, shown at the precision of the report — the shaded area is the commune, not the fire. Nadhir adds nothing to the wording.",
