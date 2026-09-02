@@ -1,4 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
+import type { FeatureCollection, Geometry } from "geojson";
 
 import { isInAlgeriaNorth } from "@/lib/ingest/geo";
 import { supabase } from "@/integrations/supabase/client";
@@ -460,6 +461,132 @@ export function nationalMaximum(forecasts: RiskForecast[]) {
   }
   return max;
 }
+
+export type OfficialIncidentStatus =
+  "ongoing" | "contained" | "extinguished" | "monitoring" | "unknown";
+
+type NamedUnit = {
+  name_ar: string;
+  name_fr: string;
+  name_en: string;
+  name_kab: string | null;
+  lat: number;
+  lon: number;
+};
+
+export type OfficialIncident = {
+  id: string;
+  wilaya_id: string;
+  commune_id: string | null;
+  kind: "vegetation" | "agricultural" | "urban" | "unknown";
+  status: OfficialIncidentStatus;
+  precision: "commune" | "wilaya" | "place";
+  authority_tier: "national" | "wilaya" | "forestry" | "media";
+  place_text: string | null;
+  first_reported_at: string;
+  last_reported_at: string;
+  as_of: string;
+  mention_count: number;
+  evidence: string;
+  commune: NamedUnit | null;
+  wilaya: NamedUnit;
+  latest_mention: {
+    document: { url: string; published_at: string } | null;
+    source: { label: string } | null;
+  } | null;
+};
+
+const OFFICIAL_WINDOW_MS = 72 * 3_600_000;
+const EXTINGUISHED_VISIBLE_MS = 24 * 3_600_000;
+
+export const officialIncidentsQuery = queryOptions({
+  queryKey: ["official_incidents"],
+  queryFn: async () => {
+    const since = new Date(Date.now() - OFFICIAL_WINDOW_MS).toISOString();
+    const { data, error } = await supabase
+      .from("official_incidents")
+      .select(
+        "id, wilaya_id, commune_id, kind, status, precision, authority_tier, place_text, first_reported_at, last_reported_at, as_of, mention_count, evidence, commune:admin_units!official_incidents_commune_id_fkey(name_ar, name_fr, name_en, name_kab, lat, lon), wilaya:admin_units!official_incidents_wilaya_id_fkey(name_ar, name_fr, name_en, name_kab, lat, lon), latest_mention:incident_mentions!official_incidents_latest_mention_fkey(document:source_documents(url, published_at), source:text_sources(label))",
+      )
+      .gte("last_reported_at", since)
+      .order("last_reported_at", { ascending: false });
+    if (error) throw new Error(error.message);
+    return (data ?? []) as unknown as OfficialIncident[];
+  },
+});
+
+// polygons are fetched per incident commune and only in the browser: geom is
+// megabytes per page and took the SSR Worker past its memory limit once
+export function communeGeomsQuery(ids: string[]) {
+  const sorted = [...ids].sort();
+  return queryOptions({
+    queryKey: ["commune_geoms", sorted],
+    enabled: sorted.length > 0 && typeof window !== "undefined",
+    staleTime: Infinity,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("admin_units")
+        .select("id, geom")
+        .in("id", sorted);
+      if (error) throw new Error(error.message);
+      return new Map(
+        (data ?? [])
+          .filter((r) => r.geom)
+          .map((r) => [r.id, r.geom as unknown as Geometry]),
+      );
+    },
+  });
+}
+
+export function officialIncidentsGeoJSON(
+  incidents: OfficialIncident[],
+  geoms: Map<string, Geometry | unknown>,
+  now = Date.now(),
+): FeatureCollection {
+  return {
+    type: "FeatureCollection",
+    features: incidents.flatMap((i) => {
+      if (
+        i.status === "extinguished" &&
+        now - Date.parse(i.last_reported_at) > EXTINGUISHED_VISIBLE_MS
+      )
+        return [];
+      const polygon = i.commune_id ? geoms.get(i.commune_id) : undefined;
+      const anchor = i.commune ?? i.wilaya;
+      return [
+        {
+          type: "Feature" as const,
+          geometry: polygon
+            ? (polygon as Geometry)
+            : { type: "Point" as const, coordinates: [anchor.lon, anchor.lat] },
+          properties: {
+            id: i.id,
+            status: i.status,
+            precision: i.precision,
+            area: Boolean(polygon),
+          },
+        },
+      ];
+    }),
+  };
+}
+
+export const recallDailyQuery = queryOptions({
+  queryKey: ["official_incident_recall_daily"],
+  queryFn: async () => {
+    const { data, error } = await supabase
+      .from("official_incident_recall_daily")
+      .select("day, mentions, communes, with_cluster")
+      .limit(7);
+    if (error) throw new Error(error.message);
+    return (data ?? []) as {
+      day: string;
+      mentions: number;
+      communes: number;
+      with_cluster: number;
+    }[];
+  },
+});
 
 export const riskForecastsQuery = queryOptions({
   queryKey: ["risk_forecasts"],

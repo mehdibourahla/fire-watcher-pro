@@ -214,6 +214,7 @@ export const fr: Translation = {
     sources: "Sources",
     layers: "Couches",
     layerFires: "Feux actifs",
+    layerOfficial: "Signalements officiels",
     layerRisk: "Prévision de danger",
     layerUnverified: "Détections non vérifiées",
     layerIndustrialSources: "Sources thermiques industrielles connues",
@@ -224,6 +225,26 @@ export const fr: Translation = {
     degraded:
       "Certaines sources sont dégradées — les détections peuvent être retardées.",
     openDetail: "Ouvrir la fiche du feu",
+  },
+  official: {
+    eyebrow: "Signalement officiel",
+    inWilaya: "Wilaya de {{wilaya}}",
+    wilayaLevel: "Localisation connue à l’échelle de la wilaya seulement",
+    status: "État",
+    asOf: "Situation au",
+    reports: "Bulletins",
+    source: "Source",
+    sourceFallback: "Canal officiel",
+    viewPost: "Voir la publication d’origine",
+    disclaimer:
+      "Relayé depuis un canal officiel, à la précision du bulletin — la zone ombrée est la commune, pas le feu. Nadhir n’ajoute rien au texte.",
+    statuses: {
+      ongoing: "En cours",
+      contained: "Maîtrisé",
+      extinguished: "Éteint",
+      monitoring: "Sous surveillance",
+      unknown: "Non précisé",
+    },
   },
   fire: {
     nearSettlement: "À {{km}} km de {{settlement}}",
@@ -374,6 +395,9 @@ export const fr: Translation = {
     metaDescription:
       "État en direct des flux satellites, météo et géodonnées qui alimentent les alertes Nadhir.",
     title: "Sources de données",
+    recallTitle: "Signalements officiels et satellites",
+    recallBody:
+      "Sur {{total}} communes citées dans les bulletins officiels en {{days}} jours, les satellites ont détecté un feu dans {{seen}}.",
     subtitle:
       "Un rapport honnête de ce qui fonctionne et de ce qui ne fonctionne pas.",
     source: "Source",

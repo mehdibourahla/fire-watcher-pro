@@ -209,6 +209,7 @@ export const ar: Translation = {
     sources: "المصادر",
     layers: "الطبقات",
     layerFires: "الحرائق النشطة",
+    layerOfficial: "بلاغات رسمية",
     layerRisk: "توقع الخطر",
     layerUnverified: "رصد غير مؤكد",
     layerIndustrialSources: "مصادر حرارية صناعية معروفة",
@@ -218,6 +219,26 @@ export const ar: Translation = {
     nationalMax: "أقصى خطر وطني",
     degraded: "بعض المصادر متدهورة — قد يتأخر الرصد.",
     openDetail: "فتح تفاصيل الحريق",
+  },
+  official: {
+    eyebrow: "بلاغ رسمي",
+    inWilaya: "ولاية {{wilaya}}",
+    wilayaLevel: "الموقع معروف على مستوى الولاية فقط",
+    status: "الحالة",
+    asOf: "الوضع حتى",
+    reports: "البلاغات",
+    source: "المصدر",
+    sourceFallback: "قناة رسمية",
+    viewPost: "عرض المنشور الأصلي",
+    disclaimer:
+      "منقول عن قناة رسمية بدقة البلاغ نفسه — المنطقة المظللة هي البلدية وليست الحريق. لا يضيف نذير شيئًا إلى النص.",
+    statuses: {
+      ongoing: "متواصل",
+      contained: "تحت السيطرة",
+      extinguished: "تم إخماده",
+      monitoring: "تحت المراقبة",
+      unknown: "غير محدد",
+    },
   },
   fire: {
     nearSettlement: "على بعد {{km}} كم من {{settlement}}",
@@ -360,6 +381,9 @@ export const ar: Translation = {
     metaDescription:
       "الحالة المباشرة لتدفقات الأقمار الاصطناعية والطقس والبيانات الجغرافية التي تشغّل نذير.",
     title: "مصادر البيانات",
+    recallTitle: "البلاغات الرسمية مقابل الأقمار الاصطناعية",
+    recallBody:
+      "من بين {{total}} بلدية وردت في البلاغات الرسمية خلال {{days}} أيام، رصدت الأقمار الاصطناعية حريقًا في {{seen}}.",
     subtitle: "عرض صادق لما يعمل وما لا يعمل.",
     source: "المصدر",
     health: "الحالة",

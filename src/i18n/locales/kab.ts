@@ -212,6 +212,7 @@ export const kab: Translation = {
     sources: "Iɣbula",
     layers: "Tissiyin",
     layerFires: "Timessi urmidin",
+    layerOfficial: "Ineɣmisen unṣiben",
     layerRisk: "Asmenyaf n uɣilif",
     layerUnverified: "Tifin ur nettwasenqed ara",
     layerIndustrialSources: "Iɣbula n uzɣal n tenzagt",
@@ -221,6 +222,26 @@ export const kab: Translation = {
     nationalMax: "Aɣilif afellay aɣelnaw",
     degraded: "Kra n yiɣbula ceḍḍen — tifin tzemer ad teɛṭel.",
     openDetail: "Ldi talqayt n tmessi",
+  },
+  official: {
+    eyebrow: "Aneɣmis unṣib",
+    inWilaya: "Tawilayt n {{wilaya}}",
+    wilayaLevel: "Adeg yettwassen ɣef uswir n tewilayt kan",
+    status: "Addad",
+    asOf: "Ar",
+    reports: "Ineɣmisen",
+    source: "Aɣbalu",
+    sourceFallback: "Abadu unṣib",
+    viewPost: "Wali asuffeɣ aneṣli",
+    disclaimer:
+      "Yettwaɣ-d seg ubadu unṣib s tseddi n uneɣmis — tamnaḍt yettwaɣummen d taɣiwant, mačči d times. Nadhir ur yernu acemma i uḍris.",
+    statuses: {
+      ongoing: "Yettkemmil",
+      contained: "Yettwaḥbes",
+      extinguished: "Yensa",
+      monitoring: "Ddaw uɛessi",
+      unknown: "Ur d-yettwabder ara",
+    },
   },
   fire: {
     nearSettlement: "{{km}} km si {{settlement}}",
@@ -366,6 +387,9 @@ export const kab: Translation = {
     metaDescription:
       "Addad srid n yisaduf n usaṭelit, n tignewt d isefka igiwanen n Nadhir.",
     title: "Iɣbula n isefka",
+    recallTitle: "Ineɣmisen unṣiben d isatilliten",
+    recallBody:
+      "Seg {{total}} n tɣiwanin i d-yettwabedren deg yineɣmisen unṣiben deg {{days}} n wussan, isatilliten ufan times deg {{seen}}.",
     subtitle: "Asenqed uṣṣiḍ ɣef wayen iteddun d wayen ur nteddu ara.",
     source: "Aɣbalu",
     health: "Addad",
