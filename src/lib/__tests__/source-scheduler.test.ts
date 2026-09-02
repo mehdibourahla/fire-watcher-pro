@@ -12,7 +12,7 @@ const env = {
 };
 
 describe("dispatchScheduledSources", () => {
-  it("enqueues the controller timestamp and launches four authenticated workers", async () => {
+  it("enqueues the controller timestamp and drains the chain in waves", async () => {
     const enqueue = vi.fn().mockResolvedValue(11);
     const fetchImpl = vi
       .fn()
@@ -25,13 +25,13 @@ describe("dispatchScheduledSources", () => {
         fetchImpl,
         enqueue,
       ),
-    ).resolves.toEqual({ enqueued: 11, dispatched: 4, failed: 0 });
+    ).resolves.toEqual({ enqueued: 11, dispatched: 10, failed: 0 });
 
     expect(enqueue).toHaveBeenCalledWith(
       "2026-08-31T20:07:00.000Z",
       "cloudflare",
     );
-    expect(fetchImpl).toHaveBeenCalledTimes(4);
+    expect(fetchImpl).toHaveBeenCalledTimes(10);
     for (const [url, init] of fetchImpl.mock.calls) {
       expect(url).toBe("https://nadhir.app/api/internal/source-jobs/run");
       expect(init).toMatchObject({
@@ -85,7 +85,7 @@ describe("dispatchScheduledSources", () => {
       vi.fn().mockResolvedValue(11),
     );
 
-    expect(result).toEqual({ enqueued: 11, dispatched: 1, failed: 3 });
+    expect(result).toEqual({ enqueued: 11, dispatched: 1, failed: 9 });
     expect(JSON.stringify(result)).not.toContain(env.NADHIR_CRON_SECRET);
   });
 });
@@ -147,5 +147,48 @@ describe("internal source job route", () => {
     expect(await response.text()).not.toContain("private token");
     expect(logged).not.toHaveBeenCalledWith(expect.stringContaining("token"));
     logged.mockRestore();
+  });
+});
+
+describe("wave budget", () => {
+  const env2 = {
+    NADHIR_APP_URL: "https://nadhir.app",
+    NADHIR_CRON_SECRET: "runtime-secret",
+  };
+
+  it("stops starting waves once the budget is spent", async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValue(new Response(null, { status: 200 }));
+    let clock = 0;
+    const now = () => {
+      clock += 9_000;
+      return clock;
+    };
+
+    const result = await dispatchScheduledSources(
+      Date.parse("2026-08-31T20:07:00.000Z"),
+      env2,
+      fetchImpl,
+      vi.fn().mockResolvedValue(1),
+      now,
+    );
+    expect(result.dispatched).toBeLessThan(10);
+    expect(result.dispatched).toBeGreaterThan(0);
+  });
+
+  it("always runs the first wave, however little budget is left", async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValue(new Response(null, { status: 200 }));
+    let call = 0;
+    const result = await dispatchScheduledSources(
+      Date.parse("2026-08-31T20:07:00.000Z"),
+      env2,
+      fetchImpl,
+      vi.fn().mockResolvedValue(1),
+      () => (call++ === 0 ? 0 : 10 ** 12),
+    );
+    expect(result.dispatched).toBe(2);
   });
 });
