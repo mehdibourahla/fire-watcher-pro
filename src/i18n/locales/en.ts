@@ -211,6 +211,7 @@ export const en = {
     sources: "Sources",
     layers: "Layers",
     layerFires: "Active fires",
+    layerOfficial: "Official incident reports",
     layerRisk: "Danger forecast",
     layerUnverified: "Unverified detections",
     layerIndustrialSources: "Known industrial heat sources",
@@ -220,6 +221,26 @@ export const en = {
     nationalMax: "National maximum danger",
     degraded: "Some data sources are degraded — detections may be delayed.",
     openDetail: "Open fire detail",
+  },
+  official: {
+    eyebrow: "Official report",
+    inWilaya: "Wilaya {{wilaya}}",
+    wilayaLevel: "Location known to the wilaya only",
+    status: "Status",
+    asOf: "As of",
+    reports: "Reports",
+    source: "Source",
+    sourceFallback: "Official channel",
+    viewPost: "View the original post",
+    disclaimer:
+      "Relayed from an official channel, shown at the precision of the report — the shaded area is the commune, not the fire. Nadhir adds nothing to the wording.",
+    statuses: {
+      ongoing: "Ongoing",
+      contained: "Contained",
+      extinguished: "Extinguished",
+      monitoring: "Under watch",
+      unknown: "Not stated",
+    },
   },
   fire: {
     nearSettlement: "{{km}} km from {{settlement}}",
@@ -368,6 +389,9 @@ export const en = {
     metaDescription:
       "Live health of the satellite, weather and geodata feeds that power Nadhir's fire warnings.",
     title: "Data sources",
+    recallTitle: "Official reports vs satellites",
+    recallBody:
+      "Of {{total}} communes named in official fire reports over {{days}} days, satellites detected fire in {{seen}}.",
     subtitle: "Honest reporting of what is flowing and what is not.",
     source: "Source",
     health: "Status",

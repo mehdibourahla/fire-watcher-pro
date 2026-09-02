@@ -4,12 +4,13 @@ import { ChevronDown, Flame, LifeBuoy, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import type { MapLayers } from "@/components/FireMap";
+import { DEFAULT_MAP_LAYERS, type MapLayers } from "@/components/map-layers";
 import { MapCanvas } from "@/components/MapCanvas";
 import { DangerScale } from "@/components/nadhir/DangerScale";
 import { Explain } from "@/components/nadhir/Explain";
 import { DetailSheet } from "@/components/nadhir/DetailSheet";
 import { LayerToggle } from "@/components/nadhir/LayerToggle";
+import { OfficialIncidentDetail } from "@/components/nadhir/OfficialIncidentDetail";
 import { riskSolid } from "@/components/nadhir/risk-visuals";
 import { BroadcastBanner } from "@/components/nadhir/BroadcastBanner";
 import { SubscribeInvite } from "@/components/nadhir/SubscribeSheet";
@@ -26,8 +27,11 @@ import {
   LIVE_STATES,
   adminUnitsQuery,
   clustersQuery,
+  communeGeomsQuery,
   dangerLevelKey,
   nationalMaximum,
+  officialIncidentsGeoJSON,
+  officialIncidentsQuery,
   sourceHealthQuery,
   relativeTime,
   riskForecastsQuery,
@@ -69,16 +73,33 @@ function LiveMapPage() {
   const { renderedAt } = Route.useLoaderData();
   const [now, setNow] = useState(renderedAt);
   const [selected, setSelected] = useState<string | null>(null);
-  const [layers, setLayers] = useState<MapLayers>({
-    fires: true,
-    unverified: false,
-    industrialSources: false,
-  });
+  const [selectedOfficial, setSelectedOfficial] = useState<string | null>(null);
+  const [layers, setLayers] = useState<MapLayers>(DEFAULT_MAP_LAYERS);
   const [railSearch, setRailSearch] = useState("");
 
   const clusters = useQuery(clustersQuery);
   const units = useQuery(adminUnitsQuery);
   const risk = useQuery(riskForecastsQuery);
+  const official = useQuery({ ...officialIncidentsQuery, retry: false });
+  const officialCommuneIds = useMemo(
+    () =>
+      (official.data ?? []).flatMap((i) =>
+        i.commune_id ? [i.commune_id] : [],
+      ),
+    [official.data],
+  );
+  const communeGeoms = useQuery(communeGeomsQuery(officialCommuneIds));
+  const officialGeoJSON = useMemo(
+    () =>
+      officialIncidentsGeoJSON(
+        official.data ?? [],
+        communeGeoms.data ?? new Map(),
+        now,
+      ),
+    [official.data, communeGeoms.data, now],
+  );
+  const selectedIncident =
+    (official.data ?? []).find((i) => i.id === selectedOfficial) ?? null;
   const settlements = useQuery(settlementsQuery);
   const sources = useQuery(sourceHealthQuery);
   const alerts = useQuery({ ...alertsQuery, retry: false });
@@ -491,7 +512,16 @@ function LiveMapPage() {
         <MapCanvas
           clusters={clusters.data ?? []}
           selectedShortId={selected}
-          onSelect={(c) => setSelected(c.short_id)}
+          onSelect={(c) => {
+            setSelectedOfficial(null);
+            setSelected(c.short_id);
+          }}
+          official={officialGeoJSON}
+          selectedOfficialId={selectedOfficial}
+          onSelectOfficial={(id) => {
+            setSelected(null);
+            setSelectedOfficial(id);
+          }}
           layers={layers}
         />
         <LayerToggle layers={layers} onChange={setLayers} />
@@ -503,7 +533,20 @@ function LiveMapPage() {
           <LifeBuoy aria-hidden className="size-4" />
           {t("survival.pill")}
         </Link>
-        <DetailSheet open={!!selectedCluster} onClose={() => setSelected(null)}>
+        <DetailSheet
+          open={!!selectedCluster || !!selectedIncident}
+          onClose={() => {
+            setSelected(null);
+            setSelectedOfficial(null);
+          }}
+        >
+          {selectedIncident ? (
+            <OfficialIncidentDetail
+              incident={selectedIncident}
+              locale={locale}
+              now={now}
+            />
+          ) : null}
           {selectedCluster ? (
             <ClusterDetail
               cluster={selectedCluster}

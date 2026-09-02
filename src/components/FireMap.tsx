@@ -6,16 +6,17 @@ import type { FeatureCollection, Point } from "geojson";
 
 import type { FireCluster } from "@/lib/nadhir";
 
-export type MapLayers = {
-  fires: boolean;
-  unverified: boolean;
-  industrialSources: boolean;
-};
+import { DEFAULT_MAP_LAYERS, type MapLayers } from "./map-layers";
+
+export type { MapLayers } from "./map-layers";
 
 type Props = {
   clusters: FireCluster[];
   selectedShortId?: string | null;
   onSelect?: (cluster: FireCluster) => void;
+  official?: FeatureCollection;
+  selectedOfficialId?: string | null;
+  onSelectOfficial?: (id: string) => void;
   center?: [number, number];
   zoom?: number;
   interactive?: boolean;
@@ -23,6 +24,13 @@ type Props = {
 };
 
 const SRC = "fires";
+const OFFICIAL_SRC = "official";
+const OFFICIAL_LAYERS = [
+  "official-fill",
+  "official-outline",
+  "official-points",
+];
+const EMPTY: FeatureCollection = { type: "FeatureCollection", features: [] };
 const UNVERIFIED_MAX_CONFIDENCE = 0.6;
 
 const BASEMAP = {
@@ -71,6 +79,54 @@ function toGeoJSON(clusters: FireCluster[]): FeatureCollection {
       };
     }),
   };
+}
+
+function officialColor(): maplibregl.ExpressionSpecification {
+  return [
+    "match",
+    ["get", "status"],
+    "ongoing",
+    token("--risk-3", "#f16a00"),
+    "extinguished",
+    token("--ink-faint", "#8c9094"),
+    token("--risk-2", "#e4af00"),
+  ];
+}
+
+// area-level by design: an official report names a commune, never a coordinate
+function addOfficialLayers(map: maplibregl.Map, data: FeatureCollection) {
+  if (map.getSource(OFFICIAL_SRC)) return;
+  map.addSource(OFFICIAL_SRC, { type: "geojson", data });
+  map.addLayer({
+    id: "official-fill",
+    type: "fill",
+    source: OFFICIAL_SRC,
+    filter: ["==", ["geometry-type"], "Polygon"],
+    paint: { "fill-color": officialColor(), "fill-opacity": 0.22 },
+  });
+  map.addLayer({
+    id: "official-outline",
+    type: "line",
+    source: OFFICIAL_SRC,
+    filter: ["==", ["geometry-type"], "Polygon"],
+    paint: {
+      "line-color": officialColor(),
+      "line-width": ["case", ["boolean", ["get", "selected"], false], 3, 1.5],
+      "line-dasharray": [2, 1.5],
+    },
+  });
+  map.addLayer({
+    id: "official-points",
+    type: "circle",
+    source: OFFICIAL_SRC,
+    filter: ["==", ["geometry-type"], "Point"],
+    paint: {
+      "circle-color": "rgba(0,0,0,0)",
+      "circle-stroke-color": officialColor(),
+      "circle-stroke-width": 2,
+      "circle-radius": 14,
+    },
+  });
 }
 
 function addFireLayers(map: maplibregl.Map, data: FeatureCollection) {
@@ -201,18 +257,25 @@ export default function FireMap({
   clusters,
   selectedShortId,
   onSelect,
+  official = EMPTY,
+  selectedOfficialId = null,
+  onSelectOfficial,
   center = [3.6, 35.8],
   zoom = 5.1,
   interactive = true,
-  layers = { fires: true, unverified: false, industrialSources: false },
+  layers = DEFAULT_MAP_LAYERS,
 }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const readyRef = useRef(false);
   const clustersRef = useRef(clusters);
   clustersRef.current = clusters;
+  const officialRef = useRef(official);
+  officialRef.current = official;
   const onSelectRef = useRef(onSelect);
   onSelectRef.current = onSelect;
+  const onSelectOfficialRef = useRef(onSelectOfficial);
+  onSelectOfficialRef.current = onSelectOfficial;
   const initRef = useRef({ center, zoom, interactive });
 
   useEffect(() => {
@@ -253,9 +316,26 @@ export default function FireMap({
       if (cluster) onSelectRef.current?.(cluster);
     };
 
+    const pickOfficial = (e: maplibregl.MapMouseEvent) => {
+      if (
+        map.queryRenderedFeatures(e.point, {
+          layers: ["fire-points", "fire-unverified", "fire-groups"],
+        }).length
+      )
+        return;
+      const feats = map.queryRenderedFeatures(e.point, {
+        layers: OFFICIAL_LAYERS,
+      });
+      const id = feats[0]?.properties?.["id"] as string | undefined;
+      if (id) onSelectOfficialRef.current?.(id);
+    };
+
     map.on("load", () => {
+      addOfficialLayers(map, officialRef.current);
       addFireLayers(map, toGeoJSON(clustersRef.current));
       readyRef.current = true;
+
+      for (const layer of OFFICIAL_LAYERS) map.on("click", layer, pickOfficial);
 
       map.on("click", "fire-points", pick);
       map.on("click", "fire-unverified", pick);
@@ -293,9 +373,10 @@ export default function FireMap({
         return;
       (map as never as { _nadhirStyle?: string })._nadhirStyle = next;
       map.setStyle(next);
-      map.once("styledata", () =>
-        addFireLayers(map, toGeoJSON(clustersRef.current)),
-      );
+      map.once("styledata", () => {
+        addOfficialLayers(map, officialRef.current);
+        addFireLayers(map, toGeoJSON(clustersRef.current));
+      });
     });
     themeObserver.observe(document.documentElement, {
       attributes: true,
@@ -329,6 +410,36 @@ export default function FireMap({
     const map = mapRef.current;
     if (!map) return;
     const apply = () => {
+      const src = map.getSource(OFFICIAL_SRC) as
+        maplibregl.GeoJSONSource | undefined;
+      if (src)
+        src.setData({
+          ...official,
+          features: official.features.map((f) => ({
+            ...f,
+            properties: {
+              ...f.properties,
+              selected: f.properties?.["id"] === selectedOfficialId,
+            },
+          })),
+        });
+    };
+    if (readyRef.current) apply();
+    else map.once("load", apply);
+  }, [official, selectedOfficialId]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    const apply = () => {
+      for (const id of OFFICIAL_LAYERS) {
+        if (map.getLayer(id))
+          map.setLayoutProperty(
+            id,
+            "visibility",
+            layers.official ? "visible" : "none",
+          );
+      }
       for (const id of ["fire-points", "fire-groups", "fire-group-count"]) {
         if (map.getLayer(id)) {
           map.setLayoutProperty(

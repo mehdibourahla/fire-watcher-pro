@@ -10,6 +10,8 @@ import type {
 import {
   isRuntimeContractKey,
   SOURCE_RUNNERS,
+  textSourceRunner,
+  type SourceRunner,
   type SourceRunnerRegistry,
 } from "./source-runners.server";
 
@@ -28,6 +30,7 @@ export type SourceExecutorDependencies = {
     result: SourceJobResult,
   ) => Promise<SourceJob>;
   runners: SourceRunnerRegistry;
+  textRunner: (contractKey: string) => Promise<SourceRunner | null>;
 };
 
 const sourceExecutorDependencies: SourceExecutorDependencies = {
@@ -43,6 +46,7 @@ const sourceExecutorDependencies: SourceExecutorDependencies = {
   complete: (job, workerId, result) =>
     completeSourceJob(supabaseAdmin, job, workerId, result),
   runners: SOURCE_RUNNERS,
+  textRunner: textSourceRunner,
 };
 
 function runnerFailure(job: ClaimedSourceJob, error: unknown): SourceJobResult {
@@ -72,9 +76,12 @@ export async function executeNextSourceJob(
 
   let result: SourceJobResult;
   try {
-    if (!isRuntimeContractKey(job.contract_key))
+    const runner = isRuntimeContractKey(job.contract_key)
+      ? dependencies.runners[job.contract_key]
+      : await dependencies.textRunner(job.contract_key);
+    if (!runner)
       throw new Error("No runner is registered for the claimed contract");
-    result = await dependencies.runners[job.contract_key](job);
+    result = await runner(job);
   } catch (error) {
     result = runnerFailure(job, error);
   }

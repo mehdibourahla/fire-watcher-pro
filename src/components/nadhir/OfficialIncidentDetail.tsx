@@ -1,0 +1,70 @@
+import { useTranslation } from "react-i18next";
+
+import type { Locale } from "@/i18n";
+import { relativeTime, unitName, type OfficialIncident } from "@/lib/nadhir";
+
+type Props = {
+  incident: OfficialIncident;
+  locale: Locale;
+  now: number;
+};
+
+export function OfficialIncidentDetail({ incident, locale, now }: Props) {
+  const { t } = useTranslation();
+  const area = incident.commune ?? incident.wilaya;
+  const post = incident.latest_mention?.document ?? null;
+  const source =
+    incident.latest_mention?.source?.label ?? t("official.sourceFallback");
+
+  return (
+    <div className="flex flex-col gap-3">
+      <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+        {t("official.eyebrow")}
+      </p>
+      <h2 className="text-lg font-semibold">{unitName(area, locale)}</h2>
+      <p className="text-sm text-muted-foreground">
+        {incident.commune
+          ? t("official.inWilaya", {
+              wilaya: unitName(incident.wilaya, locale),
+            })
+          : t("official.wilayaLevel")}
+        {incident.place_text ? ` · ${incident.place_text}` : null}
+      </p>
+      <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+        <dt className="text-muted-foreground">{t("official.status")}</dt>
+        <dd className="font-medium">
+          {t(`official.statuses.${incident.status}`)}
+        </dd>
+        <dt className="text-muted-foreground">{t("official.asOf")}</dt>
+        <dd>
+          <time dateTime={incident.as_of}>
+            {relativeTime(incident.as_of, locale, now)}
+          </time>
+        </dd>
+        <dt className="text-muted-foreground">{t("official.reports")}</dt>
+        <dd>{incident.mention_count}</dd>
+        <dt className="text-muted-foreground">{t("official.source")}</dt>
+        <dd>{source}</dd>
+      </dl>
+      <blockquote
+        dir="auto"
+        className="border-s-2 border-border ps-3 text-sm text-muted-foreground"
+      >
+        {incident.evidence}
+      </blockquote>
+      {post ? (
+        <a
+          href={post.url}
+          target="_blank"
+          rel="noreferrer noopener"
+          className="text-sm font-medium text-primary underline"
+        >
+          {t("official.viewPost")}
+        </a>
+      ) : null}
+      <p className="text-xs text-muted-foreground">
+        {t("official.disclaimer")}
+      </p>
+    </div>
+  );
+}

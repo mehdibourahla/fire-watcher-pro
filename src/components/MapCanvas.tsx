@@ -1,6 +1,8 @@
 import { ClientOnly } from "@tanstack/react-router";
 import { Suspense, lazy } from "react";
 
+import type { FeatureCollection } from "geojson";
+
 import type { MapLayers } from "./FireMap";
 import type { FireCluster } from "@/lib/nadhir";
 
@@ -10,6 +12,9 @@ type Props = {
   clusters: FireCluster[];
   selectedShortId?: string | null;
   onSelect?: (cluster: FireCluster) => void;
+  official?: FeatureCollection;
+  selectedOfficialId?: string | null;
+  onSelectOfficial?: (id: string) => void;
   center?: [number, number];
   zoom?: number;
   interactive?: boolean;
