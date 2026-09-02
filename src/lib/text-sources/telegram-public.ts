@@ -26,12 +26,18 @@ function decodeEntities(s: string): string {
   });
 }
 
+function stripTags(html: string): string {
+  let out = html;
+  for (let previous = ""; previous !== out;) {
+    previous = out;
+    out = out.replace(/<[^>]*>/g, "");
+  }
+  return out;
+}
+
 function textOf(html: string): string {
   return decodeEntities(
-    html
-      .replace(/<br\s*\/?>/gi, "\n")
-      .replace(/<[^>]+>/g, "")
-      .replace(/\r/g, ""),
+    stripTags(html.replace(/<br\s*\/?>/gi, "\n")).replace(/\r/g, ""),
   )
     .split("\n")
     .map((l) => l.trim())
