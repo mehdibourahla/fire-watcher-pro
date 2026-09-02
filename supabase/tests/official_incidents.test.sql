@@ -85,6 +85,21 @@ select throws_ok(
   'an attachment is never undone'
 );
 
+select lives_ok(
+  $$select public.bump_official_incident('f0000000-0000-4000-8000-000000000001', '{"status":"extinguished","last_reported_at":"2026-09-02T19:00:00Z"}'::jsonb)$$,
+  'a merge bump applies the patch'
+);
+select is(
+  (select status || '/' || mention_count from public.official_incidents where id = 'f0000000-0000-4000-8000-000000000001'),
+  'extinguished/2',
+  'the bump changes status and increments the mention count'
+);
+select throws_ok(
+  $$select public.bump_official_incident('f0000000-0000-4000-8000-0000000000ff', '{}'::jsonb)$$,
+  'P0002', 'official_incident_not_found',
+  'bumping an unknown incident fails loudly'
+);
+
 select results_eq(
   $$select day::text, mentions, communes, with_cluster from public.official_incident_recall_daily$$,
   $$values ('2026-09-02', 1, 1, 0)$$,

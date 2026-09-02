@@ -1,5 +1,5 @@
 const DIACRITICS = /[ً-ْـ]/g;
-const PUNCT = /[#:،,.()؟!؛;"'«»\-]/g;
+const PUNCT = /[-#:،,.()؟!؛;"'«»]/g;
 
 export function normalizeArabic(input: string): string {
   let s = input.normalize("NFKC").replace(/_/g, " ");

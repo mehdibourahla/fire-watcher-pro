@@ -2575,6 +2575,10 @@ export type Database = {
       };
     };
     Functions: {
+      bump_official_incident: {
+        Args: { _id: string; _patch: Json };
+        Returns: undefined;
+      };
       claim_source_job: {
         Args: {
           _contract_key?: string;

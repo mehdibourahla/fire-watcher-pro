@@ -58,7 +58,12 @@ describe("executeNextSourceJob", () => {
     await expect(
       executeNextSourceJob(
         { target: "cloudflare", workerId: "worker-1" },
-        { claim, complete, runners: registry(run) },
+        {
+          claim,
+          complete,
+          runners: registry(run),
+          textRunner: vi.fn().mockResolvedValue(null),
+        },
       ),
     ).resolves.toEqual({ claimed: false });
     expect(run).not.toHaveBeenCalled();
@@ -80,6 +85,7 @@ describe("executeNextSourceJob", () => {
           claim: vi.fn().mockResolvedValue(job),
           complete,
           runners: registry(run),
+          textRunner: vi.fn().mockResolvedValue(null),
         },
       ),
     ).resolves.toEqual({
@@ -104,6 +110,7 @@ describe("executeNextSourceJob", () => {
         runners: registry(
           vi.fn().mockRejectedValue(new Error("private adapter failure")),
         ),
+        textRunner: vi.fn().mockResolvedValue(null),
       },
     );
 
@@ -129,6 +136,7 @@ describe("executeNextSourceJob", () => {
           claim: vi.fn().mockResolvedValue(job),
           complete: vi.fn().mockRejectedValue(new Error("completion failed")),
           runners: registry(vi.fn().mockResolvedValue(success(job))),
+          textRunner: vi.fn().mockResolvedValue(null),
         },
       ),
     ).rejects.toThrow("completion failed");
@@ -148,7 +156,12 @@ describe("executeNextSourceJob", () => {
       .fn()
       .mockResolvedValueOnce(first)
       .mockResolvedValueOnce(second);
-    const deps = { claim, complete, runners: registry(run) };
+    const deps = {
+      claim,
+      complete,
+      runners: registry(run),
+      textRunner: vi.fn().mockResolvedValue(null),
+    };
 
     await executeNextSourceJob(
       { target: "cloudflare", workerId: "worker-1" },
@@ -165,5 +178,56 @@ describe("executeNextSourceJob", () => {
       [first.data_from, first.data_through],
       [first.data_from, first.data_through],
     ]);
+  });
+});
+
+describe("executeNextSourceJob for registry-driven text sources", () => {
+  it("runs a contract that is not in the static registry through the text runner", async () => {
+    const job = { ...claimed(), contract_key: "dgpc_telegram" };
+    const result = { ...success(job), contractKey: "dgpc_telegram" };
+    const textRunner = vi.fn().mockResolvedValue(result);
+    const complete = vi.fn().mockResolvedValue({ ...job, state: "succeeded" });
+
+    await expect(
+      executeNextSourceJob(
+        { target: "cloudflare", workerId: "worker-1" },
+        {
+          claim: vi.fn().mockResolvedValue(job),
+          complete,
+          runners: registry(vi.fn()),
+          textRunner: vi.fn().mockResolvedValue(textRunner),
+        },
+      ),
+    ).resolves.toEqual({
+      claimed: true,
+      contract: "dgpc_telegram",
+      state: "succeeded",
+    });
+    expect(textRunner).toHaveBeenCalledWith(job);
+  });
+
+  it("fails the job when no runner of either kind exists", async () => {
+    const job = { ...claimed(), contract_key: "mystery" };
+    const complete = vi.fn().mockResolvedValue({ ...job, state: "failed" });
+
+    await executeNextSourceJob(
+      { target: "cloudflare", workerId: "worker-1" },
+      {
+        claim: vi.fn().mockResolvedValue(job),
+        complete,
+        runners: registry(vi.fn()),
+        textRunner: vi.fn().mockResolvedValue(null),
+      },
+    );
+
+    expect(complete).toHaveBeenCalledWith(
+      job,
+      "worker-1",
+      expect.objectContaining({
+        outcome: "failed",
+        publicReasonCode: "internal_error",
+        privateDiagnostic: "No runner is registered for the claimed contract",
+      }),
+    );
   });
 });

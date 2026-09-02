@@ -13,6 +13,12 @@ import {
   type SourceRunReport,
 } from "@/lib/source-runs";
 
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import {
+  runTextSource,
+  type TextSourceRun,
+} from "@/lib/text-sources/pipeline.server";
+
 import { algiersToday } from "./algiers-date";
 import { publishBroadcasts } from "./broadcast.server";
 import { deliverBroadcasts } from "./delivery.server";
@@ -358,4 +364,54 @@ export const SOURCE_RUNNERS = createSourceRunners(sourceRunnerDependencies);
 
 export function isRuntimeContractKey(key: string): key is RuntimeContractKey {
   return RUNTIME_CONTRACT_KEYS.some((candidate) => candidate === key);
+}
+
+// text sources are registry rows, not compile-time keys; one runner shape serves them all
+export async function textSourceRunner(
+  contractKey: string,
+): Promise<SourceRunner | null> {
+  const { data, error } = await supabaseAdmin
+    .from("text_sources")
+    .select("key")
+    .eq("key", contractKey)
+    .eq("enabled", true)
+    .maybeSingle();
+  if (error) throw new Error(`text source lookup failed: ${error.message}`);
+  if (!data) return null;
+  return async (job) => {
+    const run = await runTextSource(contractKey).catch(
+      (error: unknown): TextSourceRun => ({
+        fetched: 0,
+        stored: 0,
+        skippedPosts: 0,
+        mentions: 0,
+        resolved: 0,
+        unresolved: 0,
+        incidentsCreated: 0,
+        incidentsUpdated: 0,
+        llmSkipped: false,
+        error: error instanceof Error ? error.message : "text source failed",
+      }),
+    );
+    const health = adapterHealth({
+      accepted: run.mentions + run.skippedPosts,
+      error: run.error,
+    });
+    return {
+      ...baseReport(job),
+      ...health,
+      ...coveredInterval(job, health.outcome === "succeeded"),
+      recordsSeen: run.fetched,
+      recordsInserted: run.mentions,
+      recordsRejected: run.unresolved,
+      qualityChecks: {
+        documents_stored: run.stored,
+        posts_not_fire: run.skippedPosts,
+        mentions_unresolved: run.unresolved,
+        incidents_created: run.incidentsCreated,
+        incidents_updated: run.incidentsUpdated,
+        llm_skipped: run.llmSkipped,
+      },
+    };
+  };
 }
