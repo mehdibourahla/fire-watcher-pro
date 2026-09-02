@@ -1,6 +1,6 @@
 # Official-Incident Layer Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Make the source control plane reliable (P0), add an independent satellite sensor (P2), and ingest official text sources — DGPC Telegram first — through one shared, source-agnostic pipeline into merged `official_incidents` shown on the map and measured against clusters (P1/P3), then surface approved hazard reports (P4).
 
@@ -18,6 +18,10 @@
 
 ---
 
+## Status (2026-09-02)
+
+All tasks built: #67 (P0), #68 (P2), #69 (P3), #70 (P4, stacked on #69). Owner steps: merge in order; Vault `github_dispatch_token`/`github_repo`; Worker `NADHIR_OPERATOR_CHAT_ID`, optional `ANTHROPIC_API_KEY`. Task 12 (GAPS) done inside #68/#69/#70.
+
 ## Branch & PR shape
 
 One branch per phase, PRs in order: `p0-runner-reliability`, `p2-sentinel3`, `p3-official-incidents`, `p4-hazard-reports-map`. Each PR green on CI before the next branches from it.
@@ -34,9 +38,9 @@ One branch per phase, PRs in order: `p0-runner-reliability`, `p2-sentinel3`, `p3
 **Interfaces:**
 - Produces: `source_jobs.dispatched_at timestamptz`; `private.dispatch_github_source_jobs(_now timestamptz) returns integer`; pg_cron job `nadhir-github-dispatch` every minute; Vault secrets `github_dispatch_token`, `github_repo` (owner sets).
 
-- [ ] Migration: add column; function selects `queued` jobs with `execution_target='github'`, `available_at <= _now`, `dispatched_at is null or dispatched_at < _now - interval '20 minutes'`; for each, `net.http_post('https://api.github.com/repos/'||repo||'/dispatches', headers {Authorization: Bearer token, Accept: application/vnd.github+json, User-Agent: nadhir}, body {event_type:'source-job', client_payload:{contract, job_id}})`, then `update … set dispatched_at = _now`. If either secret is null: `raise warning` and return 0 (the watchdog's `queue_delayed` then tells the operator).
-- [ ] Workflow: `on: repository_dispatch: types: [source-job]` and `workflow_dispatch: inputs: contract`; single job, contract from `github.event.client_payload.contract || inputs.contract`; keep the drain loop and per-contract concurrency; delete `schedule:` and the matrix.
-- [ ] Commit.
+- [x] Migration: add column; function selects `queued` jobs with `execution_target='github'`, `available_at <= _now`, `dispatched_at is null or dispatched_at < _now - interval '20 minutes'`; for each, `net.http_post('https://api.github.com/repos/'||repo||'/dispatches', headers {Authorization: Bearer token, Accept: application/vnd.github+json, User-Agent: nadhir}, body {event_type:'source-job', client_payload:{contract, job_id}})`, then `update … set dispatched_at = _now`. If either secret is null: `raise warning` and return 0 (the watchdog's `queue_delayed` then tells the operator).
+- [x] Workflow: `on: repository_dispatch: types: [source-job]` and `workflow_dispatch: inputs: contract`; single job, contract from `github.event.client_payload.contract || inputs.contract`; keep the drain loop and per-contract concurrency; delete `schedule:` and the matrix.
+- [x] Commit.
 
 ### Task 2 (P0): Watchdog in the Worker cron with Telegram DM on transition
 
@@ -51,9 +55,9 @@ One branch per phase, PRs in order: `p0-runner-reliability`, `p2-sentinel3`, `p3
 - `notifyOperatorOnWatchdog(): Promise<{ issues: number; notified: boolean }>` — reads `source_watchdog`, `operator_alert_state('source_watchdog')`, sends via `sendTelegram(process.env.NADHIR_OPERATOR_CHAT_ID, html)`; disabled with a log line when chat id or bot token missing.
 - Table `operator_alert_state(key text pk, fingerprint text not null, updated_at timestamptz)`.
 
-- [ ] Failing tests for `watchdogTransition` (no change → null; new issues → message lists them; cleared → recovered).
-- [ ] Implement; wire into the scheduler hook; migration; delete the GitHub watchdog path.
-- [ ] Commit.
+- [x] Failing tests for `watchdogTransition` (no change → null; new issues → message lists them; cleared → recovered).
+- [x] Implement; wire into the scheduler hook; migration; delete the GitHub watchdog path.
+- [x] Commit.
 
 ### Task 3 (P2): Sentinel-3 SLSTR FRP as a second WFS contract
 
@@ -63,8 +67,8 @@ One branch per phase, PRs in order: `p0-runner-reliability`, `p2-sentinel3`, `p3
 - Create: `supabase/migrations/20260902061000_s3_slstr_contract.sql` (contract row, cadence 60, `upstream_published_at`, warning 240, stale 720, target cloudflare)
 - Test: extend `src/lib/__tests__/fci.test.ts` with an S3 feature fixture (properties verified against a live GetFeature sample before writing the fixture)
 
-- [ ] Fetch one live S3 feature to learn property names; write fixture; failing test on `source: "s3"` rows.
-- [ ] Implement; contract row; commit.
+- [x] Fetch one live S3 feature to learn property names; write fixture; failing test on `source: "s3"` rows.
+- [x] Implement; contract row; commit.
 
 ### Task 4 (P3): Schema for text sources, documents, mentions, incidents, aliases, recall
 
@@ -81,7 +85,7 @@ One branch per phase, PRs in order: `p0-runner-reliability`, `p2-sentinel3`, `p3
 - `source_contracts.family` check gains `'official_text'`; seed contract `dgpc_telegram` (family official_text, critical=supporting, cadence 15, warning 360, stale 1440, `last_success_at`, cloudflare) and `text_sources` row (`https://t.me/s/DGPCDZ`, national, ar, template dgpc_bulletin).
 - View `official_incident_recall_daily(day, mentions, communes, with_cluster)` computing, per Algiers day, resolved commune mentions and how many had a `fire_clusters` row in that commune within ±24 h. Grant select to anon on `official_incidents`, `incident_mentions`, `official_incident_recall_daily`.
 
-- [ ] Write migration; update types; `bunx tsc --noEmit`; commit.
+- [x] Write migration; update types; `bunx tsc --noEmit`; commit.
 
 ### Task 5 (P3): Arabic normalisation + gazetteer/alias resolution (pure)
 
@@ -93,8 +97,8 @@ One branch per phase, PRs in order: `p0-runner-reliability`, `p2-sentinel3`, `p3
 - `resolveCommune(name: string, candidates: { id: string; name_ar: string; aliases: string[] }[]): { id: string; via: 'exact'|'alias'|'fuzzy' } | null` (fuzzy = Dice bigram ≥ 0.8 on space-stripped normalised forms).
 - `resolveWilaya(text: string, wilayas: { id: string; name_ar: string }[]): string | null` (longest normalised name that appears as a token sequence).
 
-- [ ] Failing tests from the recall-study pairs (`بكوش لخضر`→Bekkouche Lakhdar via alias, `تاسكريوت`→Taskriout via fuzzy, `#تيزي_وزو:`→Tizi Ouzou, status phrases → null).
-- [ ] Implement; commit.
+- [x] Failing tests from the recall-study pairs (`بكوش لخضر`→Bekkouche Lakhdar via alias, `تاسكريوت`→Taskriout via fuzzy, `#تيزي_وزو:`→Tizi Ouzou, status phrases → null).
+- [x] Implement; commit.
 
 ### Task 6 (P3): DGPC bulletin template parser (pure)
 
@@ -105,8 +109,8 @@ One branch per phase, PRs in order: `p0-runner-reliability`, `p2-sentinel3`, `p3
 - `parseDgpcBulletin(text: string, postedAt: string): { kind: 'bulletin'|'urban'|'weather_relay'|'other'; asOf: string | null; totals: {total,extinguished,ongoing} | null; wilayaCounts: {wilaya: string; count: number}[]; lines: { wilaya: string | null; raw: string; communes: string[]; status: 'ongoing'|'extinguished'|'monitoring'|'unknown'; count: number }[]; unresolved: string[] }`
 - Header time `على الساعة HHسا` is Algiers local (UTC+1) on the posted date; the 07:00 bulletin covers the previous 24 h — `asOf` is still the header time.
 
-- [ ] Failing tests per fixture: kind, asOf, wilayaCounts length, named communes for two lines, urban post → `kind: 'urban'` with no lines.
-- [ ] Implement (port of the study parser, three sentence forms, parentheticals stripped, daïra suffix stripped); commit.
+- [x] Failing tests per fixture: kind, asOf, wilayaCounts length, named communes for two lines, urban post → `kind: 'urban'` with no lines.
+- [x] Implement (port of the study parser, three sentence forms, parentheticals stripped, daïra suffix stripped); commit.
 
 ### Task 7 (P3): Telegram public-channel adapter
 
@@ -117,8 +121,8 @@ One branch per phase, PRs in order: `p0-runner-reliability`, `p2-sentinel3`, `p3
 - `parseTelegramPreview(html: string): { externalId: string; publishedAt: string; text: string; url: string }[]`
 - `fetchNewTelegramPosts(source: TextSource, knownIds: Set<string>, fetchImpl?: typeof fetch): Promise<Post[]>`
 
-- [ ] Failing test on fixture (count, first id, datetime, `<br>` → newline, entities unescaped).
-- [ ] Implement; commit.
+- [x] Failing test on fixture (count, first id, datetime, `<br>` → newline, entities unescaped).
+- [x] Implement; commit.
 
 ### Task 8 (P3): LLM extraction for the residue (skips without key)
 
@@ -131,8 +135,8 @@ One branch per phase, PRs in order: `p0-runner-reliability`, `p2-sentinel3`, `p3
 - `LlmMention = { wilaya: string | null; commune: string | null; place: string | null; kind; status; count: number; evidence: string }` — strict JSON schema via `output_config: { format: { type: 'json_schema', schema } }`, `model: 'claude-opus-5'`, `output_config.effort: 'low'`, post text passed in the user turn as data, no tools.
 - Any mention whose `evidence` is not a substring of the input is dropped.
 
-- [ ] Failing tests: no key → skipped; mocked response → parsed; evidence not in text → dropped.
-- [ ] Implement; commit.
+- [x] Failing tests: no key → skipped; mocked response → parsed; evidence not in text → dropped.
+- [x] Implement; commit.
 
 ### Task 9 (P3): Shared pipeline + match & merge + runner registration
 
@@ -145,22 +149,22 @@ One branch per phase, PRs in order: `p0-runner-reliability`, `p2-sentinel3`, `p3
 - `nextIncidentState(incident, mention, tierRank): { status; precision; authority_tier; evidence; latest_mention_id }` — a mention changes status only if its tier ≥ current tier or its `as_of` is newer and tier equal.
 - `runTextSource(key): Promise<{ fetched; stored; mentions; resolved; unresolved; incidentsCreated; incidentsUpdated; llmSkipped: boolean; error?: string }>` — used by the runner to build the `SourceRunReport` (`recordsSeen` = documents, `recordsInserted` = mentions, `qualityChecks` = {resolved, unresolved, llm_skipped}).
 
-- [ ] Failing tests for merge decisions and state precedence.
-- [ ] Implement pipeline; register; commit.
+- [x] Failing tests for merge decisions and state precedence.
+- [x] Implement pipeline; register; commit.
 
 ### Task 10 (P3/P1): Surfaces — map layer, incident sheet, `/status` recall
 
 **Files:**
 - Modify: `src/lib/nadhir.ts` (`officialIncidentsQuery`, `recallDailyQuery`), `src/components/FireMap.tsx` (fill layer over commune/wilaya polygons keyed by status, `MapLayers.official`), `src/components/nadhir/LayerToggle.tsx`, `src/routes/index.tsx` (toggle + list group "Official incidents"), `src/routes/status.tsx` (recall row + text sources appear via `source_health`), locales ×4.
 
-- [ ] Add queries and types; render polygons with attribution + as-of + evidence quote in the detail sheet; recall metric card on `/status`; i18n keys; commit.
+- [x] Add queries and types; render polygons with attribution + as-of + evidence quote in the detail sheet; recall metric card on `/status`; i18n keys; commit.
 
 ### Task 11 (P4): Approved hazard reports on the map
 
 **Files:**
 - Modify: `src/components/FireMap.tsx` (circle layer for approved `citizen_reports`, `MapLayers.reports`), `src/routes/index.tsx`, `LayerToggle.tsx`, locales.
 
-- [ ] Wire `approvedReportsQuery`; layer + toggle; commit.
+- [x] Wire `approvedReportsQuery`; layer + toggle; commit.
 
 ### Task 12: Owner runbook
 
