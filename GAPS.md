@@ -194,7 +194,18 @@ status) → `official_incidents`. The map draws the commune polygon, never a poi
 sheet quotes the evidence and links the post. `official_incident_recall_daily` is the
 standing metric on `/status`.
 
-Open: only DGPC Telegram is registered; wilaya Civil Protection and forestry pages live
+Eight national press feeds joined the registry on 2026-09-02 as `media`-tier RSS sources
+(TSA, Algérie360, Le Matin in French; Echorouk, El Khabar, Ennahar, El Bilad, Awras in Arabic).
+Every article is stored, only fire-related ones reach the LLM, and a press mention attaches to
+an open incident but never opens one: under the glossary only an official source confirms. The
+purpose for now is measuring publication cadence across media beside the DGPC channel, whose
+fire bulletins arrive 1–4 times a day, a median of 10 h apart across all consecutive
+bulletins including the overnight gap (2.7 h when only same-day pairs are counted), and
+nothing at night. Sources
+stay national by rule — no per-wilaya or per-commune page is ever registered — and everything
+official beyond DGPC (wilaya directorates, Tariki road closures, DGF) sits behind Facebook.
+
+Open: wilaya Civil Protection and forestry pages live
 on Facebook and need Meta page access or a Telegram/RSS surface; the gazetteer is missing
 Adekar (Béjaïa) under any spelling; without `OPENROUTER_API_KEY` roughly one line in six
 stays unresolved (24 of 136 on the August sample). Official incidents do not yet feed
