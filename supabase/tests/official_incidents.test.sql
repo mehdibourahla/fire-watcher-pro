@@ -133,5 +133,12 @@ select has_column('public', 'fire_clusters', 'confirmed_at',
 select has_column('public', 'fire_clusters', 'confirmed_mention_id',
   'the confirming mention is kept for the evidence line');
 
+select has_table('public', 'document_extractions',
+  'failed extractions are queued for retry instead of being lost');
+select ok(
+  not has_table_privilege('anon', 'public.document_extractions', 'SELECT'),
+  'the retry queue is service-role only'
+);
+
 select * from finish();
 rollback;

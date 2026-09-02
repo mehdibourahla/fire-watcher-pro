@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   runTextSourceWith,
+  type DocumentInsert,
   type TextSourcePipelineDependencies,
   type TextSourceStore,
 } from "@/lib/text-sources/pipeline.server";
@@ -34,6 +35,8 @@ function memoryStore() {
     OpenIncident & { mention_count: number; status: string }
   >();
   const unlisted = new Map<string, string>();
+  const stored = new Map<string, DocumentInsert & { id: string }>();
+  const retry = new Map<string, DocumentInsert & { id: string }>();
   const confirmed: { communeId: string; asOf: string; mentionId: string }[] =
     [];
   let seq = 0;
@@ -53,7 +56,9 @@ function memoryStore() {
       rows.map((r) => {
         const id = `doc-${++seq}`;
         documents.push({ id, externalId: r.external_id });
-        return { id, ...r };
+        const full = { id, ...r };
+        stored.set(id, full);
+        return full;
       }),
     loadGazetteer: async () => ({
       wilayas: [
@@ -97,6 +102,23 @@ function memoryStore() {
         mention_count: cur.mention_count + 1,
       });
     },
+    retryableDocuments: async () => [...retry.values()],
+    mentionKeys: async (ids) =>
+      new Set(
+        mentions
+          .filter((m) => ids.includes(m["document_id"] as string))
+          .map(
+            (m) =>
+              `${m["document_id"]}:${m["commune_id"] ?? ""}:${m["evidence"]}`,
+          ),
+      ),
+    recordExtractionFailure: async (documentId) => {
+      const doc = stored.get(documentId);
+      if (doc) retry.set(documentId, doc);
+    },
+    clearExtractionFailure: async (documentId) => {
+      retry.delete(documentId);
+    },
     confirmClusters: async (rows) => {
       for (const row of rows) confirmed.push(row);
       return rows.length;
@@ -113,7 +135,7 @@ function memoryStore() {
       m["incident_id"] = incidentId;
     },
   };
-  return { store, documents, mentions, incidents, unlisted, confirmed };
+  return { store, documents, mentions, incidents, unlisted, confirmed, retry };
 }
 
 function deps(
@@ -547,5 +569,88 @@ describe("bulletin coverage", () => {
       ),
     );
     expect(run.incidentsUnlisted).toBe(0);
+  });
+});
+
+describe("extraction retry", () => {
+  it("re-extracts a document whose completion failed, without duplicating what survived", async () => {
+    const { store, mentions, retry } = memoryStore();
+    let calls = 0;
+    const flaky: TextSourcePipelineDependencies["extractLlm"] = async () => {
+      calls += 1;
+      if (calls === 1) throw new Error("openrouter 502");
+      return {
+        skipped: false,
+        mentions: [
+          {
+            wilaya: "سكيكدة",
+            commune: "عين زويت",
+            place: null,
+            kind: "vegetation",
+            status: "ongoing",
+            count: 1,
+            evidence: "حريق ببلدية قرية مجهولة، العملية متواصلة...",
+          },
+        ],
+      };
+    };
+    const first = await runTextSourceWith(
+      "dgpc_telegram",
+      deps(
+        [
+          post(
+            "30",
+            "2026-09-02T08:05:00Z",
+            bulletin(
+              "07",
+              "✅⏮️ حريق ببلدية عزابة، العملية متواصلة...\n✅⏮️ حريق ببلدية قرية مجهولة، العملية متواصلة...",
+            ),
+          ),
+        ],
+        store,
+        flaky,
+      ),
+    );
+    expect(first).toMatchObject({ llmFailed: 1, mentions: 1 });
+    expect(retry.size).toBe(1);
+
+    const second = await runTextSourceWith(
+      "dgpc_telegram",
+      deps([], store, flaky),
+    );
+    expect(second).toMatchObject({ retried: 1, llmFailed: 0, mentions: 1 });
+    expect(retry.size).toBe(0);
+    const communes = mentions.map((m) => m["commune_id"]);
+    expect(communes).toEqual([AZZABA, AIN_ZOUIT]);
+  });
+
+  it("does not re-apply an old bulletin's coverage when it is retried", async () => {
+    const { store, retry } = memoryStore();
+    const failing: TextSourcePipelineDependencies["extractLlm"] = async () => {
+      throw new Error("openrouter 502");
+    };
+    await runTextSourceWith(
+      "dgpc_telegram",
+      deps(
+        [
+          post(
+            "40",
+            "2026-09-02T08:05:00Z",
+            bulletin(
+              "07",
+              "✅⏮️ حريق ببلدية عزابة، العملية متواصلة...\n✅⏮️ حريق ببلدية قرية مجهولة، العملية متواصلة...",
+            ),
+          ),
+        ],
+        store,
+        failing,
+      ),
+    );
+    expect(retry.size).toBe(1);
+    const again = await runTextSourceWith(
+      "dgpc_telegram",
+      deps([], store, failing),
+    );
+    expect(again.incidentsUnlisted).toBe(0);
   });
 });
