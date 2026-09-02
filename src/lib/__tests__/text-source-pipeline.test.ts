@@ -417,6 +417,96 @@ describe("runTextSource on a media RSS feed", () => {
     expect(mentions).toHaveLength(0);
   });
 
+  it("drops press mentions that name no commune or no status", async () => {
+    const { store, mentions } = mediaStore();
+    const result = await runTextSourceWith(
+      "rss_tsa",
+      deps(
+        [
+          article(
+            "5",
+            "Report d'un festival à cause des incendies qui ont touché plusieurs villes",
+          ),
+        ],
+        store,
+        async () => ({
+          skipped: false,
+          mentions: [
+            {
+              wilaya: "الجزائر",
+              commune: null,
+              place: null,
+              kind: "unknown",
+              status: "unknown",
+              count: 1,
+              evidence: "incendies qui ont touché plusieurs villes",
+            },
+            {
+              wilaya: "سكيكدة",
+              commune: "عزابة",
+              place: null,
+              kind: "vegetation",
+              status: "unknown",
+              count: 1,
+              evidence: "incendies",
+            },
+          ],
+        }),
+      ),
+    );
+    expect(result).toMatchObject({ mentions: 0, unresolved: 1 });
+    expect(mentions).toHaveLength(0);
+  });
+
+  it("isolates a malformed LLM completion to its document", async () => {
+    const { store, mentions } = mediaStore();
+    let calls = 0;
+    const flaky: TextSourcePipelineDependencies["extractLlm"] = async () => {
+      calls += 1;
+      if (calls === 1)
+        throw new Error("llm extraction returned non-JSON content");
+      return {
+        skipped: false,
+        mentions: [
+          {
+            wilaya: "سكيكدة",
+            commune: "عزابة",
+            place: null,
+            kind: "vegetation",
+            status: "ongoing",
+            count: 1,
+            evidence: "feu de forêt à Azzaba",
+          },
+        ],
+      };
+    };
+    const result = await runTextSourceWith(
+      "rss_tsa",
+      deps(
+        [
+          article("6", "Incendies : hommage aux victimes"),
+          article(
+            "7",
+            "Un feu de forêt à Azzaba mobilise la Protection civile",
+          ),
+        ],
+        store,
+        flaky,
+      ),
+    );
+    expect(result.error).toBeUndefined();
+    expect(result).toMatchObject({ llmFailed: 1, unresolved: 1, mentions: 1 });
+    expect(mentions).toHaveLength(1);
+
+    const dead = await runTextSourceWith(
+      "rss_tsa",
+      deps([article("8", "Incendies : bilan")], store, async () => {
+        throw new Error("openrouter 502");
+      }),
+    );
+    expect(dead.error).toMatch(/every llm extraction failed: openrouter 502/);
+  });
+
   it("attaches a press mention to an open incident but never opens one", async () => {
     const { store, mentions, incidents } = mediaStore();
     const llm: TextSourcePipelineDependencies["extractLlm"] = async () => ({

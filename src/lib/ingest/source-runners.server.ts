@@ -396,6 +396,7 @@ export async function textSourceRunner(
         incidentsCreated: 0,
         incidentsUpdated: 0,
         llmSkipped: false,
+        llmFailed: 0,
         error: error instanceof Error ? error.message : "text source failed",
       }),
     );
@@ -417,6 +418,7 @@ export async function textSourceRunner(
         incidents_created: run.incidentsCreated,
         incidents_updated: run.incidentsUpdated,
         llm_skipped: run.llmSkipped,
+        llm_failed: run.llmFailed,
       },
     };
   };

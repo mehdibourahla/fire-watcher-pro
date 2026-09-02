@@ -116,6 +116,7 @@ export type TextSourceRun = {
   incidentsCreated: number;
   incidentsUpdated: number;
   llmSkipped: boolean;
+  llmFailed: number;
   error?: string;
 };
 
@@ -304,7 +305,10 @@ export async function runTextSourceWith(
     incidentsCreated: 0,
     incidentsUpdated: 0,
     llmSkipped: false,
+    llmFailed: 0,
   };
+  let llmCalls = 0;
+  let lastLlmError: string | null = null;
   const source = await deps.store.loadSource(key);
   if (!source) return { ...run, error: `text source ${key} is not registered` };
 
@@ -362,11 +366,22 @@ export async function runTextSourceWith(
     }
 
     for (const text of pending) {
-      const result = await deps.extractLlm({
-        text,
-        wilayaHint: null,
-        language: source.language,
-      });
+      llmCalls += 1;
+      let result: LlmExtractionResult;
+      // one malformed completion must not sink the run: the document is already
+      // stored and would never be re-extracted
+      try {
+        result = await deps.extractLlm({
+          text,
+          wilayaHint: null,
+          language: source.language,
+        });
+      } catch (error) {
+        run.llmFailed += 1;
+        run.unresolved += 1;
+        lastLlmError = error instanceof Error ? error.message : String(error);
+        continue;
+      }
       if (result.skipped) {
         run.llmSkipped = true;
         run.unresolved += 1;
@@ -376,6 +391,12 @@ export async function runTextSourceWith(
       for (const m of result.mentions) {
         const draft = resolveLlmMention(m, asOf, gazetteer, source.wilaya_id);
         if (!draft) continue;
+        // the press corroborates a named commune with a stated status, nothing vaguer
+        if (
+          source.authority_tier === "media" &&
+          (!draft.commune_id || draft.status === "unknown")
+        )
+          continue;
         resolvedAny = true;
         // the LLM sees the whole line and re-emits communes the template already took
         if (
@@ -397,6 +418,8 @@ export async function runTextSourceWith(
     );
   }
 
+  if (llmCalls > 0 && run.llmFailed === llmCalls)
+    run.error = `every llm extraction failed: ${lastLlmError}`;
   const rows = inserts.length ? await deps.store.insertMentions(inserts) : [];
   run.mentions = rows.length;
   run.resolved = rows.length;
