@@ -127,6 +127,8 @@ export function targetCommunes(
 
 export const EXTREME_MIN_FRP_MW = 20;
 
+const SEVERITY_RANK: Record<string, number> = { Extreme: 2, Severe: 1 };
+
 export function fireSeverity(
   nearestSettlementKm: number | null,
   maxFrpMw: number | null,
@@ -344,4 +346,59 @@ export function pushCodesFor(args: {
       Math.max(mine(code), levelElsewhere(args.coverage, code, args.clusterId))
     );
   });
+}
+
+export const ONM_NO_EXPIRY_WINDOW_HOURS = 24;
+
+export type OnmWarning = {
+  id: string;
+  wilayaId: string;
+  event: string;
+  severity: string;
+  sentMs: number;
+  onsetMs: number | null;
+  expiresMs: number | null;
+};
+
+function validity(w: OnmWarning): { start: number; end: number } {
+  const start = w.onsetMs ?? w.sentMs;
+  // ONM often omits expires; a warning without one covers a day rather than forever,
+  // or one silent reissue would suppress every later warning for that wilaya
+  return {
+    start,
+    end: w.expiresMs ?? start + ONM_NO_EXPIRY_WINDOW_HOURS * HOUR,
+  };
+}
+
+function covers(previous: OnmWarning, next: OnmWarning): boolean {
+  if (previous.wilayaId !== next.wilayaId || previous.event !== next.event)
+    return false;
+  if (
+    (SEVERITY_RANK[previous.severity] ?? 0) <
+    (SEVERITY_RANK[next.severity] ?? 0)
+  )
+    return false;
+  const a = validity(previous);
+  const b = validity(next);
+  return a.start <= b.end && b.start <= a.end;
+}
+
+/* ONM reissues the same warning every few hours with a fresh CAP id, so dedup on the
+ * identity a subscriber perceives — wilaya, event and overlapping validity — not the id. */
+export function onmRelayPlan(
+  pending: readonly OnmWarning[],
+  relayed: readonly OnmWarning[],
+): { relay: OnmWarning[]; suppressed: OnmWarning[] } {
+  const seen = [...relayed];
+  const relay: OnmWarning[] = [];
+  const suppressed: OnmWarning[] = [];
+  for (const warning of [...pending].sort((a, b) => a.sentMs - b.sentMs)) {
+    if (seen.some((previous) => covers(previous, warning))) {
+      suppressed.push(warning);
+      continue;
+    }
+    relay.push(warning);
+    seen.push(warning);
+  }
+  return { relay, suppressed };
 }
