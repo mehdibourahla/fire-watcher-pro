@@ -236,15 +236,17 @@ export function planFireBroadcast(args: {
   if (args.state === "active" && args.confidence >= MIN_CONFIDENCE) {
     const codes = burnable(args.targets);
     if (!codes.length) return null;
-    const inside = burnable(args.inside).filter((c) => codes.includes(c));
-    if (reopened)
+    const fresh = burnable(args.inside).filter((c) => codes.includes(c));
+    if (reopened) {
+      const kept = reopened.insideCodes.filter((c) => codes.includes(c));
       return {
         action: "update",
         codes,
         added: codes.filter((c) => !reopened.communeCodes.includes(c)),
-        inside,
+        inside: [...kept, ...fresh.filter((c) => !kept.includes(c))],
       };
-    return { action: "initial", codes, inside };
+    }
+    return { action: "initial", codes, inside: fresh };
   }
   return null;
 }
@@ -281,16 +283,26 @@ export function insideCommunes(
 
 export type Coverage = Map<string, Map<string, 1 | 2>>;
 
+/* Coverage must follow each thread advance within a run, or two clusters
+ * sharing a commune both see it uncovered and push it twice. */
+export function setThreadCoverage(
+  coverage: Coverage,
+  clusterId: string,
+  thread: OpenThread,
+): void {
+  for (const byCluster of coverage.values()) byCluster.delete(clusterId);
+  if (thread.phase !== "initial" && thread.phase !== "update") return;
+  for (const code of thread.communeCodes) {
+    const byCluster = coverage.get(code) ?? new Map<string, 1 | 2>();
+    byCluster.set(clusterId, thread.insideCodes.includes(code) ? 2 : 1);
+    coverage.set(code, byCluster);
+  }
+}
+
 export function coverageOf(threads: Iterable<[string, OpenThread]>): Coverage {
   const coverage: Coverage = new Map();
-  for (const [clusterId, t] of threads) {
-    if (t.phase !== "initial" && t.phase !== "update") continue;
-    for (const code of t.communeCodes) {
-      const byCluster = coverage.get(code) ?? new Map<string, 1 | 2>();
-      byCluster.set(clusterId, t.insideCodes.includes(code) ? 2 : 1);
-      coverage.set(code, byCluster);
-    }
-  }
+  for (const [clusterId, t] of threads)
+    setThreadCoverage(coverage, clusterId, t);
   return coverage;
 }
 

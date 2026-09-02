@@ -12,6 +12,7 @@ import {
   planFireBroadcast,
   pointInMultiPolygon,
   pushCodesFor,
+  setThreadCoverage,
   targetCommunes,
   type CommuneShape,
   type OpenThread,
@@ -241,18 +242,13 @@ console.log(`detections in window: ${all.length}`);
 let seq = 0;
 const clusters = new Map<string, Cluster>();
 const broadcasts: Broadcast[] = [];
-const suppressed: {
-  at: string;
-  cluster: string;
-  phase: string;
-  codes: string[];
-}[] = [];
 const threads = new Map<string, OpenThread>();
 const targetCache = new Map<string, string[]>();
 const pending: Row[] = [];
 let cursor = 0;
 let screened = 0;
 let silent = 0;
+let capped = 0;
 
 function within<T extends { lat: number; lon: number }>(
   list: T[],
@@ -470,13 +466,16 @@ function publish(now: number) {
       sentToday,
       closed || messageSeverity === "Extreme",
     );
-    threads.set(c.id, {
+    const thread: OpenThread = {
       phase: plan.action,
       severity: messageSeverity,
       communeCodes: covered,
       insideCodes,
       atMs: now,
-    });
+    };
+    threads.set(c.id, thread);
+    setThreadCoverage(coverage, c.id, thread);
+    capped += dropped.length;
     if (!pushed.length) {
       silent += 1;
       continue;
@@ -559,7 +558,7 @@ lines.push(
 lines.push("");
 lines.push("## Broadcasts");
 for (const [k, v] of [...byPhase.entries()].sort()) lines.push(`- ${k}: ${v}`);
-lines.push(`- suppressed by daily cap: ${suppressed.length}`);
+lines.push(`- commune pushes dropped by the daily cap: ${capped}`);
 lines.push(`- silent thread advances: ${silent}`);
 lines.push(
   `- commune pushes all phases: ${broadcasts.reduce((s, b) => s + b.codes.length, 0)}`,
@@ -621,7 +620,7 @@ lines.push("");
 if (FOCUS.length) {
   lines.push("## Focus communes");
   lines.push(
-    "commune | first pixel in polygon | first active cluster there | first initial push | pixel→push min | pushes",
+    "commune | first pixel in polygon | first active cluster there | first live push after entry | pixel→push min | pushes",
   );
   for (const code of FOCUS) {
     const shape = shapeByCode.get(code);
@@ -643,7 +642,12 @@ if (FOCUS.length) {
         .map((c) => c.first_active_at!)
         .sort()[0] ?? null;
     const push = broadcasts
-      .filter((b) => b.phase === "initial" && b.codes.includes(code))
+      .filter(
+        (b) =>
+          (b.phase === "initial" || b.phase === "update") &&
+          b.codes.includes(code) &&
+          (!firstPixel || b.at >= firstPixel),
+      )
       .sort((a, b) => a.at.localeCompare(b.at))[0];
     const delta =
       firstPixel && push
@@ -696,7 +700,6 @@ writeFileSync(
   JSON.stringify(
     {
       broadcasts,
-      suppressed,
       clusters: finalClusters.map((c) => ({
         ...c,
         dets: undefined,

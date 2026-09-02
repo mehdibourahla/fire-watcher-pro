@@ -13,6 +13,7 @@ import {
   insideCommunes,
   planFireBroadcast,
   pushCodesFor,
+  setThreadCoverage,
   targetCommunes,
   type CommuneShape,
   type OpenThread,
@@ -455,6 +456,15 @@ export async function publishBroadcasts(): Promise<BroadcastRun> {
         throw new Error(`broadcasts insert failed: ${broadcastError.message}`);
 
       published += 1;
+      const thread: OpenThread = {
+        phase,
+        severity: messageSeverity,
+        communeCodes: covered,
+        insideCodes,
+        atMs: now,
+      };
+      latestByCluster.set(cluster.id, thread);
+      setThreadCoverage(coverage, cluster.id, thread);
       if (!closed)
         for (const code of pushed)
           sentToday.set(code, (sentToday.get(code) ?? 0) + 1);

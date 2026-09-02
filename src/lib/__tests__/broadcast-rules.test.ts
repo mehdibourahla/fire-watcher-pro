@@ -5,6 +5,7 @@ import {
   applyDailyLimit,
   coverageOf,
   downwindAdditions,
+  setThreadCoverage,
   fireSeverity,
   insideCommunes,
   kmToMultiPolygon,
@@ -252,6 +253,24 @@ describe("planFireBroadcast", () => {
     });
   });
 
+  it("keeps the level-2 communes of the thread it reopens", () => {
+    expect(
+      planFireBroadcast({
+        ...base,
+        inside: ["1510"],
+        open: {
+          ...thread("end", ["1503", "1510"], "Severe", now - 6 * HOUR),
+          insideCodes: ["1503"],
+        },
+      }),
+    ).toEqual({
+      action: "update",
+      codes: ["1503", "1510"],
+      added: [],
+      inside: ["1503", "1510"],
+    });
+  });
+
   it("opens a fresh thread once the end is a day old", () => {
     expect(
       planFireBroadcast({
@@ -483,6 +502,33 @@ describe("pushCodesFor", () => {
         coverage,
       }),
     ).toEqual(["1503"]);
+  });
+
+  it("sees a thread advanced earlier in the same run", () => {
+    const coverage = coverageOf([]);
+    const a = thread(["1503", "1510"], ["1503"]);
+    setThreadCoverage(coverage, "A", a);
+    expect(
+      pushCodesFor({
+        clusterId: "B",
+        action: "initial",
+        codes: ["1503", "1510", "1520"],
+        inside: ["1503"],
+        previous: null,
+        coverage,
+      }),
+    ).toEqual(["1520"]);
+    setThreadCoverage(coverage, "A", { ...a, phase: "end" });
+    expect(
+      pushCodesFor({
+        clusterId: "B",
+        action: "initial",
+        codes: ["1503", "1510"],
+        inside: [],
+        previous: null,
+        coverage,
+      }),
+    ).toEqual(["1503", "1510"]);
   });
 
   it("ignores closed threads when computing coverage", () => {
