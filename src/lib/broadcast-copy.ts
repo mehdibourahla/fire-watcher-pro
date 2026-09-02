@@ -250,3 +250,95 @@ export function broadcastTexts(
     };
   });
 }
+
+export type OfficialVars = {
+  commune: string;
+  wilaya: string;
+  source: string;
+  asOf: string;
+  status: "ongoing" | "contained" | "extinguished" | "monitoring" | "unknown";
+};
+
+type OfficialCopy = {
+  headline: string;
+  body: string;
+  statuses: Record<OfficialVars["status"], string>;
+  noDetection: string;
+};
+
+/* The authority's own report, relayed. Nadhir adds only the two facts it can
+ * vouch for: when the bulletin was valid, and that it has seen nothing there. */
+const OFFICIAL: Record<Locale, OfficialCopy> = {
+  ar: {
+    headline: "الحماية المدنية: حريق في {{commune}}، {{wilaya}}",
+    body: "{{status}} حسب نشرية {{asOf}} (توقيت الجزائر). المصدر: {{source}}.",
+    statuses: {
+      ongoing: "عملية الإخماد متواصلة",
+      contained: "الحريق تحت السيطرة",
+      extinguished: "تم إخماد الحريق",
+      monitoring: "الموقع تحت الحراسة",
+      unknown: "حريق مُبلَّغ عنه",
+    },
+    noDetection: " لم ترصد الأقمار الاصطناعية أي نقطة حرارية في هذه البلدية.",
+  },
+  fr: {
+    headline: "Protection civile : incendie à {{commune}}, {{wilaya}}",
+    body: "{{status}} selon le bulletin de {{asOf}} (heure d'Alger). Source : {{source}}.",
+    statuses: {
+      ongoing: "Opérations en cours",
+      contained: "Incendie maîtrisé",
+      extinguished: "Incendie éteint",
+      monitoring: "Site sous surveillance",
+      unknown: "Incendie signalé",
+    },
+    noDetection:
+      " Aucun point chaud satellite n'a été détecté dans cette commune.",
+  },
+  en: {
+    headline: "Civil Protection: fire in {{commune}}, {{wilaya}}",
+    body: "{{status}} as of the {{asOf}} bulletin (Algiers time). Source: {{source}}.",
+    statuses: {
+      ongoing: "Operations continuing",
+      contained: "Fire contained",
+      extinguished: "Fire out",
+      monitoring: "Site under watch",
+      unknown: "Fire reported",
+    },
+    noDetection: " No satellite hotspot has been detected in this commune.",
+  },
+  kab: {
+    headline: "Tɣellist Tagdudant: times deg {{commune}}, {{wilaya}}",
+    body: "{{status}} akken i d-yenna ulɣu n {{asOf}} (akud n Lezzayer). Aɣbalu: {{source}}.",
+    statuses: {
+      ongoing: "Leqdicat mazal-itent",
+      contained: "Times tettwaḥbes",
+      extinguished: "Times texsi",
+      monitoring: "Amḍiq seddaw uɛessi",
+      unknown: "Times yettwabedren",
+    },
+    noDetection: " Ulac tanqiḍt taḥmayt n igenwan deg tɣiwant-a.",
+  },
+};
+
+export function officialTexts(
+  vars: OfficialVars,
+  detected: boolean,
+): CapText[] {
+  return (Object.keys(OFFICIAL) as Locale[]).map((locale) => {
+    const copy = OFFICIAL[locale];
+    const slots = {
+      commune: vars.commune,
+      wilaya: vars.wilaya,
+      source: vars.source,
+      asOf: vars.asOf,
+      status: copy.statuses[vars.status],
+    };
+    return {
+      language: LANGUAGE[locale],
+      event: COPY[locale].event,
+      headline: fill(copy.headline, slots),
+      description: fill(copy.body, slots) + (detected ? "" : copy.noDetection),
+      instruction: COPY[locale].instruction,
+    };
+  });
+}

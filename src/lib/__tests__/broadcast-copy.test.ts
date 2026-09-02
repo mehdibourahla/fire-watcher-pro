@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { broadcastTexts, type BroadcastVars } from "@/lib/broadcast-copy";
+import {
+  broadcastTexts,
+  officialTexts,
+  type BroadcastVars,
+} from "@/lib/broadcast-copy";
 import type { BroadcastPhase } from "@/lib/cap";
 
 const vars: BroadcastVars = {
@@ -122,5 +126,43 @@ describe("inside communes", () => {
     for (const phase of ["end", "cancel"] as const)
       expect(fr(phase, withInside)).not.toContain("intérieur");
     expect(fr("initial", vars)).not.toContain("intérieur");
+  });
+});
+
+describe("officialTexts", () => {
+  const vars = {
+    commune: "Aïn Zouit",
+    wilaya: "Skikda",
+    source: "الحماية المدنية الجزائرية",
+    asOf: "28/08 08:00",
+    status: "ongoing" as const,
+  };
+
+  it("relays the authority in four languages with its own as-of time", () => {
+    const texts = officialTexts(vars, false);
+    expect(texts.map((t) => t.language)).toEqual([
+      "ar-DZ",
+      "fr-DZ",
+      "en",
+      "kab",
+    ]);
+    for (const text of texts) {
+      expect(text.headline).not.toContain("{{");
+      expect(text.description).not.toContain("{{");
+      expect(text.description).toContain("28/08 08:00");
+      expect(text.instruction).not.toBe("");
+    }
+    const fr = texts.find((t) => t.language === "fr-DZ")!;
+    expect(fr.headline).toContain("Aïn Zouit");
+    expect(fr.description).toContain("Opérations en cours");
+  });
+
+  it("says plainly when no satellite saw it, and stays silent when one did", () => {
+    const unseen = officialTexts(vars, false).find(
+      (t) => t.language === "fr-DZ",
+    )!;
+    expect(unseen.description).toContain("Aucun point chaud satellite");
+    const seen = officialTexts(vars, true).find((t) => t.language === "fr-DZ")!;
+    expect(seen.description).not.toContain("Aucun point chaud");
   });
 });

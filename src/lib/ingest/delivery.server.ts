@@ -2,6 +2,7 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import {
   fcmMessagesForAuthority,
   fcmMessagesForFire,
+  fcmMessagesForOfficial,
   fcmMessagesForOnm,
   type FcmMessage,
 } from "@/lib/fcm";
@@ -156,6 +157,18 @@ function fcmMessagesFor(
       headlineFr: onm.headline_fr,
     });
   }
+  if (row.kind === "official") {
+    const info = row.cap_alert_id
+      ? context.infoByCap.get(row.cap_alert_id)
+      : null;
+    if (!info) return null;
+    return fcmMessagesForOfficial({
+      broadcastId: row.id,
+      severity: row.severity,
+      communeCodes: row.push_codes,
+      info,
+    });
+  }
   if (row.kind === "authority") {
     const warning = row.authority_warning_id
       ? context.authorityById.get(row.authority_warning_id)
@@ -239,6 +252,19 @@ function telegramHtmlFor(
       title: onm.title,
       headlineFr: onm.headline_fr,
     });
+  }
+  if (row.kind === "official") {
+    const info = row.cap_alert_id
+      ? context.infoByCap.get(row.cap_alert_id)
+      : null;
+    const block =
+      info?.find((i) => i.language.startsWith("fr")) ?? info?.[0] ?? null;
+    return block
+      ? telegramAuthorityHtml({
+          source: block.headline,
+          body: block.description,
+        })
+      : null;
   }
   if (row.kind === "authority") {
     const warning = row.authority_warning_id
