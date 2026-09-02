@@ -88,8 +88,8 @@ export type LlmExtractionDependencies = {
   complete: (request: OpenRouterRequest) => Promise<{ content: string }>;
 };
 
-const SYSTEM = `You extract wildfire incident mentions from Algerian civil-protection or forestry posts and from national press articles.
-Return only what the post states. From a press article take only fires it reports as current; skip retrospectives, aggregate national counts and solidarity coverage. Every mention must quote its evidence verbatim from the post.
+const SYSTEM = `You extract wildfire incident mentions from official Algerian civil-protection or forestry posts.
+Return only what the post states. Every mention must quote its evidence verbatim from the post.
 One mention per named fire location. Do not infer locations that are not written. Ignore urban, vehicle and industrial fires (kind "urban").
 Statuses: ongoing (operations continuing), contained (under control / regressing), extinguished (put out), monitoring (guarding, mopping up), unknown.
 Kinds: vegetation (forest, scrub, maquis), agricultural (crops, hay, orchards, palm groves), urban, unknown.

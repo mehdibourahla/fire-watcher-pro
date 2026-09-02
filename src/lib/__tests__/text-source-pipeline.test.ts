@@ -366,123 +366,74 @@ describe("runTextSource", () => {
   });
 });
 
-describe("runTextSource on a media RSS feed", () => {
-  const mediaStore = () => {
-    const m = memoryStore();
-    m.store.loadSource = async (key) => ({
-      id: "src-tsa",
-      key,
-      kind: "rss",
-      url: "https://www.tsa-algerie.com/feed",
-      authority_tier: "media",
-      language: "fr",
-      wilaya_id: null,
-      template: null,
-    });
-    return m;
-  };
-  const article = (id: string, text: string): TelegramPost => ({
-    externalId: `https://www.tsa-algerie.com/?p=${id}`,
-    publishedAt: "2026-09-02T20:20:54Z",
-    text,
-    url: `https://www.tsa-algerie.com/${id}/`,
-  });
-
-  it("stores every article but sends only fire-related ones to the LLM", async () => {
-    const { store, mentions } = mediaStore();
-    const seen: string[] = [];
+describe("runTextSource LLM failures", () => {
+  it("isolates a malformed LLM completion to its document", async () => {
+    const { store, mentions } = memoryStore();
+    let calls = 0;
+    const flaky: TextSourcePipelineDependencies["extractLlm"] = async () => {
+      calls += 1;
+      if (calls === 1)
+        throw new Error("llm extraction returned non-JSON content");
+      return {
+        skipped: false,
+        mentions: [
+          {
+            wilaya: "سكيكدة",
+            commune: "عزابة",
+            place: null,
+            kind: "vegetation",
+            status: "ongoing",
+            count: 1,
+            evidence: "حريق غابة عزابة",
+          },
+        ],
+      };
+    };
     const result = await runTextSourceWith(
-      "rss_tsa",
+      "dgpc_telegram",
       deps(
         [
-          article(
-            "1",
-            "Tebboune opère un mouvement dans le corps des magistrats",
+          post(
+            "20",
+            "2026-09-02T09:00:00Z",
+            bulletin("07", "✅⏮️ حريق ببلدية قرية مجهولة، العملية متواصلة..."),
           ),
-          article(
-            "2",
-            "Incendies : trois feux de forêt maîtrisés à Azzaba (Skikda)",
+          post(
+            "21",
+            "2026-09-02T09:05:00Z",
+            bulletin(
+              "07",
+              "✅⏮️ حريق ببلدية بلدة أخرى مجهولة، العملية متواصلة...",
+            ),
           ),
         ],
         store,
-        async (input) => {
-          seen.push(input.text);
-          return { skipped: false, mentions: [] };
-        },
+        flaky,
       ),
     );
-    expect(result).toMatchObject({ stored: 2, skippedPosts: 1 });
-    expect(seen).toHaveLength(1);
-    expect(seen[0]).toContain("Azzaba");
-    expect(mentions).toHaveLength(0);
-  });
+    expect(result.error).toBeUndefined();
+    expect(result).toMatchObject({ llmFailed: 1, unresolved: 1, mentions: 1 });
+    expect(mentions).toHaveLength(1);
 
-  it("attaches a press mention to an open incident but never opens one", async () => {
-    const { store, mentions, incidents } = mediaStore();
-    const llm: TextSourcePipelineDependencies["extractLlm"] = async () => ({
-      skipped: false,
-      mentions: [
-        {
-          wilaya: "سكيكدة",
-          commune: "عزابة",
-          place: null,
-          kind: "vegetation",
-          status: "ongoing",
-          count: 1,
-          evidence: "feu de forêt à Azzaba",
-        },
-      ],
-    });
-    const nothing = await runTextSourceWith(
-      "rss_tsa",
+    const dead = await runTextSourceWith(
+      "dgpc_telegram",
       deps(
         [
-          article(
-            "3",
-            "Un feu de forêt à Azzaba mobilise la Protection civile",
+          post(
+            "22",
+            "2026-09-02T09:10:00Z",
+            bulletin(
+              "13",
+              "✅⏮️ حريق ببلدية قرية ثالثة مجهولة، العملية متواصلة...",
+            ),
           ),
         ],
         store,
-        llm,
+        async () => {
+          throw new Error("openrouter 502");
+        },
       ),
     );
-    expect(nothing).toMatchObject({
-      mentions: 1,
-      incidentsCreated: 0,
-      incidentsUpdated: 0,
-    });
-    expect(incidents.size).toBe(0);
-    expect(mentions[0]!["extractor"]).toBe("llm");
-
-    await store.createIncident({
-      wilaya_id: SKIKDA,
-      commune_id: AZZABA,
-      kind: "vegetation",
-      status: "ongoing",
-      precision: "commune",
-      authority_tier: "national",
-      place_text: null,
-      first_reported_at: "2026-09-02T07:00:00Z",
-      last_reported_at: "2026-09-02T07:00:00Z",
-      as_of: "2026-09-02T07:00:00Z",
-      latest_mention_id: "m-official",
-      evidence: "حريق غابة عزابة",
-    });
-    const attached = await runTextSourceWith(
-      "rss_tsa",
-      deps(
-        [article("4", "Le feu de forêt à Azzaba reste actif ce soir")],
-        store,
-        llm,
-      ),
-    );
-    expect(attached).toMatchObject({
-      mentions: 1,
-      incidentsCreated: 0,
-      incidentsUpdated: 1,
-    });
-    const incident = [...incidents.values()][0]!;
-    expect(incident.authority_tier).toBe("national");
-    expect(incident.status).toBe("ongoing");
+    expect(dead.error).toMatch(/every llm extraction failed: openrouter 502/);
   });
 });

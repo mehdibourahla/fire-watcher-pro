@@ -194,16 +194,15 @@ status) → `official_incidents`. The map draws the commune polygon, never a poi
 sheet quotes the evidence and links the post. `official_incident_recall_daily` is the
 standing metric on `/status`.
 
-Eight national press feeds joined the registry on 2026-09-02 as `media`-tier RSS sources
-(TSA, Algérie360, Le Matin in French; Echorouk, El Khabar, Ennahar, El Bilad, Awras in Arabic).
-Every article is stored, only fire-related ones reach the LLM, and a press mention attaches to
-an open incident but never opens one: under the glossary only an official source confirms. The
-purpose for now is measuring publication cadence across media beside the DGPC channel, whose
-fire bulletins arrive 1–4 times a day, a median of 10 h apart across all consecutive
-bulletins including the overnight gap (2.7 h when only same-day pairs are counted), and
-nothing at night. Sources
-stay national by rule — no per-wilaya or per-commune page is ever registered — and everything
-official beyond DGPC (wilaya directorates, Tariki road closures, DGF) sits behind Facebook.
+Eight national press RSS feeds were registered as `media`-tier text sources on 2026-09-02
+and withdrawn the same evening: in an hour of production they yielded 102 articles, 16 about
+fires, all aftermath and solidarity, and one wilaya-only mention with no status. Web editions
+publish after the fact; live media here is television and radio, which have no text surface.
+The DGPC channel's fire bulletins arrive 1–4 times a day, a median of 10 h apart across all
+consecutive bulletins including the overnight gap (2.7 h when only same-day pairs are counted),
+and nothing at night. Sources stay national by rule — no per-wilaya or per-commune page is
+ever registered — and everything official beyond DGPC (wilaya directorates, Gendarmerie Tariki
+road status every 15 min, Info Trafic Algérie with ~1.9M followers, DGF) sits behind Facebook.
 
 Open: wilaya Civil Protection and forestry pages live
 on Facebook and need Meta page access or a Telegram/RSS surface; the gazetteer is missing
