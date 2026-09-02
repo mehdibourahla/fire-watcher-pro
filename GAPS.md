@@ -145,7 +145,17 @@ in the north and a quiet evening ages a healthy feed into `stale` (#59); and the
 needed the `false_positive` exclusion that `/api/public/v1/fires` and the history query
 already applied (#62).
 
-**Still open — no persistence rule for a staring sensor.** Nothing between ingest and the
+**Persistence rule shipped 2026-09-02.** A Fire is Detected only on two distinct looks —
+two slots of one sensor, or two sensors — so two adjacent FCI pixels in one 10-minute slot
+no longer promote a cluster. Measured on production since 30 Aug: of 362 clusters retired as
+`false_positive`, 311 rest on a single look against 51 with two or more, and one live
+`active` cluster was a single-slot FCI pair at 0.60. Replayed over the Jijel night it costs
+7 of 156 initial broadcasts and 10 minutes on 4 of the 10 DGPC-named communes (32 → 42 min);
+all ten are still reached. Reproduce with the query in this section's history or
+`bun run replay:window`. The paragraph below records what was measured and rejected before
+this rule, and still stands for the variants it names.
+
+**Superseded — the earlier persistence discussion.** Nothing between ingest and the
 map requires a geostationary detection to be confirmed by a second look, so the watch-area
 polygon is the only defence left, and one missing import cost 25 false fires. Requiring
 _N_ revisits in a cell before a slot-cadence source can seed a cluster would have caught
