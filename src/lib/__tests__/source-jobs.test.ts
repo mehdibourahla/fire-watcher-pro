@@ -21,6 +21,7 @@ const claimedJob: ClaimedSourceJob = {
   scheduled_for: "2026-08-31T20:00:00.000Z",
   data_from: "2026-08-31T19:50:00.000Z",
   data_through: "2026-08-31T20:00:00.000Z",
+  dispatched_at: null,
   execution_target: "cloudflare",
   state: "running",
   enqueued_by: ["database", "cloudflare"],

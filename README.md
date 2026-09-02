@@ -78,7 +78,6 @@ bun run seed:geo            # add --prune to drop units no longer in data/geo/
 | `bun run seed:geo`                    | reseed admin units and settlements from `data/geo/`         |
 | `bun run bootstrap:fwi`               | fill `fwi_state` for communes that have none                |
 | `bun run source:job -- --target ...`  | consume at most one queued job for the named execution tier |
-| `bun run watchdog:sources`            | fail when the private source watchdog reports an issue      |
 | `bun run replay:source -- <gap-uuid>` | enqueue one previously recorded gap for replay              |
 
 ## How it fits together
@@ -150,11 +149,13 @@ build time. Everything else is a runtime secret set with `wrangler secret put <N
 `/api/public/cron/*` execution endpoints. `source_jobs`, `source_job_leases`, `source_gaps`,
 raw runs, and replay controls are service-role-only.
 
-The daily FWI and EFFIS jobs are CPU-bound, so separate matrix consumers in
-`.github/workflows/risk-refresh.yml` claim them independently throughout their 06:00–10:00 UTC
-retry window. GitHub-hosted runners may use a different egress IP, but matrix jobs can share
-runner IPs, so this is only a best-effort aid for Open-Meteo's per-IP quota. Dispatching the
-workflow remains the fastest way to fill `fwi_state` for a new commune set.
+The daily FWI and EFFIS jobs are CPU-bound, so they run on GitHub Actions
+(`.github/workflows/source-jobs-github.yml`). GitHub's own `schedule` trigger is best-effort and
+was removed: `private.dispatch_github_source_jobs()` runs from pg_cron every minute and fires a
+`repository_dispatch` for each due `github`-target job, using the Vault secrets
+`github_dispatch_token` (a fine-grained PAT with Contents: read/write on this repository) and
+`github_repo` (`owner/name`). The workflow can still be dispatched by hand with a contract key,
+which remains the fastest way to fill `fwi_state` for a new commune set.
 
 ## Known limitations
 

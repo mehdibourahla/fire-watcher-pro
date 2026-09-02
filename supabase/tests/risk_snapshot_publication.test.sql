@@ -323,6 +323,25 @@ select throws_ok(
   'published generation rows cannot be deleted or left dangling'
 );
 
+insert into public.risk_forecasts (commune_id, forecast_date, horizon_days, source, fwi, danger_level)
+select id, '2099-03-01', 0, 'local_fwi', 5, 1 from public.admin_units where level = 'commune' limit 1;
+update public.risk_forecasts set fwi = 9
+where snapshot_id is null and forecast_date = '2099-03-01' and source = 'local_fwi';
+select is(
+  (select fwi from public.risk_forecasts
+   where snapshot_id is null and forecast_date = '2099-03-01' and source = 'local_fwi'),
+  9::double precision,
+  'legacy rows without a generation remain updatable, and the update actually lands'
+);
+delete from public.risk_forecasts
+where snapshot_id is null and forecast_date = '2099-03-01' and source = 'local_fwi';
+select is(
+  (select count(*)::integer from public.risk_forecasts
+   where snapshot_id is null and forecast_date = '2099-03-01' and source = 'local_fwi'),
+  0,
+  'legacy rows without a generation remain deletable'
+);
+
 select is(public.begin_risk_forecast_snapshot('f0220000-0000-4000-8000-000000000003', '2099-01-02', '2099-01-02Z', now() - interval '6 hours'), 0, 'newer run starts');
 insert into public.risk_forecast_staging(snapshot_id, commune_id, forecast_date, horizon_days, fwi, danger_level)
 select 'f0220000-0000-4000-8000-000000000003', u.id, date '2099-01-02' + h, h, 30, 3
