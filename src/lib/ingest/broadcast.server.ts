@@ -11,11 +11,13 @@ import {
   fireSeverity,
   fuelLimitedCodes,
   insideCommunes,
+  onmRelayPlan,
   planFireBroadcast,
   pushCodesFor,
   setThreadCoverage,
   targetCommunes,
   type CommuneShape,
+  type OnmWarning,
   type OpenThread,
 } from "@/lib/broadcast-rules";
 import { buildBroadcastCap, type BroadcastPhase } from "@/lib/cap";
@@ -30,6 +32,7 @@ export type BroadcastRun = { published: number; suppressed: number };
 const OPEN_THREAD_WINDOW_DAYS = 30;
 const GEOM_PREFILTER_KM = 80;
 const FRESH_DETECTIONS_MIN = 30;
+const ONM_RELAYED_LOOKBACK_HOURS = 72;
 const HOUR = 3600_000;
 
 type ClusterRow = {
@@ -581,27 +584,64 @@ async function relayAuthorityWarnings(): Promise<number> {
 }
 
 async function relayOnmWarnings(): Promise<number> {
+  const nowIso = new Date().toISOString();
   const { data: warnings, error } = await supabaseAdmin
     .from("onm_vigilance")
-    .select("id, severity, wilaya_id, expires")
+    .select("id, severity, wilaya_id, event, sent, onset, expires")
     .in("severity", ["Severe", "Extreme"])
     .not("wilaya_id", "is", null)
-    .or(`expires.is.null,expires.gt.${new Date().toISOString()}`);
+    .or(`expires.is.null,expires.gt.${nowIso}`);
   if (error) throw new Error(error.message);
   if (!warnings?.length) return 0;
 
-  const { data: existing, error: existingError } = await supabaseAdmin
+  const toWarning = (row: {
+    id: string;
+    severity: string;
+    wilaya_id: string | null;
+    event: string | null;
+    sent: string;
+    onset: string | null;
+    expires: string | null;
+  }): OnmWarning => ({
+    id: row.id,
+    wilayaId: row.wilaya_id!,
+    event: row.event ?? "",
+    severity: row.severity,
+    sentMs: Date.parse(row.sent),
+    onsetMs: row.onset === null ? null : Date.parse(row.onset),
+    expiresMs: row.expires === null ? null : Date.parse(row.expires),
+  });
+
+  const relayedSince = new Date(
+    Date.now() - ONM_RELAYED_LOOKBACK_HOURS * HOUR,
+  ).toISOString();
+  const { data: relayedRows, error: relayedError } = await supabaseAdmin
     .from("broadcasts")
-    .select("onm_vigilance_id")
+    .select(
+      "onm_vigilance_id, onm_vigilance(id, severity, wilaya_id, event, sent, onset, expires)",
+    )
     .eq("kind", "onm")
-    .in(
-      "onm_vigilance_id",
-      warnings.map((w) => w.id),
-    );
-  if (existingError) throw new Error(existingError.message);
-  const done = new Set((existing ?? []).map((b) => b.onm_vigilance_id));
-  const pending = warnings.filter((w) => !done.has(w.id));
-  if (!pending.length) return 0;
+    .gte("created_at", relayedSince);
+  if (relayedError) throw new Error(relayedError.message);
+  const relayed = (relayedRows ?? [])
+    .map((row) => row.onm_vigilance)
+    .filter((row): row is NonNullable<typeof row> => row !== null)
+    .map(toWarning);
+  const relayedIds = new Set(relayed.map((w) => w.id));
+
+  const { relay, suppressed } = onmRelayPlan(
+    warnings.filter((w) => !relayedIds.has(w.id)).map(toWarning),
+    relayed,
+  );
+  for (const warning of suppressed)
+    await auditRow({
+      action: "suppressed",
+      reason: "onm_duplicate",
+      kind: "onm",
+      onm_vigilance_id: warning.id,
+      severity: warning.severity,
+    });
+  if (!relay.length) return 0;
 
   const communes = await fetchAllPages<{
     code: string;
@@ -622,8 +662,8 @@ async function relayOnmWarnings(): Promise<number> {
   }
 
   let published = 0;
-  for (const warning of pending) {
-    const codes = codesByWilaya.get(warning.wilaya_id!) ?? [];
+  for (const warning of relay) {
+    const codes = codesByWilaya.get(warning.wilayaId) ?? [];
     if (!codes.length) continue;
     const severity = warning.severity as "Extreme" | "Severe";
     const { error: insertError } = await supabaseAdmin

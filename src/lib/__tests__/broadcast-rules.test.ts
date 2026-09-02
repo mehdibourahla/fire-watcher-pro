@@ -8,6 +8,7 @@ import {
   setThreadCoverage,
   fireSeverity,
   insideCommunes,
+  onmRelayPlan,
   kmToMultiPolygon,
   planFireBroadcast,
   pointInMultiPolygon,
@@ -16,6 +17,7 @@ import {
   targetCommunes,
   type CommuneShape,
   type OpenThread,
+  type OnmWarning,
 } from "@/lib/broadcast-rules";
 
 const square = (
@@ -534,5 +536,95 @@ describe("pushCodesFor", () => {
   it("ignores closed threads when computing coverage", () => {
     const coverage = coverageOf([["A", thread(["1503"], [], "end")]]);
     expect(coverage.size).toBe(0);
+  });
+});
+
+describe("onmRelayPlan", () => {
+  const t = (iso: string) => Date.parse(iso);
+  const warning = (id: string, over: Partial<OnmWarning> = {}): OnmWarning => ({
+    id,
+    wilayaId: "w-setif",
+    event: "Rain",
+    severity: "Severe",
+    sentMs: t("2026-08-31T09:31:19Z"),
+    onsetMs: t("2026-08-31T15:00:00Z"),
+    expiresMs: t("2026-09-01T00:00:00Z"),
+    ...over,
+  });
+
+  it("relays one warning and suppresses its reissues", () => {
+    const plan = onmRelayPlan(
+      [
+        warning("a"),
+        warning("b", { sentMs: t("2026-08-31T11:44:58Z") }),
+        warning("c", {
+          sentMs: t("2026-08-31T16:10:24Z"),
+          onsetMs: t("2026-08-31T18:00:00Z"),
+        }),
+      ],
+      [],
+    );
+    expect(plan.relay.map((w) => w.id)).toEqual(["a"]);
+    expect(plan.suppressed.map((w) => w.id)).toEqual(["b", "c"]);
+  });
+
+  it("suppresses a reissue of something already broadcast in an earlier run", () => {
+    const plan = onmRelayPlan([warning("b")], [warning("a")]);
+    expect(plan.relay).toEqual([]);
+    expect(plan.suppressed.map((w) => w.id)).toEqual(["b"]);
+  });
+
+  it("relays a different event, a different wilaya, and a later window", () => {
+    const relayed = [warning("a")];
+    expect(
+      onmRelayPlan([warning("b", { event: "Wind" })], relayed).relay,
+    ).toHaveLength(1);
+    expect(
+      onmRelayPlan([warning("c", { wilayaId: "w-jijel" })], relayed).relay,
+    ).toHaveLength(1);
+    expect(
+      onmRelayPlan(
+        [
+          warning("d", {
+            sentMs: t("2026-09-02T09:00:00Z"),
+            onsetMs: t("2026-09-02T15:00:00Z"),
+            expiresMs: t("2026-09-03T00:00:00Z"),
+          }),
+        ],
+        relayed,
+      ).relay,
+    ).toHaveLength(1);
+  });
+
+  it("relays an escalation but not a de-escalation of the same warning", () => {
+    const relayed = [warning("a")];
+    expect(
+      onmRelayPlan([warning("up", { severity: "Extreme" })], relayed).relay.map(
+        (w) => w.id,
+      ),
+    ).toEqual(["up"]);
+    expect(
+      onmRelayPlan([warning("down")], [warning("a", { severity: "Extreme" })])
+        .relay,
+    ).toEqual([]);
+  });
+
+  it("treats a warning with no stated expiry as covering a day, not forever", () => {
+    const open = warning("a", { expiresMs: null });
+    expect(
+      onmRelayPlan([warning("same-day", { expiresMs: null })], [open]).relay,
+    ).toEqual([]);
+    expect(
+      onmRelayPlan(
+        [
+          warning("two-days-later", {
+            expiresMs: null,
+            sentMs: t("2026-09-02T09:00:00Z"),
+            onsetMs: t("2026-09-02T15:00:00Z"),
+          }),
+        ],
+        [open],
+      ).relay,
+    ).toHaveLength(1);
   });
 });
