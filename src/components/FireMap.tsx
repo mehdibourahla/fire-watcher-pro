@@ -17,6 +17,8 @@ type Props = {
   official?: FeatureCollection;
   selectedOfficialId?: string | null;
   onSelectOfficial?: (id: string) => void;
+  reports?: FeatureCollection;
+  onSelectReport?: (id: string) => void;
   center?: [number, number];
   zoom?: number;
   interactive?: boolean;
@@ -25,6 +27,7 @@ type Props = {
 
 const SRC = "fires";
 const OFFICIAL_SRC = "official";
+const REPORTS_SRC = "reports";
 const OFFICIAL_LAYERS = [
   "official-fill",
   "official-outline",
@@ -125,6 +128,25 @@ function addOfficialLayers(map: maplibregl.Map, data: FeatureCollection) {
       "circle-stroke-color": officialColor(),
       "circle-stroke-width": 2,
       "circle-radius": 14,
+    },
+  });
+}
+
+// citizen hazard reports: unmoderated by doctrine, so drawn as a distinct
+// hollow marker that cannot be mistaken for a satellite detection
+function addReportLayers(map: maplibregl.Map, data: FeatureCollection) {
+  if (map.getSource(REPORTS_SRC)) return;
+  map.addSource(REPORTS_SRC, { type: "geojson", data });
+  map.addLayer({
+    id: "report-points",
+    type: "circle",
+    source: REPORTS_SRC,
+    paint: {
+      "circle-color": token("--surface", "#ffffff"),
+      "circle-opacity": 0.9,
+      "circle-stroke-color": token("--risk-2", "#e4af00"),
+      "circle-stroke-width": 2.5,
+      "circle-radius": 6,
     },
   });
 }
@@ -260,6 +282,8 @@ export default function FireMap({
   official = EMPTY,
   selectedOfficialId = null,
   onSelectOfficial,
+  reports = EMPTY,
+  onSelectReport,
   center = [3.6, 35.8],
   zoom = 5.1,
   interactive = true,
@@ -276,6 +300,10 @@ export default function FireMap({
   onSelectRef.current = onSelect;
   const onSelectOfficialRef = useRef(onSelectOfficial);
   onSelectOfficialRef.current = onSelectOfficial;
+  const reportsRef = useRef(reports);
+  reportsRef.current = reports;
+  const onSelectReportRef = useRef(onSelectReport);
+  onSelectReportRef.current = onSelectReport;
   const initRef = useRef({ center, zoom, interactive });
 
   useEffect(() => {
@@ -330,12 +358,31 @@ export default function FireMap({
       if (id) onSelectOfficialRef.current?.(id);
     };
 
+    const pickReport = (e: maplibregl.MapMouseEvent) => {
+      const id = map.queryRenderedFeatures(e.point, {
+        layers: ["report-points"],
+      })[0]?.properties?.["id"] as string | undefined;
+      if (id) onSelectReportRef.current?.(id);
+    };
+
     map.on("load", () => {
       addOfficialLayers(map, officialRef.current);
+      addReportLayers(map, reportsRef.current);
       addFireLayers(map, toGeoJSON(clustersRef.current));
       readyRef.current = true;
 
       for (const layer of OFFICIAL_LAYERS) map.on("click", layer, pickOfficial);
+      map.on("click", "report-points", pickReport);
+      map.on(
+        "mouseenter",
+        "report-points",
+        () => (map.getCanvas().style.cursor = "pointer"),
+      );
+      map.on(
+        "mouseleave",
+        "report-points",
+        () => (map.getCanvas().style.cursor = ""),
+      );
 
       map.on("click", "fire-points", pick);
       map.on("click", "fire-unverified", pick);
@@ -375,6 +422,7 @@ export default function FireMap({
       map.setStyle(next);
       map.once("styledata", () => {
         addOfficialLayers(map, officialRef.current);
+        addReportLayers(map, reportsRef.current);
         addFireLayers(map, toGeoJSON(clustersRef.current));
       });
     });
@@ -432,6 +480,24 @@ export default function FireMap({
     const map = mapRef.current;
     if (!map) return;
     const apply = () => {
+      const src = map.getSource(REPORTS_SRC) as
+        maplibregl.GeoJSONSource | undefined;
+      if (src) src.setData(reports);
+    };
+    if (readyRef.current) apply();
+    else map.once("load", apply);
+  }, [reports]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    const apply = () => {
+      if (map.getLayer("report-points"))
+        map.setLayoutProperty(
+          "report-points",
+          "visibility",
+          layers.reports ? "visible" : "none",
+        );
       for (const id of OFFICIAL_LAYERS) {
         if (map.getLayer(id))
           map.setLayoutProperty(

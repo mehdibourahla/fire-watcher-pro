@@ -3,6 +3,7 @@ export type MapLayers = {
   unverified: boolean;
   industrialSources: boolean;
   official: boolean;
+  reports: boolean;
 };
 
 export const DEFAULT_MAP_LAYERS: MapLayers = {
@@ -10,4 +11,5 @@ export const DEFAULT_MAP_LAYERS: MapLayers = {
   unverified: false,
   industrialSources: false,
   official: true,
+  reports: true,
 };

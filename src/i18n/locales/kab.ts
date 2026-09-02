@@ -213,6 +213,11 @@ export const kab: Translation = {
     layers: "Tissiyin",
     layerFires: "Timessi urmidin",
     layerOfficial: "Ineɣmisen unṣiben",
+    layerReports: "Ineɣmisen n yimezdaɣ",
+    reportEyebrow: "Aneɣmis n umezdaɣ",
+    reportObserved: "Yettwawala {{time}}",
+    reportUnverified:
+      "Ur yettwasenqed ara — yettwasken akken i d-yewweḍ, s leɛmer-is. Imḍebbren zemren ad t-sentmen neɣ ad t-kksen.",
     layerRisk: "Asmenyaf n uɣilif",
     layerUnverified: "Tifin ur nettwasenqed ara",
     layerIndustrialSources: "Iɣbula n uzɣal n tenzagt",

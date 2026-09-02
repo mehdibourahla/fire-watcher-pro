@@ -170,6 +170,10 @@ Adekar (Béjaïa) under any spelling; without `ANTHROPIC_API_KEY` roughly one li
 stays unresolved (24 of 136 on the August sample). Official incidents do not yet feed
 Broadcast Alerts — a deliberate scope line until the recall metric has run for a while.
 
+Citizen hazard reports now also render on the live map (hollow marker, kind, age, "unverified"
+line) from the same 24-hour `hazard_reports` view the Survival page uses; the approved-only
+query nothing consumed is gone.
+
 ## 2. Data quality
 
 ### 2.1 Land cover and terrain — populated 2026-08-30
