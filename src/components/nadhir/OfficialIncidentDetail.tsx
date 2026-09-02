@@ -35,6 +35,16 @@ export function OfficialIncidentDetail({ incident, locale, now }: Props) {
         <dd className="font-medium">
           {t(`official.statuses.${incident.status}`)}
         </dd>
+        {incident.unlisted_at ? (
+          <>
+            <dt className="text-muted-foreground">{t("official.listing")}</dt>
+            <dd>
+              {t("official.unlisted", {
+                when: relativeTime(incident.unlisted_at, locale, now),
+              })}
+            </dd>
+          </>
+        ) : null}
         <dt className="text-muted-foreground">{t("official.asOf")}</dt>
         <dd>
           <time dateTime={incident.as_of}>

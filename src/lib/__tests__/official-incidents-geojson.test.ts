@@ -32,6 +32,7 @@ function incident(over: Partial<OfficialIncident>): OfficialIncident {
     first_reported_at: "2026-09-02T06:00:00Z",
     last_reported_at: "2026-09-02T12:00:00Z",
     as_of: "2026-09-02T12:00:00Z",
+    unlisted_at: null,
     mention_count: 2,
     evidence: "حريق ببلدية عزابة",
     commune: unit,
@@ -104,5 +105,18 @@ describe("officialIncidentsGeoJSON", () => {
       Date.parse("2026-09-02T13:00:00Z"),
     );
     expect(fc.features.map((f) => f.properties!["id"])).toEqual(["inc-2"]);
+  });
+});
+
+describe("listing", () => {
+  it("marks an incident the authority stopped naming, and keeps it on the map", () => {
+    const listed = officialIncidentsGeoJSON([incident({})], new Map());
+    expect(listed.features[0]!.properties!["listed"]).toBe(true);
+    const dropped = officialIncidentsGeoJSON(
+      [incident({ unlisted_at: "2026-09-02T17:00:00Z" })],
+      new Map(),
+    );
+    expect(dropped.features).toHaveLength(1);
+    expect(dropped.features[0]!.properties!["listed"]).toBe(false);
   });
 });

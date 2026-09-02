@@ -94,6 +94,10 @@ export type TextSourceStore = {
   createIncident: (row: IncidentInsert) => Promise<string>;
   updateIncident: (id: string, update: IncidentUpdate) => Promise<void>;
   attachMention: (mentionId: string, incidentId: string) => Promise<void>;
+  listedIncidents: (
+    before: string,
+  ) => Promise<{ id: string; area_id: string }[]>;
+  markUnlisted: (ids: string[], asOf: string) => Promise<void>;
 };
 
 export type TextSourcePipelineDependencies = {
@@ -114,6 +118,7 @@ export type TextSourceRun = {
   unresolved: number;
   incidentsCreated: number;
   incidentsUpdated: number;
+  incidentsUnlisted: number;
   llmSkipped: boolean;
   llmFailed: number;
   error?: string;
@@ -301,6 +306,7 @@ export async function runTextSourceWith(
     unresolved: 0,
     incidentsCreated: 0,
     incidentsUpdated: 0,
+    incidentsUnlisted: 0,
     llmSkipped: false,
     llmFailed: 0,
   };
@@ -330,6 +336,7 @@ export async function runTextSourceWith(
 
   const gazetteer = await deps.store.loadGazetteer();
   const inserts: MentionInsert[] = [];
+  const bulletins: { asOf: string; areaIds: Set<string> }[] = [];
   for (const doc of documents) {
     const parsed =
       source.template === "dgpc_bulletin"
@@ -345,6 +352,13 @@ export async function runTextSourceWith(
         continue;
       }
       const postWilaya = resolveWilaya(doc.body, gazetteer.wilayas);
+      // a full bulletin is the authority's complete list of notable fires, so what it
+      // omits is no longer listed; a single-incident post says nothing about the rest
+      const coverage =
+        parsed.kind === "bulletin"
+          ? { asOf, areaIds: new Set<string>() }
+          : null;
+      if (coverage) bulletins.push(coverage);
       for (const line of parsed.lines) {
         const r = resolveLine(
           line,
@@ -354,6 +368,9 @@ export async function runTextSourceWith(
         );
         drafts.push(...r.drafts);
         pending.push(...r.unresolved);
+        if (coverage)
+          for (const d of r.drafts)
+            coverage.areaIds.add(d.commune_id ?? d.wilaya_id);
       }
     } else {
       pending.push(doc.body);
@@ -414,6 +431,18 @@ export async function runTextSourceWith(
   const merged = await mergeMentions(rows, source, deps.store);
   run.incidentsCreated = merged.created;
   run.incidentsUpdated = merged.updated;
+
+  for (const bulletin of bulletins.sort((a, b) =>
+    a.asOf.localeCompare(b.asOf),
+  )) {
+    const listed = await deps.store.listedIncidents(bulletin.asOf);
+    const dropped = listed
+      .filter((i) => !bulletin.areaIds.has(i.area_id))
+      .map((i) => i.id);
+    if (!dropped.length) continue;
+    await deps.store.markUnlisted(dropped, bulletin.asOf);
+    run.incidentsUnlisted += dropped.length;
+  }
   return run;
 }
 
@@ -556,6 +585,29 @@ const supabaseStore: TextSourceStore = {
       },
     });
     if (error) throw new Error(`incident update failed: ${error.message}`);
+  },
+  listedIncidents: async (before) => {
+    const data = must(
+      await supabaseAdmin
+        .from("official_incidents")
+        .select("id, commune_id, wilaya_id")
+        .is("unlisted_at", null)
+        .lt("last_reported_at", before),
+      "listed incidents",
+    );
+    return data.map((row) => ({
+      id: row.id,
+      area_id: row.commune_id ?? row.wilaya_id,
+    }));
+  },
+  markUnlisted: async (ids, asOf) => {
+    for (let i = 0; i < ids.length; i += 200) {
+      const { error } = await supabaseAdmin
+        .from("official_incidents")
+        .update({ unlisted_at: asOf })
+        .in("id", ids.slice(i, i + 200));
+      if (error) throw new Error(`unlist failed: ${error.message}`);
+    }
   },
   attachMention: async (mentionId, incidentId) => {
     const { error } = await supabaseAdmin

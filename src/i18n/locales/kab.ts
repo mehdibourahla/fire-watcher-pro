@@ -237,6 +237,9 @@ export const kab: Translation = {
     reports: "Ineɣmisen",
     source: "Aɣbalu",
     sourceFallback: "Abadu unṣib",
+    listing: "Abdar",
+    unlisted:
+      "Ur d-tettwabdar ara deg ulɣu n {{when}}. Tɣellist Tagdudant ur tessufuɣ ara taggara n walɣu i yal taɣiwant, ihi mačči d assekni belli times texsi.",
     viewPost: "Wali asuffeɣ aneṣli",
     disclaimer:
       "Yettwaɣ-d seg ubadu unṣib s tseddi n uneɣmis — tamnaḍt yettwaɣummen d taɣiwant, mačči d times. Nadhir ur yernu acemma i uḍris.",
