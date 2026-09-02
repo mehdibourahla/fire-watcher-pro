@@ -19,5 +19,12 @@ select is(
   'SLSTR appears on the public health surface'
 );
 
+select lives_ok(
+  $$insert into public.detections
+      (source, sensor, detected_at, lat, lon, confidence_raw, frp_mw, natural_key)
+    values ('s3', 'SLSTR-S3B', now(), 36.7, 5.8, 0.98, 21.5, 's3:test:36.70000:5.80000:now')$$,
+  'a Sentinel-3 detection passes the source check'
+);
+
 select * from finish();
 rollback;

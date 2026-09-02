@@ -172,7 +172,9 @@ dimension to avoid the one-shot problem above. That is design work, not a patch.
 independent sensor (polar, ~1 km, two passes a day per satellite, NRT under 3 h) costs one
 layer descriptor in `fci.server.ts` and the `s3_slstr` contract. It runs hourly with the
 same watch-area gate; it improves recall on fires VIIRS and FCI miss, not first-alert
-latency. The DGPC recall study found 7 of 42 named fires on 28 Aug with no detection at all.
+latency. It shipped with `detections.source` still checked against `('firms','fci')`, so
+every SLSTR pixel was rejected at insert for three days while the run ledger said
+`partial / internal_error` and the health view said `unavailable`; widened 2026-09-02. The DGPC recall study found 7 of 42 named fires on 28 Aug with no detection at all.
 
 ### 1.5 Official incident reports — first source wired 2026-09-02
 
