@@ -75,16 +75,21 @@ later, median gap 10 h (2.7 h same-day only), nothing at night; 66 of 67 mention
 
 Rule in force: sources stay national; no per-wilaya or per-commune page is ever registered.
 
-## 3. Decisions still open (answer before Phase 2)
+## 3. Decisions taken 2026-09-02
 
-1. **Confirmed fires with no satellite pixel: push, and how they end.** Proposal on the
-   table: push once at the highest commune level with the bulletin's "as of" time; never
-   re-push unless a later bulletin changes status or names it again after a gap; end in
-   Nadhir's words "no longer listed since bulletin X; no detection for N h"; "extinguished"
-   only when the authority said it. Alternative: map-only, polygon fades after the last
-   mention.
-2. **Does a citizen Hazard Report count as a second look?** The glossary draft says a
-   sensor plus a report makes a Fire Detected. If not, reports are corroboration only.
+1. **A Confirmed fire with no satellite pixel is pushed.** Once, in the authority's words,
+   carrying the bulletin's "as of" time and never the push time, at the highest commune
+   level, exempt from the daily cap as the other authority relays are. It is not re-pushed
+   unless a later bulletin changes its status or names it again after a gap. Its end is
+   Nadhir's own Information with two clocks — "no longer listed by Protection Civile since
+   the bulletin of X; no satellite detection for N h" — and the word "extinguished" appears
+   only when the authority used it (once in 67 mentions). Rationale: DGPC named Aïn Zouit
+   three days before the first pixel; map-only leaves those subscribers with nothing while
+   the authority has already spoken.
+2. **A citizen Hazard Report does not count as a look.** Detected requires two instrument
+   looks (two slots, two sensors). A report corroborates: it appears on the fire page as
+   evidence with its age and adds a small positive term in Phase 2, but one report plus one
+   artefact pixel must never produce a push. Revisit when reports are moderated.
 
 ## 4. Plan
 
