@@ -68,17 +68,18 @@ bun run seed:geo            # add --prune to drop units no longer in data/geo/
 
 ## Commands
 
-| Command                               | Purpose                                                     |
-| ------------------------------------- | ----------------------------------------------------------- |
-| `bun run dev`                         | dev server on :8080                                         |
-| `bun run build`                       | production build                                            |
-| `bun run test`                        | vitest suite                                                |
-| `bun run lint`                        | eslint                                                      |
-| `bun run format`                      | prettier                                                    |
-| `bun run seed:geo`                    | reseed admin units and settlements from `data/geo/`         |
-| `bun run bootstrap:fwi`               | fill `fwi_state` for communes that have none                |
-| `bun run source:job -- --target ...`  | consume at most one queued job for the named execution tier |
-| `bun run replay:source -- <gap-uuid>` | enqueue one previously recorded gap for replay              |
+| Command                                                                          | Purpose                                                                                                |
+| -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `bun run dev`                                                                    | dev server on :8080                                                                                    |
+| `bun run build`                                                                  | production build                                                                                       |
+| `bun run test`                                                                   | vitest suite                                                                                           |
+| `bun run lint`                                                                   | eslint                                                                                                 |
+| `bun run format`                                                                 | prettier                                                                                               |
+| `bun run seed:geo`                                                               | reseed admin units and settlements from `data/geo/`                                                    |
+| `bun run bootstrap:fwi`                                                          | fill `fwi_state` for communes that have none                                                           |
+| `bun run source:job -- --target ...`                                             | consume at most one queued job for the named execution tier                                            |
+| `bun run replay:source -- <gap-uuid>`                                            | enqueue one previously recorded gap for replay                                                         |
+| `bun run replay:window -- --data <dir> --tag <tag> --from <iso> --through <iso>` | replay ingest → fusion → broadcast planning offline over a cached window (see `data/replay/README.md`) |
 
 ## How it fits together
 
