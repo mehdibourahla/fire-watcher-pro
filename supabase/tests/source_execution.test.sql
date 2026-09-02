@@ -1444,13 +1444,15 @@ begin
     phase,
     onm_vigilance_id,
     severity,
-    commune_codes
+    commune_codes,
+    push_codes
   )
   values (
     'onm',
     'initial',
     _onm_id,
     'Severe',
+    array['REPLAY-TEST'],
     array['REPLAY-TEST']
   )
   on conflict do nothing;
@@ -1460,13 +1462,15 @@ begin
     phase,
     authority_warning_id,
     severity,
-    commune_codes
+    commune_codes,
+    push_codes
   )
   values (
     'authority',
     'initial',
     '10000000-0000-4000-8000-000000000003',
     'Severe',
+    array['REPLAY-TEST'],
     array['REPLAY-TEST']
   )
   on conflict do nothing;

@@ -4,24 +4,33 @@ import { MIN_CONFIDENCE } from "@/lib/alerts-rules";
 import { broadcastTexts } from "@/lib/broadcast-copy";
 import {
   BROADCAST_END_AFTER_HOURS,
+  REOPEN_WINDOW_HOURS,
   applyDailyLimit,
+  coverageOf,
   downwindAdditions,
   fireSeverity,
   fuelLimitedCodes,
+  insideCommunes,
   planFireBroadcast,
+  pushCodesFor,
+  setThreadCoverage,
   targetCommunes,
   type CommuneShape,
+  type OpenThread,
 } from "@/lib/broadcast-rules";
 import { buildBroadcastCap, type BroadcastPhase } from "@/lib/cap";
 import { coordLabel, haversineKm } from "@/lib/nadhir";
 import { fetchAllPages } from "@/lib/paginate";
 
 import { algiersToday } from "./algiers-date";
+import { PIXEL_GRID } from "./fusion-geometry";
 
 export type BroadcastRun = { published: number; suppressed: number };
 
 const OPEN_THREAD_WINDOW_DAYS = 30;
 const GEOM_PREFILTER_KM = 80;
+const FRESH_DETECTIONS_MIN = 30;
+const HOUR = 3600_000;
 
 type ClusterRow = {
   id: string;
@@ -36,12 +45,16 @@ type ClusterRow = {
   nearest_settlement_id: string | null;
   nearest_settlement_km: number | null;
   commune_id: string | null;
+  max_frp_mw: number | null;
 };
 
 type Unit = {
   id: string;
   code: string;
   name_fr: string;
+  name_ar: string;
+  name_en: string;
+  name_kab: string;
   parent_id: string | null;
   lat: number;
   lon: number;
@@ -92,34 +105,43 @@ export async function publishBroadcasts(): Promise<BroadcastRun> {
     phase: string;
     severity: string;
     commune_codes: string[];
+    inside_codes: string[];
     created_at: string;
   }>((from, to) =>
     supabaseAdmin
       .from("broadcasts")
-      .select("cluster_id, phase, severity, commune_codes, created_at")
+      .select(
+        "cluster_id, phase, severity, commune_codes, inside_codes, created_at",
+      )
       .eq("kind", "fire")
       .gte("created_at", windowStart)
       .order("created_at", { ascending: false })
       .range(from, to),
   );
-  const latestByCluster = new Map<
-    string,
-    { phase: string; severity: string; communeCodes: string[] }
-  >();
+  const now = Date.now();
+  const latestByCluster = new Map<string, OpenThread>();
   for (const b of recent) {
     if (!b.cluster_id || latestByCluster.has(b.cluster_id)) continue;
     latestByCluster.set(b.cluster_id, {
       phase: b.phase,
       severity: b.severity,
       communeCodes: b.commune_codes,
+      insideCodes: b.inside_codes,
+      atMs: Date.parse(b.created_at),
     });
   }
   const openClusterIds = [...latestByCluster.entries()]
-    .filter(([, b]) => b.phase === "initial" || b.phase === "update")
+    .filter(
+      ([, b]) =>
+        b.phase === "initial" ||
+        b.phase === "update" ||
+        (b.phase === "end" && now - b.atMs < REOPEN_WINDOW_HOURS * HOUR),
+    )
     .map(([id]) => id);
+  const coverage = coverageOf(latestByCluster);
 
   const clusterFields =
-    "id, short_id, state, lat, lon, confidence, detection_count, spread_bearing_deg, last_detected_at, nearest_settlement_id, nearest_settlement_km, commune_id";
+    "id, short_id, state, lat, lon, confidence, detection_count, spread_bearing_deg, last_detected_at, nearest_settlement_id, nearest_settlement_km, commune_id, max_frp_mw";
   const { data: confirmed, error: confirmedError } = await supabaseAdmin
     .from("fire_clusters")
     .select(clusterFields)
@@ -149,11 +171,48 @@ export async function publishBroadcasts(): Promise<BroadcastRun> {
   const units = await fetchAllPages<Unit & { level: string }>((from, to) =>
     supabaseAdmin
       .from("admin_units")
-      .select("id, code, name_fr, parent_id, lat, lon, level")
+      .select(
+        "id, code, name_fr, name_ar, name_en, name_kab, parent_id, lat, lon, level",
+      )
       .range(from, to),
   );
   const communes = units.filter((u) => u.level === "commune");
   const unitById = new Map(units.map((u) => [u.id, u]));
+  const unitByCode = new Map(units.map((u) => [u.code, u]));
+  const nameOf = (
+    code: string,
+    field: "name_ar" | "name_fr" | "name_en" | "name_kab",
+  ) => unitByCode.get(code)?.[field] || unitByCode.get(code)?.name_fr || code;
+
+  const pointsByCluster = new Map<string, { lat: number; lon: number }[]>();
+  {
+    const ids = clusters.map((c) => c.id);
+    const since = new Date(now - FRESH_DETECTIONS_MIN * 60_000).toISOString();
+    for (let i = 0; i < ids.length; i += 100) {
+      const rows = await fetchAllPages<{
+        cluster_id: string;
+        lat: number;
+        lon: number;
+      }>((from, to) =>
+        supabaseAdmin
+          .from("detections")
+          .select("cluster_id, lat, lon")
+          .in("cluster_id", ids.slice(i, i + 100))
+          .gte("created_at", since)
+          .order("id")
+          .range(from, to),
+      );
+      const seen = new Set<string>();
+      for (const r of rows) {
+        const key = `${r.cluster_id}:${Math.round(r.lat / PIXEL_GRID)}:${Math.round(r.lon / PIXEL_GRID)}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        const bucket = pointsByCluster.get(r.cluster_id) ?? [];
+        bucket.push({ lat: r.lat, lon: r.lon });
+        pointsByCluster.set(r.cluster_id, bucket);
+      }
+    }
+  }
 
   const shortlist = communes.filter((c) =>
     clusters.some(
@@ -211,14 +270,14 @@ export async function publishBroadcasts(): Promise<BroadcastRun> {
 
   const { data: todayRows, error: todayError } = await supabaseAdmin
     .from("broadcasts")
-    .select("commune_codes")
+    .select("push_codes")
     .eq("kind", "fire")
     .in("phase", ["initial", "update"])
     .gte("created_at", `${algiersToday()}T00:00:00+01:00`);
   if (todayError) throw new Error(todayError.message);
   const sentToday = new Map<string, number>();
   for (const row of todayRows ?? [])
-    for (const code of row.commune_codes)
+    for (const code of row.push_codes)
       sentToday.set(code, (sentToday.get(code) ?? 0) + 1);
 
   const chains = new Map<string, { identifier: string; sent: string }[]>();
@@ -240,13 +299,14 @@ export async function publishBroadcasts(): Promise<BroadcastRun> {
   }
 
   let published = 0;
-  let suppressed = 0;
   const errors: string[] = [];
-  const now = Date.now();
 
   for (const cluster of clusters) {
     const open = latestByCluster.get(cluster.id) ?? null;
-    const severity = fireSeverity(cluster.nearest_settlement_km);
+    const severity = fireSeverity(
+      cluster.nearest_settlement_km,
+      cluster.max_frp_mw,
+    );
     const targets = targetCommunes(
       {
         lat: cluster.lat,
@@ -257,18 +317,24 @@ export async function publishBroadcasts(): Promise<BroadcastRun> {
       },
       shapes,
     );
-    const additions = open
-      ? downwindAdditions(
-          {
-            lat: cluster.lat,
-            lon: cluster.lon,
-            spreadBearing: cluster.spread_bearing_deg,
-          },
-          open.communeCodes,
-          targets,
-          shapeByCode,
-        )
-      : [];
+    const inside = insideCommunes(
+      pointsByCluster.get(cluster.id) ?? [],
+      targets,
+      shapeByCode,
+    );
+    const additions =
+      open && (open.phase === "initial" || open.phase === "update")
+        ? downwindAdditions(
+            {
+              lat: cluster.lat,
+              lon: cluster.lon,
+              spreadBearing: cluster.spread_bearing_deg,
+            },
+            open.communeCodes,
+            targets,
+            shapeByCode,
+          )
+        : [];
 
     const plan = planFireBroadcast({
       state: cluster.state,
@@ -279,6 +345,7 @@ export async function publishBroadcasts(): Promise<BroadcastRun> {
       open,
       targets,
       additions,
+      inside,
       fuelLimited,
     });
     if (!plan) continue;
@@ -290,28 +357,27 @@ export async function publishBroadcasts(): Promise<BroadcastRun> {
       const messageSeverity = closed
         ? ((open?.severity ?? severity) as "Extreme" | "Severe")
         : severity;
-      const wanted =
+      const covered =
         plan.action === "initial" || plan.action === "update"
           ? plan.codes
           : (open?.communeCodes ?? []);
-      const { allowed, dropped } = applyDailyLimit(
-        wanted,
+      const insideCodes =
+        plan.action === "initial" || plan.action === "update"
+          ? plan.inside
+          : (open?.insideCodes ?? []);
+      const rose = pushCodesFor({
+        clusterId: cluster.id,
+        action: plan.action,
+        codes: covered,
+        inside: insideCodes,
+        previous: open,
+        coverage,
+      });
+      const { allowed: pushed, dropped } = applyDailyLimit(
+        rose,
         sentToday,
         closed || messageSeverity === "Extreme",
       );
-      if (!allowed.length) {
-        suppressed += 1;
-        await auditRow({
-          action: "suppressed",
-          reason: "rate_limit",
-          kind: "fire",
-          cluster_id: cluster.id,
-          phase,
-          severity: messageSeverity,
-          commune_codes: dropped,
-        });
-        continue;
-      }
 
       const commune = cluster.commune_id
         ? unitById.get(cluster.commune_id)
@@ -346,6 +412,12 @@ export async function publishBroadcasts(): Promise<BroadcastRun> {
           bearingDeg: cluster.spread_bearing_deg,
           hotspots: cluster.detection_count,
           hours: BROADCAST_END_AFTER_HOURS,
+          inside: {
+            ar: insideCodes.map((code) => nameOf(code, "name_ar")),
+            fr: insideCodes.map((code) => nameOf(code, "name_fr")),
+            en: insideCodes.map((code) => nameOf(code, "name_en")),
+            kab: insideCodes.map((code) => nameOf(code, "name_kab")),
+          },
         }),
         references: chain,
       });
@@ -376,29 +448,42 @@ export async function publishBroadcasts(): Promise<BroadcastRun> {
           cluster_id: cluster.id,
           cap_alert_id: capRow.id,
           severity: messageSeverity,
-          commune_codes: allowed,
+          commune_codes: covered,
+          push_codes: pushed,
+          inside_codes: insideCodes,
         });
       if (broadcastError)
         throw new Error(`broadcasts insert failed: ${broadcastError.message}`);
 
       published += 1;
+      const thread: OpenThread = {
+        phase,
+        severity: messageSeverity,
+        communeCodes: covered,
+        insideCodes,
+        atMs: now,
+      };
+      latestByCluster.set(cluster.id, thread);
+      setThreadCoverage(coverage, cluster.id, thread);
       if (!closed)
-        for (const code of allowed)
+        for (const code of pushed)
           sentToday.set(code, (sentToday.get(code) ?? 0) + 1);
       await auditRow({
         action: "published",
-        reason: phase,
+        reason: pushed.length ? phase : "silent",
         kind: "fire",
         cluster_id: cluster.id,
         phase,
         severity: messageSeverity,
-        commune_codes: allowed,
+        commune_codes: covered,
         payload: {
           identifier: cap.identifier,
+          pushed,
           ...(dropped.length ? { rate_limited: dropped } : {}),
-          ...(phase === "update" && plan.action === "update"
-            ? { added: plan.added }
+          ...(plan.action === "update"
+            ? { added: plan.added, inside: plan.inside }
             : {}),
+          ...(plan.action === "initial" ? { inside: plan.inside } : {}),
         },
       });
     } catch (error) {
@@ -416,7 +501,7 @@ export async function publishBroadcasts(): Promise<BroadcastRun> {
       `${errors.length} clusters failed to publish: ${errors[0]}`,
     );
 
-  return { published, suppressed };
+  return { published, suppressed: 0 };
 }
 
 async function relayAuthorityWarnings(): Promise<number> {
@@ -476,6 +561,7 @@ async function relayAuthorityWarnings(): Promise<number> {
         authority_warning_id: warning.id,
         severity,
         commune_codes: codes,
+        push_codes: codes,
       });
     if (insertError)
       throw new Error(
@@ -548,6 +634,7 @@ async function relayOnmWarnings(): Promise<number> {
         onm_vigilance_id: warning.id,
         severity,
         commune_codes: codes,
+        push_codes: codes,
       });
     if (insertError)
       throw new Error(`onm broadcast insert failed: ${insertError.message}`);

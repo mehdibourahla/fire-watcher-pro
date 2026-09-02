@@ -85,6 +85,27 @@ What is left is the delivery itself: pick a provider per channel and render the 
 it. The `cap_alerts` migration was applied to the live project on 2026-08-29
 (ledger version 20260829010000).
 
+**Commune alert state — 2026-09-02.** A push now means a commune's alert level rose:
+level 1 is a fire within the 15 km ring, level 2 a detection pixel inside the commune
+polygon, computed against every open thread so a neighbouring cluster cannot re-alert a
+commune at a level it already holds; ends push only where nothing else covers the
+commune; Extreme needs a settlement within 5 km _and_ 20 MW peak FRP; a thread ended
+under 24 h reopens as an update. `broadcasts.commune_codes` stays the coverage the
+in-app banner reads, `push_codes` the communes selected for delivery after the level and
+daily-cap rules (delivery status stays in the `*_delivered_at` columns), `inside_codes` the
+level-2 set.
+Replayed over 25–28 Aug FCI (44,534 pixels, `bun run replay:window`): 156 initials and
+1,816 commune pushes against 381 and 9,575 under the previous rules, peak 3 pushes to one
+commune in a day against 44, no cluster re-broadcast as a fresh initial against 41. Eight
+of the ten DGPC-named Jijel communes were pushed 32–42 min after their first in-polygon
+pixel; Chekfa (112 min) and Boudria Ben Yadjis (132 min) were pushed the minute their
+cluster crossed the confidence bar — single-pixel FCI slots ramp `confidenceScore`
+slowly, a fusion question, not the push rule. Rejected with numbers: requiring two looks
+before a push removed 12 of 381 initials on that night and cost 10 min at median — it
+addresses single-look artefacts, not fatigue. The FRP floor changed no Jijel initial;
+its target is the persistent low hotspot whose every look is 1–10 MW — Baraki went out as
+Extreme to 44 communes four times under the old rule.
+
 Start at: `src/lib/alerts-engine.server.ts`, `src/lib/cap.ts`.
 
 ### 1.4 Geostationary detection — wired 2026-08-30, ~30–40 min latency
@@ -152,6 +173,7 @@ independent sensor (polar, ~1 km, two passes a day per satellite, NRT under 3 h)
 layer descriptor in `fci.server.ts` and the `s3_slstr` contract. It runs hourly with the
 same watch-area gate; it improves recall on fires VIIRS and FCI miss, not first-alert
 latency. The DGPC recall study found 7 of 42 named fires on 28 Aug with no detection at all.
+
 ### 1.5 Official incident reports — first source wired 2026-09-02
 
 Satellites are the only way a fire could exist in Nadhir until now; the 2026-09-01 recall

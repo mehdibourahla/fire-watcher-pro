@@ -7,7 +7,10 @@ export type BroadcastVars = {
   bearingDeg: number | null;
   hotspots: number;
   hours: number;
+  inside: Record<Locale, string[]>;
 };
+
+type Locale = "ar" | "fr" | "en" | "kab";
 
 type Copy = {
   event: string;
@@ -22,11 +25,14 @@ type Copy = {
   endDesc: string;
   cancelHeadline: string;
   cancelDesc: string;
+  insideOne: string;
+  insideMany: string;
   instruction: string;
   compass: [string, string, string, string, string, string, string, string];
 };
 
-/* AR copy is approved maquette wording; instruction lines are the pre-approved
+/* AR copy is approved maquette wording except the inside-commune sentences
+ * (added 2026-09-02, unreviewed); instruction lines are the pre-approved
  * Standing Guidance already shipped in alerts-engine. KAB pending native review. */
 const COPY: Record<"ar" | "fr" | "en" | "kab", Copy> = {
   ar: {
@@ -44,6 +50,8 @@ const COPY: Record<"ar" | "fr" | "en" | "kab", Copy> = {
       "لم تُرصد نقاط حرارية منذ {{hours}} ساعة. قد تفوت الأقمار الاصطناعية نارًا نشطة — اتبع تعليمات الحماية المدنية.",
     cancelHeadline: "إلغاء تنبيه حريق {{place}}",
     cancelDesc: "تبيّن أن الرصد قرب {{place}} لم يكن حريقًا نشطًا.",
+    insideOne: " رُصدت نقاط حرارية داخل بلدية {{communes}}.",
+    insideMany: " رُصدت نقاط حرارية داخل البلديات: {{communes}}.",
     instruction:
       "ابتعد عن الدخان، واتبع تعليمات السلطات المحلية، واتصل بالحماية المدنية على 14 إذا هدّد الحريق أشخاصًا أو منازل.",
     compass: [
@@ -73,6 +81,8 @@ const COPY: Record<"ar" | "fr" | "en" | "kab", Copy> = {
     cancelHeadline: "Annulation — alerte incendie de {{place}}",
     cancelDesc:
       "La détection près de {{place}} ne correspondait pas à un incendie actif.",
+    insideOne: " Détections à l'intérieur de la commune {{communes}}.",
+    insideMany: " Détections à l'intérieur des communes : {{communes}}.",
     instruction:
       "Éloignez-vous de la fumée, suivez les consignes des autorités locales et appelez la Protection Civile au 14 si le feu menace des personnes ou des habitations.",
     compass: [
@@ -100,6 +110,8 @@ const COPY: Record<"ar" | "fr" | "en" | "kab", Copy> = {
       "No hotspots detected for {{hours}} hours. Satellites can miss an active fire — follow Civil Protection instructions.",
     cancelHeadline: "Cancelled — {{place}} fire alert",
     cancelDesc: "The detection near {{place}} was not an active fire.",
+    insideOne: " Detections inside the commune of {{communes}}.",
+    insideMany: " Detections inside the communes: {{communes}}.",
     instruction:
       "Stay away from the smoke, follow instructions from local authorities, and call Civil Protection on 14 if the fire threatens people or homes.",
     compass: [
@@ -128,6 +140,8 @@ const COPY: Record<"ar" | "fr" | "en" | "kab", Copy> = {
       "Ulac tinqiḍin n tmes seg {{hours}} n tsaɛtin. Igenwan zemren ad zeglen times iddren — ḍfer iwellihen n Tɣellist Tagdudant.",
     cancelHeadline: "Yefsex — alɣu n tmes n {{place}}",
     cancelDesc: "Aḍfar ɣer {{place}} mači d times iddren.",
+    insideOne: " Aḍfar deg tɣiwant n {{communes}}.",
+    insideMany: " Aḍfar deg tɣiwanin: {{communes}}.",
     instruction:
       "Ḥader iman-ik seg dexxan, ḍfer iwellihen n yidebbaren idiganen, tsiwleḍ i Tɣellist Tagdudant ɣef 14 ma tessexlaɛ times imdanen neɣ ixxamen.",
     compass: [
@@ -143,7 +157,7 @@ const COPY: Record<"ar" | "fr" | "en" | "kab", Copy> = {
   },
 };
 
-const LANGUAGE: Record<keyof typeof COPY, string> = {
+const LANGUAGE: Record<Locale, string> = {
   ar: "ar-DZ",
   fr: "fr-DZ",
   en: "en",
@@ -156,6 +170,21 @@ function fill(template: string, vars: Record<string, string | number>) {
   );
 }
 
+function frDe(name: string): string {
+  return /^[aeiouyhâéèêîôûAEIOUYH]/.test(name) ? `d'${name}` : `de ${name}`;
+}
+
+function insideSentence(copy: Copy, locale: Locale, names: string[]): string {
+  if (!names.length) return "";
+  if (names.length === 1)
+    return fill(copy.insideOne, {
+      communes: locale === "fr" ? frDe(names[0]!) : names[0]!,
+    });
+  return fill(copy.insideMany, {
+    communes: names.join(locale === "ar" ? "، " : ", "),
+  });
+}
+
 function compassWord(copy: Copy, deg: number): string {
   return copy.compass[Math.round((((deg % 360) + 360) % 360) / 45) % 8]!;
 }
@@ -163,6 +192,7 @@ function compassWord(copy: Copy, deg: number): string {
 function description(
   phase: BroadcastPhase,
   copy: Copy,
+  locale: Locale,
   vars: BroadcastVars,
 ): string {
   const slots = {
@@ -180,12 +210,12 @@ function description(
       );
       const drift =
         vars.bearingDeg === null ? "" : fill(copy.initialDrift, slots);
-      return `${base}${drift}.`;
+      return `${base}${drift}.${insideSentence(copy, locale, vars.inside[locale])}`;
     }
     case "update": {
       const drift =
         vars.bearingDeg === null ? "" : fill(copy.updateDrift, slots);
-      return `${fill(copy.updateDesc, slots)}${drift}`;
+      return `${fill(copy.updateDesc, slots)}${drift}${insideSentence(copy, locale, vars.inside[locale])}`;
     }
     case "end":
       return fill(copy.endDesc, slots);
@@ -206,7 +236,7 @@ export function broadcastTexts(
   vars: BroadcastVars,
 ): CapText[] {
   const live = phase === "initial" || phase === "update";
-  return (Object.keys(COPY) as (keyof typeof COPY)[]).map((locale) => {
+  return (Object.keys(COPY) as Locale[]).map((locale) => {
     const copy = COPY[locale];
     return {
       language: LANGUAGE[locale],
@@ -215,7 +245,7 @@ export function broadcastTexts(
         place: vars.place,
         wilaya: vars.wilaya,
       }),
-      description: description(phase, copy, vars),
+      description: description(phase, copy, locale, vars),
       instruction: live ? copy.instruction : "",
     };
   });

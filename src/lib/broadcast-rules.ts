@@ -125,11 +125,16 @@ export function targetCommunes(
   return head ? [head, ...codes] : codes;
 }
 
+export const EXTREME_MIN_FRP_MW = 20;
+
 export function fireSeverity(
   nearestSettlementKm: number | null,
+  maxFrpMw: number | null,
 ): "Extreme" | "Severe" {
   return nearestSettlementKm !== null &&
-    nearestSettlementKm <= SETTLEMENT_EMERGENCY_KM
+    nearestSettlementKm <= SETTLEMENT_EMERGENCY_KM &&
+    maxFrpMw !== null &&
+    maxFrpMw >= EXTREME_MIN_FRP_MW
     ? "Extreme"
     : "Severe";
 }
@@ -164,9 +169,19 @@ export function fuelLimitedCodes(
   );
 }
 
+export const REOPEN_WINDOW_HOURS = 24;
+
+export type OpenThread = {
+  phase: string;
+  severity: string;
+  communeCodes: string[];
+  insideCodes: string[];
+  atMs: number;
+};
+
 export type FirePlan =
-  | { action: "initial"; codes: string[] }
-  | { action: "update"; codes: string[]; added: string[] }
+  | { action: "initial"; codes: string[]; inside: string[] }
+  | { action: "update"; codes: string[]; added: string[]; inside: string[] }
   | { action: "end" }
   | { action: "cancel" }
   | null;
@@ -177,38 +192,61 @@ export function planFireBroadcast(args: {
   lastDetectedMs: number;
   nowMs: number;
   severity: "Extreme" | "Severe";
-  open: { phase: string; communeCodes: string[]; severity: string } | null;
+  open: OpenThread | null;
   targets: string[];
   additions: string[];
+  inside: string[];
   fuelLimited?: Set<string>;
 }): FirePlan {
   const burnable = (codes: string[]) =>
     args.fuelLimited ? codes.filter((c) => !args.fuelLimited!.has(c)) : codes;
-  const open =
+  const live =
     args.open && (args.open.phase === "initial" || args.open.phase === "update")
       ? args.open
       : null;
+  const reopened =
+    args.open &&
+    args.open.phase === "end" &&
+    args.nowMs - args.open.atMs < REOPEN_WINDOW_HOURS * HOUR
+      ? args.open
+      : null;
 
-  if (open) {
+  if (live) {
     if (args.state === "false_positive") return { action: "cancel" };
     if (args.nowMs - args.lastDetectedMs >= BROADCAST_END_AFTER_HOURS * HOUR)
       return { action: "end" };
     if (args.state !== "active" || args.confidence < MIN_CONFIDENCE)
       return null;
-    const escalated = open.severity === "Severe" && args.severity === "Extreme";
+    const escalated = live.severity === "Severe" && args.severity === "Extreme";
     const additions = burnable(args.additions);
-    if (additions.length || escalated)
+    const codes = [...live.communeCodes, ...additions];
+    const insideNew = burnable(args.inside).filter(
+      (c) => codes.includes(c) && !live.insideCodes.includes(c),
+    );
+    if (additions.length || escalated || insideNew.length)
       return {
         action: "update",
-        codes: [...open.communeCodes, ...additions],
+        codes,
         added: additions,
+        inside: [...live.insideCodes, ...insideNew],
       };
     return null;
   }
 
   if (args.state === "active" && args.confidence >= MIN_CONFIDENCE) {
     const codes = burnable(args.targets);
-    return codes.length ? { action: "initial", codes } : null;
+    if (!codes.length) return null;
+    const fresh = burnable(args.inside).filter((c) => codes.includes(c));
+    if (reopened) {
+      const kept = reopened.insideCodes.filter((c) => codes.includes(c));
+      return {
+        action: "update",
+        codes,
+        added: codes.filter((c) => !reopened.communeCodes.includes(c)),
+        inside: [...kept, ...fresh.filter((c) => !kept.includes(c))],
+      };
+    }
+    return { action: "initial", codes, inside: fresh };
   }
   return null;
 }
@@ -227,4 +265,83 @@ export function applyDailyLimit(
     else allowed.push(code);
   }
   return { allowed, dropped };
+}
+
+export function insideCommunes(
+  points: { lat: number; lon: number }[],
+  codes: string[],
+  byCode: Map<string, CommuneShape>,
+): string[] {
+  return codes.filter((code) => {
+    const shape = byCode.get(code);
+    return (
+      !!shape &&
+      points.some((p) => pointInMultiPolygon(p.lat, p.lon, shape.geom))
+    );
+  });
+}
+
+export type Coverage = Map<string, Map<string, 1 | 2>>;
+
+/* Coverage must follow each thread advance within a run, or two clusters
+ * sharing a commune both see it uncovered and push it twice. */
+export function setThreadCoverage(
+  coverage: Coverage,
+  clusterId: string,
+  thread: OpenThread,
+): void {
+  for (const byCluster of coverage.values()) byCluster.delete(clusterId);
+  if (thread.phase !== "initial" && thread.phase !== "update") return;
+  for (const code of thread.communeCodes) {
+    const byCluster = coverage.get(code) ?? new Map<string, 1 | 2>();
+    byCluster.set(clusterId, thread.insideCodes.includes(code) ? 2 : 1);
+    coverage.set(code, byCluster);
+  }
+}
+
+export function coverageOf(threads: Iterable<[string, OpenThread]>): Coverage {
+  const coverage: Coverage = new Map();
+  for (const [clusterId, t] of threads)
+    setThreadCoverage(coverage, clusterId, t);
+  return coverage;
+}
+
+function levelElsewhere(
+  coverage: Coverage,
+  code: string,
+  self: string,
+): number {
+  let best = 0;
+  for (const [id, level] of coverage.get(code) ?? [])
+    if (id !== self && level > best) best = level;
+  return best;
+}
+
+/* A push means the commune's alert level rose: a ring-covered commune hears
+ * again only when the fire is inside it, and never twice from two clusters. */
+export function pushCodesFor(args: {
+  clusterId: string;
+  action: "initial" | "update" | "end" | "cancel";
+  codes: string[];
+  inside: string[];
+  previous: OpenThread | null;
+  coverage: Coverage;
+}): string[] {
+  if (args.action === "end" || args.action === "cancel")
+    return args.codes.filter(
+      (code) => levelElsewhere(args.coverage, code, args.clusterId) === 0,
+    );
+  const mine = (code: string) =>
+    args.previous?.insideCodes.includes(code)
+      ? 2
+      : args.previous?.communeCodes.includes(code)
+        ? 1
+        : 0;
+  return args.codes.filter((code) => {
+    const level = args.inside.includes(code) ? 2 : 1;
+    return (
+      level >
+      Math.max(mine(code), levelElsewhere(args.coverage, code, args.clusterId))
+    );
+  });
 }

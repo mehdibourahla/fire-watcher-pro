@@ -305,9 +305,11 @@ export type Database = {
           fcm_delivered_at: string | null;
           fcm_topics: number | null;
           id: string;
+          inside_codes: string[];
           kind: string;
           onm_vigilance_id: string | null;
           phase: string;
+          push_codes: string[];
           severity: string;
           telegram_channels: number | null;
           telegram_delivered_at: string | null;
@@ -321,9 +323,11 @@ export type Database = {
           fcm_delivered_at?: string | null;
           fcm_topics?: number | null;
           id?: string;
+          inside_codes?: string[];
           kind: string;
           onm_vigilance_id?: string | null;
           phase?: string;
+          push_codes: string[];
           severity: string;
           telegram_channels?: number | null;
           telegram_delivered_at?: string | null;
@@ -337,9 +341,11 @@ export type Database = {
           fcm_delivered_at?: string | null;
           fcm_topics?: number | null;
           id?: string;
+          inside_codes?: string[];
           kind?: string;
           onm_vigilance_id?: string | null;
           phase?: string;
+          push_codes?: string[];
           severity?: string;
           telegram_channels?: number | null;
           telegram_delivered_at?: string | null;

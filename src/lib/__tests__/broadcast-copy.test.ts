@@ -10,6 +10,7 @@ const vars: BroadcastVars = {
   bearingDeg: 135,
   hotspots: 17,
   hours: 12,
+  inside: { ar: [], fr: [], en: [], kab: [] },
 };
 
 const PHASES: BroadcastPhase[] = ["initial", "update", "end", "cancel"];
@@ -74,5 +75,47 @@ describe("broadcastTexts", () => {
     })[2]!;
     expect(withDrift.description).toContain("southeast");
     expect(noDrift.description).not.toContain("southeast");
+  });
+});
+
+describe("inside communes", () => {
+  const withInside: BroadcastVars = {
+    ...vars,
+    inside: {
+      ar: ["الميلية"],
+      fr: ["El Milia"],
+      en: ["El Milia"],
+      kab: ["El Milia"],
+    },
+  };
+  const fr = (phase: BroadcastPhase, v: BroadcastVars) =>
+    broadcastTexts(phase, v).find((t) => t.language === "fr-DZ")!.description;
+
+  it("names the commune the fire has entered on initial and update", () => {
+    for (const phase of ["initial", "update"] as const)
+      expect(fr(phase, withInside)).toContain(
+        "Détections à l'intérieur de la commune d'El Milia",
+      );
+    expect(
+      fr("initial", {
+        ...withInside,
+        inside: { ...withInside.inside, fr: ["Texenna"] },
+      }),
+    ).toContain("de la commune de Texenna");
+  });
+
+  it("lists several communes", () => {
+    expect(
+      fr("update", {
+        ...withInside,
+        inside: { ...withInside.inside, fr: ["El Milia", "Texenna"] },
+      }),
+    ).toContain("Détections à l'intérieur des communes : El Milia, Texenna");
+  });
+
+  it("says nothing about communes on end and cancel, or when none is inside", () => {
+    for (const phase of ["end", "cancel"] as const)
+      expect(fr(phase, withInside)).not.toContain("intérieur");
+    expect(fr("initial", vars)).not.toContain("intérieur");
   });
 });
