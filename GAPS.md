@@ -196,6 +196,18 @@ A workable version would apply persistence to slot-cadence sources without a com
 lookup, so it does not fail in empty terrain, and would need an FRP or confidence
 dimension to avoid the one-shot problem above. That is design work, not a patch.
 
+**Sentinel-3 SLSTR — two defects found and fixed 2026-09-02, still zero stored rows.**
+It shipped with `detections.source` checked against `('firms','fci')`, so every SLSTR pixel
+was rejected at insert while the run ledger said `partial / internal_error` (#75). It also
+keyed freshness on `upstream_published_at`: a polar orbiter passes twice a day over a country
+that is often not burning, and an empty response carries no slot, so the watermark never
+advanced and a working feed read `unavailable` for ever — the same class as FCI's `latestSlot`
+below. FIRMS is polar too and keys freshness on the poll for this reason; `s3_slstr` now does
+the same. As of 23:30 on 2 Sep the feed answers and had exactly one in-area detection all day
+(S3B, 36.777 / 4.876, FRP 13.6 MW at 10:19 UTC) which aged out of the six-hour fetch window
+before the constraint fix deployed at 19:45. The first stored row is expected on the next
+pass with a fire under it, not tonight.
+
 **Sentinel-3 SLSTR added 2026-09-02.** The same anonymous WFS serves
 `copernicus:sentinel3{a,b}_slstr_level2_frp`, pre-decoded like the FCI layer, so a second
 independent sensor (polar, ~1 km, two passes a day per satellite, NRT under 3 h) costs one
