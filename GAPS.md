@@ -146,6 +146,30 @@ A workable version would apply persistence to slot-cadence sources without a com
 lookup, so it does not fail in empty terrain, and would need an FRP or confidence
 dimension to avoid the one-shot problem above. That is design work, not a patch.
 
+### 1.5 Official incident reports — first source wired 2026-09-02
+
+Satellites are the only way a fire could exist in Nadhir until now; the 2026-09-01 recall
+study found that on 28 Aug, 7 of 42 communes DGPC named as burning had **no detection at
+all**, and one (Aïn Zouit) was named three days before FIRMS saw it. The official layer
+buys that recall and the authority's own status vocabulary — bulletins arrive 1–4 times a
+day (same-day gaps median 2.7 h), so it is not early warning and must not be sold as one.
+
+Shape: per-source knowledge lives in a `text_sources` registry row (transport, authority
+tier, language, template) and a thin adapter that writes immutable `source_documents`;
+everything after is shared — classify → extract (DGPC template by regex, the residue by
+one `claude-opus-5` structured-output call with quoted evidence) → resolve against the
+gazetteer plus `admin_unit_aliases` → append-only `incident_mentions` → deterministic
+match & merge (same commune · kind within 48 h; highest tier and latest as-of set the
+status) → `official_incidents`. The map draws the commune polygon, never a point; the
+sheet quotes the evidence and links the post. `official_incident_recall_daily` is the
+standing metric on `/status`.
+
+Open: only DGPC Telegram is registered; wilaya Civil Protection and forestry pages live
+on Facebook and need Meta page access or a Telegram/RSS surface; the gazetteer is missing
+Adekar (Béjaïa) under any spelling; without `ANTHROPIC_API_KEY` roughly one line in six
+stays unresolved (24 of 136 on the August sample). Official incidents do not yet feed
+Broadcast Alerts — a deliberate scope line until the recall metric has run for a while.
+
 ## 2. Data quality
 
 ### 2.1 Land cover and terrain — populated 2026-08-30
