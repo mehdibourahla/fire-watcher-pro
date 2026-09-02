@@ -150,9 +150,9 @@ build time. Everything else is a runtime secret set with `wrangler secret put <N
 raw runs, and replay controls are service-role-only.
 
 The daily FWI and EFFIS jobs are CPU-bound, so they run on GitHub Actions
-(`.github/workflows/source-jobs-github.yml`). GitHub's own `schedule` trigger is best-effort and
-was removed: `private.dispatch_github_source_jobs()` runs from pg_cron every minute and fires a
-`repository_dispatch` for each due `github`-target job, using the Vault secrets
+(`.github/workflows/source-jobs-github.yml`). `private.dispatch_github_source_jobs()` runs from pg_cron every minute and fires a
+`repository_dispatch` for each due `github`-target job (GitHub's own `schedule` trigger is kept only
+as a best-effort fallback — it delivered 1 of 12 firings on 2026-09-01), using the Vault secrets
 `github_dispatch_token` (a fine-grained PAT with Contents: read/write on this repository) and
 `github_repo` (`owner/name`). The workflow can still be dispatched by hand with a contract key,
 which remains the fastest way to fill `fwi_state` for a new commune set.
