@@ -179,13 +179,30 @@ function resolveLlmMention(
   fallbackWilaya: string | null,
 ): Draft | null {
   if (m.kind === "urban") return null;
-  const wilayaId =
+  let wilayaId =
     (m.wilaya ? resolveWilaya(m.wilaya, gazetteer.wilayas) : null) ??
     fallbackWilaya;
+  let commune =
+    wilayaId && m.commune
+      ? resolveCommune(
+          m.commune,
+          gazetteer.communesByWilaya.get(wilayaId) ?? [],
+        )
+      : null;
+  if (m.commune && !commune) {
+    // the hinted wilaya can be wrong (new wilayas, national bulletins); accept a
+    // name that is unambiguous nationally
+    const hits = [...gazetteer.communesByWilaya.entries()].flatMap(
+      ([w, cs]) => {
+        const hit = resolveCommune(m.commune!, cs);
+        return hit && hit.via !== "fuzzy" ? [{ w, hit }] : [];
+      },
+    );
+    if (hits.length !== 1) return null;
+    wilayaId = hits[0]!.w;
+    commune = hits[0]!.hit;
+  }
   if (!wilayaId) return null;
-  const candidates = gazetteer.communesByWilaya.get(wilayaId) ?? [];
-  const commune = m.commune ? resolveCommune(m.commune, candidates) : null;
-  if (m.commune && !commune) return null;
   return {
     wilaya_id: wilayaId,
     commune_id: commune?.id ?? null,
@@ -352,10 +369,15 @@ export async function runTextSourceWith(
       let resolvedAny = false;
       for (const m of result.mentions) {
         const draft = resolveLlmMention(m, asOf, gazetteer, source.wilaya_id);
-        if (draft) {
-          drafts.push(draft);
-          resolvedAny = true;
-        }
+        if (!draft) continue;
+        resolvedAny = true;
+        // the LLM sees the whole line and re-emits communes the template already took
+        if (
+          draft.commune_id &&
+          drafts.some((d) => d.commune_id === draft.commune_id)
+        )
+          continue;
+        drafts.push(draft);
       }
       if (!resolvedAny) run.unresolved += 1;
     }

@@ -81,6 +81,14 @@ describe("resolveCommune", () => {
     });
   });
 
+  it("ignores a parenthesised locality after the commune name", () => {
+    expect(
+      resolveCommune("القصر (آيت يوسف)", [
+        { id: "kseur", name_ar: "القصر", aliases: [] },
+      ]),
+    ).toEqual({ id: "kseur", via: "exact" });
+  });
+
   it("refuses status phrases and short fragments", () => {
     expect(resolveCommune("العملية متواصلة", skikda)).toBeNull();
     expect(resolveCommune("لا", skikda)).toBeNull();

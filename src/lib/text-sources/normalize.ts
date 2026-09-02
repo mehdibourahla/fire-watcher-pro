@@ -55,7 +55,7 @@ export function resolveCommune(
   name: string,
   candidates: readonly CommuneCandidate[],
 ): CommuneMatch | null {
-  const n = normalizeArabic(name);
+  const n = normalizeArabic(name.replace(/\([^)]*\)?/g, " "));
   if (n.length < 3 || STATUS_WORDS.test(name)) return null;
   const compact = n.replace(/\s+/g, "");
   for (const c of candidates)
