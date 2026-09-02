@@ -1,7 +1,11 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import type { Json } from "@/integrations/supabase/types";
 import { MIN_CONFIDENCE } from "@/lib/alerts-rules";
-import { broadcastTexts } from "@/lib/broadcast-copy";
+import {
+  broadcastTexts,
+  officialTexts,
+  type OfficialVars,
+} from "@/lib/broadcast-copy";
 import {
   BROADCAST_END_AFTER_HOURS,
   REOPEN_WINDOW_HOURS,
@@ -20,11 +24,15 @@ import {
   type OnmWarning,
   type OpenThread,
 } from "@/lib/broadcast-rules";
-import { buildBroadcastCap, type BroadcastPhase } from "@/lib/cap";
+import {
+  buildBroadcastCap,
+  buildOfficialCap,
+  type BroadcastPhase,
+} from "@/lib/cap";
 import { coordLabel, haversineKm } from "@/lib/nadhir";
 import { fetchAllPages } from "@/lib/paginate";
 
-import { algiersToday } from "./algiers-date";
+import { algiersClock, algiersToday } from "./algiers-date";
 import { PIXEL_GRID } from "./fusion-geometry";
 
 export type BroadcastRun = { published: number; suppressed: number };
@@ -168,7 +176,9 @@ export async function publishBroadcasts(): Promise<BroadcastRun> {
   const clusters = [...byId.values()];
   if (!clusters.length) {
     const relayed =
-      (await relayOnmWarnings()) + (await relayAuthorityWarnings());
+      (await relayOnmWarnings()) +
+      (await relayAuthorityWarnings()) +
+      (await relayOfficialIncidents());
     return { published: relayed, suppressed: 0 };
   }
 
@@ -499,6 +509,7 @@ export async function publishBroadcasts(): Promise<BroadcastRun> {
 
   published += await relayOnmWarnings();
   published += await relayAuthorityWarnings();
+  published += await relayOfficialIncidents();
 
   if (errors.length)
     throw new Error(
@@ -579,6 +590,169 @@ async function relayAuthorityWarnings(): Promise<number> {
       severity,
       commune_codes: codes,
       payload: { authority_warning_id: warning.id },
+    });
+  }
+  return published;
+}
+
+const OFFICIAL_FRESH_HOURS = 24;
+const OFFICIAL_COVERED_HOURS = 12;
+
+/* Decision 2026-09-02: an incident the authority named and no satellite saw is the one
+ * case where the relay beats silence. It carries the bulletin's own "as of", never the
+ * push time, and it is skipped when a live thread already put a fire inside that commune. */
+async function relayOfficialIncidents(): Promise<number> {
+  const since = new Date(
+    Date.now() - OFFICIAL_FRESH_HOURS * HOUR,
+  ).toISOString();
+  const { data: incidents, error } = await supabaseAdmin
+    .from("official_incidents")
+    .select(
+      "id, commune_id, wilaya_id, status, as_of, evidence, unlisted_at, latest_mention_id",
+    )
+    .not("commune_id", "is", null)
+    .is("unlisted_at", null)
+    .neq("status", "extinguished")
+    .gte("as_of", since);
+  if (error) throw new Error(error.message);
+  if (!incidents?.length) return 0;
+
+  const { data: already, error: alreadyError } = await supabaseAdmin
+    .from("broadcasts")
+    .select("official_incident_id")
+    .eq("kind", "official")
+    .in(
+      "official_incident_id",
+      incidents.map((i) => i.id),
+    );
+  if (alreadyError) throw new Error(alreadyError.message);
+  const done = new Set((already ?? []).map((b) => b.official_incident_id));
+  const pending = incidents.filter((i) => !done.has(i.id));
+  if (!pending.length) return 0;
+
+  const units = await fetchAllPages<{
+    id: string;
+    code: string;
+    name_fr: string;
+    name_ar: string;
+    name_en: string;
+    name_kab: string | null;
+  }>((from, to) =>
+    supabaseAdmin
+      .from("admin_units")
+      .select("id, code, name_fr, name_ar, name_en, name_kab")
+      .range(from, to),
+  );
+  const unitById = new Map(units.map((u) => [u.id, u]));
+
+  const coveredSince = new Date(
+    Date.now() - OFFICIAL_COVERED_HOURS * HOUR,
+  ).toISOString();
+  const { data: liveThreads, error: liveError } = await supabaseAdmin
+    .from("broadcasts")
+    .select("inside_codes")
+    .eq("kind", "fire")
+    .in("phase", ["initial", "update"])
+    .gte("created_at", coveredSince);
+  if (liveError) throw new Error(liveError.message);
+  const covered = new Set(
+    (liveThreads ?? []).flatMap((row) => row.inside_codes ?? []),
+  );
+
+  const sourceLabel = new Map<string, string>();
+  const mentionIds = pending
+    .map((i) => i.latest_mention_id)
+    .filter((id): id is string => id !== null);
+  if (mentionIds.length) {
+    const { data } = await supabaseAdmin
+      .from("incident_mentions")
+      .select("id, text_sources(label)")
+      .in("id", mentionIds);
+    for (const row of data ?? [])
+      if (row.text_sources?.label)
+        sourceLabel.set(row.id, row.text_sources.label);
+  }
+
+  let published = 0;
+  for (const incident of pending) {
+    const commune = unitById.get(incident.commune_id!);
+    const wilaya = unitById.get(incident.wilaya_id);
+    if (!commune) continue;
+    if (covered.has(commune.code)) {
+      await auditRow({
+        action: "suppressed",
+        reason: "already_detected",
+        kind: "official",
+        commune_codes: [commune.code],
+        payload: { official_incident_id: incident.id },
+      });
+      continue;
+    }
+    const label =
+      (incident.latest_mention_id
+        ? sourceLabel.get(incident.latest_mention_id)
+        : null) ?? "Protection Civile";
+    const texts = officialTexts(
+      {
+        commune: commune.name_fr,
+        wilaya: wilaya?.name_fr ?? "",
+        source: label,
+        asOf: algiersClock(incident.as_of),
+        status: incident.status as OfficialVars["status"],
+      },
+      false,
+    );
+    const cap = buildOfficialCap({
+      incidentId: incident.id,
+      areaDesc: [commune.name_fr, wilaya?.name_fr].filter(Boolean).join(", "),
+      sentAt: new Date(),
+      asOf: new Date(incident.as_of),
+      texts,
+    });
+    const { data: capRow, error: capError } = await supabaseAdmin
+      .from("cap_alerts")
+      .insert({
+        identifier: cap.identifier,
+        sender: cap.sender,
+        sent: cap.sent,
+        status: cap.status,
+        msg_type: cap.msgType,
+        scope: cap.scope,
+        info: cap.info,
+      })
+      .select("id")
+      .single();
+    if (capError)
+      throw new Error(`official cap insert failed: ${capError.message}`);
+    const { data: row, error: insertError } = await supabaseAdmin
+      .from("broadcasts")
+      .insert({
+        kind: "official",
+        phase: "initial",
+        official_incident_id: incident.id,
+        cap_alert_id: capRow.id,
+        severity: "Severe",
+        commune_codes: [commune.code],
+        push_codes: [commune.code],
+      })
+      .select("id")
+      .single();
+    if (insertError)
+      throw new Error(
+        `official broadcast insert failed: ${insertError.message}`,
+      );
+    published += 1;
+    await auditRow({
+      action: "published",
+      reason: "official_relay",
+      kind: "official",
+      severity: "Severe",
+      commune_codes: [commune.code],
+      payload: {
+        official_incident_id: incident.id,
+        broadcast_id: row.id,
+        headline: texts[0]?.headline ?? "",
+      },
     });
   }
   return published;

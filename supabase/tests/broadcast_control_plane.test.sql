@@ -492,6 +492,14 @@ select ok(
   'the publisher retains warning reads without destructive privileges'
 );
 
+select col_is_null('public', 'broadcasts', 'official_incident_id',
+  'a broadcast may relay an official incident');
+select ok(
+  (select pg_get_constraintdef(oid) like '%official%'
+     from pg_constraint where conname = 'broadcasts_kind_check'),
+  'official is an accepted broadcast kind'
+);
+
 select * from finish();
 
 rollback;

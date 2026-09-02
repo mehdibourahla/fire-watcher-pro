@@ -307,6 +307,7 @@ export type Database = {
           id: string;
           inside_codes: string[];
           kind: string;
+          official_incident_id: string | null;
           onm_vigilance_id: string | null;
           phase: string;
           push_codes: string[];
@@ -325,6 +326,7 @@ export type Database = {
           id?: string;
           inside_codes?: string[];
           kind: string;
+          official_incident_id?: string | null;
           onm_vigilance_id?: string | null;
           phase?: string;
           push_codes: string[];
@@ -343,6 +345,7 @@ export type Database = {
           id?: string;
           inside_codes?: string[];
           kind?: string;
+          official_incident_id?: string | null;
           onm_vigilance_id?: string | null;
           phase?: string;
           push_codes?: string[];
@@ -370,6 +373,13 @@ export type Database = {
             columns: ["cluster_id"];
             isOneToOne: false;
             referencedRelation: "fire_clusters";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "broadcasts_official_incident_id_fkey";
+            columns: ["official_incident_id"];
+            isOneToOne: false;
+            referencedRelation: "official_incidents";
             referencedColumns: ["id"];
           },
           {
