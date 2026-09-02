@@ -10,8 +10,8 @@ select is(
 select results_eq(
   $$select family, criticality, freshness_basis, execution_target, cadence_minutes, schedule_enabled
     from public.source_contracts where key = 's3_slstr'$$,
-  $$values ('fire_detection', 'supporting', 'upstream_published_at', 'cloudflare', 60, true)$$,
-  'SLSTR runs hourly on the Worker as a supporting detection source'
+  $$values ('fire_detection', 'supporting', 'last_success_at', 'cloudflare', 60, true)$$,
+  'SLSTR runs hourly on the Worker and reports freshness from the poll, not an upstream slot'
 );
 select is(
   (select count(*)::integer from public.source_health where key = 's3_slstr'),
