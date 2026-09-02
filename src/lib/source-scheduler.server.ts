@@ -37,6 +37,10 @@ export function sourceSchedulerConfig(env: unknown): SourceSchedulerConfig {
   return { NADHIR_APP_URL: appUrl, NADHIR_CRON_SECRET: secret };
 }
 
+export function watchdogDue(scheduledTime: number): boolean {
+  return new Date(scheduledTime).getUTCMinutes() % 5 === 0;
+}
+
 export async function dispatchScheduledSources(
   scheduledTime: number,
   env: SourceSchedulerConfig,

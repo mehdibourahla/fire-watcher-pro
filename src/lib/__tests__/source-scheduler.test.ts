@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { dispatchScheduledSources } from "@/lib/source-scheduler.server";
+import {
+  dispatchScheduledSources,
+  watchdogDue,
+} from "@/lib/source-scheduler.server";
 import { handleSourceJobRequest } from "@/routes/api/internal/source-jobs/run";
 
 const env = {
@@ -84,6 +87,14 @@ describe("dispatchScheduledSources", () => {
 
     expect(result).toEqual({ enqueued: 11, dispatched: 1, failed: 3 });
     expect(JSON.stringify(result)).not.toContain(env.NADHIR_CRON_SECRET);
+  });
+});
+
+describe("watchdogDue", () => {
+  it("runs the watchdog on five-minute boundaries only", () => {
+    expect(watchdogDue(Date.parse("2026-09-02T06:05:00Z"))).toBe(true);
+    expect(watchdogDue(Date.parse("2026-09-02T06:00:30Z"))).toBe(true);
+    expect(watchdogDue(Date.parse("2026-09-02T06:07:00Z"))).toBe(false);
   });
 });
 
