@@ -48,12 +48,24 @@ export function confidenceScore(dets: Det[]) {
   );
 }
 
+export const LOOK_SLOT_MS = 10 * 60_000;
+
+/* Two adjacent pixels of a staring sensor in one slot are one look at one fire,
+ * not two independent observations of it. */
+export function distinctLooks(dets: Det[]): number {
+  return new Set(
+    dets.map(
+      (d) =>
+        `${d.sensor}:${Math.floor(Date.parse(d.detected_at) / LOOK_SLOT_MS)}`,
+    ),
+  ).size;
+}
+
 export function stateFor(dets: Det[], lastMs: number, now: number) {
   const ageH = (now - lastMs) / HOUR;
-  const sources = new Set(dets.map((d) => d.sensor)).size;
   if (ageH > 24) return "extinguished";
   if (ageH > 6) return "contained_guess";
-  if (dets.length >= 2 || sources >= 2) return "active";
+  if (distinctLooks(dets) >= 2) return "active";
   return "unconfirmed";
 }
 
