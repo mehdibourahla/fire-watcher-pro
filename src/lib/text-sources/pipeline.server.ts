@@ -1,4 +1,5 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { fetchAllPages } from "@/lib/paginate";
 
 import { parseDgpcBulletin, type DgpcLine } from "./dgpc-template";
 import {
@@ -422,18 +423,28 @@ const supabaseStore: TextSourceStore = {
       "document insert",
     ),
   loadGazetteer: async () => {
-    const [units, aliases] = await Promise.all([
-      supabaseAdmin
-        .from("admin_units")
-        .select("id, level, name_ar, parent_id")
-        .in("level", ["wilaya", "commune"])
-        .range(0, 4999),
-      supabaseAdmin
-        .from("admin_unit_aliases")
-        .select("admin_unit_id, alias_ar"),
+    const [rows, aliasRows] = await Promise.all([
+      fetchAllPages<{
+        id: string;
+        level: string;
+        name_ar: string;
+        parent_id: string | null;
+      }>((from, to) =>
+        supabaseAdmin
+          .from("admin_units")
+          .select("id, level, name_ar, parent_id")
+          .in("level", ["wilaya", "commune"])
+          .order("code")
+          .range(from, to),
+      ),
+      fetchAllPages<{ admin_unit_id: string; alias_ar: string }>((from, to) =>
+        supabaseAdmin
+          .from("admin_unit_aliases")
+          .select("admin_unit_id, alias_ar")
+          .order("admin_unit_id")
+          .range(from, to),
+      ),
     ]);
-    const rows = must(units, "gazetteer");
-    const aliasRows = must(aliases, "aliases");
     const aliasById = new Map<string, string[]>();
     for (const a of aliasRows)
       aliasById.set(a.admin_unit_id, [

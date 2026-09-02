@@ -40,6 +40,15 @@ describe("parseTelegramPreview", () => {
     expect(post.text).not.toContain("<");
   });
 
+  it("strips nested or broken tags completely", () => {
+    const html = `<div class="tgme_widget_message_wrap"><div class="tgme_widget_message" data-post="X/2">
+      <div class="tgme_widget_message_text js-message_text" dir="auto">a <scr<b>ipt>b</div>
+      <time datetime="2026-09-02T10:00:00+00:00"></time></div></div>`;
+    const text = parseTelegramPreview(html)[0]!.text;
+    expect(text).not.toContain("<");
+    expect(text).toContain("b");
+  });
+
   it("decodes html entities", () => {
     const html = `<div class="tgme_widget_message_wrap"><div class="tgme_widget_message" data-post="X/1">
       <div class="tgme_widget_message_text js-message_text" dir="auto">a &amp; b&nbsp;c<br/>d &lt;e&gt;</div>
