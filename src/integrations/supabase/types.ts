@@ -928,6 +928,306 @@ export type Database = {
         };
         Relationships: [];
       };
+      admin_unit_aliases: {
+        Row: {
+          admin_unit_id: string;
+          alias_ar: string;
+          source: string;
+        };
+        Insert: {
+          admin_unit_id: string;
+          alias_ar: string;
+          source: string;
+        };
+        Update: {
+          admin_unit_id?: string;
+          alias_ar?: string;
+          source?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "admin_unit_aliases_admin_unit_id_fkey";
+            columns: ["admin_unit_id"];
+            isOneToOne: false;
+            referencedRelation: "admin_units";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      incident_mentions: {
+        Row: {
+          as_of: string;
+          commune_id: string | null;
+          created_at: string;
+          document_id: string;
+          evidence: string;
+          extractor: string;
+          fire_count: number;
+          id: string;
+          incident_id: string | null;
+          kind: string;
+          place_text: string | null;
+          precision: string;
+          status: string;
+          text_source_id: string;
+          wilaya_id: string;
+        };
+        Insert: {
+          as_of: string;
+          commune_id?: string | null;
+          created_at?: string;
+          document_id: string;
+          evidence: string;
+          extractor: string;
+          fire_count?: number;
+          id?: string;
+          incident_id?: string | null;
+          kind: string;
+          place_text?: string | null;
+          precision: string;
+          status: string;
+          text_source_id: string;
+          wilaya_id: string;
+        };
+        Update: {
+          as_of?: string;
+          commune_id?: string | null;
+          created_at?: string;
+          document_id?: string;
+          evidence?: string;
+          extractor?: string;
+          fire_count?: number;
+          id?: string;
+          incident_id?: string | null;
+          kind?: string;
+          place_text?: string | null;
+          precision?: string;
+          status?: string;
+          text_source_id?: string;
+          wilaya_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "incident_mentions_commune_id_fkey";
+            columns: ["commune_id"];
+            isOneToOne: false;
+            referencedRelation: "admin_units";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "incident_mentions_document_id_fkey";
+            columns: ["document_id"];
+            isOneToOne: false;
+            referencedRelation: "source_documents";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "incident_mentions_incident_id_fkey";
+            columns: ["incident_id"];
+            isOneToOne: false;
+            referencedRelation: "official_incidents";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "incident_mentions_text_source_id_fkey";
+            columns: ["text_source_id"];
+            isOneToOne: false;
+            referencedRelation: "text_sources";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "incident_mentions_wilaya_id_fkey";
+            columns: ["wilaya_id"];
+            isOneToOne: false;
+            referencedRelation: "admin_units";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      official_incidents: {
+        Row: {
+          as_of: string;
+          authority_tier: string;
+          commune_id: string | null;
+          evidence: string;
+          first_reported_at: string;
+          id: string;
+          kind: string;
+          last_reported_at: string;
+          latest_mention_id: string | null;
+          mention_count: number;
+          place_text: string | null;
+          precision: string;
+          status: string;
+          updated_at: string;
+          wilaya_id: string;
+        };
+        Insert: {
+          as_of: string;
+          authority_tier: string;
+          commune_id?: string | null;
+          evidence: string;
+          first_reported_at: string;
+          id?: string;
+          kind: string;
+          last_reported_at: string;
+          latest_mention_id?: string | null;
+          mention_count?: number;
+          place_text?: string | null;
+          precision: string;
+          status: string;
+          updated_at?: string;
+          wilaya_id: string;
+        };
+        Update: {
+          as_of?: string;
+          authority_tier?: string;
+          commune_id?: string | null;
+          evidence?: string;
+          first_reported_at?: string;
+          id?: string;
+          kind?: string;
+          last_reported_at?: string;
+          latest_mention_id?: string | null;
+          mention_count?: number;
+          place_text?: string | null;
+          precision?: string;
+          status?: string;
+          updated_at?: string;
+          wilaya_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "official_incidents_commune_id_fkey";
+            columns: ["commune_id"];
+            isOneToOne: false;
+            referencedRelation: "admin_units";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "official_incidents_latest_mention_fkey";
+            columns: ["latest_mention_id"];
+            isOneToOne: false;
+            referencedRelation: "incident_mentions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "official_incidents_wilaya_id_fkey";
+            columns: ["wilaya_id"];
+            isOneToOne: false;
+            referencedRelation: "admin_units";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      source_documents: {
+        Row: {
+          body: string;
+          content_hash: string;
+          external_id: string;
+          fetched_at: string;
+          id: string;
+          published_at: string;
+          raw: Json | null;
+          text_source_id: string;
+          url: string;
+        };
+        Insert: {
+          body: string;
+          content_hash: string;
+          external_id: string;
+          fetched_at?: string;
+          id?: string;
+          published_at: string;
+          raw?: Json | null;
+          text_source_id: string;
+          url: string;
+        };
+        Update: {
+          body?: string;
+          content_hash?: string;
+          external_id?: string;
+          fetched_at?: string;
+          id?: string;
+          published_at?: string;
+          raw?: Json | null;
+          text_source_id?: string;
+          url?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "source_documents_text_source_id_fkey";
+            columns: ["text_source_id"];
+            isOneToOne: false;
+            referencedRelation: "text_sources";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      text_sources: {
+        Row: {
+          authority_tier: string;
+          created_at: string;
+          enabled: boolean;
+          id: string;
+          key: string;
+          kind: string;
+          label: string;
+          language: string;
+          template: string | null;
+          url: string;
+          wilaya_id: string | null;
+        };
+        Insert: {
+          authority_tier: string;
+          created_at?: string;
+          enabled?: boolean;
+          id?: string;
+          key: string;
+          kind: string;
+          label: string;
+          language?: string;
+          template?: string | null;
+          url: string;
+          wilaya_id?: string | null;
+        };
+        Update: {
+          authority_tier?: string;
+          created_at?: string;
+          enabled?: boolean;
+          id?: string;
+          key?: string;
+          kind?: string;
+          label?: string;
+          language?: string;
+          template?: string | null;
+          url?: string;
+          wilaya_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "text_sources_key_fkey";
+            columns: ["key"];
+            isOneToOne: true;
+            referencedRelation: "source_contracts";
+            referencedColumns: ["key"];
+          },
+          {
+            foreignKeyName: "text_sources_key_fkey";
+            columns: ["key"];
+            isOneToOne: true;
+            referencedRelation: "source_health";
+            referencedColumns: ["key"];
+          },
+          {
+            foreignKeyName: "text_sources_wilaya_id_fkey";
+            columns: ["wilaya_id"];
+            isOneToOne: false;
+            referencedRelation: "admin_units";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       onm_vigilance: {
         Row: {
           area_desc: string;
@@ -2187,6 +2487,15 @@ export type Database = {
           observed_at?: string | null;
           sighting?: string | null;
           status?: string | null;
+        };
+        Relationships: [];
+      };
+      official_incident_recall_daily: {
+        Row: {
+          communes: number | null;
+          day: string | null;
+          mentions: number | null;
+          with_cluster: number | null;
         };
         Relationships: [];
       };
