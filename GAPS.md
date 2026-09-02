@@ -199,7 +199,9 @@ Eight national press feeds joined the registry on 2026-09-02 as `media`-tier RSS
 Every article is stored, only fire-related ones reach the LLM, and a press mention attaches to
 an open incident but never opens one: under the glossary only an official source confirms. The
 purpose for now is measuring publication cadence across media beside the DGPC channel, whose
-fire bulletins arrive 1–4 times a day with a median gap of 10 h and nothing at night. Sources
+fire bulletins arrive 1–4 times a day, a median of 10 h apart across all consecutive
+bulletins including the overnight gap (2.7 h when only same-day pairs are counted), and
+nothing at night. Sources
 stay national by rule — no per-wilaya or per-commune page is ever registered — and everything
 official beyond DGPC (wilaya directorates, Tariki road closures, DGF) sits behind Facebook.
 

@@ -23,7 +23,7 @@ function publishedAt(raw: string): string | null {
 
 export function parseRssItems(xml: string): TelegramPost[] {
   const posts: TelegramPost[] = [];
-  for (const m of xml.matchAll(/<item>([\s\S]*?)<\/item>/g)) {
+  for (const m of xml.matchAll(/<item(?:\s[^>]*)?>([\s\S]*?)<\/item>/g)) {
     const item = m[1]!;
     const link = field(item, "link");
     const externalId = field(item, "guid") ?? link;

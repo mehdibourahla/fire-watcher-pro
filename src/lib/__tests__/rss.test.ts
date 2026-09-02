@@ -39,6 +39,14 @@ describe("parseRssItems", () => {
     expect(p.text).not.toContain("<img");
   });
 
+  it("accepts an attributed item start tag", () => {
+    const xml = fixture("tsa-sample.xml").replace(
+      /<item>/g,
+      '<item xml:lang="fr">',
+    );
+    expect(parseRssItems(xml)).toHaveLength(2);
+  });
+
   it("returns oldest first", () => {
     const posts = parseRssItems(fixture("tsa-sample.xml"));
     expect(posts[0]!.publishedAt <= posts[1]!.publishedAt).toBe(true);
