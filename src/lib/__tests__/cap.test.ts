@@ -14,7 +14,7 @@ const input = {
   lat: 36.5553,
   lon: 5.4707,
   radiusKm: 5,
-  confidence: 0.83,
+  confirmed: false,
   urgent: false,
   areaDesc: "Béjaïa",
   sentAt: new Date("2026-08-28T12:00:00Z"),
@@ -64,11 +64,11 @@ describe("buildFireCap", () => {
   });
 
   it("reports certainty from how strongly the fire was detected", () => {
+    expect(buildFireCap({ ...input, confirmed: true }).info[0]!.certainty).toBe(
+      "Observed",
+    );
     expect(
-      buildFireCap({ ...input, confidence: 0.83 }).info[0]!.certainty,
-    ).toBe("Observed");
-    expect(
-      buildFireCap({ ...input, confidence: 0.62 }).info[0]!.certainty,
+      buildFireCap({ ...input, confirmed: false }).info[0]!.certainty,
     ).toBe("Likely");
   });
 
@@ -98,7 +98,7 @@ const broadcastInput = {
   lat: 36.7447,
   lon: 4.3722,
   severity: "Severe" as const,
-  confidence: 0.83,
+  confirmed: false,
   areaDesc: "Azazga, Tizi Ouzou",
   sentAt: new Date("2026-08-30T12:00:00Z"),
   texts: [

@@ -49,7 +49,20 @@ export type FireCluster = {
   wilaya_id: string | null;
   nearest_settlement_id: string | null;
   nearest_settlement_km: number | null;
+  confirmed_at: string | null;
 };
+
+export type FireStage = "candidate" | "detected" | "confirmed";
+
+/* Glossary: a single look is a Candidate, two independent looks make it Detected,
+ * and only an official source Confirms. Liveness stays in `state`. */
+export function fireStage(cluster: {
+  state: string;
+  confirmed_at: string | null;
+}): FireStage {
+  if (cluster.confirmed_at !== null) return "confirmed";
+  return cluster.state === "unconfirmed" ? "candidate" : "detected";
+}
 
 export type Detection = {
   id: string;

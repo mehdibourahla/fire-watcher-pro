@@ -34,6 +34,8 @@ function memoryStore() {
     OpenIncident & { mention_count: number; status: string }
   >();
   const unlisted = new Map<string, string>();
+  const confirmed: { communeId: string; asOf: string; mentionId: string }[] =
+    [];
   let seq = 0;
   const store: TextSourceStore = {
     loadSource: async (key) => ({
@@ -95,6 +97,10 @@ function memoryStore() {
         mention_count: cur.mention_count + 1,
       });
     },
+    confirmClusters: async (rows) => {
+      for (const row of rows) confirmed.push(row);
+      return rows.length;
+    },
     listedIncidents: async (before) =>
       [...incidents.values()]
         .filter((i) => !unlisted.has(i.id) && i.last_reported_at < before)
@@ -107,7 +113,7 @@ function memoryStore() {
       m["incident_id"] = incidentId;
     },
   };
-  return { store, documents, mentions, incidents, unlisted };
+  return { store, documents, mentions, incidents, unlisted, confirmed };
 }
 
 function deps(

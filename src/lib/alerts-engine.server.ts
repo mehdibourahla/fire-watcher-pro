@@ -131,7 +131,7 @@ type CapEvent = {
   shortId: string;
   lat: number;
   lon: number;
-  confidence: number;
+  confirmed: boolean;
   urgent: boolean;
   place: string;
 };
@@ -149,7 +149,7 @@ async function ensureCapAlerts(
       lat: event.lat,
       lon: event.lon,
       radiusKm: SETTLEMENT_EMERGENCY_KM,
-      confidence: event.confidence,
+      confirmed: event.confirmed,
       urgent: event.urgent,
       areaDesc: event.place,
       sentAt,
@@ -221,7 +221,7 @@ export async function evaluateAlerts(userId?: string): Promise<AlertRun> {
   const { data: allLive } = await supabaseAdmin
     .from("fire_clusters")
     .select(
-      "id, short_id, state, lat, lon, confidence, spread_bearing_deg, last_detected_at",
+      "id, short_id, state, lat, lon, confidence, spread_bearing_deg, last_detected_at, confirmed_at",
     )
     .in("state", LIVE_STATES);
 
@@ -380,7 +380,7 @@ export async function evaluateAlerts(userId?: string): Promise<AlertRun> {
             shortId: cluster.short_id,
             lat: cluster.lat,
             lon: cluster.lon,
-            confidence: cluster.confidence,
+            confirmed: cluster.confirmed_at !== null,
             urgent: !!urgent,
             place: placeByCluster.get(cluster.id) ?? cluster.short_id,
           });

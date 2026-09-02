@@ -128,5 +128,10 @@ select has_column('public', 'official_incidents', 'unlisted_at',
 select col_is_null('public', 'official_incidents', 'unlisted_at',
   'a listed incident has no unlisted_at');
 
+select has_column('public', 'fire_clusters', 'confirmed_at',
+  'a fire records when an authority confirmed it');
+select has_column('public', 'fire_clusters', 'confirmed_mention_id',
+  'the confirming mention is kept for the evidence line');
+
 select * from finish();
 rollback;

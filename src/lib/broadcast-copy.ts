@@ -31,16 +31,16 @@ type Copy = {
   compass: [string, string, string, string, string, string, string, string];
 };
 
-/* AR copy is approved maquette wording except the inside-commune sentences
- * (added 2026-09-02, unreviewed); instruction lines are the pre-approved
+/* AR copy is approved maquette wording except the inside-commune sentences and the
+ * 2026-09-02 detected/confirmed rewording, both unreviewed; instruction lines are the pre-approved
  * Standing Guidance already shipped in alerts-engine. KAB pending native review. */
 const COPY: Record<"ar" | "fr" | "en" | "kab", Copy> = {
   ar: {
     event: "حريق غابات",
-    initialHeadline: "حريق مؤكد — {{place}}، {{wilaya}}",
+    initialHeadline: "حريق مرصود بالقمر الاصطناعي — {{place}}، {{wilaya}}",
     initialDesc:
-      "حريق مؤكد عبر القمر الاصطناعي على بعد نحو {{km}} كلم من {{place}}",
-    initialDescNoKm: "حريق مؤكد عبر القمر الاصطناعي قرب {{place}}",
+      "رصدت الأقمار الاصطناعية حريقًا على بعد نحو {{km}} كلم من {{place}}",
+    initialDescNoKm: "رصدت الأقمار الاصطناعية حريقًا قرب {{place}}",
     initialDrift: "، يتقدم مع الريح نحو {{bearing}}",
     updateHeadline: "تحديث — حريق {{place}}",
     updateDesc: "اتسع الرصد إلى {{hotspots}} نقطة حرارية.",
@@ -67,10 +67,10 @@ const COPY: Record<"ar" | "fr" | "en" | "kab", Copy> = {
   },
   fr: {
     event: "Feu de forêt",
-    initialHeadline: "Incendie confirmé — {{place}}, {{wilaya}}",
+    initialHeadline: "Incendie détecté par satellite — {{place}}, {{wilaya}}",
     initialDesc:
-      "Incendie confirmé par satellite à environ {{km}} km de {{place}}",
-    initialDescNoKm: "Incendie confirmé par satellite près de {{place}}",
+      "Incendie détecté par satellite à environ {{km}} km de {{place}}",
+    initialDescNoKm: "Incendie détecté par satellite près de {{place}}",
     initialDrift: ", poussé par le vent vers {{bearing}}",
     updateHeadline: "Mise à jour — incendie de {{place}}",
     updateDesc: "La détection s'est étendue à {{hotspots}} points chauds.",
@@ -98,9 +98,9 @@ const COPY: Record<"ar" | "fr" | "en" | "kab", Copy> = {
   },
   en: {
     event: "Wildfire",
-    initialHeadline: "Confirmed fire — {{place}}, {{wilaya}}",
-    initialDesc: "Satellite-confirmed fire about {{km}} km from {{place}}",
-    initialDescNoKm: "Satellite-confirmed fire near {{place}}",
+    initialHeadline: "Fire detected by satellite — {{place}}, {{wilaya}}",
+    initialDesc: "Satellite-detected fire about {{km}} km from {{place}}",
+    initialDescNoKm: "Satellite-detected fire near {{place}}",
     initialDrift: ", moving with the wind toward the {{bearing}}",
     updateHeadline: "Update — {{place}} fire",
     updateDesc: "Detection has grown to {{hotspots}} hotspots.",
@@ -127,10 +127,10 @@ const COPY: Record<"ar" | "fr" | "en" | "kab", Copy> = {
   },
   kab: {
     event: "Times n teẓgi",
-    initialHeadline: "Times tettwatebbet — {{place}}, {{wilaya}}",
+    initialHeadline: "Times tettwaf s uḍfar n igenwan — {{place}}, {{wilaya}}",
     initialDesc:
-      "Times tettwatebbet s uḍfar n igenwan ɣef azal n {{km}} km si {{place}}",
-    initialDescNoKm: "Times tettwatebbet s uḍfar n igenwan ɣer {{place}}",
+      "Times tettwaf s uḍfar n igenwan ɣef azal n {{km}} km si {{place}}",
+    initialDescNoKm: "Times tettwaf s uḍfar n igenwan ɣer {{place}}",
     initialDrift: ", tetteddu d waḍu ɣer {{bearing}}",
     updateHeadline: "Aleqqem — times n {{place}}",
     updateDesc: "Aḍfar yewweḍ ɣer {{hotspots}} n tenqiḍin n tmes.",

@@ -44,9 +44,14 @@ describe("broadcastTexts", () => {
         }
   });
 
-  it("uses the approved maquette copy for the Arabic initial", () => {
+  it("says detected, never confirmed, in Nadhir's own voice", () => {
     const ar = broadcastTexts("initial", vars)[0]!;
-    expect(ar.headline).toBe("حريق مؤكد — عزازقة، تيزي وزو");
+    expect(ar.headline).toBe("حريق مرصود بالقمر الاصطناعي — عزازقة، تيزي وزو");
+    expect(ar.headline).not.toContain("مؤكد");
+    for (const text of broadcastTexts("initial", vars)) {
+      expect(text.headline.toLowerCase()).not.toContain("confirm");
+      expect(text.description.toLowerCase()).not.toContain("confirm");
+    }
     expect(ar.description).toContain("4.2");
     expect(ar.description).toContain("الجنوب الشرقي");
   });

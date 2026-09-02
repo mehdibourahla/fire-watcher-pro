@@ -18,6 +18,7 @@ const cluster = (over: Partial<FireCluster>): FireCluster => ({
   lat: 36.5,
   lon: 4.0,
   detection_count: 3,
+  confirmed_at: null,
   sources: ["firms"],
   max_frp_mw: 10,
   confidence: 0.8,

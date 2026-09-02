@@ -4,7 +4,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 
 import type { FeatureCollection, Point } from "geojson";
 
-import type { FireCluster } from "@/lib/nadhir";
+import { fireStage, type FireCluster } from "@/lib/nadhir";
 
 import { DEFAULT_MAP_LAYERS, type MapLayers } from "./map-layers";
 
@@ -34,7 +34,6 @@ const OFFICIAL_LAYERS = [
   "official-points",
 ];
 const EMPTY: FeatureCollection = { type: "FeatureCollection", features: [] };
-const UNVERIFIED_MAX_CONFIDENCE = 0.6;
 
 const BASEMAP = {
   light: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
@@ -77,7 +76,7 @@ function toGeoJSON(clusters: FireCluster[]): FeatureCollection {
           color: stateColor(c.state),
           area,
           sizeRank: area > 300 ? 3 : area > 100 ? 2 : 1,
-          unverified: c.confidence < UNVERIFIED_MAX_CONFIDENCE,
+          unverified: fireStage(c) === "candidate",
         },
       };
     }),

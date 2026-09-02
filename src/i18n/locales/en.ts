@@ -260,7 +260,7 @@ export const en = {
     firstSeen: "First seen",
     lastSeen: "Last detection",
     area: "Estimated area",
-    confidence: "Confidence",
+    stage: "Evidence",
     peakFrp: "Peak radiative power",
     detectionCount: "Detections",
     wind: "Wind",
@@ -276,6 +276,11 @@ export const en = {
     alertMe: "Alert me about this fire",
     commune: "Commune",
     wilaya: "Wilaya",
+  },
+  stage: {
+    candidate: "Single detection",
+    detected: "Detected by satellite",
+    confirmed: "Confirmed by Protection Civile",
   },
   state: {
     unconfirmed: "Unconfirmed",
@@ -293,8 +298,8 @@ export const en = {
     area: "Estimated burned area from the size and count of satellite detections \u2014 an approximation, not a measured perimeter.",
     frp: "Peak Fire Radiative Power: the strongest heat output measured by satellite, in megawatts.",
     detections: "Number of satellite heat detections grouped into this fire.",
-    confidence:
-      "How likely this is a real fire, combining sensor agreement, persistence and known false-alarm sources.",
+    stage:
+      "One satellite look is a single detection. Two independent looks make it a satellite detection. Only Protection Civile confirms a fire; Nadhir never does.",
     firstSeen:
       "Time of the first satellite detection. A fire can start before the first satellite pass.",
     lastSeen:
@@ -447,7 +452,7 @@ export const en = {
     mission:
       "Detect wildfires in Algeria as early as satellite data allows, forecast daily fire danger, and deliver clear alerts in Arabic, French, English and Tamazight — free and open source.",
     howTitle: "How detection works",
-    how: "Satellite hotspots from NASA FIRMS (VIIRS/MODIS) and EUMETSAT Meteosat MTG FCI are de-duplicated, clustered in space and time, and scored for confidence. A fire only becomes 'active' once two detections agree or one high-confidence detection lands in plausible terrain.",
+    how: "Satellite hotspots from NASA FIRMS (VIIRS/MODIS), EUMETSAT Meteosat MTG FCI and Copernicus Sentinel-3 SLSTR are de-duplicated and clustered in space and time. One look is a single detection; two independent looks make it a satellite detection. Nadhir never calls a fire confirmed — only Protection Civile does, and its wording and timestamp are shown as they were published.",
     dangerTitle: "How danger is rated",
     danger:
       "Fire danger uses the Canadian Fire Weather Index, computed from temperature, humidity, wind and rainfall, cross-checked against EFFIS/GWIS forecasts, then adjusted for forest cover and wind.",

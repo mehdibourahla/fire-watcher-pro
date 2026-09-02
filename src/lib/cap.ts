@@ -42,7 +42,7 @@ export type FireCapInput = {
   lat: number;
   lon: number;
   radiusKm: number;
-  confidence: number;
+  confirmed: boolean;
   urgent: boolean;
   areaDesc: string;
   sentAt: Date;
@@ -51,7 +51,6 @@ export type FireCapInput = {
 
 export const CAP_SENDER = "alerts@nadhir.app";
 const VALID_FOR_MINUTES = 180;
-const OBSERVED_CONFIDENCE = 0.8;
 
 /** CAP 1.2 forbids the "Z" designator; Algeria is UTC+01:00 all year. */
 function capDateTime(date: Date): string {
@@ -82,8 +81,7 @@ export function buildFireCap(input: FireCapInput): CapAlert {
       event: text.event,
       urgency: input.urgent ? "Immediate" : "Expected",
       severity: input.urgent ? "Extreme" : "Severe",
-      certainty:
-        input.confidence >= OBSERVED_CONFIDENCE ? "Observed" : "Likely",
+      certainty: input.confirmed ? "Observed" : "Likely",
       effective,
       expires,
       headline: text.headline,
@@ -104,7 +102,7 @@ export type BroadcastCapInput = {
   lat: number;
   lon: number;
   severity: "Extreme" | "Severe";
-  confidence: number;
+  confirmed: boolean;
   areaDesc: string;
   sentAt: Date;
   texts: CapText[];
@@ -145,7 +143,7 @@ export function buildBroadcastCap(input: BroadcastCapInput): CapAlert {
       ? "Unlikely"
       : input.phase === "end"
         ? "Possible"
-        : input.confidence >= OBSERVED_CONFIDENCE
+        : input.confirmed
           ? "Observed"
           : "Likely";
 
