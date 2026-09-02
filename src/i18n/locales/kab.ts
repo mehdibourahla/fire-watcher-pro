@@ -261,7 +261,7 @@ export const kab: Translation = {
     firstSeen: "Tifin tamezwarut",
     lastSeen: "Tifin taneggarut",
     area: "Tajumma tasmenyaft",
-    confidence: "Laman",
+    stage: "Ttbut",
     peakFrp: "Tazmert tafellayt",
     detectionCount: "Tifin",
     wind: "Aḍu",
@@ -276,6 +276,11 @@ export const kab: Translation = {
     alertMe: "Ɛeggen-iyi ɣef tmessi-a",
     commune: "Taɣiwant",
     wilaya: "Tawilayt",
+  },
+  stage: {
+    candidate: "Yiwen uḍfar",
+    detected: "Yettwaf s uḍfar n igenwan",
+    confirmed: "Yettwasentem sɣur Tɣellist Tagdudant",
   },
   state: {
     unconfirmed: "Ur yettwasentem ara",
@@ -293,8 +298,8 @@ export const kab: Translation = {
     area: "Tajumma yerɣan tettwaqder seg teɣzi d umḍan n twaliyin n usatilit — d aqdar kan, mačči d ayen yettwaktalen.",
     frp: "Tazmert tafellayt n tmes yettwaktalen seg usatilit, s umigawatt.",
     detections: "Amḍan n twaliyin n uzɣal n usatilit yeddukklen deg tmes-a.",
-    confidence:
-      "Amur n tidet n tmes-a, s usdukkel n yisenqaden, tazzayert d yiɣbula n yiɣelliyen ur nelli ara.",
+    stage:
+      "Yiwen uḍfar n igenwan d yiwen uḍfar kan. Sin yeḍfaren imyellelen ttarran-t d aḍfar n igenwan. D Tɣellist Tagdudant kan i yessentemen times; Naḍir werǧin.",
     firstSeen:
       "Akud n twali tamezwarut n usatilit. Times tezmer ad tebdu uqbel.",
     lastSeen:
@@ -445,7 +450,7 @@ export const kab: Translation = {
     mission:
       "Af timessi di Lezzayer zik akken zemren isaṭeliten, smenyef aɣilif n wass, tazneḍ alɣuten ibanen s taɛrabt, tafransist, taglizit d teqbaylit — baṭel yerna d aɣbalu yeldin.",
     howTitle: "Amek tettili tifin",
-    how: "Tinqiḍin tiḥmayin n NASA FIRMS d EUMETSAT MTG FCI ttwasemlent, ttwasegrurdent deg wakud d wemkan, syen ttunefk-asent tikta n laman.",
+    how: "Tinqiḍin tiḥmayin n NASA FIRMS, EUMETSAT MTG FCI d Copernicus Sentinel-3 SLSTR ttwasemlent, ttwasegrurdent deg wakud d wemkan. Yiwen uḍfar d yiwen uḍfar kan; sin yeḍfaren imyellelen ttarran-t d aḍfar n igenwan. Naḍir werǧin ad yini belli times tettwasentem: d Tɣellist Tagdudant kan i t-ixeddmen, awalen-is d wakud-is ttwaskanen akken llan.",
     dangerTitle: "Amek yettwaktal uɣilif",
     danger:
       "Aɣilif yettwaseqdec s FWI akanadi i d-yettwasefrak si tafuka, tikawt, aḍu d ugeffur, syen yettwasenqed s EFFIS/GWIS.",

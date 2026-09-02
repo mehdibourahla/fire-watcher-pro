@@ -737,6 +737,8 @@ export type Database = {
         Row: {
           commune_id: string | null;
           confidence: number;
+          confirmed_at: string | null;
+          confirmed_mention_id: string | null;
           created_at: string;
           detection_count: number;
           est_area_ha: number | null;
@@ -766,6 +768,8 @@ export type Database = {
         Insert: {
           commune_id?: string | null;
           confidence?: number;
+          confirmed_at?: string | null;
+          confirmed_mention_id?: string | null;
           created_at?: string;
           detection_count?: number;
           est_area_ha?: number | null;
@@ -795,6 +799,8 @@ export type Database = {
         Update: {
           commune_id?: string | null;
           confidence?: number;
+          confirmed_at?: string | null;
+          confirmed_mention_id?: string | null;
           created_at?: string;
           detection_count?: number;
           est_area_ha?: number | null;

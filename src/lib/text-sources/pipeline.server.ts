@@ -98,6 +98,9 @@ export type TextSourceStore = {
     before: string,
   ) => Promise<{ id: string; area_id: string }[]>;
   markUnlisted: (ids: string[], asOf: string) => Promise<void>;
+  confirmClusters: (
+    rows: { communeId: string; asOf: string; mentionId: string }[],
+  ) => Promise<number>;
 };
 
 export type TextSourcePipelineDependencies = {
@@ -119,6 +122,7 @@ export type TextSourceRun = {
   incidentsCreated: number;
   incidentsUpdated: number;
   incidentsUnlisted: number;
+  clustersConfirmed: number;
   llmSkipped: boolean;
   llmFailed: number;
   error?: string;
@@ -307,6 +311,7 @@ export async function runTextSourceWith(
     incidentsCreated: 0,
     incidentsUpdated: 0,
     incidentsUnlisted: 0,
+    clustersConfirmed: 0,
     llmSkipped: false,
     llmFailed: 0,
   };
@@ -428,6 +433,15 @@ export async function runTextSourceWith(
   const rows = inserts.length ? await deps.store.insertMentions(inserts) : [];
   run.mentions = rows.length;
   run.resolved = rows.length;
+  run.clustersConfirmed = await deps.store.confirmClusters(
+    rows
+      .filter((r) => r.commune_id !== null)
+      .map((r) => ({
+        communeId: r.commune_id!,
+        asOf: r.as_of,
+        mentionId: r.id,
+      })),
+  );
   const merged = await mergeMentions(rows, source, deps.store);
   run.incidentsCreated = merged.created;
   run.incidentsUpdated = merged.updated;
@@ -599,6 +613,34 @@ const supabaseStore: TextSourceStore = {
       id: row.id,
       area_id: row.commune_id ?? row.wilaya_id,
     }));
+  },
+  confirmClusters: async (rows) => {
+    let confirmed = 0;
+    for (const row of rows) {
+      const asOfMs = Date.parse(row.asOf);
+      // the same ±24 h bracket the recall view uses
+      const { data, error } = await supabaseAdmin
+        .from("fire_clusters")
+        .update({
+          confirmed_at: row.asOf,
+          confirmed_mention_id: row.mentionId,
+        })
+        .eq("commune_id", row.communeId)
+        .is("confirmed_at", null)
+        .neq("state", "false_positive")
+        .lte(
+          "first_detected_at",
+          new Date(asOfMs + 24 * 3_600_000).toISOString(),
+        )
+        .gte(
+          "last_detected_at",
+          new Date(asOfMs - 24 * 3_600_000).toISOString(),
+        )
+        .select("id");
+      if (error) throw new Error(`cluster confirm failed: ${error.message}`);
+      confirmed += data?.length ?? 0;
+    }
+    return confirmed;
   },
   markUnlisted: async (ids, asOf) => {
     for (let i = 0; i < ids.length; i += 200) {

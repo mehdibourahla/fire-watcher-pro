@@ -41,6 +41,7 @@ import {
   placeLabel,
   unitName,
   type FireCluster,
+  fireStage,
 } from "@/lib/nadhir";
 import { sourceHealthCapabilityAffected } from "@/lib/source-health";
 import {
@@ -744,16 +745,10 @@ function ClusterDetail({
             </dd>
           </div>
         </Explain>
-        <Explain text={t("explain.confidence")}>
+        <Explain text={t("explain.stage")}>
           <div className="card p-2.5">
-            <dt className="text-xs text-muted-foreground">
-              {t("fire.confidence")}
-            </dt>
-            <dd className="font-medium">
-              <span className="tabular">
-                {Math.round(cluster.confidence * 100)}%
-              </span>
-            </dd>
+            <dt className="text-xs text-muted-foreground">{t("fire.stage")}</dt>
+            <dd className="font-medium">{t(`stage.${fireStage(cluster)}`)}</dd>
           </div>
         </Explain>
       </dl>

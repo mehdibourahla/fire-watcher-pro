@@ -264,7 +264,7 @@ export const fr: Translation = {
     firstSeen: "Première détection",
     lastSeen: "Dernière détection",
     area: "Surface estimée",
-    confidence: "Confiance",
+    stage: "Éléments",
     peakFrp: "Puissance radiative max",
     detectionCount: "Détections",
     wind: "Vent",
@@ -280,6 +280,11 @@ export const fr: Translation = {
     alertMe: "M'alerter sur ce feu",
     commune: "Commune",
     wilaya: "Wilaya",
+  },
+  stage: {
+    candidate: "Détection unique",
+    detected: "Détecté par satellite",
+    confirmed: "Confirmé par la Protection civile",
   },
   state: {
     unconfirmed: "Non confirmé",
@@ -298,8 +303,8 @@ export const fr: Translation = {
     frp: "Puissance radiative maximale du feu, mesur\u00e9e par satellite, en m\u00e9gawatts.",
     detections:
       "Nombre de d\u00e9tections thermiques satellite regroup\u00e9es dans ce feu.",
-    confidence:
-      "Probabilit\u00e9 qu'il s'agisse d'un vrai feu, combinant l'accord des capteurs, la persistance et les sources connues de fausses alertes.",
+    stage:
+      "Une seule observation satellite est une détection unique. Deux observations indépendantes en font une détection satellite. Seule la Protection civile confirme un incendie ; Nadhir ne le fait jamais.",
     firstSeen:
       "Heure de la premi\u00e8re d\u00e9tection satellite. Un feu peut d\u00e9marrer avant le premier passage.",
     lastSeen:
@@ -457,7 +462,7 @@ export const fr: Translation = {
     mission:
       "Détecter les feux en Algérie aussi tôt que les satellites le permettent, prévoir le danger quotidien et diffuser des alertes claires en arabe, français, anglais et tamazight — libre et gratuit.",
     howTitle: "Comment fonctionne la détection",
-    how: "Les points chauds de NASA FIRMS (VIIRS/MODIS) et d'EUMETSAT Meteosat MTG FCI sont dédupliqués, regroupés dans l'espace et le temps, puis notés en confiance. Un feu devient « actif » lorsque deux détections concordent ou qu'une détection très fiable tombe sur un terrain plausible.",
+    how: "Les points chauds de NASA FIRMS (VIIRS/MODIS), d'EUMETSAT Meteosat MTG FCI et de Copernicus Sentinel-3 SLSTR sont dédupliqués et regroupés dans l'espace et le temps. Une observation reste une détection unique ; deux observations indépendantes en font une détection satellite. Nadhir ne déclare jamais un incendie confirmé : seule la Protection civile le fait, et ses mots et son horodatage sont repris tels quels.",
     dangerTitle: "Comment le danger est évalué",
     danger:
       "Le danger utilise l'indice forêt-météo canadien, calculé à partir de la température, l'humidité, le vent et la pluie, recoupé avec EFFIS/GWIS, puis ajusté selon le couvert forestier et le vent.",

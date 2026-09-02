@@ -22,6 +22,7 @@ import {
   relativeTime,
   settlementsQuery,
   unitName,
+  fireStage,
 } from "@/lib/nadhir";
 
 export const Route = createFileRoute("/fire/$id")({
@@ -123,11 +124,9 @@ function FireDetail() {
           </h1>
           <p className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
             {wilaya ? <span>{unitName(wilaya, locale)} ·</span> : null}
-            <span>{t(`state.${cluster.state}`)}</span>
+            <span>{t(`stage.${fireStage(cluster)}`)}</span>
+            <span>· {t(`state.${cluster.state}`)}</span>
             <span className="tabular text-xs">· {cluster.short_id}</span>
-            <span className="tabular text-xs">
-              · {t("fire.confidence")} {Math.round(cluster.confidence * 100)}%
-            </span>
           </p>
         </div>
 
@@ -181,9 +180,9 @@ function FireDetail() {
             value={cluster.detection_count}
           />
           <StatCard
-            explain={t("explain.confidence")}
-            label={t("fire.confidence")}
-            value={`${Math.round(cluster.confidence * 100)}%`}
+            explain={t("explain.stage")}
+            label={t("fire.stage")}
+            value={t(`stage.${fireStage(cluster)}`)}
           />
           <StatCard
             explain={t("explain.firstSeen")}

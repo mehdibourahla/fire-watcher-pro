@@ -49,6 +49,7 @@ type ClusterRow = {
   nearest_settlement_km: number | null;
   commune_id: string | null;
   max_frp_mw: number | null;
+  confirmed_at: string | null;
 };
 
 type Unit = {
@@ -144,7 +145,7 @@ export async function publishBroadcasts(): Promise<BroadcastRun> {
   const coverage = coverageOf(latestByCluster);
 
   const clusterFields =
-    "id, short_id, state, lat, lon, confidence, detection_count, spread_bearing_deg, last_detected_at, nearest_settlement_id, nearest_settlement_km, commune_id, max_frp_mw";
+    "id, short_id, state, lat, lon, confidence, detection_count, spread_bearing_deg, last_detected_at, nearest_settlement_id, nearest_settlement_km, commune_id, max_frp_mw, confirmed_at";
   const { data: confirmed, error: confirmedError } = await supabaseAdmin
     .from("fire_clusters")
     .select(clusterFields)
@@ -403,7 +404,7 @@ export async function publishBroadcasts(): Promise<BroadcastRun> {
         lat: cluster.lat,
         lon: cluster.lon,
         severity: messageSeverity,
-        confidence: cluster.confidence,
+        confirmed: cluster.confirmed_at !== null,
         areaDesc:
           [commune?.name_fr, wilaya?.name_fr].filter(Boolean).join(", ") ||
           place,
