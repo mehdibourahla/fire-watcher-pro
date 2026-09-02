@@ -3,14 +3,18 @@ import { describe, expect, it } from "vitest";
 import {
   BROADCAST_DAILY_COMMUNE_LIMIT,
   applyDailyLimit,
+  coverageOf,
   downwindAdditions,
   fireSeverity,
+  insideCommunes,
   kmToMultiPolygon,
   planFireBroadcast,
   pointInMultiPolygon,
+  pushCodesFor,
   fuelLimitedCodes,
   targetCommunes,
   type CommuneShape,
+  type OpenThread,
 } from "@/lib/broadcast-rules";
 
 const square = (
@@ -358,5 +362,131 @@ describe("applyDailyLimit", () => {
       allowed: ["1503"],
       dropped: [],
     });
+  });
+});
+
+describe("insideCommunes", () => {
+  const east = square("1510", 4.4, 4.6, 36.6, 36.8);
+  const byCode = new Map([home, east].map((s) => [s.code, s]));
+  it("names the target communes that contain a detection pixel", () => {
+    const points = [
+      { lat: 36.7, lon: 4.3 },
+      { lat: 36.7, lon: 4.9 },
+    ];
+    expect(insideCommunes(points, ["1503", "1510", "1599"], byCode)).toEqual([
+      "1503",
+    ]);
+  });
+});
+
+describe("pushCodesFor", () => {
+  const now = Date.parse("2026-08-26T14:00:00Z");
+  const thread = (
+    communeCodes: string[],
+    insideCodes: string[] = [],
+    phase = "initial",
+  ): OpenThread => ({
+    phase,
+    severity: "Severe",
+    communeCodes,
+    insideCodes,
+    atMs: now,
+  });
+
+  it("pushes every commune of a first thread when nothing covers them", () => {
+    expect(
+      pushCodesFor({
+        clusterId: "A",
+        action: "initial",
+        codes: ["1503", "1510"],
+        inside: ["1503"],
+        previous: null,
+        coverage: coverageOf([]),
+      }),
+    ).toEqual(["1503", "1510"]);
+  });
+
+  it("stays silent for a commune another thread already covers at the same level", () => {
+    const coverage = coverageOf([["A", thread(["1503", "1510"])]]);
+    expect(
+      pushCodesFor({
+        clusterId: "B",
+        action: "initial",
+        codes: ["1510", "1520"],
+        inside: [],
+        previous: null,
+        coverage,
+      }),
+    ).toEqual(["1520"]);
+  });
+
+  it("pushes a commune the fire has entered even if a ring already covered it", () => {
+    const coverage = coverageOf([["A", thread(["1503", "1510"])]]);
+    expect(
+      pushCodesFor({
+        clusterId: "B",
+        action: "initial",
+        codes: ["1510"],
+        inside: ["1510"],
+        previous: null,
+        coverage,
+      }),
+    ).toEqual(["1510"]);
+  });
+
+  it("on update pushes only communes whose level rose for this thread", () => {
+    const previous = thread(["1503", "1510"], []);
+    const coverage = coverageOf([["A", previous]]);
+    expect(
+      pushCodesFor({
+        clusterId: "A",
+        action: "update",
+        codes: ["1503", "1510", "1520"],
+        inside: ["1503"],
+        previous,
+        coverage,
+      }),
+    ).toEqual(["1503", "1520"]);
+  });
+
+  it("does not re-push a rise another thread already announced", () => {
+    const previous = thread(["1503"], []);
+    const coverage = coverageOf([
+      ["A", previous],
+      ["B", thread(["1503"], ["1503"])],
+    ]);
+    expect(
+      pushCodesFor({
+        clusterId: "A",
+        action: "update",
+        codes: ["1503"],
+        inside: ["1503"],
+        previous,
+        coverage,
+      }),
+    ).toEqual([]);
+  });
+
+  it("ends only where no other thread still covers the commune", () => {
+    const previous = thread(["1503", "1510"]);
+    const coverage = coverageOf([
+      ["A", previous],
+      ["B", thread(["1510"])],
+    ]);
+    expect(
+      pushCodesFor({
+        clusterId: "A",
+        action: "end",
+        codes: ["1503", "1510"],
+        inside: [],
+        previous,
+        coverage,
+      }),
+    ).toEqual(["1503"]);
+  });
+
+  it("ignores closed threads when computing coverage", () => {
+    const coverage = coverageOf([["A", thread(["1503"], [], "end")]]);
+    expect(coverage.size).toBe(0);
   });
 });

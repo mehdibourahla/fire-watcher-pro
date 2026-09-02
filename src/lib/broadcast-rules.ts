@@ -264,3 +264,72 @@ export function applyDailyLimit(
   }
   return { allowed, dropped };
 }
+
+export function insideCommunes(
+  points: { lat: number; lon: number }[],
+  codes: string[],
+  byCode: Map<string, CommuneShape>,
+): string[] {
+  return codes.filter((code) => {
+    const shape = byCode.get(code);
+    return (
+      !!shape &&
+      points.some((p) => pointInMultiPolygon(p.lat, p.lon, shape.geom))
+    );
+  });
+}
+
+export type Coverage = Map<string, Map<string, 1 | 2>>;
+
+export function coverageOf(threads: Iterable<[string, OpenThread]>): Coverage {
+  const coverage: Coverage = new Map();
+  for (const [clusterId, t] of threads) {
+    if (t.phase !== "initial" && t.phase !== "update") continue;
+    for (const code of t.communeCodes) {
+      const byCluster = coverage.get(code) ?? new Map<string, 1 | 2>();
+      byCluster.set(clusterId, t.insideCodes.includes(code) ? 2 : 1);
+      coverage.set(code, byCluster);
+    }
+  }
+  return coverage;
+}
+
+function levelElsewhere(
+  coverage: Coverage,
+  code: string,
+  self: string,
+): number {
+  let best = 0;
+  for (const [id, level] of coverage.get(code) ?? [])
+    if (id !== self && level > best) best = level;
+  return best;
+}
+
+/* A push means the commune's alert level rose: a ring-covered commune hears
+ * again only when the fire is inside it, and never twice from two clusters. */
+export function pushCodesFor(args: {
+  clusterId: string;
+  action: "initial" | "update" | "end" | "cancel";
+  codes: string[];
+  inside: string[];
+  previous: OpenThread | null;
+  coverage: Coverage;
+}): string[] {
+  if (args.action === "end" || args.action === "cancel")
+    return args.codes.filter(
+      (code) => levelElsewhere(args.coverage, code, args.clusterId) === 0,
+    );
+  const mine = (code: string) =>
+    args.previous?.insideCodes.includes(code)
+      ? 2
+      : args.previous?.communeCodes.includes(code)
+        ? 1
+        : 0;
+  return args.codes.filter((code) => {
+    const level = args.inside.includes(code) ? 2 : 1;
+    return (
+      level >
+      Math.max(mine(code), levelElsewhere(args.coverage, code, args.clusterId))
+    );
+  });
+}
