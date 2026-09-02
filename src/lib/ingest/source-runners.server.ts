@@ -23,7 +23,7 @@ import { algiersToday } from "./algiers-date";
 import { publishBroadcasts } from "./broadcast.server";
 import { deliverBroadcasts } from "./delivery.server";
 import { ingestEffis } from "./effis.server";
-import { ingestFci } from "./fci.server";
+import { ingestFci, ingestS3, type FciRun } from "./fci.server";
 import { ingestFirms } from "./firms.server";
 import { fuseDetections } from "./fusion.server";
 import { ingestOnm } from "./onm.server";
@@ -36,6 +36,7 @@ import { enrichClusterWinds, refreshRiskForecasts } from "./weather.server";
 export const RUNTIME_CONTRACT_KEYS = [
   "firms",
   "fci",
+  "s3_slstr",
   "onm",
   "persistent_screen",
   "fusion",
@@ -54,6 +55,7 @@ export type SourceRunnerRegistry = Record<RuntimeContractKey, SourceRunner>;
 export type SourceRunnerDependencies = {
   ingestFirms: typeof ingestFirms;
   ingestFci: typeof ingestFci;
+  ingestS3: typeof ingestS3;
   ingestOnm: typeof ingestOnm;
   screenPersistentSources: typeof screenPersistentSources;
   fuseDetections: typeof fuseDetections;
@@ -125,6 +127,29 @@ function replayInterval(
     : undefined;
 }
 
+function wfsFireReport(job: ClaimedSourceJob, run: FciRun): SourceJobResult {
+  const accepted = Math.max(run.fetched - run.outside - run.filtered, 0);
+  const health = adapterHealth({ accepted, error: run.error });
+  return {
+    ...baseReport(job),
+    ...health,
+    upstreamPublishedAt: run.latestSlot,
+    dataFrom: health.outcome === "succeeded" ? (run.dataFrom ?? null) : null,
+    dataThrough:
+      health.outcome === "succeeded"
+        ? (run.dataThrough ?? run.latestSlot)
+        : null,
+    recordsSeen: run.fetched,
+    recordsInserted: run.inserted,
+    recordsRejected: run.outside + run.filtered,
+    qualityChecks: {
+      inside_watch_box: run.outside === 0,
+      outside_watch_area: run.filtered,
+      latest_slot_age_minutes: run.ageMinutes,
+    },
+  };
+}
+
 export function createSourceRunners(
   dependencies: SourceRunnerDependencies,
 ): SourceRunnerRegistry {
@@ -144,30 +169,10 @@ export function createSourceRunners(
         qualityChecks: { feeds_answered: run.feeds.length },
       };
     },
-    fci: async (job) => {
-      const run = await dependencies.ingestFci(replayInterval(job));
-      const accepted = Math.max(run.fetched - run.outside - run.filtered, 0);
-      const health = adapterHealth({ accepted, error: run.error });
-      return {
-        ...baseReport(job),
-        ...health,
-        upstreamPublishedAt: run.latestSlot,
-        dataFrom:
-          health.outcome === "succeeded" ? (run.dataFrom ?? null) : null,
-        dataThrough:
-          health.outcome === "succeeded"
-            ? (run.dataThrough ?? run.latestSlot)
-            : null,
-        recordsSeen: run.fetched,
-        recordsInserted: run.inserted,
-        recordsRejected: run.outside + run.filtered,
-        qualityChecks: {
-          inside_watch_box: run.outside === 0,
-          outside_watch_area: run.filtered,
-          latest_slot_age_minutes: run.ageMinutes,
-        },
-      };
-    },
+    fci: async (job) =>
+      wfsFireReport(job, await dependencies.ingestFci(replayInterval(job))),
+    s3_slstr: async (job) =>
+      wfsFireReport(job, await dependencies.ingestS3(replayInterval(job))),
     onm: async (job) => {
       const run = await dependencies.ingestOnm();
       const accepted = Math.max(run.fetched - run.unmatched, 0);
@@ -348,6 +353,7 @@ export function createSourceRunners(
 const sourceRunnerDependencies: SourceRunnerDependencies = {
   ingestFirms,
   ingestFci,
+  ingestS3,
   ingestOnm,
   screenPersistentSources,
   fuseDetections,

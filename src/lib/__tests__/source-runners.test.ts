@@ -16,6 +16,7 @@ const job = (contractKey: string): ClaimedSourceJob => ({
   scheduled_for: "2026-08-31T20:00:00.000Z",
   data_from: "2026-08-31T19:50:00.000Z",
   data_through: "2026-08-31T20:00:00.000Z",
+  dispatched_at: null,
   execution_target: "cloudflare",
   state: "running",
   enqueued_by: ["database"],
@@ -49,6 +50,14 @@ function dependencies() {
       filtered: 1,
       latestSlot: "2026-08-31T19:50:00.000Z",
       ageMinutes: 10,
+    }),
+    ingestS3: vi.fn().mockResolvedValue({
+      fetched: 3,
+      inserted: 3,
+      outside: 0,
+      filtered: 0,
+      latestSlot: "2026-08-31T21:16:00Z",
+      ageMinutes: 95,
     }),
     ingestOnm: vi.fn().mockResolvedValue({
       fetched: 2,
@@ -174,6 +183,15 @@ describe("source runner registry", () => {
     expect(result.publicReasonCode).toBe("upstream_unreachable");
     expect(result.privateDiagnostic).toContain("secret.provider.invalid");
     expect(JSON.stringify(result.publicReasonCode)).not.toContain("private");
+  });
+
+  it("runs Sentinel-3 through the same WFS report shape as FCI", async () => {
+    const deps = dependencies();
+    const result = await createSourceRunners(deps).s3_slstr(job("s3_slstr"));
+    expect(result.outcome).toBe("succeeded");
+    expect(result.upstreamPublishedAt).toBe("2026-08-31T21:16:00Z");
+    expect(result.recordsInserted).toBe(3);
+    expect(result.qualityChecks).toMatchObject({ latest_slot_age_minutes: 95 });
   });
 
   it("passes the recorded interval to replay-capable source adapters", async () => {

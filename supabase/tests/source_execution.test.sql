@@ -856,8 +856,8 @@ select has_index(
 select has_index(
   'public',
   'risk_forecasts',
-  'risk_forecasts_commune_id_forecast_date_horizon_days_source_key',
-  'risk replay is idempotent by commune, date, horizon, and source'
+  'risk_forecasts_legacy_identity_idx',
+  'risk replay is idempotent by commune, date, horizon, and source for rows without a generation'
 );
 select has_index(
   'public',
@@ -1393,10 +1393,8 @@ begin
     18.5,
     3
   )
-  on conflict (commune_id, forecast_date, horizon_days, source) do update
-  set
-    fwi = excluded.fwi,
-    danger_level = excluded.danger_level;
+  on conflict (commune_id, forecast_date, horizon_days, source) where snapshot_id is null
+  do nothing;
 
   insert into public.alerts (
     user_id,

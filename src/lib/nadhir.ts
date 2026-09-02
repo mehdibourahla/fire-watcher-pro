@@ -53,7 +53,7 @@ export type FireCluster = {
 
 export type Detection = {
   id: string;
-  source: "firms" | "fci";
+  source: "firms" | "fci" | "s3";
   sensor: string;
   detected_at: string;
   lat: number;

@@ -3,7 +3,11 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { parseFciFeatures } from "@/lib/ingest/fci.server";
+import {
+  S3_SLSTR,
+  parseFciFeatures,
+  parseWfsFireFeatures,
+} from "@/lib/ingest/fci.server";
 
 const sample = JSON.parse(
   readFileSync(join(__dirname, "fixtures", "fci-wfs-sample.json"), "utf8"),
@@ -85,5 +89,30 @@ describe("parseFciFeatures", () => {
     const { latestSlot, outside } = parseFciFeatures(flipped);
     expect(outside).toBe(4);
     expect(latestSlot).toBeNull();
+  });
+});
+
+describe("parseWfsFireFeatures for Sentinel-3 SLSTR", () => {
+  const s3 = JSON.parse(
+    readFileSync(join(__dirname, "fixtures", "s3-wfs-sample.json"), "utf8"),
+  ) as Parameters<typeof parseWfsFireFeatures>[0];
+
+  it("maps SLSTR pixels onto detection rows keyed by satellite", () => {
+    const { rows, latestSlot } = parseWfsFireFeatures(s3, S3_SLSTR);
+    expect(latestSlot).toBe("2026-08-31T21:16:00Z");
+    const day = rows.find((r) => r.daynight === "D")!;
+    expect(day.source).toBe("s3");
+    expect(day.sensor).toBe("SLSTR-S3A");
+    expect(day.detected_at).toBe("2026-08-31T10:09:59.000Z");
+    expect(day.frp_mw).toBeCloseTo(23.74, 2);
+    expect(day.confidence_raw).toBeCloseTo(0.898);
+    expect(day.natural_key).toBe(
+      "s3:SLSTR-S3A:36.61530:8.00950:2026-08-31T09:29:00Z",
+    );
+  });
+
+  it("still applies the burnable-ground gate to SLSTR", () => {
+    const { rows, filtered } = parseWfsFireFeatures(s3, S3_SLSTR);
+    expect(rows.length + filtered).toBe(2);
   });
 });

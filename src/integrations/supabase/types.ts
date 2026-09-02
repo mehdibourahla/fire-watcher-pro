@@ -1228,6 +1228,24 @@ export type Database = {
           },
         ];
       };
+      operator_alert_state: {
+        Row: {
+          fingerprint: string;
+          key: string;
+          updated_at: string;
+        };
+        Insert: {
+          fingerprint: string;
+          key: string;
+          updated_at?: string;
+        };
+        Update: {
+          fingerprint?: string;
+          key?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       onm_vigilance: {
         Row: {
           area_desc: string;
@@ -1871,6 +1889,7 @@ export type Database = {
           created_at: string;
           data_from: string;
           data_through: string;
+          dispatched_at: string | null;
           enqueued_by: string[];
           execution_target: string;
           finished_at: string | null;
@@ -1896,6 +1915,7 @@ export type Database = {
           created_at?: string;
           data_from: string;
           data_through: string;
+          dispatched_at?: string | null;
           enqueued_by?: string[];
           execution_target: string;
           finished_at?: string | null;
@@ -1921,6 +1941,7 @@ export type Database = {
           created_at?: string;
           data_from?: string;
           data_through?: string;
+          dispatched_at?: string | null;
           enqueued_by?: string[];
           execution_target?: string;
           finished_at?: string | null;
@@ -2594,6 +2615,7 @@ export type Database = {
           created_at: string;
           data_from: string;
           data_through: string;
+          dispatched_at: string | null;
           enqueued_by: string[];
           execution_target: string;
           finished_at: string | null;
@@ -2649,6 +2671,7 @@ export type Database = {
           created_at: string;
           data_from: string;
           data_through: string;
+          dispatched_at: string | null;
           enqueued_by: string[];
           execution_target: string;
           finished_at: string | null;

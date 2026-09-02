@@ -146,6 +146,12 @@ A workable version would apply persistence to slot-cadence sources without a com
 lookup, so it does not fail in empty terrain, and would need an FRP or confidence
 dimension to avoid the one-shot problem above. That is design work, not a patch.
 
+**Sentinel-3 SLSTR added 2026-09-02.** The same anonymous WFS serves
+`copernicus:sentinel3{a,b}_slstr_level2_frp`, pre-decoded like the FCI layer, so a second
+independent sensor (polar, ~1 km, two passes a day per satellite, NRT under 3 h) costs one
+layer descriptor in `fci.server.ts` and the `s3_slstr` contract. It runs hourly with the
+same watch-area gate; it improves recall on fires VIIRS and FCI miss, not first-alert
+latency. The DGPC recall study found 7 of 42 named fires on 28 Aug with no detection at all.
 ### 1.5 Official incident reports — first source wired 2026-09-02
 
 Satellites are the only way a fire could exist in Nadhir until now; the 2026-09-01 recall
@@ -453,7 +459,7 @@ Things that cost real debugging time here, none of them obvious from the code.
   that column, so a job perfectly visible in `source_jobs` is unclaimable by the scheduler
   you happen to be reading about, and the consumer that _can_ claim it reports success
   when it claimed nothing. Check `execution_target` and the matching workflow before
-  concluding a contract is broken, and remember a green _Daily source jobs_ run may mean
+  concluding a contract is broken, and remember a green _Source jobs (github target)_ run may mean
   the queue was empty, not drained.
 - **Freshness computed downstream of a filter stops meaning freshness.** FCI's
   `latestSlot` was assigned after a row was accepted, so once the watch-area gate rejected
