@@ -58,7 +58,7 @@ export const Route = createFileRoute("/api/public/v1/risk")({
         let query = supabase
           .rpc("current_risk_forecasts")
           .select(
-            "forecast_date, horizon_days, fwi, danger_level, fuel_limited, source, commune_code, name_en, name_ar, name_fr, admin_level",
+            "forecast_date, horizon_days, fwi, fwi_percentile, danger_level, fuel_limited, source, commune_code, name_en, name_ar, name_fr, admin_level",
           )
           .eq("source", "local_fwi")
           .eq("snapshot_id", publication.snapshotId)
@@ -75,6 +75,7 @@ export const Route = createFileRoute("/api/public/v1/risk")({
           forecast_date: forecast.forecast_date,
           horizon_days: forecast.horizon_days,
           fwi: forecast.fwi,
+          fwi_percentile: forecast.fwi_percentile,
           danger_level: forecast.danger_level,
           fuel_limited: forecast.fuel_limited,
           source: forecast.source,

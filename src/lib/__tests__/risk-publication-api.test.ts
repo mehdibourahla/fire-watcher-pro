@@ -177,6 +177,50 @@ describe("public risk publication boundary", () => {
     });
   });
 
+  it("carries the local percentile when the forecast has one", async () => {
+    fromMock.mockImplementation((table: string) => {
+      if (table === "risk_publication_checkpoint") {
+        return query({
+          data: {
+            coverage_status: "complete",
+            snapshot_id: "f0220000-0000-4000-8000-000000000001",
+            base_date: "2026-08-31",
+            published_at: "2026-08-31T00:20:00.000Z",
+          },
+          error: null,
+        });
+      }
+      return query({ data: [], error: null });
+    });
+    rpcMock.mockReturnValue(
+      query({
+        data: [
+          {
+            forecast_date: "2026-08-31",
+            horizon_days: 0,
+            fwi: 55,
+            fwi_percentile: 91,
+            danger_level: 5,
+            fuel_limited: false,
+            source: "local_fwi",
+            commune_code: "3210",
+            name_en: "El Bayadh",
+            name_ar: "البيض",
+            name_fr: "El Bayadh",
+            admin_level: "commune",
+          },
+        ],
+        error: null,
+      }),
+    );
+
+    const response = await get("https://nadhir.test/api/public/v1/risk");
+
+    await expect(response.json()).resolves.toMatchObject({
+      forecasts: [{ fwi: 55, fwi_percentile: 91 }],
+    });
+  });
+
   it("does not expose database diagnostics when the published forecast read fails", async () => {
     fromMock.mockImplementation((table: string) =>
       table === "risk_publication_checkpoint"

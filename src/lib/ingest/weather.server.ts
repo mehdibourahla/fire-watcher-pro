@@ -198,6 +198,29 @@ export function seriesFwi(
   return { days: out, carried };
 }
 
+// breakpoints[i] is the i-th percentile FWI value for one commune on one calendar day
+// (101 points, monotonic). A tie at either end reads as the higher percentile: a value
+// equal to every historical observation on a locally invariant day should read as "at
+// the historical ceiling," not "below everything."
+export function percentileFor(
+  breakpoints: number[],
+  fwi: number,
+): number | null {
+  if (breakpoints.length !== 101) return null;
+  if (fwi >= breakpoints[100]!) return 100;
+  if (fwi < breakpoints[0]!) return 0;
+  let lo = 0;
+  let hi = 100;
+  while (hi - lo > 1) {
+    const mid = (lo + hi) >> 1;
+    if (breakpoints[mid]! <= fwi) lo = mid;
+    else hi = mid;
+  }
+  const span = breakpoints[hi]! - breakpoints[lo]!;
+  const frac = span > 0 ? (fwi - breakpoints[lo]!) / span : 1;
+  return Math.round(lo + frac);
+}
+
 export async function refreshRiskForecasts({
   snapshotId,
   baseDate,
@@ -285,12 +308,36 @@ export async function refreshRiskForecasts({
     else groups.set(w, [c]);
   }
 
+  // one small fetch per horizon date, not the whole table: fwi_climatology has no
+  // percentile outside April-October, and a wholesale fetch would run into the tens
+  // of megabytes for a value that is only ever looked up by (commune, calendar day)
+  const climatology = new Map<string, number[]>();
+  for (let h = 0; h < HORIZON_DAYS; h += 1) {
+    const d = new Date(todayMs + h * 86_400_000);
+    const month = d.getUTCMonth() + 1;
+    const day = d.getUTCDate();
+    for (const row of await fetchAllPages<{
+      commune_id: string;
+      breakpoints: number[];
+    }>((from, to) =>
+      supabaseAdmin
+        .from("fwi_climatology")
+        .select("commune_id, breakpoints")
+        .eq("month", month)
+        .eq("day", day)
+        .range(from, to),
+    )) {
+      climatology.set(`${row.commune_id}:${month}:${day}`, row.breakpoints);
+    }
+  }
+
   type Row = {
     snapshot_id: string;
     commune_id: string;
     forecast_date: string;
     horizon_days: number;
     fwi: number;
+    fwi_percentile: number | null;
     danger_level: number;
     fuel_limited: boolean;
     components: Record<string, number>;
@@ -378,12 +425,17 @@ export async function refreshRiskForecasts({
             (Date.parse(`${day.date}T00:00:00Z`) - todayMs) / 86400000,
           );
           if (horizon < 0 || horizon >= HORIZON_DAYS) return;
+          const [, month, dom] = day.date.split("-").map(Number);
+          const breakpoints = climatology.get(`${commune.id}:${month}:${dom}`);
           rows.push({
             snapshot_id: snapshotId,
             commune_id: commune.id,
             forecast_date: day.date,
             horizon_days: horizon,
             fwi: day.fwi,
+            fwi_percentile: breakpoints
+              ? percentileFor(breakpoints, day.fwi)
+              : null,
             danger_level: day.level,
             fuel_limited: fuelLimited,
             components: day.components,

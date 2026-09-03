@@ -36,6 +36,7 @@ function forecast(over: Partial<RiskForecast>): RiskForecast {
     horizon_days: 0,
     source: "local_fwi",
     fwi: 5,
+    fwi_percentile: null,
     danger_level: 1,
     fuel_limited: false,
     snapshot_id: null,

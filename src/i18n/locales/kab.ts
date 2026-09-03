@@ -327,6 +327,8 @@ export const kab: Translation = {
   },
   explain: {
     fwi: "Amatar n tegnawt n tmes: arured n uzuzzer d wugur n usenqed, yettwaḥseb seg uzɣal, tadawt n ugama, aḍu d ugeffur aneggaru.",
+    fwiPercentile:
+      "Amatar n tegnawt n tmes n wass n ubḍar mqabal d uzray n tama-yagi deg wass-agi n useggas, ddaw 86 n iseggasen. Amkan yellan d uɛeggal deg unebdu yezmer ad yili ɣer ufella-ines n uzray.",
     dangerLevel:
       "Aswir n umihi 1–5, yekka-d seg umatar FWI s usellum uṛufi EFFIS.",
     notRated:
@@ -355,6 +357,7 @@ export const kab: Translation = {
     dayLabel: "A{{n}}",
     today: "Ass-a",
     fwi: "FWI",
+    percentile: "amatar yugaren {{pct}}% n iseggasen deg wass-agi",
     level: "Aswir n uɣilif",
     searchCommune: "Nadi taɣiwant",
     noResults: "Ulac taɣiwant i imṣadan.",
