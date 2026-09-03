@@ -24,6 +24,7 @@ const cluster = (over: Partial<FireCluster>): FireCluster => ({
   max_frp_mw: 10,
   confidence: 0.8,
   est_area_ha: 5,
+  fci_growth: null,
   wind_speed_kmh: 20,
   wind_dir_deg: 225,
   spread_bearing_deg: null,

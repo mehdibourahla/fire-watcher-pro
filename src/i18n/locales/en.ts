@@ -295,6 +295,11 @@ export const en = {
     airSource: "CAMS model · {{time}}",
     windToward:
       "Wind is blowing toward {{bearing}} — {{settlement}} lies in that direction",
+    growthGrowing:
+      "Growing — satellite detections rose from {{earlier}} to {{recent}} in the {{time}}",
+    growthFading:
+      "Fewer detections in the {{time}} — this can also be cloud or smoke, not a smaller fire",
+    growthSteady: "Detections steady over the {{time}}",
     timeline: "Detection timeline",
     nearest: "Nearest settlements",
     settlement: "Settlement",

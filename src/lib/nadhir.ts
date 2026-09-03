@@ -42,6 +42,13 @@ export type FireCluster = {
   max_frp_mw: number | null;
   confidence: number;
   est_area_ha: number | null;
+  fci_growth: {
+    trend: "growing" | "steady" | "fading";
+    earlier: number;
+    recent: number;
+    since: string;
+    latestAt: string;
+  } | null;
   wind_speed_kmh: number | null;
   wind_dir_deg: number | null;
   spread_bearing_deg: number | null;
