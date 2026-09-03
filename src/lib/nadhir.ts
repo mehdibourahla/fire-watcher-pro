@@ -391,13 +391,16 @@ export const onmVigilanceQuery = queryOptions({
 export const effisDangerQuery = queryOptions({
   queryKey: ["effis_danger"],
   queryFn: async () => {
-    const { data, error } = await supabase
-      .from("effis_danger")
-      .select("*")
-      .order("date", { ascending: false })
-      .limit(1600);
-    if (error) throw new Error(error.message);
-    const rows = (data ?? []) as unknown as EffisDanger[];
+    // one row per commune exceeds the 1000-row cap, and equal dates need a
+    // tiebreak or a page boundary can repeat or drop a commune
+    const rows = await fetchAllPages<EffisDanger>((from, to) =>
+      supabase
+        .from("effis_danger")
+        .select("*")
+        .order("date", { ascending: false })
+        .order("commune_id")
+        .range(from, to),
+    );
     const latest = new Map<string, EffisDanger>();
     for (const r of rows)
       if (!latest.has(r.commune_id)) latest.set(r.commune_id, r);
