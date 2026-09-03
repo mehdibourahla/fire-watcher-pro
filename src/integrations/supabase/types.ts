@@ -899,6 +899,38 @@ export type Database = {
           },
         ];
       };
+      fwi_climatology: {
+        Row: {
+          breakpoints: number[];
+          built_at: string;
+          commune_id: string;
+          day: number;
+          month: number;
+        };
+        Insert: {
+          breakpoints: number[];
+          built_at?: string;
+          commune_id: string;
+          day: number;
+          month: number;
+        };
+        Update: {
+          breakpoints?: number[];
+          built_at?: string;
+          commune_id?: string;
+          day?: number;
+          month?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "fwi_climatology_commune_id_fkey";
+            columns: ["commune_id"];
+            isOneToOne: false;
+            referencedRelation: "admin_units";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       fwi_state: {
         Row: {
           commune_id: string;
@@ -1544,6 +1576,7 @@ export type Database = {
           forecast_date: string;
           fuel_limited: boolean;
           fwi: number;
+          fwi_percentile: number | null;
           horizon_days: number;
           id: string;
           snapshot_id: string | null;
@@ -1557,6 +1590,7 @@ export type Database = {
           forecast_date: string;
           fuel_limited?: boolean;
           fwi: number;
+          fwi_percentile?: number | null;
           horizon_days: number;
           id?: string;
           snapshot_id?: string | null;
@@ -1570,6 +1604,7 @@ export type Database = {
           forecast_date?: string;
           fuel_limited?: boolean;
           fwi?: number;
+          fwi_percentile?: number | null;
           horizon_days?: number;
           id?: string;
           snapshot_id?: string | null;
@@ -2444,6 +2479,7 @@ export type Database = {
           forecast_date: string;
           fuel_limited: boolean;
           fwi: number;
+          fwi_percentile: number | null;
           horizon_days: number;
           snapshot_id: string;
           staged_at: string;
@@ -2455,6 +2491,7 @@ export type Database = {
           forecast_date: string;
           fuel_limited?: boolean;
           fwi: number;
+          fwi_percentile?: number | null;
           horizon_days: number;
           snapshot_id: string;
           staged_at?: string;
@@ -2466,6 +2503,7 @@ export type Database = {
           forecast_date?: string;
           fuel_limited?: boolean;
           fwi?: number;
+          fwi_percentile?: number | null;
           horizon_days?: number;
           snapshot_id?: string;
           staged_at?: string;
@@ -2842,6 +2880,7 @@ export type Database = {
           forecast_date: string;
           fuel_limited: boolean;
           fwi: number;
+          fwi_percentile: number | null;
           horizon_days: number;
           id: string;
           name_ar: string;

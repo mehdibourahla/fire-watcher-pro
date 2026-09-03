@@ -7,7 +7,7 @@ DAYS = [f"{d:02d}" for d in range(1, 32)]
 
 
 def pull(year: int) -> str:
-    out = RAW / f"fwi-dz-{year}-jas.nc"
+    out = RAW / f"fwi-dz-{year}-apr-oct.nc"
     if out.exists() and out.stat().st_size > 0:
         return f"{year} skip"
     tmp = out.with_suffix(".nc.part")
@@ -18,7 +18,7 @@ def pull(year: int) -> str:
         "dataset_type": "consolidated_dataset",
         "system_version": "4_1",
         "year": str(year),
-        "month": ["07", "08", "09"],
+        "month": ["04", "05", "06", "07", "08", "09", "10"],
         "day": DAYS,
         "grid": "0.25/0.25",
         "area": [38, -9, 18, 12],

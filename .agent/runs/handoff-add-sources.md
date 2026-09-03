@@ -2,7 +2,8 @@
 
 ## 1. Ground truth
 
-- `main` at `fc5b5cb` (#94 merged); handoff edited on disk, uncommitted, after #94.
+- `main` at `cea9289` (#95 merged). Branch `fwi-local-percentile` carries the arid-zone
+  percentile feature, PR not yet opened as of this edit.
 - Working tree clean apart from two long-standing untracked files
   (`data/telegram-channels.json`, `docs/superpowers/plans/2026-08-31-behavioral-qa-audit.md`).
 - Run this first, before trusting anything below:
@@ -11,7 +12,7 @@
 bunx tsc --noEmit && bun run test && bun run lint
 ```
 
-Expect: tsc silent, 597 tests green, lint 7 warnings and 0 errors.
+Expect: tsc silent, 605 tests green, lint 7 warnings and 0 errors.
 
 Database gate, when you touch schema (the repo's own Supabase is port-clashed; use a
 port-shifted stack, recipe in `/private/tmp/claude-501/.../scratchpad/localdb`):
@@ -26,25 +27,42 @@ quiet; see traps).
 
 ## 2. In flight
 
-- **EWDS calibration pull running** (started 2026-09-03 ~13:00 UTC): `data/ewds/pull.py`
-  writes `data/ewds/raw/fwi-dz-<year>-jas.nc` (git-ignored), 1940–2025, Jul–Sep, consolidated
-  FWI, 0.25°, Algeria box, three requests in flight; log `data/ewds/raw/pull.log`; resumable
-  (re-run skips existing files). Token: `EWDS_PERSONAL_TOKEN` in `.env.local`, exported as
-  `CDSAPI_URL`/`CDSAPI_KEY`; client venv in the 56205f10 scratchpad (`cdsenv`), recreate if gone.
-- Decision taken: percentile is **per commune** (sample the grid at the commune centroid, like
-  `local_fwi`), against a day-of-year window across 1940–2025.
+- **EWDS calibration pull complete**: `data/ewds/raw/fwi-dz-<year>-apr-oct.nc` (git-ignored),
+  86/86 years 1940–2025, April–October, consolidated FWI, 0.25°, Algeria box, 0 failures.
+  Token: `EWDS_PERSONAL_TOKEN` in `.env.local`, exported as `CDSAPI_URL`/`CDSAPI_KEY`; client
+  venv in the 56205f10 scratchpad (`cdsenv`), recreate with
+  `python3 -m venv cdsenv && cdsenv/bin/pip install "cdsapi>=0.7.7" xarray netCDF4 numpy` if gone.
+- **Percentile feature built on `fwi-local-percentile`**, spec at
+  `docs/superpowers/specs/2026-09-03-fwi-percentile-design.md` (Mehdi-approved). Migration adds
+  `fwi_climatology` (commune × month × day → 101 percentile breakpoints) and
+  `risk_forecasts.fwi_percentile`; `refreshRiskForecasts` looks it up per forecast day;
+  `DangerScale` shows it on `/forecast` only (not the national home card — no stable commune
+  identity there). Display-only, never touches alerting. Two real bugs caught by local
+  `supabase test db` before they reached prod, both fixed in the migration: (1) Postgres
+  refuses `CREATE OR REPLACE` on a `RETURNS TABLE` function whose column set changes — needed
+  `DROP FUNCTION` first for `current_risk_forecasts()`; (2) restating
+  `publish_risk_forecast_snapshot` from the migration that introduced it silently reverted a
+  *later* migration's `ALTER FUNCTION ... security definer` — always grep every migration for
+  `alter function` on a function before restating it, not just `create or replace`.
+- Build/seed scripts exist (`data/ewds/build-climatology.py`, `scripts/seed-fwi-climatology.ts`)
+  but have **not been run for real** — no `data/ewds/climatology/` output, nothing seeded to
+  prod. `SUPABASE_SERVICE_ROLE_KEY` is not in `.env.local`; running the seed against prod is
+  Mehdi's action once the PR merges. Local smoke-tested the build script's math against a
+  partial file set (verified: window clips correctly at Apr 1/Oct 31, arid vs. Mediterranean
+  climatology shapes look right); never run end-to-end on all 86 files or all 1536 communes.
 - `local_fwi` failed 2026-09-03 06:13 UTC ("schema" class; hypothesis: Open-Meteo non-JSON 200
-  body during its outage) and was not re-queued; today's forecast is missing. Re-run needs the
-  service key (`enqueue_source_replay`) or tomorrow's 06:05 schedule.
+  body during its outage). PR #95 (merged) fixed the retry logic for next time; that specific
+  day's forecast was never backfilled.
 
 ## 3. Next action
 
-1. **Done, this PR (`dgpc-24h-form-and-fetch-hardening`):** the Mechroha alias, the DGPC
-   24-hour bulletin form, and `fetchDaily` treating a non-JSON body as upstream. Merge it.
-2. When the pull completes: `data/ewds/` percentile build (commune × day-of-year table as a
-   migration, percentile column on `risk_forecasts`, shown beside the danger class). Spec it
-   with brainstorming first; GAPS §1.1 is the requirement.
-3. Kabyle review; FCI growth term.
+1. Open the PR for `fwi-local-percentile`, merge on Mehdi's named OK.
+2. **Owner action after merge:** run `bun run data/ewds/build-climatology.py` (needs
+   `SUPABASE_URL`/`SUPABASE_PUBLISHABLE_KEY`, ~20-30 min for 1536 communes guessed, untimed for
+   real), then `SUPABASE_SERVICE_ROLE_KEY=... bun scripts/seed-fwi-climatology.ts`. Until this
+   runs, `fwi_percentile` stays null everywhere in prod — the feature ships inert, which is
+   safe (same as `fuel_limited`'s null path) but pointless until seeded.
+3. Kabyle review of everything accumulated this session; FCI growth term.
 
 ## 4. Constraints already decided
 

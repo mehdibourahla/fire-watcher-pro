@@ -14,7 +14,10 @@ vi.mock("@/lib/ingest/noon-weather", () => ({
   dailyFromHourly: dailyFromHourlyMock,
 }));
 
-import { refreshRiskForecasts } from "@/lib/ingest/weather.server";
+import {
+  percentileFor,
+  refreshRiskForecasts,
+} from "@/lib/ingest/weather.server";
 import { publicReasonForError } from "@/lib/source-runs";
 
 const SNAPSHOT_ID = "f0220000-0000-4000-8000-000000000010";
@@ -395,5 +398,85 @@ describe("risk snapshot ingest", () => {
       "discard_risk_forecast_snapshot",
       expect.anything(),
     );
+  });
+
+  it("attaches the local percentile when a climatology row exists for the forecast date", async () => {
+    const staged: Record<string, unknown>[] = [];
+    const breakpoints = Array.from({ length: 101 }, (_, i) => i);
+    fromMock.mockImplementation((table: string) => {
+      if (table === "admin_units")
+        return query({ data: [commune(1)], error: null });
+      if (table === "fwi_state") return query({ data: [], error: null });
+      if (table === "fwi_climatology")
+        return query({
+          data: [{ commune_id: commune(1).id, breakpoints }],
+          error: null,
+        });
+      const builder = query({ data: null, error: null });
+      builder["upsert"] = vi.fn(async () => ({ data: null, error: null }));
+      return builder;
+    });
+    rpcMock.mockImplementation((name: string, args: Record<string, unknown>) =>
+      Promise.resolve(
+        name === "begin_risk_forecast_snapshot"
+          ? { data: 0, error: null }
+          : name === "stage_risk_forecast_batch"
+            ? (staged.push(...(args["_rows"] as Record<string, unknown>[])),
+              { data: 6, error: null })
+            : {
+                data: {
+                  status: "promoted",
+                  rows: 6,
+                  published_at: "2026-08-31T12:05:00.000Z",
+                },
+                error: null,
+              },
+      ),
+    );
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(JSON.stringify([{ hourly: {} }]))),
+    );
+
+    await refreshRiskForecasts(RUN);
+
+    expect(staged).toHaveLength(6);
+    for (const row of staged) {
+      expect(row["fwi_percentile"]).toBe(
+        percentileFor(breakpoints, row["fwi"] as number),
+      );
+      expect(row["fwi_percentile"]).not.toBeNull();
+    }
+  });
+
+  it("leaves fwi_percentile null when no climatology row exists for the commune and date", async () => {
+    const staged: Record<string, unknown>[] = [];
+    oneCommuneStore();
+    rpcMock.mockImplementation((name: string, args: Record<string, unknown>) =>
+      Promise.resolve(
+        name === "begin_risk_forecast_snapshot"
+          ? { data: 0, error: null }
+          : name === "stage_risk_forecast_batch"
+            ? (staged.push(...(args["_rows"] as Record<string, unknown>[])),
+              { data: 6, error: null })
+            : {
+                data: {
+                  status: "promoted",
+                  rows: 6,
+                  published_at: "2026-08-31T12:05:00.000Z",
+                },
+                error: null,
+              },
+      ),
+    );
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(JSON.stringify([{ hourly: {} }]))),
+    );
+
+    await refreshRiskForecasts(RUN);
+
+    expect(staged).toHaveLength(6);
+    expect(staged.every((row) => row["fwi_percentile"] === null)).toBe(true);
   });
 });

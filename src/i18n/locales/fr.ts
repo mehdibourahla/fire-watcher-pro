@@ -331,6 +331,8 @@ export const fr: Translation = {
   },
   explain: {
     fwi: "Indice For\u00eat-M\u00e9t\u00e9o (FWI) : vitesse de propagation et difficult\u00e9 de contr\u00f4le attendues, calcul\u00e9es \u00e0 partir de la temp\u00e9rature, de l'humidit\u00e9, du vent et des pluies r\u00e9centes.",
+    fwiPercentile:
+      "L'indice du jour comparé à l'historique de cette commune à cette même date, sur 86 ans. Un lieu toujours extrême en été peut rester à son propre plafond historique.",
     dangerLevel:
       "Niveau de danger 1 \u00e0 5, d\u00e9riv\u00e9 du FWI selon l'\u00e9chelle europ\u00e9enne EFFIS.",
     notRated:
@@ -360,6 +362,7 @@ export const fr: Translation = {
     dayLabel: "J{{n}}",
     today: "Aujourd'hui",
     fwi: "IFM",
+    percentile: "plus chaud que {{pct}} % des années à cette date",
     level: "Niveau de danger",
     searchCommune: "Rechercher une commune",
     noResults: "Aucune commune ne correspond.",

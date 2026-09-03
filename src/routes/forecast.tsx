@@ -34,7 +34,12 @@ export const Route = createFileRoute("/forecast")({
   component: ForecastPage,
 });
 
-type Day = { fwi: number; level: number; fuelLimited: boolean };
+type Day = {
+  fwi: number;
+  percentile: number | null;
+  level: number;
+  fuelLimited: boolean;
+};
 type Row = { commune: AdminUnit; days: Record<number, Day> };
 
 const rankedLevel = (r: Row) =>
@@ -60,6 +65,7 @@ function ForecastPage() {
       const entry = byCommune.get(f.commune_id) ?? {};
       entry[f.horizon_days] = {
         fwi: f.fwi,
+        percentile: f.fwi_percentile,
         level: f.danger_level,
         fuelLimited: f.fuel_limited,
       };
@@ -130,6 +136,7 @@ function ForecastPage() {
           <DangerScale
             level={featured.days[0]?.level ?? 1}
             fwi={featured.days[0]?.fwi ?? 0}
+            percentile={featured.days[0]?.percentile ?? null}
             size="lg"
             guidance
             className="mt-4"
@@ -188,7 +195,12 @@ function ForecastPage() {
                     {h === 0 ? t("risk.today") : t("risk.dayLabel", { n: h })}
                   </span>
                   {day ? (
-                    <DangerScale level={day.level} fwi={day.fwi} size="sm" />
+                    <DangerScale
+                      level={day.level}
+                      fwi={day.fwi}
+                      percentile={day.percentile}
+                      size="sm"
+                    />
                   ) : (
                     <span className="text-sm text-muted-foreground">
                       {t("common.none")}

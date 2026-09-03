@@ -97,6 +97,7 @@ export type RiskForecast = {
   horizon_days: number;
   source: string;
   fwi: number;
+  fwi_percentile: number | null;
   danger_level: number;
   fuel_limited: boolean;
   snapshot_id: string | null;

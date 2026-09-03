@@ -17,6 +17,7 @@ type Size = "sm" | "md" | "lg";
 type Props = {
   level: number;
   fwi?: number | null;
+  percentile?: number | null;
   size?: Size;
   guidance?: boolean;
   caption?: string;
@@ -53,6 +54,7 @@ const SIZE = {
 export function DangerScale({
   level,
   fwi,
+  percentile,
   size = "md",
   guidance = false,
   caption,
@@ -116,6 +118,14 @@ export function DangerScale({
       {caption ? (
         <p className="text-xs text-muted-foreground">{caption}</p>
       ) : null}
+
+      {percentile === undefined || percentile === null ? null : (
+        <Explain text={t("explain.fwiPercentile")}>
+          <p className="tabular text-xs text-muted-foreground">
+            {t("risk.percentile", { pct: percentile })}
+          </p>
+        </Explain>
+      )}
 
       {guidance ? (
         <p

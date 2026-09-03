@@ -1,6 +1,7 @@
 # FWI local-percentile view — design
 
-Status: approved by Mehdi 2026-09-03, ready for planning.
+Status: approved by Mehdi 2026-09-03, implemented on `fwi-local-percentile`. Build/seed scripts
+written but not yet run against production — see the handoff's owner-action item.
 
 ## 1. Problem
 
