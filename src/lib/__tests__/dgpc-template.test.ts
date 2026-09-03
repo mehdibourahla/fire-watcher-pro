@@ -35,77 +35,54 @@ describe("parseDgpcBulletin", () => {
       "2026-08-28T13:16:02Z",
     );
     expect(b.wilayaCounts).toHaveLength(15);
-    expect(b.wilayaCounts[0]).toEqual({ wilaya: "سكيكدة", count: 5 });
-    expect(b.wilayaCounts.at(-1)).toEqual({ wilaya: "البويرة", count: 1 });
+    expect(b.wilayaCounts[0]).toMatchObject({ wilaya: "سكيكدة", count: 5 });
+    expect(b.wilayaCounts.at(-1)).toMatchObject({
+      wilaya: "البويرة",
+      count: 1,
+    });
   });
 
-  it("extracts commune lists under a wilaya header, with counts and status", () => {
-    const b = parseDgpcBulletin(
-      fixture("bulletin-6857-1300.txt"),
-      "2026-08-28T13:16:02Z",
-    );
-    const skikda = b.lines.find((l) => l.wilaya === "سكيكدة")!;
-    expect(skikda.communes).toEqual(["عزابة", "عين زويت", "السبت", "أم الطوب"]);
-    expect(skikda.status).toBe("ongoing");
-    expect(skikda.count).toBe(5);
-    const tebessa = b.lines.find((l) => l.wilaya === "تبسة")!;
-    expect(tebessa.communes).toEqual(["الحمامات"]);
-    expect(tebessa.count).toBe(1);
-  });
-
-  it("handles the inline and commune-first sentence forms", () => {
-    const b = parseDgpcBulletin(
-      fixture("bulletin-6808-2000.txt"),
-      "2026-08-26T21:11:07Z",
-    );
-    const tizi = b.lines.find((l) => l.wilaya === "تيزي وزو")!;
-    expect(tizi.communes).toContain("تيزي غنيف");
-    expect(tizi.communes).toContain("مزرانة");
-    const setif = b.lines.find((l) => l.wilaya === "سطيف")!;
-    expect(setif.communes).toEqual(["تيزي نبشار"]);
-    const tissemsilt = b.lines.find((l) => l.wilaya === "تيسمسيلت")!;
-    expect(tissemsilt.communes).toEqual(["الأربعاء"]);
-  });
-
-  it("strips parenthesised localities and keeps the commune", () => {
-    const b = parseDgpcBulletin(
-      fixture("bulletin-6823.txt"),
-      "2026-08-27T13:05:36Z",
-    );
-    const jijel = b.lines.find((l) => l.wilaya === "جيجل")!;
-    expect(jijel.communes.slice(0, 3)).toEqual([
-      "الشقفة",
-      "تكسانة",
-      "زيامة منصورية",
+  it("reads count lines with or without the arrow, a colon, a parenthetical, or a trailing comma", () => {
+    const text = `🔴 الحالة العامة لحرائق الغطاء النباتي ليوم 01 سبتمبر 2026 على الساعة 13سا00د
+🔴 العدد الإجمالي للحرائق: 10
+🔴 عدد الحرائق التي تم إخمادها: 06
+🔴 عدد الحرائق المتواصلة: 04
+✅✅ الحرائق المتواصلة موزعة على:
+⏮️⏮️ ولاية باتنة 01
+ولاية #سكيكدة 01
+⏮️⏮️ ولاية برج بوعريريج: 01 (حريق حزم تبن)
+⏮️⏮️ ولاية سطيف 01،
+🔴 أهم الحرائق
+✅⏮️ حريق ببلدية عزابة، العملية متواصلة...`;
+    const b = parseDgpcBulletin(text, "2026-09-01T13:04:39Z");
+    expect(b.wilayaCounts).toEqual([
+      { wilaya: "باتنة", count: 1, raw: "⏮️⏮️ ولاية باتنة 01" },
+      { wilaya: "سكيكدة", count: 1, raw: "ولاية #سكيكدة 01" },
+      {
+        wilaya: "برج بوعريريج",
+        count: 1,
+        raw: "⏮️⏮️ ولاية برج بوعريريج: 01 (حريق حزم تبن)",
+      },
+      { wilaya: "سطيف", count: 1, raw: "⏮️⏮️ ولاية سطيف 01،" },
     ]);
-    expect(b.asOf).toBe("2026-08-27T12:00:00.000Z");
   });
 
-  it("reads extinguished status and a 24-hour bulletin's as-of", () => {
+  it("classifies a standalone incident post", () => {
+    const b = parseDgpcBulletin(
+      "حريق غابة ببلدية تاكسنة بالمكان المسمى مشتة الميسة تم اجلاء بعض العائلات",
+      "2026-08-29T10:00:00Z",
+    );
+    expect(b.kind).toBe("incident");
+    expect(b.totals).toBeNull();
+    expect(b.wilayaCounts).toEqual([]);
+  });
+
+  it("reads a 24-hour bulletin's as-of", () => {
     const b = parseDgpcBulletin(
       fixture("bulletin-6908-0700.txt"),
       "2026-09-01T06:49:20Z",
     );
     expect(b.asOf).toBe("2026-09-01T06:00:00.000Z");
-    const setif = b.lines.find((l) => l.wilaya === "سطيف")!;
-    expect(setif.communes).toEqual(["تالة إيفاسن"]);
-    expect(setif.status).toBe("extinguished");
-    expect(setif.place).toBe("أولاد دلادج");
-  });
-
-  it("treats a bulletin line with no status verb as ongoing", () => {
-    const text = `🔴 الحالة العامة لحرائق الغطاء النباتي ليوم 27 أوت 2026 على الساعة 13سا00د
-🔴 أهم الحرائق
-✅⏮️ حرائق ولاية #تيزي_وزو اندلاع 02 حرائق ببلديات إجر (01)، بونوح (01)`;
-    const b = parseDgpcBulletin(text, "2026-08-27T13:05:36Z");
-    expect(b.lines[0]!.status).toBe("ongoing");
-  });
-
-  it("keeps unknown for a standalone incident post with no status", () => {
-    const text =
-      "حريق غابة ببلدية تاكسنة بالمكان المسمى مشتة الميسة تم اجلاء بعض العائلات";
-    const b = parseDgpcBulletin(text, "2026-08-29T10:00:00Z");
-    expect(b.kind).toBe("incident");
-    expect(b.lines[0]!.status).toBe("unknown");
+    expect(b.totals).toEqual({ total: 37, extinguished: 36, ongoing: 1 });
   });
 });

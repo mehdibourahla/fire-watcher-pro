@@ -227,8 +227,12 @@ day (same-day gaps median 2.7 h), so it is not early warning and must not be sol
 
 Shape: per-source knowledge lives in a `text_sources` registry row (transport, authority
 tier, language, template) and a thin adapter that writes immutable `source_documents`;
-everything after is shared — classify → extract (DGPC template by regex, the residue by
-one OpenRouter chat completion with a strict JSON schema and quoted evidence, `google/gemini-2.5-flash` by default) → resolve against the
+everything after is shared — classify by regex → the header's as-of and per-wilaya ongoing
+counts by regex → every fire line by one OpenRouter chat completion with a strict JSON schema
+and quoted evidence (`google/gemini-2.5-flash`; flash-lite invents fires from accident posts)
+→ a distribution gate (a commune the model names outside the authority's own per-wilaya count,
+or in excess of it, falls back to wilaya precision; the remainder of each count becomes a
+wilaya-level mention) → resolve against the
 gazetteer plus `admin_unit_aliases` → append-only `incident_mentions` → deterministic
 match & merge (same commune · kind within 48 h; highest tier and latest as-of set the
 status) → `official_incidents`. The map draws the commune polygon, never a point; the
@@ -246,8 +250,8 @@ ever registered — and everything official beyond DGPC (wilaya directorates, Ge
 road status every 15 min, Info Trafic Algérie with ~1.9M followers, DGF) sits behind Facebook.
 
 Open: wilaya Civil Protection and forestry pages live
-on Facebook and need Meta page access or a Telegram/RSS surface; without `OPENROUTER_API_KEY` roughly one line in six
-stays unresolved (24 of 136 on the August sample). Official incidents do not yet feed
+on Facebook and need Meta page access or a Telegram/RSS surface; without `OPENROUTER_API_KEY` nothing is
+extracted and every document waits in the retry queue. Official incidents do not yet feed
 Broadcast Alerts — a deliberate scope line until the recall metric has run for a while.
 
 Citizen hazard reports now also render on the live map (hollow marker, kind, age, "unverified"

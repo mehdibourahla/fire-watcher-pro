@@ -1,7 +1,7 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { fetchAllPages } from "@/lib/paginate";
 
-import { parseDgpcBulletin, type DgpcLine } from "./dgpc-template";
+import { parseDgpcBulletin, type DgpcBulletin } from "./dgpc-template";
 import {
   extractMentionsWithLlm,
   type LlmExtractionInput,
@@ -131,6 +131,7 @@ export type TextSourceRun = {
   incidentsCreated: number;
   incidentsUpdated: number;
   incidentsUnlisted: number;
+  gated: number;
   clustersConfirmed: number;
   retried: number;
   llmSkipped: boolean;
@@ -155,42 +156,6 @@ function kindOf(line: string): IncidentKind {
 }
 
 type Draft = Omit<MentionInsert, "document_id" | "text_source_id">;
-
-function resolveLine(
-  line: DgpcLine,
-  asOf: string,
-  gazetteer: Gazetteer,
-  fallbackWilaya: string | null,
-): { drafts: Draft[]; unresolved: string[] } {
-  const wilayaId =
-    (line.wilaya ? resolveWilaya(line.wilaya, gazetteer.wilayas) : null) ??
-    resolveWilaya(line.raw, gazetteer.wilayas) ??
-    fallbackWilaya;
-  if (!wilayaId) return { drafts: [], unresolved: [line.raw] };
-  const candidates = gazetteer.communesByWilaya.get(wilayaId) ?? [];
-  const drafts: Draft[] = [];
-  const unresolved: string[] = [];
-  for (const name of line.communes) {
-    const match = resolveCommune(name, candidates);
-    if (!match) {
-      unresolved.push(line.raw);
-      continue;
-    }
-    drafts.push({
-      wilaya_id: wilayaId,
-      commune_id: match.id,
-      place_text: line.place,
-      kind: kindOf(line.raw),
-      status: line.status,
-      fire_count: Math.max(1, Math.round(line.count / line.communes.length)),
-      as_of: asOf,
-      precision: "commune",
-      evidence: line.raw,
-      extractor: "template",
-    });
-  }
-  return { drafts, unresolved: [...new Set(unresolved)] };
-}
 
 function resolveLlmMention(
   m: LlmMention,
@@ -235,6 +200,67 @@ function resolveLlmMention(
     evidence: m.evidence,
     extractor: "llm",
   };
+}
+
+function wilayaDraft(
+  wilayaId: string,
+  entry: { raw: string },
+  count: number,
+  asOf: string,
+): Draft {
+  return {
+    wilaya_id: wilayaId,
+    commune_id: null,
+    place_text: null,
+    kind: kindOf(entry.raw),
+    status: "ongoing",
+    fire_count: count,
+    as_of: asOf,
+    precision: "wilaya",
+    evidence: entry.raw,
+    extractor: "template",
+  };
+}
+
+// The distribution lines are the authority's own per-wilaya count of ongoing fires. A
+// commune the model names outside that list, or in excess of it, cannot Confirm anything.
+function gateByDistribution(
+  drafts: Draft[],
+  wilayaCounts: DgpcBulletin["wilayaCounts"],
+  gazetteer: Gazetteer,
+  asOf: string,
+): { drafts: Draft[]; gated: number } {
+  if (!wilayaCounts.length) return { drafts, gated: 0 };
+  const counts = new Map<string, { count: number; raw: string }>();
+  for (const c of wilayaCounts) {
+    const id = resolveWilaya(c.wilaya, gazetteer.wilayas);
+    if (id) counts.set(id, { count: c.count, raw: c.raw });
+  }
+  const out = drafts.filter((d) => d.status !== "ongoing");
+  const ongoing = new Map<string, Draft[]>();
+  for (const d of drafts)
+    if (d.status === "ongoing")
+      ongoing.set(d.wilaya_id, [...(ongoing.get(d.wilaya_id) ?? []), d]);
+  let gated = 0;
+  for (const [wilayaId, group] of ongoing) {
+    const entry = counts.get(wilayaId);
+    if (!entry) {
+      gated += group.length;
+      continue;
+    }
+    if (group.length > entry.count) {
+      gated += group.length;
+      out.push(wilayaDraft(wilayaId, entry, entry.count, asOf));
+      continue;
+    }
+    out.push(...group);
+    if (entry.count > group.length)
+      out.push(wilayaDraft(wilayaId, entry, entry.count - group.length, asOf));
+  }
+  for (const [wilayaId, entry] of counts)
+    if (!ongoing.has(wilayaId))
+      out.push(wilayaDraft(wilayaId, entry, entry.count, asOf));
+  return { drafts: out, gated };
 }
 
 async function mergeMentions(
@@ -321,6 +347,7 @@ export async function runTextSourceWith(
     incidentsCreated: 0,
     incidentsUpdated: 0,
     incidentsUnlisted: 0,
+    gated: 0,
     clustersConfirmed: 0,
     retried: 0,
     llmSkipped: false,
@@ -367,84 +394,66 @@ export async function runTextSourceWith(
       source.template === "dgpc_bulletin"
         ? parseDgpcBulletin(doc.body, doc.published_at)
         : null;
+    if (parsed && parsed.kind !== "bulletin" && parsed.kind !== "incident") {
+      run.skippedPosts += 1;
+      continue;
+    }
     const asOf = parsed?.asOf ?? doc.published_at;
-    const drafts: Draft[] = [];
-    const pending: string[] = [];
-    let failedHere = false;
+    // a full bulletin is the authority's complete list of notable fires, so what it
+    // omits is no longer listed; a single-incident post says nothing about the rest
+    const coverage =
+      parsed?.kind === "bulletin" && fresh.has(doc.id)
+        ? { asOf, areaIds: new Set<string>() }
+        : null;
+    if (coverage) bulletins.push(coverage);
 
-    if (parsed) {
-      if (parsed.kind !== "bulletin" && parsed.kind !== "incident") {
-        run.skippedPosts += 1;
-        continue;
-      }
-      const postWilaya = resolveWilaya(doc.body, gazetteer.wilayas);
-      // a full bulletin is the authority's complete list of notable fires, so what it
-      // omits is no longer listed; a single-incident post says nothing about the rest
-      const coverage =
-        parsed.kind === "bulletin" && fresh.has(doc.id)
-          ? { asOf, areaIds: new Set<string>() }
-          : null;
-      if (coverage) bulletins.push(coverage);
-      for (const line of parsed.lines) {
-        const r = resolveLine(
-          line,
-          asOf,
-          gazetteer,
-          source.wilaya_id ?? postWilaya,
-        );
-        drafts.push(...r.drafts);
-        pending.push(...r.unresolved);
-        if (coverage)
-          for (const d of r.drafts)
-            coverage.areaIds.add(d.commune_id ?? d.wilaya_id);
-      }
-    } else {
-      pending.push(doc.body);
+    llmCalls += 1;
+    let result: LlmExtractionResult;
+    try {
+      result = await deps.extractLlm({
+        text: doc.body,
+        wilayaHint: null,
+        language: source.language,
+      });
+    } catch (error) {
+      run.llmFailed += 1;
+      run.unresolved += 1;
+      lastLlmError = error instanceof Error ? error.message : String(error);
+      await deps.store.recordExtractionFailure(doc.id, lastLlmError);
+      continue;
+    }
+    if (result.skipped) {
+      run.llmSkipped = true;
+      run.unresolved += 1;
+      await deps.store.recordExtractionFailure(doc.id, result.reason);
+      continue;
     }
 
-    for (const text of pending) {
-      llmCalls += 1;
-      let result: LlmExtractionResult;
-      // one malformed completion must not sink the run: the document is already
-      // stored and would never be re-extracted
-      try {
-        result = await deps.extractLlm({
-          text,
-          wilayaHint: null,
-          language: source.language,
-        });
-      } catch (error) {
-        run.llmFailed += 1;
-        run.unresolved += 1;
-        lastLlmError = error instanceof Error ? error.message : String(error);
-        failedHere = true;
-        continue;
-      }
-      if (result.skipped) {
-        run.llmSkipped = true;
+    let drafts: Draft[] = [];
+    for (const m of result.mentions) {
+      // wilaya-only lines are the distribution, read deterministically by the template
+      if (m.kind === "urban" || !m.commune) continue;
+      const draft = resolveLlmMention(m, asOf, gazetteer, source.wilaya_id);
+      if (!draft) {
         run.unresolved += 1;
         continue;
       }
-      let resolvedAny = false;
-      for (const m of result.mentions) {
-        const draft = resolveLlmMention(m, asOf, gazetteer, source.wilaya_id);
-        if (!draft) continue;
-        resolvedAny = true;
-        // the LLM sees the whole line and re-emits communes the template already took
-        if (
-          draft.commune_id &&
-          drafts.some((d) => d.commune_id === draft.commune_id)
-        )
-          continue;
-        drafts.push(draft);
-      }
-      if (!resolvedAny) run.unresolved += 1;
+      if (drafts.some((d) => d.commune_id === draft.commune_id)) continue;
+      drafts.push(draft);
     }
-
-    if (failedHere)
-      await deps.store.recordExtractionFailure(doc.id, lastLlmError ?? "");
-    else if (!fresh.has(doc.id))
-      await deps.store.clearExtractionFailure(doc.id);
+    if (parsed?.kind === "bulletin") {
+      const gate = gateByDistribution(
+        drafts,
+        parsed.wilayaCounts,
+        gazetteer,
+        asOf,
+      );
+      drafts = gate.drafts;
+      run.gated += gate.gated;
+    }
+    if (!fresh.has(doc.id)) await deps.store.clearExtractionFailure(doc.id);
+    if (coverage)
+      for (const d of drafts) coverage.areaIds.add(d.commune_id ?? d.wilaya_id);
     inserts.push(
       ...drafts
         .filter(
