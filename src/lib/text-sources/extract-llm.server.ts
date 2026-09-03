@@ -166,7 +166,7 @@ export async function extractMentionsWithLlm(
       },
     },
     temperature: 0,
-    max_tokens: 2048,
+    max_tokens: 8192,
     provider: { require_parameters: true },
   });
   let parsed: unknown;

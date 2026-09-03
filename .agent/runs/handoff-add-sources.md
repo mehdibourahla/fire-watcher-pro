@@ -26,16 +26,20 @@ quiet; see traps).
 
 ## 2. In flight
 
-PR `fuel-weather-dust`: gusts, VPD and top-centimetre soil moisture attached to live clusters
-by the existing wind enrichment (three nullable `fire_clusters` columns, public API carries
-them); dust in the Survival smoke row; PM2.5 and dust card on the fire page. Verified in a
-headless browser against production data: new stat cards show dashes until the migration is
-deployed, the air card renders live.
+PR `llm-first-extraction`: DGPC extraction is model-first. The template keeps only the header
+(kind, as-of, totals, per-wilaya ongoing counts); every fire line goes to OpenRouter
+(`google/gemini-2.5-flash`, max_tokens 8192). A distribution gate downgrades a commune the
+model names outside, or in excess of, the authority's per-wilaya count to wilaya precision, and
+the remainder of each count becomes a wilaya-level mention. A skipped model (no key) now
+queues the document for retry instead of clearing it. Replayed live over the 47 stored posts:
+67 commune-level + 48 wilaya-level mentions, 80 incidents, all closed by the 2 Sep bulletin,
+1 gated (Azil Abdelkader: gazetteer files it under Barika, DGPC under Batna), 0 hallucinated.
 
 ## 3. Next action
 
-Merge it. Then: Kabyle review of the smoke, dust and fuel strings; the growth term from FCI
-slot-to-slot pixel counts (plan Phase 3) now has its weather inputs stored.
+Merge it, then set the Worker secret `OPENROUTER_MODEL=google/gemini-2.5-flash` (prod has
+flash-lite, which invents fires from accident posts). Then Kabyle review; then the FCI growth
+term.
 
 ## 4. Constraints already decided
 
