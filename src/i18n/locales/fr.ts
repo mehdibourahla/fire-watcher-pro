@@ -84,6 +84,24 @@ export const fr: Translation = {
     bySatellite: "satellite",
     wind: "Vent {{kmh}} km/h du secteur {{bearing}}",
     windToward: "souffle du feu vers vous",
+    smoke: "Fumée · PM2.5 {{value}} µg/m³",
+    smokePeak: "pic du jour {{value}}",
+    smokeWho: "{{ratio}}× la valeur guide OMS sur 24 h",
+    smokeSource: "modèle CAMS · {{time}}",
+    smokeLevel: {
+      low: "faible",
+      elevated: "élevé",
+      high: "fort",
+      severe: "sévère",
+    },
+    smokeGuidance: {
+      low: "Peu de fumée mesurée. Le modèle est horaire — si vous voyez ou sentez de la fumée, fiez-vous à cela d'abord.",
+      elevated:
+        "Gardez les fenêtres fermées. Limitez le temps dehors si vous êtes asthmatique ou cardiaque.",
+      high: "Restez à l'intérieur, fenêtres fermées. Portez un masque bien ajusté dehors. Ne roulez pas vers la fumée.",
+      severe:
+        "Fumée dangereuse. Restez à l'intérieur, calfeutrez portes et fenêtres, respirez à travers un linge humide si vous devez bouger. Appelez le 14 si vous respirez mal.",
+    },
     noFreshData:
       "Aucune observation récente près de vous. Cela signifie que Nadhir n'a rien vu — pas qu'il n'y a rien.",
     noPosition:

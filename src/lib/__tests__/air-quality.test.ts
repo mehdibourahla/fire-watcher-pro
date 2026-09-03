@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { smokeLevel, parseAirQuality, WHO_PM25_24H } from "@/lib/air-quality";
+import {
+  WHO_PM25_24H,
+  airQualityUrl,
+  parseAirQuality,
+  smokeLevel,
+} from "@/lib/air-quality";
 
 /* Open-Meteo's CAMS-backed air-quality response, trimmed. Recorded 2026-09-03 for
  * Bejaia; the fire-season peak measured on 2026-08-29 beside a live fire was 837 µg/m³. */
@@ -51,5 +56,13 @@ describe("smokeLevel", () => {
   it("has no band that reads as an all-clear", () => {
     for (const level of [smokeLevel(0), smokeLevel(1000)])
       expect(["low", "elevated", "high", "severe"]).toContain(level);
+  });
+});
+
+describe("airQualityUrl", () => {
+  it("asks Open-Meteo for the current reading and the day's hourly PM2.5 in UTC", () => {
+    expect(airQualityUrl(36.7525, 5.0843)).toBe(
+      "https://air-quality-api.open-meteo.com/v1/air-quality?latitude=36.7525&longitude=5.0843&current=pm2_5,pm10,dust&hourly=pm2_5&forecast_days=1&timezone=UTC",
+    );
   });
 });
