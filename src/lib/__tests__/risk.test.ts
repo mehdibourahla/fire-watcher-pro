@@ -9,6 +9,7 @@ import {
 } from "@/lib/ingest/fwi";
 import {
   dangerLevelKey,
+  isStaleForecastDate,
   levelFromFwi,
   nationalMaximum,
   type RiskForecast,
@@ -61,7 +62,7 @@ describe("nationalMaximum", () => {
   it("reports the real FWI on an all-Low day", () => {
     expect(
       nationalMaximum([forecast({ fwi: 3 }), forecast({ fwi: 9 })]),
-    ).toEqual({ level: 1, fwi: 9 });
+    ).toEqual({ level: 1, fwi: 9, forecastDate: "2026-09-01" });
   });
 
   it("picks the highest level, then the highest FWI within it", () => {
@@ -71,7 +72,30 @@ describe("nationalMaximum", () => {
         forecast({ danger_level: 4, fwi: 41 }),
         forecast({ danger_level: 3, fwi: 30 }),
       ]),
-    ).toEqual({ level: 4, fwi: 45 });
+    ).toEqual({ level: 4, fwi: 45, forecastDate: "2026-09-01" });
+  });
+
+  it("carries the winning row's own forecast date, not the caller's clock", () => {
+    expect(
+      nationalMaximum([forecast({ forecast_date: "2026-08-30", fwi: 9 })]),
+    ).toMatchObject({ forecastDate: "2026-08-30" });
+  });
+});
+
+describe("isStaleForecastDate", () => {
+  it("is not stale on the same UTC calendar day", () => {
+    const now = Date.parse("2026-09-03T23:00:00Z");
+    expect(isStaleForecastDate("2026-09-03", now)).toBe(false);
+  });
+
+  it("is stale once the calendar date has moved on, any time after midnight", () => {
+    const now = Date.parse("2026-09-04T00:05:00Z");
+    expect(isStaleForecastDate("2026-09-03", now)).toBe(true);
+  });
+
+  it("is stale across a multi-day gap", () => {
+    const now = Date.parse("2026-09-05T12:00:00Z");
+    expect(isStaleForecastDate("2026-09-02", now)).toBe(true);
   });
 });
 

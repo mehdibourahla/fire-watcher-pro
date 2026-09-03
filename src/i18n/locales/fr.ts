@@ -362,6 +362,8 @@ export const fr: Translation = {
     dayLabel: "J{{n}}",
     today: "Aujourd'hui",
     fwi: "IFM",
+    staleAsOf:
+      "Ceci est la prévision de {{time}} — celle d'aujourd'hui n'a pas encore été publiée.",
     percentile: "IFM plus élevé que {{pct}} % des années à cette date",
     level: "Niveau de danger",
     searchCommune: "Rechercher une commune",

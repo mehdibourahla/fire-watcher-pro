@@ -467,7 +467,7 @@ export function publishedRiskTarget(
 }
 
 export function nationalMaximum(forecasts: RiskForecast[]) {
-  let max: { level: number; fwi: number } | null = null;
+  let max: { level: number; fwi: number; forecastDate: string } | null = null;
   for (const r of forecasts) {
     if (r.horizon_days !== 0 || r.fuel_limited) continue;
     if (
@@ -475,9 +475,22 @@ export function nationalMaximum(forecasts: RiskForecast[]) {
       r.danger_level > max.level ||
       (r.danger_level === max.level && r.fwi > max.fwi)
     )
-      max = { level: r.danger_level, fwi: r.fwi };
+      max = {
+        level: r.danger_level,
+        fwi: r.fwi,
+        forecastDate: r.forecast_date,
+      };
   }
   return max;
+}
+
+/** The pipeline that publishes horizon-0 forecasts can stall; a `forecast_date`
+ * from an earlier UTC calendar day is being shown as if it were still current. */
+export function isStaleForecastDate(
+  forecastDate: string,
+  now: number = Date.now(),
+): boolean {
+  return forecastDate < new Date(now).toISOString().slice(0, 10);
 }
 
 export type OfficialIncidentStatus =

@@ -31,6 +31,7 @@ import {
   clustersQuery,
   communeGeomsQuery,
   dangerLevelKey,
+  isStaleForecastDate,
   nationalMaximum,
   officialIncidentsGeoJSON,
   officialIncidentsQuery,
@@ -186,6 +187,12 @@ function LiveMapPage() {
   );
 
   const national = useMemo(() => nationalMaximum(risk.data ?? []), [risk.data]);
+  const nationalStale =
+    national && isStaleForecastDate(national.forecastDate, now)
+      ? t("risk.staleAsOf", {
+          time: relativeTime(`${national.forecastDate}T00:00:00Z`, locale, now),
+        })
+      : null;
 
   const degraded = sourceHealthCapabilityAffected(
     sources.data ?? [],
@@ -397,6 +404,7 @@ function LiveMapPage() {
                 fwi={national.fwi}
                 size="md"
                 caption={t("map.nationalMax")}
+                staleCaption={nationalStale}
                 className="flex-1"
               />
             ) : (

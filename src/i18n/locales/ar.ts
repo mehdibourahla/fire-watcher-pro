@@ -354,6 +354,7 @@ export const ar: Translation = {
     dayLabel: "ي{{n}}",
     today: "اليوم",
     fwi: "مؤشر الخطر",
+    staleAsOf: "هذا توقع {{time}} — لم يُنشر توقع اليوم بعد.",
     percentile: "مؤشر أعلى من {{pct}}٪ من السنوات في هذا التاريخ",
     level: "مستوى الخطر",
     searchCommune: "ابحث عن بلدية",

@@ -787,4 +787,56 @@ describe("extraction retry", () => {
     );
     expect(again.incidentsUnlisted).toBe(0);
   });
+
+  it("marks a document for retry when its commune fails gazetteer resolution, and clears it once an alias lets a later pass resolve the same name", async () => {
+    const { store, mentions, retry } = memoryStore();
+    let calls = 0;
+    const improving: TextSourcePipelineDependencies["extractLlm"] =
+      async () => {
+        calls += 1;
+        return {
+          skipped: false,
+          mentions: [
+            mention({ commune: calls === 1 ? "قرية مجهولة" : "عين زويت" }),
+          ],
+        };
+      };
+    const first = await runTextSourceWith(
+      "dgpc_telegram",
+      deps(
+        [
+          post(
+            "60",
+            "2026-09-02T08:05:00Z",
+            bulletin("07", "⏮️⏮️ ولاية سكيكدة 01", twoFires),
+          ),
+        ],
+        store,
+        improving,
+      ),
+    );
+    expect(first).toMatchObject({ unresolved: 1, llmFailed: 0 });
+    expect(retry.size).toBe(1);
+
+    const second = await runTextSourceWith(
+      "dgpc_telegram",
+      deps([], store, improving),
+    );
+    expect(second).toMatchObject({ retried: 1, mentions: 1, unresolved: 0 });
+    expect(retry.size).toBe(0);
+    expect(mentions.some((m) => m["commune_id"] === AIN_ZOUIT)).toBe(true);
+  });
+
+  it("does not mark a fully-resolved document for retry", async () => {
+    const { store, retry } = memoryStore();
+    await runTextSourceWith(
+      "dgpc_telegram",
+      deps(
+        [post("61", "2026-09-02T08:05:00Z", bulletin("07", skikda2, twoFires))],
+        store,
+        llmWith(mention({}), mention({ commune: "عين زويت" })),
+      ),
+    );
+    expect(retry.size).toBe(0);
+  });
 });

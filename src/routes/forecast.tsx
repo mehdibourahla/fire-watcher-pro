@@ -14,6 +14,7 @@ import {
   adminUnitsQuery,
   onmVigilanceQuery,
   effisDangerQuery,
+  isStaleForecastDate,
   relativeTime,
   riskForecastsQuery,
   unitName,
@@ -35,6 +36,7 @@ export const Route = createFileRoute("/forecast")({
 });
 
 type Day = {
+  date: string;
   fwi: number;
   percentile: number | null;
   level: number;
@@ -64,6 +66,7 @@ function ForecastPage() {
     for (const f of forecasts.data ?? []) {
       const entry = byCommune.get(f.commune_id) ?? {};
       entry[f.horizon_days] = {
+        date: f.forecast_date,
         fwi: f.fwi,
         percentile: f.fwi_percentile,
         level: f.danger_level,
@@ -137,6 +140,16 @@ function ForecastPage() {
             level={featured.days[0]?.level ?? 1}
             fwi={featured.days[0]?.fwi ?? 0}
             percentile={featured.days[0]?.percentile ?? null}
+            staleCaption={
+              featured.days[0] && isStaleForecastDate(featured.days[0].date)
+                ? t("risk.staleAsOf", {
+                    time: relativeTime(
+                      `${featured.days[0].date}T00:00:00Z`,
+                      locale,
+                    ),
+                  })
+                : null
+            }
             size="lg"
             guidance
             className="mt-4"

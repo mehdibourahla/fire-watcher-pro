@@ -357,6 +357,7 @@ export const kab: Translation = {
     dayLabel: "A{{n}}",
     today: "Ass-a",
     fwi: "FWI",
+    staleAsOf: "Wagi d amagrad n {{time}} — win wass-a ur d-iffiɣ ara.",
     percentile: "amatar yugaren {{pct}}% n iseggasen deg wass-agi",
     level: "Aswir n uɣilif",
     searchCommune: "Nadi taɣiwant",
