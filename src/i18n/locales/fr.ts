@@ -300,10 +300,10 @@ export const fr: Translation = {
     windToward:
       "Le vent souffle vers {{bearing}} — {{settlement}} se trouve dans cette direction",
     growthGrowing:
-      "En progression — les d\u00e9tections satellite sont pass\u00e9es de {{earlier}} \u00e0 {{recent}} sur {{time}}",
+      "En progression — les d\u00e9tections satellite sont pass\u00e9es de {{earlier}} \u00e0 {{recent}} depuis {{time}}",
     growthFading:
-      "Moins de d\u00e9tections sur {{time}} — cela peut aussi \u00eatre un nuage ou de la fum\u00e9e, pas un feu plus petit",
-    growthSteady: "D\u00e9tections stables sur {{time}}",
+      "Moins de d\u00e9tections depuis {{time}} — cela peut aussi \u00eatre un nuage ou de la fum\u00e9e, pas un feu plus petit",
+    growthSteady: "D\u00e9tections stables depuis {{time}}",
     timeline: "Chronologie des détections",
     nearest: "Localités les plus proches",
     settlement: "Localité",
