@@ -10,6 +10,7 @@ def pull(year: int) -> str:
     out = RAW / f"fwi-dz-{year}-jas.nc"
     if out.exists() and out.stat().st_size > 0:
         return f"{year} skip"
+    tmp = out.with_suffix(".nc.part")
     client = cdsapi.Client(url="https://ewds.climate.copernicus.eu/api", quiet=True)
     for attempt in range(3):
         try:
@@ -27,8 +28,9 @@ def pull(year: int) -> str:
                     "area": [38, -9, 18, 12],
                     "data_format": "netcdf",
                 },
-                str(out),
+                str(tmp),
             )
+            tmp.rename(out)
             return f"{year} ok {out.stat().st_size}"
         except Exception as e:
             if attempt == 2:
@@ -36,6 +38,7 @@ def pull(year: int) -> str:
             time.sleep(60)
 
 
+RAW.mkdir(parents=True, exist_ok=True)
 with cf.ThreadPoolExecutor(max_workers=3) as pool:
     for line in pool.map(pull, YEARS):
         print(time.strftime("%H:%M:%S"), line, flush=True)
