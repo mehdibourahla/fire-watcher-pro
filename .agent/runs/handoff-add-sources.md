@@ -11,7 +11,7 @@
 bunx tsc --noEmit && bun run test && bun run lint
 ```
 
-Expect: tsc silent, 585 tests green, lint 7 warnings and 0 errors.
+Expect: tsc silent, 597 tests green, lint 7 warnings and 0 errors.
 
 Database gate, when you touch schema (the repo's own Supabase is port-clashed; use a
 port-shifted stack, recipe in `/private/tmp/claude-501/.../scratchpad/localdb`):
@@ -39,10 +39,9 @@ quiet; see traps).
 
 ## 3. Next action
 
-1. Small PR: alias `مشروحة` → Mechroha (Souk Ahras); DGPC 24-hour bulletin header form
-   (`إجمالي الحرائق الجارية: 02 … على مستوى ولايتي #X (01) و #Y (01)`) into totals +
-   wilayaCounts; `fetchDaily` treats a non-JSON body as upstream and retries.
-2. When the pull is complete: `data/ewds/` percentile build (commune × day-of-year table as a
+1. **Done, this PR (`dgpc-24h-form-and-fetch-hardening`):** the Mechroha alias, the DGPC
+   24-hour bulletin form, and `fetchDaily` treating a non-JSON body as upstream. Merge it.
+2. When the pull completes: `data/ewds/` percentile build (commune × day-of-year table as a
    migration, percentile column on `risk_forecasts`, shown beside the danger class). Spec it
    with brainstorming first; GAPS §1.1 is the requirement.
 3. Kabyle review; FCI growth term.

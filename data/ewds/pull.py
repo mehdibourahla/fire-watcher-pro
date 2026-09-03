@@ -12,30 +12,29 @@ def pull(year: int) -> str:
         return f"{year} skip"
     tmp = out.with_suffix(".nc.part")
     client = cdsapi.Client(url="https://ewds.climate.copernicus.eu/api", quiet=True)
+    request = {
+        "product_type": "reanalysis",
+        "variable": ["fire_weather_index"],
+        "dataset_type": "consolidated_dataset",
+        "system_version": "4_1",
+        "year": str(year),
+        "month": ["07", "08", "09"],
+        "day": DAYS,
+        "grid": "0.25/0.25",
+        "area": [38, -9, 18, 12],
+        "data_format": "netcdf",
+    }
     for attempt in range(3):
         try:
-            client.retrieve(
-                "cems-fire-historical-v1",
-                {
-                    "product_type": "reanalysis",
-                    "variable": ["fire_weather_index"],
-                    "dataset_type": "consolidated_dataset",
-                    "system_version": "4_1",
-                    "year": str(year),
-                    "month": ["07", "08", "09"],
-                    "day": DAYS,
-                    "grid": "0.25/0.25",
-                    "area": [38, -9, 18, 12],
-                    "data_format": "netcdf",
-                },
-                str(tmp),
-            )
-            tmp.rename(out)
-            return f"{year} ok {out.stat().st_size}"
+            client.retrieve("cems-fire-historical-v1", request, str(tmp))
+            break
         except Exception as e:
             if attempt == 2:
+                tmp.unlink(missing_ok=True)
                 return f"{year} FAIL {str(e)[:120]}"
             time.sleep(60)
+    tmp.rename(out)
+    return f"{year} ok {out.stat().st_size}"
 
 
 RAW.mkdir(parents=True, exist_ok=True)
