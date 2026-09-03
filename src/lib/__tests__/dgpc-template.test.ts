@@ -67,6 +67,28 @@ describe("parseDgpcBulletin", () => {
     ]);
   });
 
+  it("reads the 24-hour summary form: totals and an inline per-wilaya distribution", () => {
+    const b = parseDgpcBulletin(
+      fixture("bulletin-6947-24h.txt"),
+      "2026-09-03T08:46:00Z",
+    );
+    expect(b.kind).toBe("bulletin");
+    expect(b.asOf).toBe("2026-09-03T06:00:00.000Z");
+    expect(b.totals).toEqual({ total: 25, extinguished: 23, ongoing: 2 });
+    expect(b.wilayaCounts).toEqual([
+      {
+        wilaya: "سطيف",
+        count: 1,
+        raw: "✅إجمالي الحرائق الجارية: 02 حريقين على مستوى ولايتي #سطيف (01) و #سوق_أهراس (01).",
+      },
+      {
+        wilaya: "سوق أهراس",
+        count: 1,
+        raw: "✅إجمالي الحرائق الجارية: 02 حريقين على مستوى ولايتي #سطيف (01) و #سوق_أهراس (01).",
+      },
+    ]);
+  });
+
   it("classifies a standalone incident post", () => {
     const b = parseDgpcBulletin(
       "حريق غابة ببلدية تاكسنة بالمكان المسمى مشتة الميسة تم اجلاء بعض العائلات",

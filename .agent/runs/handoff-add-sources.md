@@ -2,7 +2,7 @@
 
 ## 1. Ground truth
 
-- Branch `air-quality-smoke`, PR #92, forked from `main` at `df79388`.
+- `main` at `fc5b5cb` (#94 merged); handoff edited on disk, uncommitted, after #94.
 - Working tree clean apart from two long-standing untracked files
   (`data/telegram-channels.json`, `docs/superpowers/plans/2026-08-31-behavioral-qa-audit.md`).
 - Run this first, before trusting anything below:
@@ -26,20 +26,26 @@ quiet; see traps).
 
 ## 2. In flight
 
-PR `llm-first-extraction`: DGPC extraction is model-first. The template keeps only the header
-(kind, as-of, totals, per-wilaya ongoing counts); every fire line goes to OpenRouter
-(`google/gemini-2.5-flash`, max_tokens 8192). A distribution gate downgrades a commune the
-model names outside, or in excess of, the authority's per-wilaya count to wilaya precision, and
-the remainder of each count becomes a wilaya-level mention. A skipped model (no key) now
-queues the document for retry instead of clearing it. Replayed live over the 47 stored posts:
-67 commune-level + 48 wilaya-level mentions, 80 incidents, all closed by the 2 Sep bulletin,
-1 gated (Azil Abdelkader: gazetteer files it under Barika, DGPC under Batna), 0 hallucinated.
+- **EWDS calibration pull running** (started 2026-09-03 ~13:00 UTC): `data/ewds/pull.py`
+  writes `data/ewds/raw/fwi-dz-<year>-jas.nc` (git-ignored), 1940–2025, Jul–Sep, consolidated
+  FWI, 0.25°, Algeria box, three requests in flight; log `data/ewds/raw/pull.log`; resumable
+  (re-run skips existing files). Token: `EWDS_PERSONAL_TOKEN` in `.env.local`, exported as
+  `CDSAPI_URL`/`CDSAPI_KEY`; client venv in the 56205f10 scratchpad (`cdsenv`), recreate if gone.
+- Decision taken: percentile is **per commune** (sample the grid at the commune centroid, like
+  `local_fwi`), against a day-of-year window across 1940–2025.
+- `local_fwi` failed 2026-09-03 06:13 UTC ("schema" class; hypothesis: Open-Meteo non-JSON 200
+  body during its outage) and was not re-queued; today's forecast is missing. Re-run needs the
+  service key (`enqueue_source_replay`) or tomorrow's 06:05 schedule.
 
 ## 3. Next action
 
-Merge it, then set the Worker secret `OPENROUTER_MODEL=google/gemini-2.5-flash` (prod has
-flash-lite, which invents fires from accident posts). Then Kabyle review; then the FCI growth
-term.
+1. Small PR: alias `مشروحة` → Mechroha (Souk Ahras); DGPC 24-hour bulletin header form
+   (`إجمالي الحرائق الجارية: 02 … على مستوى ولايتي #X (01) و #Y (01)`) into totals +
+   wilayaCounts; `fetchDaily` treats a non-JSON body as upstream and retries.
+2. When the pull is complete: `data/ewds/` percentile build (commune × day-of-year table as a
+   migration, percentile column on `risk_forecasts`, shown beside the danger class). Spec it
+   with brainstorming first; GAPS §1.1 is the requirement.
+3. Kabyle review; FCI growth term.
 
 ## 4. Constraints already decided
 

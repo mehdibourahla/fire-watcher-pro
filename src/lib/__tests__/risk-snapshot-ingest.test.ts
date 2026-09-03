@@ -15,6 +15,7 @@ vi.mock("@/lib/ingest/noon-weather", () => ({
 }));
 
 import { refreshRiskForecasts } from "@/lib/ingest/weather.server";
+import { publicReasonForError } from "@/lib/source-runs";
 
 const SNAPSHOT_ID = "f0220000-0000-4000-8000-000000000010";
 const RUN = {
@@ -327,5 +328,72 @@ describe("risk snapshot ingest", () => {
 
     expect(result).toMatchObject({ rows: 6, superseded: true });
     expect(result).not.toHaveProperty("publishedAt");
+  });
+  function oneCommuneStore() {
+    fromMock.mockImplementation((table: string) => {
+      if (table === "admin_units")
+        return query({ data: [commune(1)], error: null });
+      if (table === "fwi_state") return query({ data: [], error: null });
+      const builder = query({ data: null, error: null });
+      builder["upsert"] = vi.fn(async () => ({ data: null, error: null }));
+      return builder;
+    });
+    rpcMock.mockImplementation((name: string) =>
+      Promise.resolve(
+        name === "begin_risk_forecast_snapshot" ||
+          name === "discard_risk_forecast_snapshot"
+          ? { data: 0, error: null }
+          : name === "stage_risk_forecast_batch"
+            ? { data: 6, error: null }
+            : {
+                data: {
+                  status: "promoted",
+                  rows: 6,
+                  published_at: "2026-08-31T12:05:00.000Z",
+                },
+                error: null,
+              },
+      ),
+    );
+  }
+  const streamingError = () =>
+    new Response("Unexpected error while streaming data: timeoutReached", {
+      status: 200,
+    });
+
+  it("retries a 200 response whose body is not JSON", async () => {
+    oneCommuneStore();
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(streamingError())
+      .mockResolvedValueOnce(new Response(JSON.stringify([{ hourly: {} }])));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const promise = refreshRiskForecasts(RUN);
+    await vi.runAllTimersAsync();
+    const result = await promise;
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(result).toMatchObject({ rows: 6 });
+    expect(result.error).toBeUndefined();
+  });
+
+  it("reports a persistently unreadable body as an upstream failure, not a schema one", async () => {
+    oneCommuneStore();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => streamingError()),
+    );
+
+    const promise = refreshRiskForecasts(RUN);
+    await vi.runAllTimersAsync();
+    const result = await promise;
+
+    expect(result.error).toBeDefined();
+    expect(publicReasonForError(result.error!)).toBe("upstream_unreachable");
+    expect(rpcMock).toHaveBeenCalledWith(
+      "discard_risk_forecast_snapshot",
+      expect.anything(),
+    );
   });
 });
