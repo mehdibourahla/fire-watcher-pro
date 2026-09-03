@@ -781,6 +781,7 @@ export type Database = {
           created_at: string;
           detection_count: number;
           est_area_ha: number | null;
+          fci_growth: Json | null;
           first_detected_at: string;
           hull: Json | null;
           id: string;
@@ -815,6 +816,7 @@ export type Database = {
           created_at?: string;
           detection_count?: number;
           est_area_ha?: number | null;
+          fci_growth?: Json | null;
           first_detected_at: string;
           hull?: Json | null;
           id?: string;
@@ -849,6 +851,7 @@ export type Database = {
           created_at?: string;
           detection_count?: number;
           est_area_ha?: number | null;
+          fci_growth?: Json | null;
           first_detected_at?: string;
           hull?: Json | null;
           id?: string;

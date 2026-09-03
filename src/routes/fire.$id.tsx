@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { Wind } from "lucide-react";
+import { TrendingUp, Wind } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { MapCanvas } from "@/components/MapCanvas";
@@ -146,6 +146,34 @@ function FireDetail() {
               settlement: downwind.name,
             })}
           </p>
+        ) : null}
+
+        {cluster.fci_growth ? (
+          cluster.fci_growth.trend === "growing" ? (
+            <p
+              className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium"
+              style={{
+                backgroundColor: "var(--emergency-surface)",
+                color: "var(--emergency)",
+              }}
+            >
+              <TrendingUp aria-hidden className="size-4 shrink-0" />
+              {t("fire.growthGrowing", {
+                earlier: cluster.fci_growth.earlier,
+                recent: cluster.fci_growth.recent,
+                time: relativeTime(cluster.fci_growth.since, locale),
+              })}
+            </p>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              {t(
+                cluster.fci_growth.trend === "fading"
+                  ? "fire.growthFading"
+                  : "fire.growthSteady",
+                { time: relativeTime(cluster.fci_growth.since, locale) },
+              )}
+            </p>
+          )
         ) : null}
 
         <div className="h-[45vh] overflow-hidden rounded-xl border border-border">
