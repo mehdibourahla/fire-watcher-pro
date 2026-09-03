@@ -280,7 +280,9 @@ export function createSourceRunners(
       };
     },
     effis: async (job) => {
-      const run = await dependencies.ingestEffis();
+      const run = await dependencies.ingestEffis(
+        algiersToday(new Date(job.scheduled_for)),
+      );
       const health = adapterHealth({
         accepted: run.classified,
         expected: run.communes || null,

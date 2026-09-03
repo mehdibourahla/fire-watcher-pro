@@ -1132,8 +1132,8 @@ select is(
     where contract_key = 'effis'
       and data_through = '2099-09-01 06:00:00+00'
   ),
-  'unrecoverable',
-  'an expired current-only retry preserves an unrecoverable gap'
+  'open',
+  'an expired retry leaves the gap open now that effis can refetch an exact day'
 );
 select isnt(
   public.source_job_queue_has_pending(
