@@ -357,6 +357,7 @@ export const en = {
     dayLabel: "D{{n}}",
     today: "Today",
     fwi: "FWI",
+    staleAsOf: "This is {{time}}'s forecast — today's has not published yet.",
     percentile: "higher FWI than {{pct}}% of years on this date",
     level: "Danger level",
     searchCommune: "Search a commune",

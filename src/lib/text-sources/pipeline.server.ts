@@ -441,12 +441,14 @@ export async function runTextSourceWith(
     }
 
     let drafts: Draft[] = [];
+    const unresolvedNames: string[] = [];
     for (const m of result.mentions) {
       // wilaya-only lines are the distribution, read deterministically by the template
       if (m.kind === "urban" || !m.commune) continue;
       const draft = resolveLlmMention(m, asOf, gazetteer, source.wilaya_id);
       if (!draft) {
         run.unresolved += 1;
+        unresolvedNames.push(m.commune);
         continue;
       }
       if (drafts.some((d) => d.commune_id === draft.commune_id)) continue;
@@ -457,7 +459,14 @@ export async function runTextSourceWith(
       drafts = gate.drafts;
       run.gated += gate.gated;
     }
-    if (!fresh.has(doc.id)) retriedOk.push(doc.id);
+    // an alias added after this document was first seen can resolve it later;
+    // an LLM-call failure is not the only reason a document deserves another try
+    if (unresolvedNames.length)
+      await deps.store.recordExtractionFailure(
+        doc.id,
+        `unresolved commune: ${unresolvedNames.join(", ")}`,
+      );
+    else if (!fresh.has(doc.id)) retriedOk.push(doc.id);
     if (coverage)
       for (const d of drafts) coverage.areaIds.add(d.commune_id ?? d.wilaya_id);
     inserts.push(

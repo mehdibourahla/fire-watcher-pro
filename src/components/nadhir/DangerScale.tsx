@@ -1,3 +1,4 @@
+import { TriangleAlert } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { dangerLevelKey } from "@/lib/nadhir";
@@ -21,6 +22,7 @@ type Props = {
   size?: Size;
   guidance?: boolean;
   caption?: string;
+  staleCaption?: string | null;
   className?: string;
 };
 
@@ -58,6 +60,7 @@ export function DangerScale({
   size = "md",
   guidance = false,
   caption,
+  staleCaption,
   className,
 }: Props) {
   const { t } = useTranslation();
@@ -69,6 +72,19 @@ export function DangerScale({
 
   return (
     <div className={cn("flex flex-col gap-2", className)}>
+      {staleCaption ? (
+        <p
+          className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs leading-relaxed"
+          style={{
+            backgroundColor: "var(--risk-tint-2)",
+            color: "var(--risk-ink-2)",
+          }}
+        >
+          <TriangleAlert aria-hidden className="size-3.5 shrink-0" />
+          {staleCaption}
+        </p>
+      ) : null}
+
       <div className="flex items-baseline gap-2.5">
         <Explain
           text={
