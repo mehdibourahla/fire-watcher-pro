@@ -45,6 +45,9 @@ export type FireCluster = {
   wind_speed_kmh: number | null;
   wind_dir_deg: number | null;
   spread_bearing_deg: number | null;
+  wind_gust_kmh: number | null;
+  vpd_kpa: number | null;
+  soil_moisture_m3m3: number | null;
   commune_id: string | null;
   wilaya_id: string | null;
   nearest_settlement_id: string | null;
