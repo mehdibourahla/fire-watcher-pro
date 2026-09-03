@@ -72,9 +72,10 @@ export function parseDgpcBulletin(
   if (kind !== "bulletin" && kind !== "incident") return empty;
 
   const digits = latinDigits(text);
-  const total = /العدد الإجمالي للحرائق[^\d]*(\d+)/.exec(digits);
+  const total =
+    /(?:العدد الإجمالي للحرائق|إجمالي الحرائق المسجلة)[^\d]*(\d+)/.exec(digits);
   const extinguished = /تم إخمادها[^\d]*(\d+)/.exec(digits);
-  const ongoing = /الحرائق المتواصلة[^\d]*(\d+)/.exec(digits);
+  const ongoing = /الحرائق (?:المتواصلة|الجارية)[^\d]*(\d+)/.exec(digits);
   const totals =
     total && extinguished && ongoing
       ? {
@@ -91,12 +92,22 @@ export function parseDgpcBulletin(
       /^(?:⏮️⏮️\s*)?ولاية\s*#?([^\d:]+?)\s*:?\s*(\d+)\s*(?:\([^)]*\))?\s*[،,.]?\s*$/.exec(
         line,
       );
-    if (count)
+    if (count) {
       wilayaCounts.push({
         wilaya: cleanWilaya(count[1]!),
         count: Number(count[2]),
         raw: line,
       });
+      continue;
+    }
+    // the 24-hour summary form lists the distribution inline: "ولايتي #سطيف (01) و #سوق_أهراس (01)"
+    if (/الحرائق (?:المتواصلة|الجارية)/.test(line))
+      for (const m of line.matchAll(/#(\S+?)\s*\((\d+)\)/g))
+        wilayaCounts.push({
+          wilaya: cleanWilaya(m[1]!),
+          count: Number(m[2]),
+          raw: line,
+        });
   }
 
   return { kind, asOf: dgpcAsOf(text, postedAt), totals, wilayaCounts };

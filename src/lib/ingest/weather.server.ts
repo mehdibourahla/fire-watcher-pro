@@ -77,17 +77,30 @@ async function fetchDaily(
   // Open-Meteo weights a call by locations x days, so 1500+ communes trip the
   // free-tier limit long before the request count looks high.
   let lastStatus = 0;
+  let unreadable = false;
   for (let attempt = 0; attempt < RETRY_LIMIT; attempt += 1) {
     const res = await fetch(url);
     if (res.ok) {
-      const json = (await res.json()) as OpenMeteoResponse;
-      const list = Array.isArray(json) ? json : [json];
-      return lats.map((_, i) => {
-        const hourly = list[i]?.hourly;
-        return hourly ? dailyFromHourly(hourly) : null;
-      });
+      // Open-Meteo answers its own streaming timeouts with a 200 and a plain-text body
+      let json: OpenMeteoResponse | null = null;
+      try {
+        json = JSON.parse(await res.text()) as OpenMeteoResponse;
+      } catch {
+        unreadable = true;
+      }
+      if (json) {
+        const list = Array.isArray(json) ? json : [json];
+        return lats.map((_, i) => {
+          const hourly = list[i]?.hourly;
+          return hourly ? dailyFromHourly(hourly) : null;
+        });
+      }
     }
     lastStatus = res.status;
+    if (res.ok) {
+      await sleep(RETRY_BASE_MS * 2 ** attempt + Math.random() * 500);
+      continue;
+    }
     if (res.status !== 429 && res.status < 500) break;
     const retryAfter = Number(res.headers.get("retry-after"));
     const backoff =
@@ -96,7 +109,11 @@ async function fetchDaily(
         : RETRY_BASE_MS * 2 ** attempt;
     await sleep(backoff + Math.random() * 500);
   }
-  throw new Error(`open-meteo ${lastStatus}`);
+  throw new Error(
+    unreadable
+      ? "open-meteo upstream answered with a non-JSON body"
+      : `open-meteo ${lastStatus}`,
+  );
 }
 
 export type StoredState = {

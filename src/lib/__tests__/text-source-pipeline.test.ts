@@ -538,6 +538,29 @@ describe("distribution gate", () => {
     expect(mentions.map((m) => m["commune_id"])).toEqual([AZZABA]);
   });
 
+  it("a monitoring commune consumes its wilaya's count like an ongoing one", async () => {
+    const { store, mentions } = memoryStore();
+    const result = await runTextSourceWith(
+      "dgpc_telegram",
+      deps(
+        [
+          post(
+            "1",
+            "2026-09-02T12:10:00Z",
+            bulletin("13", "⏮️⏮️ ولاية سكيكدة 01", twoFires, 1),
+          ),
+        ],
+        store,
+        llmWith(mention({ status: "monitoring" })),
+      ),
+    );
+    expect(result).toMatchObject({ mentions: 1, gated: 0 });
+    expect(mentions[0]).toMatchObject({
+      commune_id: AZZABA,
+      status: "monitoring",
+    });
+  });
+
   it("does not gate a standalone incident post", async () => {
     const { store } = memoryStore();
     const result = await runTextSourceWith(

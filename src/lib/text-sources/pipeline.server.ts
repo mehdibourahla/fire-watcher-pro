@@ -237,20 +237,19 @@ function gateByDistribution(
     if (id) counts.set(id, { count: c.count, raw: c.raw });
   }
   const sum = [...counts.values()].reduce((n, e) => n + e.count, 0);
+  // the header counts every fire not yet extinguished, mop-up included, as ongoing
+  const live = (d: Draft) => d.status !== "extinguished";
   // a distribution that outnumbers its own header, or none at all, leaves only the total
   if (!counts.size || (total !== null && sum > total)) {
     if (total === null) return { drafts, gated: 0 };
-    const ongoing = drafts.filter((d) => d.status === "ongoing");
+    const ongoing = drafts.filter(live);
     if (ongoing.length <= total) return { drafts, gated: 0 };
-    return {
-      drafts: drafts.filter((d) => d.status !== "ongoing"),
-      gated: ongoing.length,
-    };
+    return { drafts: drafts.filter((d) => !live(d)), gated: ongoing.length };
   }
-  const out = drafts.filter((d) => d.status !== "ongoing");
+  const out = drafts.filter((d) => !live(d));
   const ongoing = new Map<string, Draft[]>();
   for (const d of drafts)
-    if (d.status === "ongoing")
+    if (live(d))
       ongoing.set(d.wilaya_id, [...(ongoing.get(d.wilaya_id) ?? []), d]);
   let gated = 0;
   for (const [wilayaId, group] of ongoing) {
