@@ -296,10 +296,10 @@ export const en = {
     windToward:
       "Wind is blowing toward {{bearing}} — {{settlement}} lies in that direction",
     growthGrowing:
-      "Growing — satellite detections rose from {{earlier}} to {{recent}} in the {{time}}",
+      "Growing — satellite detections rose from {{earlier}} to {{recent}} since {{time}}",
     growthFading:
-      "Fewer detections in the {{time}} — this can also be cloud or smoke, not a smaller fire",
-    growthSteady: "Detections steady over the {{time}}",
+      "Fewer detections since {{time}} — this can also be cloud or smoke, not a smaller fire",
+    growthSteady: "Detections steady since {{time}}",
     timeline: "Detection timeline",
     nearest: "Nearest settlements",
     settlement: "Settlement",

@@ -296,10 +296,10 @@ export const kab: Translation = {
     airSource: "amuddem CAMS · {{time}}",
     windToward: "Aḍu ibbriḥ ɣer {{bearing}} — {{settlement}} yella deg ubrid-a",
     growthGrowing:
-      "Yettimɣur — tifin n yiṭsanen ulint si {{earlier}} ɣer {{recent}} deg {{time}}",
+      "Yettimɣur — tifin n yiṭsanen ulint si {{earlier}} ɣer {{recent}} seg {{time}}",
     growthFading:
-      "Drus n tifin deg {{time}} — yezmer ad yili d asigna neɣ d abbu, mačči d times meẓẓiyen",
-    growthSteady: "Tifin ttuqadar deg {{time}}",
+      "Drus n tifin seg {{time}} — yezmer ad yili d asigna neɣ d abbu, mačči d times meẓẓiyen",
+    growthSteady: "Tifin ttuqadar seg {{time}}",
     timeline: "Aḍris n tifin",
     nearest: "Tuddar iqerben",
     settlement: "Taddart",

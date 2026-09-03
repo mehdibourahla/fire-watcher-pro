@@ -161,7 +161,7 @@ function FireDetail() {
               {t("fire.growthGrowing", {
                 earlier: cluster.fci_growth.earlier,
                 recent: cluster.fci_growth.recent,
-                time: relativeTime(cluster.fci_growth.since, locale),
+                time: algiersTime(cluster.fci_growth.since),
               })}
             </p>
           ) : (
@@ -170,7 +170,7 @@ function FireDetail() {
                 cluster.fci_growth.trend === "fading"
                   ? "fire.growthFading"
                   : "fire.growthSteady",
-                { time: relativeTime(cluster.fci_growth.since, locale) },
+                { time: algiersTime(cluster.fci_growth.since) },
               )}
             </p>
           )
