@@ -16,11 +16,11 @@ import { useTranslation } from "react-i18next";
 import { useSurvival } from "@/components/survival/survival-context";
 import type { Locale } from "@/i18n";
 import {
+  SMOKE_TINT,
   WHO_PM25_24H,
   airQualityQuery,
   smokeLevel,
   type AirQualityReading,
-  type SmokeLevel,
 } from "@/lib/air-quality";
 import {
   adminUnitsQuery,
@@ -53,13 +53,6 @@ const REPORT_KINDS = [
 function dirWord(t: (k: string) => string, deg: number) {
   return t(`survival.dir.${bearingLabel(deg).toLowerCase()}`);
 }
-
-const SMOKE_TINT: Record<SmokeLevel, number> = {
-  low: 1,
-  elevated: 2,
-  high: 3,
-  severe: 5,
-};
 
 function SurvivalHub() {
   const { t, i18n } = useTranslation();
@@ -261,10 +254,15 @@ function SurvivalHub() {
         threat.cluster.wind_dir_deg != null ? (
           <FactRow
             icon={<Wind aria-hidden className="size-4.5" />}
-            title={t("survival.wind", {
-              kmh: Math.round(threat.cluster.wind_speed_kmh),
-              bearing: dirWord(t, threat.cluster.wind_dir_deg),
-            })}
+            title={
+              t("survival.wind", {
+                kmh: Math.round(threat.cluster.wind_speed_kmh),
+                bearing: dirWord(t, threat.cluster.wind_dir_deg),
+              }) +
+              (threat.cluster.wind_gust_kmh == null
+                ? ""
+                : ` · ${t("survival.gusts", { kmh: Math.round(threat.cluster.wind_gust_kmh) })}`)
+            }
           >
             {threat.closing ? (
               <span className="text-[11px] text-muted-foreground">
@@ -371,6 +369,9 @@ function SmokeRow({
         {reading.peakPm25 > reading.pm2_5
           ? ` · ${t("survival.smokePeak", { value: reading.peakPm25.toFixed(1) })}`
           : ""}
+      </span>
+      <span className="tabular text-[11px] text-muted-foreground">
+        {t("survival.dust", { value: reading.dust.toFixed(0) })}
       </span>
       <span className="text-[11px] text-muted-foreground">
         {t("survival.smokeSource", {

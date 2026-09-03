@@ -428,6 +428,34 @@ export async function refreshRiskForecasts({
   };
 }
 
+export type ClusterWeather = {
+  wind_speed_kmh: number;
+  wind_dir_deg: number;
+  spread_bearing_deg: number;
+  wind_gust_kmh: number | null;
+  vpd_kpa: number | null;
+  soil_moisture_m3m3: number | null;
+};
+
+const num = (v: unknown) =>
+  typeof v === "number" && Number.isFinite(v) ? v : null;
+
+export function clusterWeatherUpdate(current: unknown): ClusterWeather | null {
+  if (typeof current !== "object" || current === null) return null;
+  const c = current as Record<string, unknown>;
+  const speed = num(c["wind_speed_10m"]);
+  const dir = num(c["wind_direction_10m"]);
+  if (speed === null || dir === null) return null;
+  return {
+    wind_speed_kmh: speed,
+    wind_dir_deg: dir,
+    spread_bearing_deg: (dir + 180) % 360,
+    wind_gust_kmh: num(c["wind_gusts_10m"]),
+    vpd_kpa: num(c["vapour_pressure_deficit"]),
+    soil_moisture_m3m3: num(c["soil_moisture_0_to_1cm"]),
+  };
+}
+
 /** Attach current wind to live clusters so the spread arrow is real. */
 export async function enrichClusterWinds(): Promise<number> {
   const { data: clusters } = await supabaseAdmin
@@ -442,40 +470,32 @@ export async function enrichClusterWinds(): Promise<number> {
   const url = new URL("https://api.open-meteo.com/v1/forecast");
   url.searchParams.set("latitude", clusters.map((c) => c.lat).join(","));
   url.searchParams.set("longitude", clusters.map((c) => c.lon).join(","));
-  url.searchParams.set("current", "wind_speed_10m,wind_direction_10m");
+  url.searchParams.set(
+    "current",
+    "wind_speed_10m,wind_direction_10m,wind_gusts_10m,vapour_pressure_deficit,soil_moisture_0_to_1cm",
+  );
   const res = await fetch(url);
   // returning 0 here made a failed fetch indistinguishable from "no live fires"
   if (!res.ok) throw new Error(`open-meteo wind ${res.status}`);
   const json = (await res.json()) as
-    | { current?: { wind_speed_10m: number; wind_direction_10m: number } }
-    | Array<{
-        current?: { wind_speed_10m: number; wind_direction_10m: number };
-      }>;
+    { current?: unknown } | Array<{ current?: unknown }>;
   const list = Array.isArray(json) ? json : [json];
 
-  const updates = clusters
-    .map((cluster, i) => ({ cluster, current: list[i]?.current }))
-    .filter(
-      (
-        u,
-      ): u is {
-        cluster: (typeof clusters)[number];
-        current: { wind_speed_10m: number; wind_direction_10m: number };
-      } => !!u.current,
-    );
+  const updates = clusters.flatMap((cluster, i) => {
+    const weather = clusterWeatherUpdate(list[i]?.current);
+    return weather ? [{ cluster, weather }] : [];
+  });
 
   for (let i = 0; i < updates.length; i += 10) {
     await Promise.all(
-      updates.slice(i, i + 10).map(({ cluster, current }) =>
-        supabaseAdmin
-          .from("fire_clusters")
-          .update({
-            wind_speed_kmh: current.wind_speed_10m,
-            wind_dir_deg: current.wind_direction_10m,
-            spread_bearing_deg: (current.wind_direction_10m + 180) % 360,
-          })
-          .eq("id", cluster.id),
-      ),
+      updates
+        .slice(i, i + 10)
+        .map(({ cluster, weather }) =>
+          supabaseAdmin
+            .from("fire_clusters")
+            .update(weather)
+            .eq("id", cluster.id),
+        ),
     );
   }
   return updates.length;

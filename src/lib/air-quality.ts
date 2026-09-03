@@ -4,6 +4,13 @@ export const WHO_PM25_24H = 15;
 
 export type SmokeLevel = "low" | "elevated" | "high" | "severe";
 
+export const SMOKE_TINT: Record<SmokeLevel, number> = {
+  low: 1,
+  elevated: 2,
+  high: 3,
+  severe: 5,
+};
+
 export type AirQualityReading = {
   pm2_5: number;
   pm10: number;

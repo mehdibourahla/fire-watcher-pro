@@ -26,16 +26,16 @@ quiet; see traps).
 
 ## 2. In flight
 
-PR #92 (`air-quality-smoke`) carries the whole slice: `src/lib/air-quality.ts`, the smoke row
-in the Survival hub, four locales. Two CodeRabbit findings were left open on purpose: the Meta
-application wording and privacy statement (owner's document), and banding the instantaneous
-hourly PM2.5 on the WHO 24-hour guideline (the committed test's contract; a 24-hour mean would
-need `past_days` data).
+PR `fuel-weather-dust`: gusts, VPD and top-centimetre soil moisture attached to live clusters
+by the existing wind enrichment (three nullable `fire_clusters` columns, public API carries
+them); dust in the Survival smoke row; PM2.5 and dust card on the fire page. Verified in a
+headless browser against production data: new stat cards show dashes until the migration is
+deployed, the air card renders live.
 
 ## 3. Next action
 
-Merge #92. Then, in order: dust display with its own copy (Saharan dust is not smoke), PM2.5 on
-the fire page (evidence-ensemble plan, "projection" row), Kabyle review of the smoke strings.
+Merge it. Then: Kabyle review of the smoke, dust and fuel strings; the growth term from FCI
+slot-to-slot pixel counts (plan Phase 3) now has its weather inputs stored.
 
 ## 4. Constraints already decided
 

@@ -55,7 +55,7 @@ export const Route = createFileRoute("/api/public/v1/fires")({
         let query = publicSupabase()
           .from("fire_clusters")
           .select(
-            "short_id, state, first_detected_at, last_detected_at, lat, lon, detection_count, sources, max_frp_mw, confidence, est_area_ha, wind_speed_kmh, wind_dir_deg, spread_bearing_deg, nearest_settlement_km",
+            "short_id, state, first_detected_at, last_detected_at, lat, lon, detection_count, sources, max_frp_mw, confidence, est_area_ha, wind_speed_kmh, wind_dir_deg, spread_bearing_deg, wind_gust_kmh, vpd_kpa, soil_moisture_m3m3, nearest_settlement_km",
           )
           .order("last_detected_at", { ascending: false })
           .range(offset, offset + limit - 1);

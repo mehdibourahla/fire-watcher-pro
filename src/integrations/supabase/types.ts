@@ -798,10 +798,13 @@ export type Database = {
           sources: string[];
           spread_bearing_deg: number | null;
           state: string;
+          soil_moisture_m3m3: number | null;
           suspected_persistent_source: boolean;
           updated_at: string;
+          vpd_kpa: number | null;
           wilaya_id: string | null;
           wind_dir_deg: number | null;
+          wind_gust_kmh: number | null;
           wind_speed_kmh: number | null;
         };
         Insert: {
@@ -829,10 +832,13 @@ export type Database = {
           sources?: string[];
           spread_bearing_deg?: number | null;
           state?: string;
+          soil_moisture_m3m3?: number | null;
           suspected_persistent_source?: boolean;
           updated_at?: string;
+          vpd_kpa?: number | null;
           wilaya_id?: string | null;
           wind_dir_deg?: number | null;
+          wind_gust_kmh?: number | null;
           wind_speed_kmh?: number | null;
         };
         Update: {
@@ -860,10 +866,13 @@ export type Database = {
           sources?: string[];
           spread_bearing_deg?: number | null;
           state?: string;
+          soil_moisture_m3m3?: number | null;
           suspected_persistent_source?: boolean;
           updated_at?: string;
+          vpd_kpa?: number | null;
           wilaya_id?: string | null;
           wind_dir_deg?: number | null;
+          wind_gust_kmh?: number | null;
           wind_speed_kmh?: number | null;
         };
         Relationships: [

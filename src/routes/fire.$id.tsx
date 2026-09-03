@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { MapCanvas } from "@/components/MapCanvas";
 import { DetectionStrip } from "@/components/nadhir/DetectionStrip";
 import { FireEvidence } from "@/components/nadhir/FireEvidence";
+import { AirQualityCard } from "@/components/nadhir/AirQualityCard";
 import { StatCard } from "@/components/nadhir/StatCard";
 import { EmptyState, Skeleton } from "@/components/nadhir/states";
 import { EmergencyNumbers } from "@/components/SiteChrome";
@@ -203,7 +204,29 @@ function FireDetail() {
                 ? "—"
                 : `${Math.round(cluster.wind_speed_kmh)} ${t("common.kmh")}`
             }
-            sub={bearingLabel(cluster.wind_dir_deg)}
+            sub={
+              cluster.wind_gust_kmh == null
+                ? bearingLabel(cluster.wind_dir_deg)
+                : `${bearingLabel(cluster.wind_dir_deg)} · ${t("fire.gusts", { kmh: Math.round(cluster.wind_gust_kmh) })}`
+            }
+          />
+          <StatCard
+            explain={t("explain.vpd")}
+            label={t("fire.vpd")}
+            value={
+              cluster.vpd_kpa == null
+                ? "—"
+                : `${cluster.vpd_kpa.toFixed(1)} kPa`
+            }
+          />
+          <StatCard
+            explain={t("explain.soilMoisture")}
+            label={t("fire.soilMoisture")}
+            value={
+              cluster.soil_moisture_m3m3 == null
+                ? "—"
+                : `${Math.round(cluster.soil_moisture_m3m3 * 100)} %`
+            }
           />
           <StatCard
             explain={t("explain.sources")}
@@ -225,6 +248,8 @@ function FireDetail() {
           locale={locale}
           now={Date.now()}
         />
+
+        <AirQualityCard lat={cluster.lat} lon={cluster.lon} locale={locale} />
 
         <section className="card p-4">
           <h2 className="text-base">{t("fire.nearest")}</h2>
