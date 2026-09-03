@@ -35,16 +35,18 @@ export function parseAirQuality(response: unknown): AirQualityReading | null {
     !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(time)
   )
     return null;
+  const observedAt = `${time}:00Z`;
+  if (Number.isNaN(Date.parse(observedAt))) return null;
   const series = Array.isArray(hourly?.pm2_5) ? hourly.pm2_5 : [];
   let peakPm25 = pm2_5;
   for (const v of series) {
     const n = num(v);
     if (n !== null && n > peakPm25) peakPm25 = n;
   }
-  return { pm2_5, pm10, dust, peakPm25, observedAt: `${time}:00Z` };
+  return { pm2_5, pm10, dust, peakPm25, observedAt };
 }
 
-// Bands are the WHO 2021 guideline (15) and its interim targets IT-2 (37.5) and IT-1 (75).
+// Bands are the WHO 2021 guideline (15) and its interim targets IT-3 (37.5) and IT-1 (75).
 export function smokeLevel(pm25: number): SmokeLevel {
   if (pm25 < WHO_PM25_24H) return "low";
   if (pm25 < 37.5) return "elevated";

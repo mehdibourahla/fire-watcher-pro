@@ -85,7 +85,7 @@ export const kab: Translation = {
     wind: "Aḍu {{kmh}} km/s si {{bearing}}",
     windToward: "yesuḍ si tmessi ɣur-k",
     smoke: "Dexxan · PM2.5 {{value}} µg/m³",
-    smokePeak: "afellay n wass {{value}}",
+    smokePeak: "afellay yettwaḥesben ass-a {{value}}",
     smokeWho: "{{ratio}}× azal n OMS deg 24 isragen",
     smokeSource: "amuddem CAMS · {{time}}",
     smokeLevel: {
@@ -98,9 +98,9 @@ export const kab: Translation = {
       low: "Drus n dexxan i yettwaktalen. Amuddem d asragan — ma twalaḍ neɣ tsummeḍ dexxan, amen ayen d amezwaru.",
       elevated:
         "Eǧǧ ṭṭwaqi medlent. Sneqs akud deg berra ma tesɛiḍ aṭan n ṭṭiqa neɣ n wul.",
-      high: "Qqim deg uxxam, ṭṭwaqi medlent. Els takemmust yeɣlin mliḥ deg berra. Ur tteddu ara s tkeṛṛust ɣer dexxan.",
+      high: "Qqim deg uxxam, ṭṭwaqi medlent. Ma ilaq ad teffɣeḍ, els takemmust FFP2 neɣ N95; aceṭṭiḍ ur yessizdig ara dexxan. Ur tteddu ara s tkeṛṛust ɣer dexxan.",
       severe:
-        "Dexxan yewɛer. Qqim deg uxxam, mdel tiwwura d ṭṭwaqi, sneffes s uceṭṭiḍ yebzeg ma ilaq ad tembiwleḍ. Siwel i 14 ma yewɛer-ak unfas.",
+        "Dexxan yewɛer. Qqim deg uxxam, mdel tiwwura d ṭṭwaqi s uceṭṭiḍ yebzeg. Ur teffeɣ ara mebla takemmust FFP2 neɣ N95. Siwel i 14 ma yewɛer-ak unfas.",
     },
     noFreshData:
       "Ulac tifin tamaynut ɣer tama-k. Ayagi yemmal Nadhir ur iwala acemma — mačči ulac kra.",

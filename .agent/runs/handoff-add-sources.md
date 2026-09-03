@@ -2,7 +2,7 @@
 
 ## 1. Ground truth
 
-- Branch `air-quality-smoke`, HEAD `0d31447`, forked from `main` at `df79388`.
+- Branch `air-quality-smoke`, PR #92, forked from `main` at `df79388`.
 - Working tree clean apart from two long-standing untracked files
   (`data/telegram-channels.json`, `docs/superpowers/plans/2026-08-31-behavioral-qa-audit.md`).
 - Run this first, before trusting anything below:
@@ -11,8 +11,7 @@
 bunx tsc --noEmit && bun run test && bun run lint
 ```
 
-Expect: tsc silent, **580 tests with exactly 1 file failing to collect**, lint 7 warnings and
-0 errors. The failure is deliberate, see §2. `main` on its own is fully green.
+Expect: tsc silent, 585 tests green, lint 7 warnings and 0 errors.
 
 Database gate, when you touch schema (the repo's own Supabase is port-clashed; use a
 port-shifted stack, recipe in `/private/tmp/claude-501/.../scratchpad/localdb`):
@@ -27,35 +26,16 @@ quiet; see traps).
 
 ## 2. In flight
 
-`src/lib/__tests__/air-quality.test.ts` is red and is meant to be. It fails to collect with
-`Cannot find module '@/lib/air-quality'`. The test fixes the contract for a module that does
-not exist yet:
-
-- `parseAirQuality(response)` → `{ pm2_5, pm10, dust, peakPm25, observedAt }` or `null`,
-  never a partial reading. `observedAt` is the API's own `current.time` in UTC, not now.
-- `smokeLevel(µg/m³)` → `"low" | "elevated" | "high" | "severe"`, banded on
-  `WHO_PM25_24H = 15`, with no band that reads as an all-clear.
-
-`src/server.ts:54` already allows `https://air-quality-api.open-meteo.com` in `connect-src`;
-without it the browser silently refuses the call (GAPS §5 records that exact trap).
+PR #92 (`air-quality-smoke`) carries the whole slice: `src/lib/air-quality.ts`, the smoke row
+in the Survival hub, four locales. Two CodeRabbit findings were left open on purpose: the Meta
+application wording and privacy statement (owner's document), and banding the instantaneous
+hourly PM2.5 on the WHO 24-hour guideline (the committed test's contract; a 24-hour mean would
+need `past_days` data).
 
 ## 3. Next action
 
-Write `src/lib/air-quality.ts` until that test is green, then surface the reading in Survival
-Mode beside the Position Card: value, its own timestamp, the WHO comparison, and the
-pre-authored smoke guidance. Call the API from the browser at the user's coordinates — the
-app holds no server-side position and must keep it that way.
-
-Response shape, recorded live 2026-09-03 for Béjaïa:
-
-```
-current: { time: "2026-09-03T00:00", interval: 3600, pm2_5: 12.1, pm10: 27.5, dust: 12 }
-current_units: { pm2_5: "μg/m³", ... }
-hourly: { time: [...24], pm2_5: [...24 with nulls] }
-```
-
-Endpoint: `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=..&longitude=..&current=pm2_5,pm10,dust&hourly=pm2_5&forecast_days=1&timezone=UTC`.
-Free, no key, CAMS-backed.
+Merge #92. Then, in order: dust display with its own copy (Saharan dust is not smoke), PM2.5 on
+the fire page (evidence-ensemble plan, "projection" row), Kabyle review of the smoke strings.
 
 ## 4. Constraints already decided
 

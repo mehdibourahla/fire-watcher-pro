@@ -42,6 +42,14 @@ describe("parseAirQuality", () => {
     ).toBeNull();
     expect(parseAirQuality({})).toBeNull();
   });
+
+  it("rejects a timestamp that is well-formed but not a date", () => {
+    expect(
+      parseAirQuality({
+        current: { time: "2026-99-99T99:99", pm2_5: 1, pm10: 1, dust: 1 },
+      }),
+    ).toBeNull();
+  });
 });
 
 describe("smokeLevel", () => {
