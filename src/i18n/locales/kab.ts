@@ -84,6 +84,24 @@ export const kab: Translation = {
     bySatellite: "asaṭelit",
     wind: "Aḍu {{kmh}} km/s si {{bearing}}",
     windToward: "yesuḍ si tmessi ɣur-k",
+    smoke: "Dexxan · PM2.5 {{value}} µg/m³",
+    smokePeak: "afellay yettwaḥesben ass-a {{value}}",
+    smokeWho: "{{ratio}}× azal n OMS deg 24 isragen",
+    smokeSource: "amuddem CAMS · {{time}}",
+    smokeLevel: {
+      low: "meẓẓi",
+      elevated: "yuli",
+      high: "meqqer",
+      severe: "yewɛer",
+    },
+    smokeGuidance: {
+      low: "Drus n dexxan i yettwaktalen. Amuddem d asragan — ma twalaḍ neɣ tsummeḍ dexxan, amen ayen d amezwaru.",
+      elevated:
+        "Eǧǧ ṭṭwaqi medlent. Sneqs akud deg berra ma tesɛiḍ aṭan n ṭṭiqa neɣ n wul.",
+      high: "Qqim deg uxxam, ṭṭwaqi medlent. Ma ilaq ad teffɣeḍ, els takemmust FFP2 neɣ N95; aceṭṭiḍ ur yessizdig ara dexxan. Ur tteddu ara s tkeṛṛust ɣer dexxan.",
+      severe:
+        "Dexxan yewɛer. Qqim deg uxxam, mdel tiwwura d ṭṭwaqi s uceṭṭiḍ yebzeg. Ur teffeɣ ara mebla takemmust FFP2 neɣ N95. Siwel i 14 ma yewɛer-ak unfas.",
+    },
     noFreshData:
       "Ulac tifin tamaynut ɣer tama-k. Ayagi yemmal Nadhir ur iwala acemma — mačči ulac kra.",
     noPosition:

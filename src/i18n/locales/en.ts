@@ -82,6 +82,24 @@ export const en = {
     bySatellite: "satellite",
     wind: "Wind {{kmh}} km/h from {{bearing}}",
     windToward: "blowing from the fire toward you",
+    smoke: "Smoke · PM2.5 {{value}} µg/m³",
+    smokePeak: "forecast peak today {{value}}",
+    smokeWho: "{{ratio}}× the WHO 24-hour guideline",
+    smokeSource: "CAMS model · {{time}}",
+    smokeLevel: {
+      low: "low",
+      elevated: "elevated",
+      high: "high",
+      severe: "severe",
+    },
+    smokeGuidance: {
+      low: "Little smoke measured. The model is hourly — if you see or smell smoke, trust that first.",
+      elevated:
+        "Keep windows closed. Limit time outside if you have asthma or a heart condition.",
+      high: "Stay indoors, windows closed. If you must go out, wear an FFP2 or N95 respirator; cloth does not filter smoke. Do not drive toward smoke.",
+      severe:
+        "Dangerous smoke. Stay inside, seal door and window gaps with wet cloth. Go out only with an FFP2 or N95 respirator. Call 14 if breathing is hard.",
+    },
     noFreshData:
       "No recent observation near you. That means Nadhir has not seen anything — not that nothing is there.",
     noPosition:

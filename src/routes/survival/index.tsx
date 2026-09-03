@@ -4,6 +4,7 @@ import {
   CheckCircle2,
   Clock,
   Flame,
+  Haze,
   MapPin,
   Phone,
   ShieldCheck,
@@ -14,6 +15,13 @@ import { useTranslation } from "react-i18next";
 
 import { useSurvival } from "@/components/survival/survival-context";
 import type { Locale } from "@/i18n";
+import {
+  WHO_PM25_24H,
+  airQualityQuery,
+  smokeLevel,
+  type AirQualityReading,
+  type SmokeLevel,
+} from "@/lib/air-quality";
 import {
   adminUnitsQuery,
   bearingLabel,
@@ -46,6 +54,13 @@ function dirWord(t: (k: string) => string, deg: number) {
   return t(`survival.dir.${bearingLabel(deg).toLowerCase()}`);
 }
 
+const SMOKE_TINT: Record<SmokeLevel, number> = {
+  low: 1,
+  elevated: 2,
+  high: 3,
+  severe: 5,
+};
+
 function SurvivalHub() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language as Locale;
@@ -67,6 +82,10 @@ function SurvivalHub() {
   const openAreas = useQuery({ ...openAreasQuery, retry: online ? 3 : false });
   const hazards = useQuery({
     ...hazardReportsQuery,
+    retry: online ? 3 : false,
+  });
+  const air = useQuery({
+    ...airQualityQuery(position),
     retry: online ? 3 : false,
   });
 
@@ -255,6 +274,8 @@ function SurvivalHub() {
           </FactRow>
         ) : null}
 
+        {air.data ? <SmokeRow reading={air.data} locale={locale} /> : null}
+
         {changes && lastCheck ? (
           <p className="flex items-center gap-2 rounded-lg bg-muted px-3 py-2 text-xs text-muted-foreground">
             <Clock aria-hidden className="size-3.5 shrink-0" />
@@ -316,6 +337,50 @@ function SurvivalHub() {
         </div>
       </section>
     </>
+  );
+}
+
+function SmokeRow({
+  reading,
+  locale,
+}: {
+  reading: AirQualityReading;
+  locale: Locale;
+}) {
+  const { t } = useTranslation();
+  const level = smokeLevel(reading.pm2_5);
+  const tint = SMOKE_TINT[level];
+  return (
+    <FactRow
+      icon={<Haze aria-hidden className="size-4.5" />}
+      title={t("survival.smoke", { value: reading.pm2_5.toFixed(1) })}
+    >
+      <span
+        className="rounded-full px-2 py-0.5 text-[11px] font-semibold"
+        style={{
+          backgroundColor: `var(--risk-tint-${tint})`,
+          color: `var(--risk-ink-${tint})`,
+        }}
+      >
+        {t(`survival.smokeLevel.${level}`)}
+      </span>
+      <span className="tabular text-[11px] text-muted-foreground">
+        {t("survival.smokeWho", {
+          ratio: (reading.pm2_5 / WHO_PM25_24H).toFixed(1),
+        })}
+        {reading.peakPm25 > reading.pm2_5
+          ? ` · ${t("survival.smokePeak", { value: reading.peakPm25.toFixed(1) })}`
+          : ""}
+      </span>
+      <span className="text-[11px] text-muted-foreground">
+        {t("survival.smokeSource", {
+          time: relativeTime(reading.observedAt, locale),
+        })}
+      </span>
+      <span className="basis-full text-[12px] leading-relaxed">
+        {t(`survival.smokeGuidance.${level}`)}
+      </span>
+    </FactRow>
   );
 }
 

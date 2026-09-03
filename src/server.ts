@@ -51,7 +51,7 @@ export function buildContentSecurityPolicy(
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com",
     `img-src 'self' data: blob: https://*.cartocdn.com${storageSource}`,
-    `connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.cartocdn.com https://firebaseinstallations.googleapis.com https://fcmregistrations.googleapis.com${storageSource}${localSupabase}`,
+    `connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.cartocdn.com https://firebaseinstallations.googleapis.com https://fcmregistrations.googleapis.com https://air-quality-api.open-meteo.com${storageSource}${localSupabase}`,
     "worker-src 'self' blob:",
     "manifest-src 'self'",
     ...(dev ? [] : ["upgrade-insecure-requests"]),
