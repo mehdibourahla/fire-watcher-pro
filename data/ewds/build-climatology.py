@@ -98,7 +98,9 @@ def main() -> None:
                 continue
             breakpoints = np.percentile(sample, percentiles).tolist()
             entries.append({"month": m, "day": d, "breakpoints": breakpoints})
-        out_path.write_text(json.dumps({"commune_id": commune["id"], "days": entries}))
+        tmp_path = out_path.with_suffix(".json.part")
+        tmp_path.write_text(json.dumps({"commune_id": commune["id"], "days": entries}))
+        tmp_path.rename(out_path)
         if ci % 100 == 0:
             print(f"{ci}/{len(communes)} communes written", flush=True)
     print("done")

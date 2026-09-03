@@ -7,6 +7,11 @@ create table public.fwi_climatology (
   primary key (commune_id, month, day)
 );
 
+-- every lookup filters by (month, day) across all communes; the PK leads with
+-- commune_id, so it does not serve this query
+create index fwi_climatology_month_day_idx
+  on public.fwi_climatology (month, day);
+
 alter table public.fwi_climatology enable row level security;
 
 create policy "public read fwi_climatology"

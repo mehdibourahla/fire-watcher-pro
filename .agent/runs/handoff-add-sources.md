@@ -57,9 +57,10 @@ quiet; see traps).
 ## 3. Next action
 
 1. Open the PR for `fwi-local-percentile`, merge on Mehdi's named OK.
-2. **Owner action after merge:** run `bun run data/ewds/build-climatology.py` (needs
-   `SUPABASE_URL`/`SUPABASE_PUBLISHABLE_KEY`, ~20-30 min for 1536 communes guessed, untimed for
-   real), then `SUPABASE_SERVICE_ROLE_KEY=... bun scripts/seed-fwi-climatology.ts`. Until this
+2. **Owner action after merge:** run `cdsenv/bin/python data/ewds/build-climatology.py` (the
+   venv from the EWDS pull, not `bun` — needs `SUPABASE_URL`/`SUPABASE_PUBLISHABLE_KEY`,
+   ~20-30 min for 1536 communes guessed, untimed for real), then
+   `SUPABASE_SERVICE_ROLE_KEY=... bun scripts/seed-fwi-climatology.ts`. Until this
    runs, `fwi_percentile` stays null everywhere in prod — the feature ships inert, which is
    safe (same as `fuel_limited`'s null path) but pointless until seeded.
 3. Kabyle review of everything accumulated this session; FCI growth term.

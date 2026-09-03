@@ -328,7 +328,7 @@ export const en = {
   explain: {
     fwi: "Fire Weather Index: how fast a fire would spread and how hard it would be to control, computed from temperature, humidity, wind and recent rain.",
     fwiPercentile:
-      "Today's Fire Weather Index compared with this commune's own history on this calendar day, over 86 years. A place that is always extreme in summer can still be at its own historical ceiling — this is what discriminates that.",
+      "The forecast day's Fire Weather Index compared with this commune's own history on that calendar day, over 86 years. A place that is always extreme in summer can still be at its own historical ceiling — this is what discriminates that.",
     dangerLevel:
       "Danger level 1\u20135, mapped from the Fire Weather Index on the European EFFIS scale.",
     notRated:
@@ -357,7 +357,7 @@ export const en = {
     dayLabel: "D{{n}}",
     today: "Today",
     fwi: "FWI",
-    percentile: "hotter than {{pct}}% of years on this date",
+    percentile: "higher FWI than {{pct}}% of years on this date",
     level: "Danger level",
     searchCommune: "Search a commune",
     noResults: "No commune matches that search.",
