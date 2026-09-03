@@ -1541,6 +1541,101 @@ select is(
   'running the same interval twice keeps one authority broadcast'
 );
 
+-- a recorded gap is worthless unless something drains it; these cover the drain
+select has_function(
+  'private',
+  'replay_open_source_gaps',
+  array['timestamp with time zone', 'integer'],
+  'a scheduler drains open gaps the provider can still serve'
+);
+
+update public.source_gaps set state = 'resolved' where state = 'open';
+
+insert into public.source_gaps (
+  contract_key,
+  data_from,
+  data_through,
+  state,
+  public_reason_code,
+  detected_at,
+  updated_at
+)
+values
+  (
+    'fci',
+    '2026-08-31 19:00:00+00',
+    '2026-08-31 19:10:00+00',
+    'open',
+    'upstream_unreachable',
+    '2026-08-31 19:10:00+00',
+    '2026-08-31 19:10:00+00'
+  ),
+  (
+    'fci',
+    '2026-08-31 19:20:00+00',
+    '2026-08-31 19:30:00+00',
+    'open',
+    'upstream_unreachable',
+    '2026-08-31 19:30:00+00',
+    '2026-08-31 19:30:00+00'
+  ),
+  (
+    'onm',
+    '2026-08-31 19:40:00+00',
+    '2026-08-31 19:50:00+00',
+    'open',
+    'upstream_unreachable',
+    '2026-08-31 19:50:00+00',
+    '2026-08-31 19:50:00+00'
+  );
+
+select is(
+  private.replay_open_source_gaps('2026-08-31 22:30:00+00', 1),
+  1,
+  'the drain stops at its per-tick limit'
+);
+
+select is(
+  (
+    select count(*)::integer
+    from public.source_jobs
+    where trigger_kind = 'replay'
+      and gap_id = (
+        select id
+        from public.source_gaps
+        where contract_key = 'fci'
+          and data_from = '2026-08-31 19:00:00+00'
+      )
+  ),
+  1,
+  'the drain takes the oldest replayable gap first'
+);
+
+update public.source_gaps
+set replay_count = 3
+where contract_key = 'fci'
+  and data_from = '2026-08-31 19:20:00+00';
+
+select is(
+  private.replay_open_source_gaps('2026-08-31 22:31:00+00', 10),
+  0,
+  'a gap that exhausted its replays is left alone, and an unreplayable contract is never offered'
+);
+
+select is(
+  (
+    select count(*)::integer
+    from public.source_jobs
+    where trigger_kind = 'replay'
+      and gap_id = (
+        select id from public.source_gaps where contract_key = 'onm'
+          and data_from = '2026-08-31 19:40:00+00'
+      )
+  ),
+  0,
+  'a contract without interval replay is skipped rather than raising'
+);
+
 select * from finish();
 
 rollback;
