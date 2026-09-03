@@ -226,15 +226,26 @@ function wilayaDraft(
 // commune the model names outside that list, or in excess of it, cannot Confirm anything.
 function gateByDistribution(
   drafts: Draft[],
-  wilayaCounts: DgpcBulletin["wilayaCounts"],
+  parsed: Pick<DgpcBulletin, "wilayaCounts" | "totals">,
   gazetteer: Gazetteer,
   asOf: string,
 ): { drafts: Draft[]; gated: number } {
-  if (!wilayaCounts.length) return { drafts, gated: 0 };
+  const total = parsed.totals?.ongoing ?? null;
   const counts = new Map<string, { count: number; raw: string }>();
-  for (const c of wilayaCounts) {
+  for (const c of parsed.wilayaCounts) {
     const id = resolveWilaya(c.wilaya, gazetteer.wilayas);
     if (id) counts.set(id, { count: c.count, raw: c.raw });
+  }
+  const sum = [...counts.values()].reduce((n, e) => n + e.count, 0);
+  // a distribution that outnumbers its own header, or none at all, leaves only the total
+  if (!counts.size || (total !== null && sum > total)) {
+    if (total === null) return { drafts, gated: 0 };
+    const ongoing = drafts.filter((d) => d.status === "ongoing");
+    if (ongoing.length <= total) return { drafts, gated: 0 };
+    return {
+      drafts: drafts.filter((d) => d.status !== "ongoing"),
+      gated: ongoing.length,
+    };
   }
   const out = drafts.filter((d) => d.status !== "ongoing");
   const ongoing = new Map<string, Draft[]>();
@@ -388,6 +399,7 @@ export async function runTextSourceWith(
 
   const gazetteer = await deps.store.loadGazetteer();
   const inserts: MentionInsert[] = [];
+  const retriedOk: string[] = [];
   const bulletins: { asOf: string; areaIds: Set<string> }[] = [];
   for (const doc of documents) {
     const parsed =
@@ -442,16 +454,11 @@ export async function runTextSourceWith(
       drafts.push(draft);
     }
     if (parsed?.kind === "bulletin") {
-      const gate = gateByDistribution(
-        drafts,
-        parsed.wilayaCounts,
-        gazetteer,
-        asOf,
-      );
+      const gate = gateByDistribution(drafts, parsed, gazetteer, asOf);
       drafts = gate.drafts;
       run.gated += gate.gated;
     }
-    if (!fresh.has(doc.id)) await deps.store.clearExtractionFailure(doc.id);
+    if (!fresh.has(doc.id)) retriedOk.push(doc.id);
     if (coverage)
       for (const d of drafts) coverage.areaIds.add(d.commune_id ?? d.wilaya_id);
     inserts.push(
@@ -473,6 +480,7 @@ export async function runTextSourceWith(
   if (llmCalls > 0 && run.llmFailed === llmCalls)
     run.error = `every llm extraction failed: ${lastLlmError}`;
   const rows = inserts.length ? await deps.store.insertMentions(inserts) : [];
+  for (const id of retriedOk) await deps.store.clearExtractionFailure(id);
   run.mentions = rows.length;
   run.resolved = rows.length;
   run.clustersConfirmed = await deps.store.confirmClusters(

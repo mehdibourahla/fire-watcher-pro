@@ -16,11 +16,16 @@ const AZZABA = "c-azzaba";
 const AIN_ZOUIT = "c-ain-zouit";
 const FAR = "c-far";
 
-const bulletin = (asOfHour: string, distribution: string, body: string) =>
+const bulletin = (
+  asOfHour: string,
+  distribution: string,
+  body: string,
+  ongoing = 2,
+) =>
   `🔴 الحالة العامة لحرائق الغطاء النباتي ليوم 02 سبتمبر 2026 على الساعة ${asOfHour}سا00د
 🔴 العدد الإجمالي للحرائق: 3
 🔴 عدد الحرائق التي تم إخمادها: 1
-🔴 عدد الحرائق المتواصلة: 2
+🔴 عدد الحرائق المتواصلة: ${ongoing}
 ✅✅ الحرائق المتواصلة موزعة على:
 ${distribution}
 🔴 أهم الحرائق
@@ -459,6 +464,80 @@ describe("distribution gate", () => {
     });
   });
 
+  it("gates every ongoing commune when the bulletin says no fire is ongoing", async () => {
+    const { store, mentions } = memoryStore();
+    const result = await runTextSourceWith(
+      "dgpc_telegram",
+      deps(
+        [
+          post(
+            "1",
+            "2026-09-02T12:10:00Z",
+            bulletin("13", "⏮️⏮️ لا يوجد (00)", twoFires, 0),
+          ),
+        ],
+        store,
+        llmWith(mention({})),
+      ),
+    );
+    expect(result).toMatchObject({ mentions: 0, gated: 1 });
+    expect(mentions).toHaveLength(0);
+  });
+
+  it("caps ongoing communes by the header total when the distribution is unreadable", async () => {
+    const { store } = memoryStore();
+    const within = await runTextSourceWith(
+      "dgpc_telegram",
+      deps(
+        [
+          post(
+            "1",
+            "2026-09-02T12:10:00Z",
+            bulletin("13", "⏮️⏮️ موزعة على ولايتين", twoFires, 2),
+          ),
+        ],
+        store,
+        llmWith(mention({}), mention({ commune: "عين زويت" })),
+      ),
+    );
+    expect(within).toMatchObject({ mentions: 2, gated: 0 });
+    const over = await runTextSourceWith(
+      "dgpc_telegram",
+      deps(
+        [
+          post(
+            "2",
+            "2026-09-02T14:10:00Z",
+            bulletin("15", "⏮️⏮️ موزعة على ولايتين", twoFires, 1),
+          ),
+        ],
+        store,
+        llmWith(mention({}), mention({ commune: "عين زويت" })),
+      ),
+    );
+    expect(over).toMatchObject({ mentions: 0, gated: 2 });
+  });
+
+  it("distrusts a distribution whose counts exceed the header total", async () => {
+    const { store, mentions } = memoryStore();
+    const result = await runTextSourceWith(
+      "dgpc_telegram",
+      deps(
+        [
+          post(
+            "1",
+            "2026-09-02T12:10:00Z",
+            bulletin("13", skikda2, twoFires, 1),
+          ),
+        ],
+        store,
+        llmWith(mention({})),
+      ),
+    );
+    expect(result).toMatchObject({ mentions: 1, gated: 0 });
+    expect(mentions.map((m) => m["commune_id"])).toEqual([AZZABA]);
+  });
+
   it("does not gate a standalone incident post", async () => {
     const { store } = memoryStore();
     const result = await runTextSourceWith(
@@ -635,6 +714,34 @@ describe("extraction retry", () => {
     expect(second).toMatchObject({ retried: 1, llmFailed: 0, mentions: 2 });
     expect(retry.size).toBe(0);
     expect(mentions.map((m) => m["commune_id"])).toEqual([AZZABA, AIN_ZOUIT]);
+  });
+
+  it("keeps the retry marker when inserting the retried mentions fails", async () => {
+    const { store, retry } = memoryStore();
+    await runTextSourceWith(
+      "dgpc_telegram",
+      deps(
+        [post("50", "2026-09-02T08:05:00Z", bulletin("07", skikda2, twoFires))],
+        store,
+        async () => {
+          throw new Error("openrouter 502");
+        },
+      ),
+    );
+    expect(retry.size).toBe(1);
+    const failing: TextSourceStore = {
+      ...store,
+      insertMentions: async () => {
+        throw new Error("insert failed");
+      },
+    };
+    await expect(
+      runTextSourceWith(
+        "dgpc_telegram",
+        deps([], failing, llmWith(mention({}))),
+      ),
+    ).rejects.toThrow("insert failed");
+    expect(retry.size).toBe(1);
   });
 
   it("does not re-apply an old bulletin's coverage when it is retried", async () => {
