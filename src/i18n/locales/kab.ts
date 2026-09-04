@@ -2,7 +2,7 @@ import type { Translation } from "./en";
 
 export const kab: Translation = {
   common: {
-    close: "ɣleq",
+    close: "Belaɛ",
     dismiss: "Ffer",
     delete: "Kkes",
     appName: "Nadhir",
