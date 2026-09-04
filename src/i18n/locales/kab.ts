@@ -3,12 +3,12 @@ import type { Translation } from "./en";
 export const kab: Translation = {
   common: {
     close: "ɣleq",
-    dismiss: "Gumma",
-    delete: "Ekes",
+    dismiss: "Ffer",
+    delete: "Kkes",
     appName: "Nadhir",
-    tagline: "Alerte n tmes tamoqrant g Lezzayer",
-    loading: "Esber",
-    error: "Yeḍra-d wugur",
+    tagline: "Alɣu zik ɣef tmessi n teẓgi di Lezzayer",
+    loading: "Yessalay",
+    error: "Tella-d tuccḍa",
     retry: "Ɛiwed tikkelt-nniḍen",
     none: "—",
     km: "km",
@@ -16,14 +16,14 @@ export const kab: Translation = {
     mw: "MW",
     kmh: "km/h",
     updated: "Yettwaleqqem {{time}}",
-    viewAll: "Wali kullech",
+    viewAll: "Wali kullec",
     back: "Uɣal",
     liveMode: "Isefka srid",
     liveModeNote:
-      "Yeqqen ɣer satellite n la NASA FIRMS d EUMETSAT MTG FCI, ikhedem la mise a jour chaque 15 dqiqa.",
+      "Yeqqen ɣer isaduf n usaṭelit NASA FIRMS d EUMETSAT MTG FCI, ttwaleqqmen yal 15 n tesdatin.",
     demoMode: "Isefka n uskan",
     demoModeNote:
-      "Isaduf n usaṭelit ur qqinen ara akka tura. la7ssabath idefkan toura del Ssinaṛyu n uskan itwakhedmed uqbel en attendant le live.",
+      "Isaduf n usaṭelit ur qqinen ara akka tura. Izwilen d wid n uskan.",
   },
   meta: {
     defaultTitle: "Nadhir — Alɣu azawar n tmess n teẓgi di Lezzayer",
