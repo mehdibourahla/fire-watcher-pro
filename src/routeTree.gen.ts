@@ -21,6 +21,7 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as StatusRouteImport } from './routes/status'
 import { Route as SurvivalRouteRouteImport } from './routes/survival/route'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
 import { Route as AuthenticatedAlertsRouteImport } from './routes/_authenticated/alerts'
 import { Route as AuthenticatedBroadcastsRouteImport } from './routes/_authenticated/broadcasts'
 import { Route as AuthenticatedModerationRouteImport } from './routes/_authenticated/moderation'
@@ -34,6 +35,7 @@ import { Route as SurvivalIndexRouteImport } from './routes/survival/index'
 import { Route as SurvivalAreasRouteImport } from './routes/survival/areas'
 import { Route as SurvivalCheckinRouteImport } from './routes/survival/checkin'
 import { Route as SurvivalSosRouteImport } from './routes/survival/sos'
+import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as ContributeLanguageLocaleRouteImport } from './routes/contribute_.language.$locale'
 import { Route as ApiInternalSourceJobsRunRouteImport } from './routes/api/internal/source-jobs/run'
 import { Route as ApiPublicContributeIdeaRouteImport } from './routes/api/public/contribute/idea'
@@ -107,6 +109,11 @@ const TermsRoute = TermsRouteImport.update({
   path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminRouteRoute = AuthenticatedAdminRouteRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAlertsRoute = AuthenticatedAlertsRouteImport.update({
   id: '/alerts',
   path: '/alerts',
@@ -171,6 +178,11 @@ const SurvivalSosRoute = SurvivalSosRouteImport.update({
   id: '/sos',
   path: '/sos',
   getParentRoute: () => SurvivalRouteRoute,
+} as any)
+const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedAdminRouteRoute,
 } as any)
 const ContributeLanguageLocaleRoute =
   ContributeLanguageLocaleRouteImport.update({
@@ -254,6 +266,7 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/status': typeof StatusRoute
   '/terms': typeof TermsRoute
+  '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/alerts': typeof AuthenticatedAlertsRoute
   '/broadcasts': typeof AuthenticatedBroadcastsRoute
   '/moderation': typeof AuthenticatedModerationRoute
@@ -268,6 +281,7 @@ export interface FileRoutesByFullPath {
   '/survival/sos': typeof SurvivalSosRoute
   '/survival/': typeof SurvivalIndexRoute
   '/contribute/language/$locale': typeof ContributeLanguageLocaleRoute
+  '/admin/': typeof AuthenticatedAdminIndexRoute
   '/api/internal/source-jobs/run': typeof ApiInternalSourceJobsRunRoute
   '/api/public/contribute/idea': typeof ApiPublicContributeIdeaRoute
   '/api/public/contribute/my-translations': typeof ApiPublicContributeMyTranslationsRoute
@@ -306,6 +320,7 @@ export interface FileRoutesByTo {
   '/survival/sos': typeof SurvivalSosRoute
   '/survival': typeof SurvivalIndexRoute
   '/contribute/language/$locale': typeof ContributeLanguageLocaleRoute
+  '/admin': typeof AuthenticatedAdminIndexRoute
   '/api/internal/source-jobs/run': typeof ApiInternalSourceJobsRunRoute
   '/api/public/contribute/idea': typeof ApiPublicContributeIdeaRoute
   '/api/public/contribute/my-translations': typeof ApiPublicContributeMyTranslationsRoute
@@ -333,6 +348,7 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/status': typeof StatusRoute
   '/terms': typeof TermsRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/alerts': typeof AuthenticatedAlertsRoute
   '/_authenticated/broadcasts': typeof AuthenticatedBroadcastsRoute
   '/_authenticated/moderation': typeof AuthenticatedModerationRoute
@@ -347,6 +363,7 @@ export interface FileRoutesById {
   '/survival/sos': typeof SurvivalSosRoute
   '/survival/': typeof SurvivalIndexRoute
   '/contribute_/language/$locale': typeof ContributeLanguageLocaleRoute
+  '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/api/internal/source-jobs/run': typeof ApiInternalSourceJobsRunRoute
   '/api/public/contribute/idea': typeof ApiPublicContributeIdeaRoute
   '/api/public/contribute/my-translations': typeof ApiPublicContributeMyTranslationsRoute
@@ -374,6 +391,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/status'
     | '/terms'
+    | '/admin'
     | '/alerts'
     | '/broadcasts'
     | '/moderation'
@@ -388,6 +406,7 @@ export interface FileRouteTypes {
     | '/survival/sos'
     | '/survival/'
     | '/contribute/language/$locale'
+    | '/admin/'
     | '/api/internal/source-jobs/run'
     | '/api/public/contribute/idea'
     | '/api/public/contribute/my-translations'
@@ -426,6 +445,7 @@ export interface FileRouteTypes {
     | '/survival/sos'
     | '/survival'
     | '/contribute/language/$locale'
+    | '/admin'
     | '/api/internal/source-jobs/run'
     | '/api/public/contribute/idea'
     | '/api/public/contribute/my-translations'
@@ -452,6 +472,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/status'
     | '/terms'
+    | '/_authenticated/admin'
     | '/_authenticated/alerts'
     | '/_authenticated/broadcasts'
     | '/_authenticated/moderation'
@@ -466,6 +487,7 @@ export interface FileRouteTypes {
     | '/survival/sos'
     | '/survival/'
     | '/contribute_/language/$locale'
+    | '/_authenticated/admin/'
     | '/api/internal/source-jobs/run'
     | '/api/public/contribute/idea'
     | '/api/public/contribute/my-translations'
@@ -595,6 +617,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/alerts': {
       id: '/_authenticated/alerts'
       path: '/alerts'
@@ -685,6 +714,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/survival/sos'
       preLoaderRoute: typeof SurvivalSosRouteImport
       parentRoute: typeof SurvivalRouteRoute
+    }
+    '/_authenticated/admin/': {
+      id: '/_authenticated/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
     }
     '/contribute_/language/$locale': {
       id: '/contribute_/language/$locale'
@@ -780,7 +816,22 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedAdminRouteRouteChildren {
+  AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+}
+
+const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren =
+  {
+    AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+  }
+
+const AuthenticatedAdminRouteRouteWithChildren =
+  AuthenticatedAdminRouteRoute._addFileChildren(
+    AuthenticatedAdminRouteRouteChildren,
+  )
+
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminRouteRoute: typeof AuthenticatedAdminRouteRouteWithChildren
   AuthenticatedAlertsRoute: typeof AuthenticatedAlertsRoute
   AuthenticatedBroadcastsRoute: typeof AuthenticatedBroadcastsRoute
   AuthenticatedModerationRoute: typeof AuthenticatedModerationRoute
@@ -792,6 +843,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminRouteRoute: AuthenticatedAdminRouteRouteWithChildren,
   AuthenticatedAlertsRoute: AuthenticatedAlertsRoute,
   AuthenticatedBroadcastsRoute: AuthenticatedBroadcastsRoute,
   AuthenticatedModerationRoute: AuthenticatedModerationRoute,

@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import i18n from "@/i18n";
+import { adminEn } from "@/i18n/admin/en";
 import { ar } from "@/i18n/locales/ar";
 import { en } from "@/i18n/locales/en";
 import { fr } from "@/i18n/locales/fr";
@@ -28,6 +29,7 @@ function walk(dir: string): string[] {
 }
 
 const KEYS = new Set(flatten(en as unknown as Tree));
+const ADMIN_KEYS = new Set(flatten(adminEn as unknown as Tree));
 
 describe("locale parity", () => {
   const locales = { ar, fr, kab } as unknown as Record<string, Tree>;
@@ -107,9 +109,16 @@ describe("every referenced key exists", () => {
     const missing: string[] = [];
     for (const file of walk("src")) {
       const src = readFileSync(file, "utf8");
+      const usesAdmin = src.includes('useTranslation("admin")');
+      const usesDefault = /useTranslation\(\s*\)/.test(src);
+      const known = !usesAdmin
+        ? KEYS
+        : usesDefault
+          ? new Set([...KEYS, ...ADMIN_KEYS])
+          : ADMIN_KEYS;
       for (const m of src.matchAll(/\bt\(\s*"([a-zA-Z0-9_.]+)"/g)) {
         const key = m[1]!;
-        if (!KEYS.has(key)) missing.push(`${file}: ${key}`);
+        if (!known.has(key)) missing.push(`${file}: ${key}`);
       }
     }
     expect(missing).toEqual([]);
