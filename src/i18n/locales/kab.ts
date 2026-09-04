@@ -81,7 +81,7 @@ export const kab: Translation = {
     fireObserved: "Timess tettwafen ɣef {{km}} km ɣer {{bearing}}",
     seenAgo: "tettwafen {{time}}",
     closer: "teqreb ugar seg uɛeddi yezrin",
-    bySatellite: "l satellite",
+    bySatellite: "asaṭelit",
     wind: "Aḍu {{kmh}} km/s si {{bearing}}",
     windToward: "yesuḍ si tmessi ɣur-k",
     gusts: "tiḍuḍin {{kmh}} km/s",
