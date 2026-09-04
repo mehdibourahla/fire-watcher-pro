@@ -9,12 +9,13 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, useMemo, type ReactNode } from "react";
-import { I18nextProvider } from "react-i18next";
+import { I18nextProvider, useTranslation } from "react-i18next";
 
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 import appCss from "../styles.css?url";
 import {
+  headTranslator,
   initLocale,
   localeInstance,
   readLocaleCookie,
@@ -26,22 +27,29 @@ import { SiteHeader, SiteFooter, BottomTabs } from "../components/SiteChrome";
 import { AlertNotifier } from "../components/AlertNotifier";
 
 function NotFoundComponent() {
+  const { t } = useTranslation();
+
+  // no route matched, so no route head can title this page
+  useEffect(() => {
+    document.title = t("notFound.metaTitle");
+  }, [t]);
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="text-7xl font-bold text-foreground">404</h1>
         <h2 className="mt-4 text-xl font-semibold text-foreground">
-          Page not found
+          {t("notFound.title")}
         </h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          The page you're looking for doesn't exist or has been moved.
+          {t("notFound.body")}
         </p>
         <div className="mt-6">
           <Link
             to="/"
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Go home
+            {t("notFound.home")}
           </Link>
         </div>
       </div>
@@ -52,16 +60,16 @@ function NotFoundComponent() {
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
+  const { t } = useTranslation();
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          This page didn't load
+          {t("errorPage.title")}
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. You can try refreshing or head back
-          home.
+          {t("errorPage.body")}
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
@@ -71,13 +79,13 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
             }}
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Try again
+            {t("common.retry")}
           </button>
           <a
             href="/"
             className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
           >
-            Go home
+            {t("notFound.home")}
           </a>
         </div>
       </div>
@@ -95,6 +103,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         { charSet: "utf-8" },
         { name: "viewport", content: "width=device-width, initial-scale=1" },
         { name: "author", content: "Nadhir" },
+        // deepest match wins, so this only titles pages that set none (404 included)
+        { title: headTranslator()("meta.defaultTitle") },
         { property: "og:type", content: "website" },
         { name: "twitter:card", content: "summary_large_image" },
       ],
@@ -136,6 +146,7 @@ function RootShell({ children }: { children: ReactNode }) {
       lang={locale}
       dir={RTL_LOCALES.includes(locale) ? "rtl" : "ltr"}
       className={theme === "dark" ? "dark" : undefined}
+      suppressHydrationWarning
     >
       <head>
         {/* Must run before paint: SSR cannot know prefers-color-scheme for "system". */}
@@ -163,6 +174,12 @@ function RootComponent() {
   useEffect(() => {
     // Keeps <html lang/dir> aligned with the cookie locale after hydration.
     syncClientLocale();
+  }, []);
+
+  useEffect(() => {
+    void import("@/integrations/supabase/legacy-session")
+      .then(({ migrateLegacySession }) => migrateLegacySession())
+      .catch(() => undefined);
   }, []);
 
   useEffect(() => {

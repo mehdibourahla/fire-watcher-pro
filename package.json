@@ -7,10 +7,12 @@
     "dev": "vite dev",
     "build": "vite build",
     "build:dev": "vite build --mode development",
-    "preview": "vite preview",
+    "preview": "nitro preview",
     "lint": "eslint .",
     "format": "prettier --write .",
     "test": "vitest run",
+    "test:db:last-admin-race": "bash scripts/test-last-admin-race.sh",
+    "test:db:profile-webhook-preflight": "bash scripts/test-profile-webhook-preflight.sh",
     "test:watch": "vitest",
     "seed:geo": "bun run scripts/seed-geo.ts",
     "seed:open-areas": "bun run scripts/seed-open-areas.ts",
@@ -28,7 +30,8 @@
     "seed:telegram": "bun run scripts/seed-telegram-channels.ts",
     "source:job": "bun run scripts/run-source-job.ts",
     "replay:source": "bun run scripts/replay-source-gap.ts",
-    "watchdog:sources": "bun run scripts/source-watchdog.ts"
+    "replay:window": "bun run scripts/replay-window.ts",
+    "watchdog:external": "bun run scripts/external-watchdog.ts"
   },
   "overrides": {
     "rolldown": "1.2.1"
@@ -61,6 +64,7 @@
     "@radix-ui/react-toggle": "^1.1.10",
     "@radix-ui/react-toggle-group": "^1.1.11",
     "@radix-ui/react-tooltip": "^1.2.8",
+    "@supabase/ssr": "^0.12.5",
     "@supabase/supabase-js": "^2.112.4",
     "@tailwindcss/vite": "^4.2.1",
     "@tanstack/react-query": "^5.102.3",
@@ -113,6 +117,7 @@
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.56.1",
     "vite": "8.1.5",
-    "vitest": "^3"
+    "vitest": "^3",
+    "wrangler": "4.127.1"
   }
 }

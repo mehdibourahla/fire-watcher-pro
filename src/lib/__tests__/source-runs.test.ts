@@ -7,6 +7,7 @@ import {
   sourceRunOutcome,
   sourceRunRpcArgs,
 } from "@/lib/source-runs";
+import { retryDispositionForReason } from "@/lib/source-jobs";
 import { recordSourceRunWith } from "@/lib/source-runs.server";
 
 describe("publicReasonForError", () => {
@@ -23,8 +24,17 @@ describe("publicReasonForError", () => {
     ],
     ["malformed provider payload", "schema_invalid"],
     ["unexpected database failure", "internal_error"],
+    // Bun's Response.json() message when a body is not JSON: an error page from a
+    // flaky upstream, not a verdict that the upstream changed its schema
+    ["Failed to parse JSON", "internal_error"],
   ] as const)("maps %s to %s", (diagnostic, expected) => {
     expect(publicReasonForError(diagnostic)).toBe(expected);
+  });
+
+  it("keeps a body it could not read retryable, so a blip does not burn the job", () => {
+    const reason = publicReasonForError("Failed to parse JSON");
+
+    expect(retryDispositionForReason(reason)).toBe("transient");
   });
 
   it("never returns raw diagnostic text", () => {

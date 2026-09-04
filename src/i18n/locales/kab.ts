@@ -25,6 +25,20 @@ export const kab: Translation = {
     demoModeNote:
       "Isaduf n usaṭelit ur qqinen ara akka tura. la7ssabath idefkan toura del Ssinaṛyu n uskan itwakhedmed uqbel en attendant le live.",
   },
+  meta: {
+    defaultTitle: "Nadhir — Alɣu azawar n tmessi n teẓgi di Lezzayer",
+    titleTemplate: "{{page}} — Nadhir",
+  },
+  notFound: {
+    metaTitle: "Ur nufi ara asebter — Nadhir",
+    title: "Ur nufi ara asebter",
+    body: "Asebter i tettnadiḍ ulac-it neɣ yettwabeddel umidag-is.",
+    home: "Uɣal ɣer usebter agejdan",
+  },
+  errorPage: {
+    title: "Asebter-a ur d-yuli ara",
+    body: "Tella-d tuccḍa ɣer idis-nneɣ. Tzemreḍ ad tsmireḍ neɣ ad tuɣaleḍ ɣer usebter agejdan.",
+  },
   survival: {
     mode: "Askar n leslak",
     online: "Yeqqen",
@@ -33,7 +47,11 @@ export const kab: Translation = {
     enterTitle: "Aql-ak tura ɣer tama n tmessi?",
     enterBody:
       "Askar n leslak yeskan yiwet n tɣawsa ara txedmeḍ yal tikkelt, iḥerrez tamnaḍt-ik war aẓeṭṭa, iheggi amkan-ik i usiwel ɣer Wemmesten Aɣarim ɣef 14.",
-    enterFetching: "Yessalay amkan GPS · yeḥerrez takemmust war aẓeṭṭa…",
+    enterFetching: "Yessalay amkan GPS…",
+    enterDenied:
+      "Asideg yensa, ihi ineɣmisen ad ilin d imatuten. Tzemreḍ ad tkecmeḍ.",
+    enterSaving: "Yufa-d amkan · yeḥerrez takemmust war aẓeṭṭa…",
+    enterReady: "Yufa-d amkan · takemmust war aẓeṭṭa tettwaḥerz.",
     enterYes: "Ih — rmed askar n leslak",
     enterCancel: "Sefsex",
     enterFootnote:
@@ -66,6 +84,26 @@ export const kab: Translation = {
     bySatellite: "l satellite",
     wind: "Aḍu {{kmh}} km/s si {{bearing}}",
     windToward: "yesuḍ si tmessi ɣur-k",
+    gusts: "tiḍuḍin {{kmh}} km/s",
+    dust: "Aɣebbar n Ṣeḥra {{value}} µg/m³ · aɣebbar n uẓru, mačči d dexxan",
+    smoke: "Dexxan · PM2.5 {{value}} µg/m³",
+    smokePeak: "afellay yettwaḥesben ass-a {{value}}",
+    smokeWho: "{{ratio}}× azal n OMS deg 24 isragen",
+    smokeSource: "amuddem CAMS · {{time}}",
+    smokeLevel: {
+      low: "meẓẓi",
+      elevated: "yuli",
+      high: "meqqer",
+      severe: "yewɛer",
+    },
+    smokeGuidance: {
+      low: "Drus n dexxan i yettwaktalen. Amuddem d asragan — ma twalaḍ neɣ tsummeḍ dexxan, amen ayen d amezwaru.",
+      elevated:
+        "Eǧǧ ṭṭwaqi medlent. Sneqs akud deg berra ma tesɛiḍ aṭan n ṭṭiqa neɣ n wul.",
+      high: "Qqim deg uxxam, ṭṭwaqi medlent. Ma ilaq ad teffɣeḍ, els takemmust FFP2 neɣ N95; aceṭṭiḍ ur yessizdig ara dexxan. Ur tteddu ara s tkeṛṛust ɣer dexxan.",
+      severe:
+        "Dexxan yewɛer. Qqim deg uxxam, mdel tiwwura d ṭṭwaqi s uceṭṭiḍ yebzeg. Ur teffeɣ ara mebla takemmust FFP2 neɣ N95. Siwel i 14 ma yewɛer-ak unfas.",
+    },
     noFreshData:
       "Ulac tifin tamaynut ɣer tama-k. Ayagi yemmal Nadhir ur iwala acemma — mačči ulac kra.",
     noPosition:
@@ -177,6 +215,8 @@ export const kab: Translation = {
     searchFires: "Nadi times s wemkan neɣ tawilayt",
     unassigned: "Beṛṛa n twilayin n Lezzayer",
     fireCount: "{{count}} n tmes",
+    fireCount_one: "{{count}} n tmes",
+    fireCount_other: "{{count}} n tmes",
     unverifiedHint:
       "Tifin ur nettwasenqden ara ttbanent s wudem awurman seg zoom 9.",
     title: "Takarḍa n tmessi srid",
@@ -192,6 +232,12 @@ export const kab: Translation = {
     sources: "Iɣbula",
     layers: "Tissiyin",
     layerFires: "Timessi urmidin",
+    layerOfficial: "Ineɣmisen unṣiben",
+    layerReports: "Ineɣmisen n yimezdaɣ",
+    reportEyebrow: "Aneɣmis n umezdaɣ",
+    reportObserved: "Yettwawala {{time}}",
+    reportUnverified:
+      "Ur yettwasenqed ara — yettwasken akken i d-yewweḍ, s leɛmer-is. Imḍebbren zemren ad t-sentmen neɣ ad t-kksen.",
     layerRisk: "Asmenyaf n uɣilif",
     layerUnverified: "Tifin ur nettwasenqed ara",
     layerIndustrialSources: "Iɣbula n uzɣal n tenzagt",
@@ -201,6 +247,29 @@ export const kab: Translation = {
     nationalMax: "Aɣilif afellay aɣelnaw",
     degraded: "Kra n yiɣbula ceḍḍen — tifin tzemer ad teɛṭel.",
     openDetail: "Ldi talqayt n tmessi",
+  },
+  official: {
+    eyebrow: "Aneɣmis unṣib",
+    inWilaya: "Tawilayt n {{wilaya}}",
+    wilayaLevel: "Adeg yettwassen ɣef uswir n tewilayt kan",
+    status: "Addad",
+    asOf: "Ar",
+    reports: "Ineɣmisen",
+    source: "Aɣbalu",
+    sourceFallback: "Abadu unṣib",
+    listing: "Abdar",
+    unlisted:
+      "Ur d-tettwabdar ara deg ulɣu n {{when}}. Tɣellist Tagdudant ur tessufuɣ ara taggara n walɣu i yal taɣiwant, ihi mačči d assekni belli times texsi.",
+    viewPost: "Wali asuffeɣ aneṣli",
+    disclaimer:
+      "Yettwaɣ-d seg ubadu unṣib s tseddi n uneɣmis — tamnaḍt yettwaɣummen d taɣiwant, mačči d times. Nadhir ur yernu acemma i uḍris.",
+    statuses: {
+      ongoing: "Yettkemmil",
+      contained: "Yettwaḥbes",
+      extinguished: "Yensa",
+      monitoring: "Ddaw uɛessi",
+      unknown: "Ur d-yettwabder ara",
+    },
   },
   fire: {
     nearSettlement: "{{km}} km si {{settlement}}",
@@ -212,11 +281,25 @@ export const kab: Translation = {
     firstSeen: "Tifin tamezwarut",
     lastSeen: "Tifin taneggarut",
     area: "Tajumma tasmenyaft",
-    confidence: "Laman",
+    stage: "Ttbut",
     peakFrp: "Tazmert tafellayt",
     detectionCount: "Tifin",
     wind: "Aḍu",
+    gusts: "tiḍuḍin {{kmh}} km/s",
+    vpd: "Tuɣra n ugama",
+    soilMoisture: "Tabuqalt n wakal",
+    air: "Agama ɣef tmes",
+    airPm25: "Dexxan PM2.5",
+    airDust: "Aɣebbar n Ṣeḥra",
+    airDustNote: "aɣebbar n uẓru, mačči d dexxan",
+    airWho: "{{ratio}}× azal n OMS deg 24 isragen",
+    airSource: "amuddem CAMS · {{time}}",
     windToward: "Aḍu ibbriḥ ɣer {{bearing}} — {{settlement}} yella deg ubrid-a",
+    growthGrowing:
+      "Yettimɣur — tifin n yiṭsanen ulint si {{earlier}} ɣer {{recent}} seg {{time}}",
+    growthFading:
+      "Drus n tifin seg {{time}} — yezmer ad yili d asigna neɣ d abbu, mačči d times meẓẓiyen",
+    growthSteady: "Tifin ttuqadar seg {{time}}",
     timeline: "Aḍris n tifin",
     nearest: "Tuddar iqerben",
     settlement: "Taddart",
@@ -228,6 +311,18 @@ export const kab: Translation = {
     commune: "Taɣiwant",
     wilaya: "Tawilayt",
   },
+  evidence: {
+    title: "Ttbut",
+    looks: "{{count}} uḍfar",
+    looks_other: "{{count}} yeḍfaren",
+    official: "{{status}} — akken i d-yenna ulɣu n {{when}}",
+    note: "Snat tenqiḍin timyeqriwin deg yiwen n uɛeddi n yigenwan d yiwen uḍfar, mačči d sin. D aɣbalu unṣib kan i yessentemen times.",
+  },
+  stage: {
+    candidate: "Yiwen uḍfar",
+    detected: "Yettwaf s uḍfar n igenwan",
+    confirmed: "Yettwasentem sɣur Tɣellist Tagdudant",
+  },
   state: {
     unconfirmed: "Ur yettwasentem ara",
     active: "Urmid",
@@ -237,6 +332,8 @@ export const kab: Translation = {
   },
   explain: {
     fwi: "Amatar n tegnawt n tmes: arured n uzuzzer d wugur n usenqed, yettwaḥseb seg uzɣal, tadawt n ugama, aḍu d ugeffur aneggaru.",
+    fwiPercentile:
+      "Amatar n tegnawt n tmes n wass n ubḍar mqabal d uzray n tama-yagi deg wass-agi n useggas, ddaw 86 n iseggasen. Amkan yellan d uɛeggal deg unebdu yezmer ad yili ɣer ufella-ines n uzray.",
     dangerLevel:
       "Aswir n umihi 1–5, yekka-d seg umatar FWI s usellum uṛufi EFFIS.",
     notRated:
@@ -244,13 +341,16 @@ export const kab: Translation = {
     area: "Tajumma yerɣan tettwaqder seg teɣzi d umḍan n twaliyin n usatilit — d aqdar kan, mačči d ayen yettwaktalen.",
     frp: "Tazmert tafellayt n tmes yettwaktalen seg usatilit, s umigawatt.",
     detections: "Amḍan n twaliyin n uzɣal n usatilit yeddukklen deg tmes-a.",
-    confidence:
-      "Amur n tidet n tmes-a, s usdukkel n yisenqaden, tazzayert d yiɣbula n yiɣelliyen ur nelli ara.",
+    stage:
+      "Yiwen uḍfar n igenwan d yiwen uḍfar kan. Sin yeḍfaren imyellelen ttarran-t d aḍfar n igenwan. D Tɣellist Tagdudant kan i yessentemen times; Naḍir werǧin.",
     firstSeen:
       "Akud n twali tamezwarut n usatilit. Times tezmer ad tebdu uqbel.",
     lastSeen:
       "Tawali taneggarut n usatilit. Times tezmer ad tkemmel gar snat n twaliyin.",
     wind: "Aḍu amiran ɣef tmes seg umedya n tegnawt. Times tettazzal s abrid n waḍu.",
+    vpd: "Tuɣra n ugama: acḥal i yettekkes ugama aman seg yisɣaren. Nnig 2 kPa, isɣaren yemmuten ttqaren deg kra n yisragen.",
+    soilMoisture:
+      "Aman deg usantim amezwaru n wakal, seg umedya n tegnawt. Ma qrib ɣer ilem, iferrawen d leḥcic heggan ad rɣen.",
     sources: "Inagrawen n yisatiliten i iwalan times-a.",
     nearest: "Tamsafit ɣer tmezduɣt tqerben yettwassnen.",
   },
@@ -262,9 +362,14 @@ export const kab: Translation = {
     dayLabel: "A{{n}}",
     today: "Ass-a",
     fwi: "FWI",
+    staleAsOf: "Wagi d amagrad n {{time}} — win wass-a ur d-iffiɣ ara.",
+    percentile: "amatar yugaren {{pct}}% n iseggasen deg wass-agi",
     level: "Aswir n uɣilif",
     searchCommune: "Nadi taɣiwant",
     noResults: "Ulac taɣiwant i imṣadan.",
+    unavailableTitle: "Asmenyaf n uɣilif n tmessi ulac-it",
+    unavailableBody:
+      "Aleqqem aneggaru ur yemmed ara, ihi ulac asmenyaf yeffɣen tura. Wali asebter n waddad n yiɣbula.",
     legend: "Asalu n uɣilif",
     sixDay: "Asmenyaf n 6 wussan",
     low: "Meẓẓi",
@@ -273,6 +378,8 @@ export const kab: Translation = {
     very_high: "Ɛlay aṭas",
     extreme: "Amtawi",
     communeCount: "{{count}} n tɣiwanin",
+    communeCount_one: "{{count}} n tɣiwant",
+    communeCount_other: "{{count}} n tɣiwanin",
     groupWorst: "Aswir afellay n tɣiwant deg twilayt",
     effis: "EFFIS/GWIS (tadbelt tuṛufit) tsemma taɣiwant-a: {{class}}",
     fuelLimited: "Ur yettwasemma ara — drus n yimɣan i yettarɣen",
@@ -302,6 +409,13 @@ export const kab: Translation = {
     noWilaya: "Ulac times deg tallit-a i yezmren ad yettwaqqen ɣer twilayt.",
     unlocated:
       "{{count}} n times ur nezmir ara ad ttwaqqnen ɣer twilayt, ttwakksen seg usmizzwer-a.",
+    unlocated_one:
+      "{{count}} n tmes ur nezmir ara ad tettwaqqen ɣer twilayt, tettwakkes seg usmizzwer-a.",
+    unlocated_other:
+      "{{count}} n times ur nezmir ara ad ttwaqqnen ɣer twilayt, ttwakksen seg usmizzwer-a.",
+    fireCount: "{{count}} n tmes",
+    fireCount_one: "{{count}} n tmes",
+    fireCount_other: "{{count}} n tmes",
     metaTitle: "Amazray d tiddadanin n tmessi — Nadhir",
     metaDescription:
       "Amazray n tmessi yettwafen, tijumma yeṛɣan d twilayin yettwaɣen aṭas.",
@@ -326,10 +440,17 @@ export const kab: Translation = {
   status: {
     degradedCount:
       "{{count}} n yiɣbula n yisefka ttwaseḥbes — tazmert tamirant tezmer ad tenqes.",
+    degradedCount_one:
+      "{{count}} n uɣbalu n yisefka yettwaseḥbes — tazmert tamirant tezmer ad tenqes.",
+    degradedCount_other:
+      "{{count}} n yiɣbula n yisefka ttwaseḥbes — tazmert tamirant tezmer ad tenqes.",
     metaTitle: "Addad n yiɣbula n isefka — Nadhir",
     metaDescription:
       "Addad srid n yisaduf n usaṭelit, n tignewt d isefka igiwanen n Nadhir.",
     title: "Iɣbula n isefka",
+    recallTitle: "Ineɣmisen unṣiben d isatilliten",
+    recallBody:
+      "Seg {{total}} n tɣiwanin i d-yettwabedren deg yineɣmisen unṣiben deg {{days}} n wussan, isatilliten ufan times deg {{seen}}.",
     subtitle: "Asenqed uṣṣiḍ ɣef wayen iteddun d wayen ur nteddu ara.",
     source: "Aɣbalu",
     health: "Addad",
@@ -377,7 +498,7 @@ export const kab: Translation = {
     mission:
       "Af timessi di Lezzayer zik akken zemren isaṭeliten, smenyef aɣilif n wass, tazneḍ alɣuten ibanen s taɛrabt, tafransist, taglizit d teqbaylit — baṭel yerna d aɣbalu yeldin.",
     howTitle: "Amek tettili tifin",
-    how: "Tinqiḍin tiḥmayin n NASA FIRMS d EUMETSAT MTG FCI ttwasemlent, ttwasegrurdent deg wakud d wemkan, syen ttunefk-asent tikta n laman.",
+    how: "Tinqiḍin tiḥmayin n NASA FIRMS, EUMETSAT MTG FCI d Copernicus Sentinel-3 SLSTR ttwasemlent, ttwasegrurdent deg wakud d wemkan. Yiwen uḍfar d yiwen uḍfar kan; sin yeḍfaren imyellelen ttarran-t d aḍfar n igenwan. Naḍir werǧin ad yini belli times tettwasentem: d Tɣellist Tagdudant kan i t-ixeddmen, awalen-is d wakud-is ttwaskanen akken llan.",
     dangerTitle: "Amek yettwaktal uɣilif",
     danger:
       "Aɣilif yettwaseqdec s FWI akanadi i d-yettwasefrak si tafuka, tikawt, aḍu d ugeffur, syen yettwasenqed s EFFIS/GWIS.",
@@ -406,8 +527,10 @@ export const kab: Translation = {
     zoneCount: "{{used}} seg {{max}} n temnaḍin i yettwasqedcen",
     zoneLimit:
       "Tewwḍeḍ ɣer talast n 10 n temnaḍin. Kkes yiwet akken ad ternuḍ tayeḍ.",
-    zoneFires: "{{count}} n times yeddren ɣer tama — amezwaru ɣef {{km}} km",
+    zoneFires:
+      "{{count}} n times yeddren deg temnaḍt-a — tamezwarut ɣef {{km}} km.",
     authTitle: "Kcem ɣer Nadhir",
+    authMetaTitle: "Kcem",
     authSubtitle: "Sekles imukan i k-yecqan, tesɛuḍ alɣu zik.",
     email: "Imayl",
     password: "Awal uffir",
@@ -417,6 +540,13 @@ export const kab: Translation = {
     noAccount: "Ulac amiḍan? Rnu yiwen",
     haveAccount: "Tesɛiḍ amiḍan? Kcem",
     checkEmail: "Wali imayl-ik akken ad tesentmeḍ tansa-k.",
+    errorInvalidCredentials: "Imayl-a neɣ awal uffir-a mačči d ameɣtu.",
+    errorEmailNotConfirmed: "Sentem tansa-k n yimayl uqbel — wali imayl-ik.",
+    errorUserExists: "Yella yakan umiḍan s yimayl-a. Kcem.",
+    errorWeakPassword: "Fren awal uffir ɣezzifen, ma drus 8 n yisekkilen.",
+    errorRateLimited: "Aṭas n yiɛraḍen. Ṛǧu cwiṭ syin ɛreḍ tikkelt-nniḍen.",
+    errorUnavailable:
+      "Anekcum ur yelli ara akka tura. Ɛreḍ tikkelt-nniḍen ticki.",
     zonesTitle: "Temnaḍin-iw yettwaɛussen",
     zonesSubtitle:
       "Nadhir yettɛassa imukan-a, yessalɣay-ik ticki times neɣ ayhil qerben.",
@@ -458,6 +588,8 @@ export const kab: Translation = {
       "Ayhil ameqqran d times deg tmnaḍt-ik ttɛeddin dima ɣef isragen n tsusmi.",
     save: "Sekles",
     saved: "Yettwasekles",
+    saveFailed:
+      "Ur izmir ara ad isekles iɣewwaren. Senqed tifran sakin ɛreḍ tikkelt nniḍen.",
   },
   reports: {
     title: "Mmel times",
@@ -501,9 +633,18 @@ export const kab: Translation = {
     submit: "Azen aneɣmis",
     submitting: "Tuzna…",
     submitted: "Tanemmirt. Aneɣmis-ik yettraju asenqed.",
+    submitFailed:
+      "Aneɣmis ur yettwazen ara. Senqed-it sakin ɛreḍ tikkelt-nniḍen.",
+    submitCleanupFailed:
+      "Aneɣmis ur yettwazen ara, tawlaft i yulin ur tettwakkes ara. Ɛreḍ ticki.",
+    submitUnknown:
+      "Ur nezmir ara ad nsenqed ma yettwazen uneɣmis. Senqed Ineɣmisen-iw send ad tɛerḍeḍ.",
     mine: "Ineɣmisen-iw",
     empty: "Ur tuzneḍ ula d yiwen n uneɣmis.",
     delete: "Kkes",
+    deleteFailed: "Aneɣmis ur yettwakkes ara. Ɛreḍ tikkelt-nniḍen.",
+    deletePhotoCleanupFailed:
+      "Aneɣmis ur yettwakkes ara acku tawlaft-is tusligt ur tettwakkes ara.",
     statusPending: "Yettraju asenqed",
     statusApproved: "Yettwasentem sɣur umḍebber",
     statusRejected: "Ur yettwaqbel ara",
@@ -523,6 +664,15 @@ export const kab: Translation = {
     revoke: "Kkes {{role}}",
     role_moderator: "aɛessas",
     role_admin: "anedbal",
+    confirmSelfAdminRevoke:
+      "Tebɣiḍ ad tekkseḍ iman-ik seg inedbalen? Ad tesruḥeḍ imir-nni anekcum ɣer usefrek n terbaɛt.",
+    lastAdminDisabled:
+      "Nadhir ilaq ad yesɛu yal ass ma drus yiwen unedbal. Err wayeḍ d anedbal send ad tekkseḍ anekcum-ik.",
+    lastAdminError:
+      "Ilaq ad yeqqim ma drus yiwen unedbal. Tamahilt ur tettwabeddel ara.",
+    updateError: "Ur nezmir ara ad nbeddel tamahilt-a. Ɛreḍ tikkelt-nniḍen.",
+    loadError:
+      "Ur nezmir ara ad d-nawi akk timahilin n terbaɛt. Ɛreḍ tikkelt-nniḍen.",
   },
   admin: {
     tabTranslations: "Tisuqilin",
@@ -786,6 +936,11 @@ export const kab: Translation = {
     save: "Sekles",
     saving: "Asekles…",
     created: "Tansa tettwarna.",
+    kindsRequired: "Fren xerṣum anaw yiwen n ulɣu.",
+    saveFailed:
+      "Ur izmir ara ad isekles tansa. Senqed urtiyen sakin ɛreḍ tikkelt nniḍen.",
+    updateFailed: "Ur izmir ara ad ibeddel tansa. Ɛreḍ tikkelt nniḍen.",
+    deleteFailed: "Ur izmir ara ad yekkes tansa. Ɛreḍ tikkelt nniḍen.",
     httpsOnly: "Ala URL https:// i yettwaqbalen.",
     empty: "Ulac tansa.",
     pause: "Seḥbes",
@@ -819,6 +974,12 @@ export const kab: Translation = {
   legal: {
     terms: "Tiwtilin n useqdec",
     privacy: "Tabaḍnit",
+    termsMetaTitle: "Tiwtilin n useqdec d ulɣu — Nadhir",
+    termsMetaDescription:
+      "Nadhir d ameẓlu n telɣut d ulɣu azawar ɣef tmessi n teẓgi di Lezzayer. Ẓer tiwtilin n useqdec, tilisa-ines d ulɣu n tɣellist.",
+    privacyMetaTitle: "Tasertit n tbaḍnit — Nadhir",
+    privacyMetaDescription:
+      "Anwa isefka udmawanen i yeṭṭef Nadhir i yilɣa, acḥal ara qqimen, d wamek ara tekkseḍ isefka n umiḍan-inek.",
     termsTitle: "Tiwtilin n useqdec d ulɣu",
     terms_purpose_title: "D acu-t Nadhir",
     terms_purpose_body:
@@ -878,6 +1039,10 @@ export const kab: Translation = {
     wilaya: "Tawilayt",
     severity: "Taẓayert",
     submit: "Zuzer alɣu",
+    warningRequired: "Sekcem tanebbaḍt d uḍris n ulɣu.",
+    warningFailed:
+      "Ur izmir ara ad yettwaqeddec ulɣu. Senqed urtiyen, tɛerḍeḍ tikkelt-nniḍen.",
+    toggleFailed: "Ur izmir ara ad ibeddel uzuzer. Tɛerḍeḍ tikkelt-nniḍen.",
     relayed: "yettwazuzer",
     pendingRelay: "yettraǧu",
     auditTitle: "Aɣmis n usenqed",
@@ -885,6 +1050,8 @@ export const kab: Translation = {
     colTime: "Melmi",
     colAction: "Tigawt",
     colReason: "Taɣẓint",
+    colActor: "Ameskar",
+    systemActor: "Anagraw",
     colCommunes: "Tiɣiwanin",
   },
   push: {

@@ -26,6 +26,22 @@ export type WebhookDelivery = {
   created_at: string;
 };
 
+type WebhookMutationErrorKey =
+  | "webhooks.kindsRequired"
+  | "webhooks.saveFailed"
+  | "webhooks.updateFailed"
+  | "webhooks.deleteFailed";
+
+export class WebhookMutationError extends Error {
+  override cause?: unknown;
+
+  constructor(message: WebhookMutationErrorKey, cause?: unknown) {
+    super(message);
+    this.name = "WebhookMutationError";
+    this.cause = cause;
+  }
+}
+
 export const webhookEndpointsQuery = queryOptions({
   queryKey: ["webhooks", "endpoints"],
   queryFn: async () => {
@@ -57,12 +73,16 @@ export async function createWebhook(input: {
   kinds: string[];
   min_severity: number;
 }) {
-  const { data: auth } = await supabase.auth.getUser();
-  if (!auth.user) throw new Error("Not signed in");
+  if (input.kinds.length === 0)
+    throw new WebhookMutationError("webhooks.kindsRequired");
+
+  const { data: auth, error: authError } = await supabase.auth.getUser();
+  if (authError || !auth.user)
+    throw new WebhookMutationError("webhooks.saveFailed", authError);
   const { error } = await supabase
     .from("webhook_endpoints")
     .insert({ ...input, user_id: auth.user.id });
-  if (error) throw new Error(error.message);
+  if (error) throw new WebhookMutationError("webhooks.saveFailed", error);
 }
 
 export async function updateWebhook(
@@ -73,7 +93,7 @@ export async function updateWebhook(
     .from("webhook_endpoints")
     .update(patch)
     .eq("id", id);
-  if (error) throw new Error(error.message);
+  if (error) throw new WebhookMutationError("webhooks.updateFailed", error);
 }
 
 export async function deleteWebhook(id: string) {
@@ -81,5 +101,5 @@ export async function deleteWebhook(id: string) {
     .from("webhook_endpoints")
     .delete()
     .eq("id", id);
-  if (error) throw new Error(error.message);
+  if (error) throw new WebhookMutationError("webhooks.deleteFailed", error);
 }

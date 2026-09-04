@@ -13,10 +13,17 @@ import {
   type SourceRunReport,
 } from "@/lib/source-runs";
 
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import {
+  runTextSource,
+  type TextSourceRun,
+} from "@/lib/text-sources/pipeline.server";
+
+import { algiersToday } from "./algiers-date";
 import { publishBroadcasts } from "./broadcast.server";
 import { deliverBroadcasts } from "./delivery.server";
 import { ingestEffis } from "./effis.server";
-import { ingestFci } from "./fci.server";
+import { ingestFci, ingestS3, type FciRun } from "./fci.server";
 import { ingestFirms } from "./firms.server";
 import { fuseDetections } from "./fusion.server";
 import { ingestOnm } from "./onm.server";
@@ -29,6 +36,7 @@ import { enrichClusterWinds, refreshRiskForecasts } from "./weather.server";
 export const RUNTIME_CONTRACT_KEYS = [
   "firms",
   "fci",
+  "s3_slstr",
   "onm",
   "persistent_screen",
   "fusion",
@@ -47,6 +55,7 @@ export type SourceRunnerRegistry = Record<RuntimeContractKey, SourceRunner>;
 export type SourceRunnerDependencies = {
   ingestFirms: typeof ingestFirms;
   ingestFci: typeof ingestFci;
+  ingestS3: typeof ingestS3;
   ingestOnm: typeof ingestOnm;
   screenPersistentSources: typeof screenPersistentSources;
   fuseDetections: typeof fuseDetections;
@@ -118,6 +127,29 @@ function replayInterval(
     : undefined;
 }
 
+function wfsFireReport(job: ClaimedSourceJob, run: FciRun): SourceJobResult {
+  const accepted = Math.max(run.fetched - run.outside - run.filtered, 0);
+  const health = adapterHealth({ accepted, error: run.error });
+  return {
+    ...baseReport(job),
+    ...health,
+    upstreamPublishedAt: run.latestSlot,
+    dataFrom: health.outcome === "succeeded" ? (run.dataFrom ?? null) : null,
+    dataThrough:
+      health.outcome === "succeeded"
+        ? (run.dataThrough ?? run.latestSlot)
+        : null,
+    recordsSeen: run.fetched,
+    recordsInserted: run.inserted,
+    recordsRejected: run.outside + run.filtered,
+    qualityChecks: {
+      inside_watch_box: run.outside === 0,
+      outside_watch_area: run.filtered,
+      latest_slot_age_minutes: run.ageMinutes,
+    },
+  };
+}
+
 export function createSourceRunners(
   dependencies: SourceRunnerDependencies,
 ): SourceRunnerRegistry {
@@ -137,29 +169,10 @@ export function createSourceRunners(
         qualityChecks: { feeds_answered: run.feeds.length },
       };
     },
-    fci: async (job) => {
-      const run = await dependencies.ingestFci(replayInterval(job));
-      const accepted = Math.max(run.fetched - run.outside, 0);
-      const health = adapterHealth({ accepted, error: run.error });
-      return {
-        ...baseReport(job),
-        ...health,
-        upstreamPublishedAt: run.latestSlot,
-        dataFrom:
-          health.outcome === "succeeded" ? (run.dataFrom ?? null) : null,
-        dataThrough:
-          health.outcome === "succeeded"
-            ? (run.dataThrough ?? run.latestSlot)
-            : null,
-        recordsSeen: run.fetched,
-        recordsInserted: run.inserted,
-        recordsRejected: run.outside,
-        qualityChecks: {
-          inside_watch_box: run.outside === 0,
-          latest_slot_age_minutes: run.ageMinutes,
-        },
-      };
-    },
+    fci: async (job) =>
+      wfsFireReport(job, await dependencies.ingestFci(replayInterval(job))),
+    s3_slstr: async (job) =>
+      wfsFireReport(job, await dependencies.ingestS3(replayInterval(job))),
     onm: async (job) => {
       const run = await dependencies.ingestOnm();
       const accepted = Math.max(run.fetched - run.unmatched, 0);
@@ -230,17 +243,28 @@ export function createSourceRunners(
       };
     },
     local_fwi: async (job) => {
-      const run = await dependencies.refreshRiskForecasts();
+      // the refresh stages into its own snapshot; a newer one supersedes this run
+      const run = await dependencies.refreshRiskForecasts({
+        snapshotId: crypto.randomUUID(),
+        baseDate: algiersToday(new Date(job.scheduled_for)),
+        scheduledFor: job.scheduled_for,
+      });
       const expected = run.communes * 6;
       const missingGeography = run.communes === 0 && !run.error;
       const error =
         run.error ?? (missingGeography ? "no communes available" : undefined);
-      const health = adapterHealth({
-        accepted: run.rows,
-        expected,
-        error,
-        partialReason: missingGeography ? "dependency_failed" : undefined,
-      });
+      const health = run.superseded
+        ? ({
+            outcome: "skipped",
+            coverageStatus: "complete",
+            retryDisposition: "none",
+          } as const)
+        : adapterHealth({
+            accepted: run.rows,
+            expected,
+            error,
+            partialReason: missingGeography ? "dependency_failed" : undefined,
+          });
       return {
         ...baseReport(job),
         ...health,
@@ -256,7 +280,9 @@ export function createSourceRunners(
       };
     },
     effis: async (job) => {
-      const run = await dependencies.ingestEffis();
+      const run = await dependencies.ingestEffis(
+        algiersToday(new Date(job.scheduled_for)),
+      );
       const health = adapterHealth({
         accepted: run.classified,
         expected: run.communes || null,
@@ -329,6 +355,7 @@ export function createSourceRunners(
 const sourceRunnerDependencies: SourceRunnerDependencies = {
   ingestFirms,
   ingestFci,
+  ingestS3,
   ingestOnm,
   screenPersistentSources,
   fuseDetections,
@@ -345,4 +372,64 @@ export const SOURCE_RUNNERS = createSourceRunners(sourceRunnerDependencies);
 
 export function isRuntimeContractKey(key: string): key is RuntimeContractKey {
   return RUNTIME_CONTRACT_KEYS.some((candidate) => candidate === key);
+}
+
+// text sources are registry rows, not compile-time keys; one runner shape serves them all
+export async function textSourceRunner(
+  contractKey: string,
+): Promise<SourceRunner | null> {
+  const { data, error } = await supabaseAdmin
+    .from("text_sources")
+    .select("key")
+    .eq("key", contractKey)
+    .eq("enabled", true)
+    .maybeSingle();
+  if (error) throw new Error(`text source lookup failed: ${error.message}`);
+  if (!data) return null;
+  return async (job) => {
+    const run = await runTextSource(contractKey).catch(
+      (error: unknown): TextSourceRun => ({
+        fetched: 0,
+        stored: 0,
+        skippedPosts: 0,
+        mentions: 0,
+        resolved: 0,
+        unresolved: 0,
+        incidentsCreated: 0,
+        incidentsUpdated: 0,
+        incidentsUnlisted: 0,
+        gated: 0,
+        clustersConfirmed: 0,
+        retried: 0,
+        llmSkipped: false,
+        llmFailed: 0,
+        error: error instanceof Error ? error.message : "text source failed",
+      }),
+    );
+    const health = adapterHealth({
+      accepted: run.mentions + run.skippedPosts,
+      error: run.error,
+    });
+    return {
+      ...baseReport(job),
+      ...health,
+      ...coveredInterval(job, health.outcome === "succeeded"),
+      recordsSeen: run.fetched,
+      recordsInserted: run.mentions,
+      recordsRejected: run.unresolved,
+      qualityChecks: {
+        documents_stored: run.stored,
+        posts_not_fire: run.skippedPosts,
+        mentions_unresolved: run.unresolved,
+        incidents_created: run.incidentsCreated,
+        incidents_updated: run.incidentsUpdated,
+        incidents_unlisted: run.incidentsUnlisted,
+        mentions_gated: run.gated,
+        clusters_confirmed: run.clustersConfirmed,
+        documents_retried: run.retried,
+        llm_skipped: run.llmSkipped,
+        llm_failed: run.llmFailed,
+      },
+    };
+  };
 }

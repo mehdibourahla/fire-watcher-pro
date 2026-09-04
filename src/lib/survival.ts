@@ -111,6 +111,17 @@ export function positionCard(
   };
 }
 
+// the entry sheet claimed GPS and pack work was underway regardless of outcome
+export function entryStatusKey(
+  hasPosition: boolean,
+  denied: boolean,
+  hasPack: boolean,
+): string {
+  if (denied) return "survival.enterDenied";
+  if (!hasPosition) return "survival.enterFetching";
+  return hasPack ? "survival.enterReady" : "survival.enterSaving";
+}
+
 export function checkInMessage(opts: {
   kind: "ok" | "assist";
   name: string | null;

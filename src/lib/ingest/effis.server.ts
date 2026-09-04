@@ -4,17 +4,19 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 import { algiersToday } from "./algiers-date";
 
-/* Colors and labels verified against the ecmwf007.fwi GetLegendGraphic on
- * 2026-08-29: six classes starting at Low — the layer has no very_low. White is
- * EFFIS declining to rate unvegetated land, recorded as masked rather than
- * dropped. classifyPixel matching nothing on a land pixel means EFFIS changed
- * the palette — the run then classifies 0 and degrades the source. */
+/* Colors and labels read off the mf010.fwi GetLegendGraphic on 2026-09-03, whose
+ * labels carry the FWI thresholds: low <11.2, moderate 11.2-21.3, high 21.3-38,
+ * very high 38-50, extreme 50-70, very extreme >70 — six classes starting at
+ * Low, the layer has no very_low. White is EFFIS declining to rate unvegetated
+ * land, recorded as masked rather than dropped. classifyPixel matching nothing
+ * on a land pixel means EFFIS changed the palette — the run then classifies 0
+ * and degrades the source. */
 export const EFFIS_CLASSES = [
-  { key: "low", rgb: [145, 252, 170] },
-  { key: "moderate", rgb: [210, 225, 74] },
-  { key: "high", rgb: [241, 179, 0] },
-  { key: "very_high", rgb: [231, 117, 0] },
-  { key: "extreme", rgb: [192, 0, 12] },
+  { key: "low", rgb: [156, 255, 192] },
+  { key: "moderate", rgb: [205, 226, 78] },
+  { key: "high", rgb: [230, 172, 0] },
+  { key: "very_high", rgb: [217, 112, 16] },
+  { key: "extreme", rgb: [173, 6, 14] },
   { key: "very_extreme", rgb: [58, 0, 21] },
 ] as const;
 
@@ -22,18 +24,21 @@ export type EffisClass = (typeof EFFIS_CLASSES)[number]["key"] | "masked";
 
 /* All of Algeria, not the northern fire-watch strip: the Saharan communes are
  * the ones whose local "Extreme" ratings most need the external comparison.
- * ~0.035°/px oversamples ECMWF's 0.07° grid safely. */
+ * ~0.035°/px oversamples the 0.10° Météo-France grid safely. */
 export const EFFIS_BBOX = { west: -8.7, south: 18.9, east: 12.0, north: 37.6 };
 export const EFFIS_WIDTH = 592;
 export const EFFIS_HEIGHT = 535;
 
-// The layer only answers WITHOUT a TIME parameter (dated requests return an
-// empty image), so each fetch is the current run, stamped with the fetch date.
-const EFFIS_URL =
-  "https://ies-ows.jrc.ec.europa.eu/effis?service=WMS&version=1.1.1&request=GetMap" +
-  `&layers=ecmwf007.fwi&srs=EPSG:4326` +
-  `&bbox=${EFFIS_BBOX.west},${EFFIS_BBOX.south},${EFFIS_BBOX.east},${EFFIS_BBOX.north}` +
-  `&width=${EFFIS_WIDTH}&height=${EFFIS_HEIGHT}&format=image/png`;
+/** STYLES is mandatory on MapServer 8, and an omitted TIME serves the layer's
+ * 2021-01-01 default instead of the day asked for. */
+export function effisMapUrl(date: string): string {
+  return (
+    "https://maps.effis.emergency.copernicus.eu/effis?service=WMS&version=1.1.1&request=GetMap" +
+    `&layers=mf010.fwi&STYLES=default&srs=EPSG:4326` +
+    `&bbox=${EFFIS_BBOX.west},${EFFIS_BBOX.south},${EFFIS_BBOX.east},${EFFIS_BBOX.north}` +
+    `&width=${EFFIS_WIDTH}&height=${EFFIS_HEIGHT}&format=image/png&TIME=${date}`
+  );
+}
 
 export function classifyPixel(
   r: number,
@@ -46,55 +51,37 @@ export function classifyPixel(
   return null;
 }
 
-export function parseFeatureInfoDc(html: string): number | null {
-  const m = html.match(/Drought Code \(DC\)<\/td><td>([0-9.eE+-]+)/);
-  if (!m) return null;
-  const v = Number(m[1]);
-  return Number.isFinite(v) ? v : null;
+const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+
+/** JRC answers mapserver failures with HTTP 200 and an HTML body, so res.ok
+ * alone would hand the error page to the PNG decoder and throw. */
+export function pngPayloadError(
+  contentType: string | null,
+  body: Uint8Array,
+): string | null {
+  if (
+    body.length >= PNG_SIGNATURE.length &&
+    PNG_SIGNATURE.every((byte, i) => body[i] === byte)
+  )
+    return null;
+  const kind = contentType?.split(";")[0]?.trim() || "an unknown content type";
+  return `EFFIS upstream served ${kind}, not image/png`;
 }
 
-/* An EFFIS run whose fuel-moisture codes sit at the CFFDRS start values (DC 15)
- * across the Mediterranean dry season is re-initialized, not observed — seen
- * live on 2026-08-29 (DC ~16-17 at Tizi Ouzou, Seville and Sicily in August).
- * Ingesting it would poison the comparator with a low-everywhere day. */
-export function isColdStart(dcs: number[], month: number): boolean {
+/* An EFFIS run rated low almost everywhere across the Mediterranean dry season
+ * is re-initialized, not observed — seen live on 2026-08-29. Ingesting it would
+ * poison the comparator with a low-everywhere day. The drought codes that used
+ * to reveal this came from GetFeatureInfo, which the current server renders as
+ * an unsubstituted template, so the raster itself is the remaining evidence. */
+export function isColdStartDistribution(
+  classes: readonly EffisClass[],
+  month: number,
+): boolean {
   if (month < 5 || month > 10) return false;
-  // one sentinel can be a fetch fluke or a local storm; two independent
-  // Mediterranean points at initialization DC in the dry season cannot
-  if (dcs.length < 2) return false;
-  return dcs.every((dc) => dc < 100);
-}
-
-const DC_SENTINELS = [
-  { lat: 36.72, lon: 4.05 },
-  { lat: 37.4, lon: -5.9 },
-  { lat: 37.6, lon: 14.0 },
-];
-
-async function fetchSentinelDcs(): Promise<number[]> {
-  const dcs: number[] = [];
-  for (const s of DC_SENTINELS) {
-    const url = new URL("https://ies-ows.jrc.ec.europa.eu/effis");
-    url.search = new URLSearchParams({
-      service: "WMS",
-      version: "1.1.1",
-      request: "GetFeatureInfo",
-      layers: "ecmwf007.query",
-      query_layers: "ecmwf007.query",
-      srs: "EPSG:4326",
-      bbox: `${s.lon - 0.04},${s.lat - 0.04},${s.lon + 0.04},${s.lat + 0.04}`,
-      width: "10",
-      height: "10",
-      x: "5",
-      y: "5",
-      info_format: "text/html",
-    }).toString();
-    const res = await fetch(url).catch(() => null);
-    if (!res?.ok) continue;
-    const dc = parseFeatureInfoDc(await res.text());
-    if (dc !== null) dcs.push(dc);
-  }
-  return dcs;
+  const rated = classes.filter((c) => c !== "masked");
+  if (rated.length < 2) return false;
+  const low = rated.filter((c) => c === "low").length;
+  return low / rated.length > 0.8;
 }
 
 export function pixelFor(
@@ -120,21 +107,17 @@ export type EffisRun = {
   error?: string;
 };
 
-export async function ingestEffis(): Promise<EffisRun> {
-  const runDate = algiersToday();
+export async function ingestEffis(day?: string): Promise<EffisRun> {
+  const runDate = day ?? algiersToday();
   const month = Number(runDate.slice(5, 7));
-  const dcs = await fetchSentinelDcs();
-  if (isColdStart(dcs, month))
-    return {
-      communes: 0,
-      classified: 0,
-      error: `EFFIS run cold-started (sentinel DC ${dcs.map((d) => d.toFixed(1)).join(", ")}) — refusing to ingest`,
-    };
 
-  const res = await fetch(EFFIS_URL);
+  const res = await fetch(effisMapUrl(runDate));
   if (!res.ok)
     return { communes: 0, classified: 0, error: `EFFIS WMS ${res.status}` };
-  const png = PNG.sync.read(Buffer.from(await res.arrayBuffer()));
+  const body = new Uint8Array(await res.arrayBuffer());
+  const payloadError = pngPayloadError(res.headers.get("content-type"), body);
+  if (payloadError) return { communes: 0, classified: 0, error: payloadError };
+  const png = PNG.sync.read(Buffer.from(body));
   if (png.width !== EFFIS_WIDTH || png.height !== EFFIS_HEIGHT)
     return {
       communes: 0,
@@ -177,6 +160,18 @@ export async function ingestEffis(): Promise<EffisRun> {
       communes: communes.length,
       classified: 0,
       error: "EFFIS map matched no commune — palette or extent changed",
+    };
+
+  if (
+    isColdStartDistribution(
+      rows.map((r) => r.danger_class),
+      month,
+    )
+  )
+    return {
+      communes: communes.length,
+      classified: 0,
+      error: `EFFIS run for ${runDate} rated low almost everywhere — refusing to ingest`,
     };
 
   for (let i = 0; i < rows.length; i += 500) {

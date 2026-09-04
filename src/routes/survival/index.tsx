@@ -4,6 +4,7 @@ import {
   CheckCircle2,
   Clock,
   Flame,
+  Haze,
   MapPin,
   Phone,
   ShieldCheck,
@@ -14,6 +15,13 @@ import { useTranslation } from "react-i18next";
 
 import { useSurvival } from "@/components/survival/survival-context";
 import type { Locale } from "@/i18n";
+import {
+  SMOKE_TINT,
+  WHO_PM25_24H,
+  airQualityQuery,
+  smokeLevel,
+  type AirQualityReading,
+} from "@/lib/air-quality";
 import {
   adminUnitsQuery,
   bearingLabel,
@@ -26,6 +34,7 @@ import { hazardReportsQuery, openAreasQuery } from "@/lib/open-areas";
 import {
   SURVIVAL_ACTIVE_KEY,
   SURVIVAL_LAST_CHECK_KEY,
+  entryStatusKey,
   nearestThreat,
   positionCard,
 } from "@/lib/survival";
@@ -66,6 +75,10 @@ function SurvivalHub() {
   const openAreas = useQuery({ ...openAreasQuery, retry: online ? 3 : false });
   const hazards = useQuery({
     ...hazardReportsQuery,
+    retry: online ? 3 : false,
+  });
+  const air = useQuery({
+    ...airQualityQuery(position),
     retry: online ? 3 : false,
   });
 
@@ -143,6 +156,9 @@ function SurvivalHub() {
   if (!active) {
     return (
       <EnterSheet
+        hasPosition={!!position}
+        denied={positionDenied}
+        hasPack={!!pack}
         onEnter={() => {
           localStorage.setItem(SURVIVAL_ACTIVE_KEY, new Date().toISOString());
           setActive(true);
@@ -238,10 +254,15 @@ function SurvivalHub() {
         threat.cluster.wind_dir_deg != null ? (
           <FactRow
             icon={<Wind aria-hidden className="size-4.5" />}
-            title={t("survival.wind", {
-              kmh: Math.round(threat.cluster.wind_speed_kmh),
-              bearing: dirWord(t, threat.cluster.wind_dir_deg),
-            })}
+            title={
+              t("survival.wind", {
+                kmh: Math.round(threat.cluster.wind_speed_kmh),
+                bearing: dirWord(t, threat.cluster.wind_dir_deg),
+              }) +
+              (threat.cluster.wind_gust_kmh == null
+                ? ""
+                : ` · ${t("survival.gusts", { kmh: Math.round(threat.cluster.wind_gust_kmh) })}`)
+            }
           >
             {threat.closing ? (
               <span className="text-[11px] text-muted-foreground">
@@ -250,6 +271,8 @@ function SurvivalHub() {
             ) : null}
           </FactRow>
         ) : null}
+
+        {air.data ? <SmokeRow reading={air.data} locale={locale} /> : null}
 
         {changes && lastCheck ? (
           <p className="flex items-center gap-2 rounded-lg bg-muted px-3 py-2 text-xs text-muted-foreground">
@@ -315,6 +338,53 @@ function SurvivalHub() {
   );
 }
 
+function SmokeRow({
+  reading,
+  locale,
+}: {
+  reading: AirQualityReading;
+  locale: Locale;
+}) {
+  const { t } = useTranslation();
+  const level = smokeLevel(reading.pm2_5);
+  const tint = SMOKE_TINT[level];
+  return (
+    <FactRow
+      icon={<Haze aria-hidden className="size-4.5" />}
+      title={t("survival.smoke", { value: reading.pm2_5.toFixed(1) })}
+    >
+      <span
+        className="rounded-full px-2 py-0.5 text-[11px] font-semibold"
+        style={{
+          backgroundColor: `var(--risk-tint-${tint})`,
+          color: `var(--risk-ink-${tint})`,
+        }}
+      >
+        {t(`survival.smokeLevel.${level}`)}
+      </span>
+      <span className="tabular text-[11px] text-muted-foreground">
+        {t("survival.smokeWho", {
+          ratio: (reading.pm2_5 / WHO_PM25_24H).toFixed(1),
+        })}
+        {reading.peakPm25 > reading.pm2_5
+          ? ` · ${t("survival.smokePeak", { value: reading.peakPm25.toFixed(1) })}`
+          : ""}
+      </span>
+      <span className="tabular text-[11px] text-muted-foreground">
+        {t("survival.dust", { value: reading.dust.toFixed(0) })}
+      </span>
+      <span className="text-[11px] text-muted-foreground">
+        {t("survival.smokeSource", {
+          time: relativeTime(reading.observedAt, locale),
+        })}
+      </span>
+      <span className="basis-full text-[12px] leading-relaxed">
+        {t(`survival.smokeGuidance.${level}`)}
+      </span>
+    </FactRow>
+  );
+}
+
 function FactRow({
   icon,
   title,
@@ -349,7 +419,17 @@ function FactRow({
   );
 }
 
-function EnterSheet({ onEnter }: { onEnter: () => void }) {
+function EnterSheet({
+  onEnter,
+  hasPosition,
+  denied,
+  hasPack,
+}: {
+  onEnter: () => void;
+  hasPosition: boolean;
+  denied: boolean;
+  hasPack: boolean;
+}) {
   const { t } = useTranslation();
   return (
     <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/50">
@@ -361,7 +441,7 @@ function EnterSheet({ onEnter }: { onEnter: () => void }) {
         </p>
         <p className="mt-3 flex items-center gap-2 rounded-lg bg-muted px-3 py-2 text-xs text-muted-foreground">
           <MapPin aria-hidden className="size-3.5 shrink-0" />
-          {t("survival.enterFetching")}
+          {t(entryStatusKey(hasPosition, denied, hasPack))}
         </p>
         <button
           type="button"

@@ -68,18 +68,18 @@ bun run seed:geo            # add --prune to drop units no longer in data/geo/
 
 ## Commands
 
-| Command                               | Purpose                                                     |
-| ------------------------------------- | ----------------------------------------------------------- |
-| `bun run dev`                         | dev server on :8080                                         |
-| `bun run build`                       | production build                                            |
-| `bun run test`                        | vitest suite                                                |
-| `bun run lint`                        | eslint                                                      |
-| `bun run format`                      | prettier                                                    |
-| `bun run seed:geo`                    | reseed admin units and settlements from `data/geo/`         |
-| `bun run bootstrap:fwi`               | fill `fwi_state` for communes that have none                |
-| `bun run source:job -- --target ...`  | consume at most one queued job for the named execution tier |
-| `bun run watchdog:sources`            | fail when the private source watchdog reports an issue      |
-| `bun run replay:source -- <gap-uuid>` | enqueue one previously recorded gap for replay              |
+| Command                                                                          | Purpose                                                                                                |
+| -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `bun run dev`                                                                    | dev server on :8080                                                                                    |
+| `bun run build`                                                                  | production build                                                                                       |
+| `bun run test`                                                                   | vitest suite                                                                                           |
+| `bun run lint`                                                                   | eslint                                                                                                 |
+| `bun run format`                                                                 | prettier                                                                                               |
+| `bun run seed:geo`                                                               | reseed admin units and settlements from `data/geo/`                                                    |
+| `bun run bootstrap:fwi`                                                          | fill `fwi_state` for communes that have none                                                           |
+| `bun run source:job -- --target ...`                                             | consume at most one queued job for the named execution tier                                            |
+| `bun run replay:source -- <gap-uuid>`                                            | enqueue one previously recorded gap for replay                                                         |
+| `bun run replay:window -- --data <dir> --tag <tag> --from <iso> --through <iso>` | replay ingest → fusion → broadcast planning offline over a cached window (see `data/replay/README.md`) |
 
 ## How it fits together
 
@@ -150,11 +150,13 @@ build time. Everything else is a runtime secret set with `wrangler secret put <N
 `/api/public/cron/*` execution endpoints. `source_jobs`, `source_job_leases`, `source_gaps`,
 raw runs, and replay controls are service-role-only.
 
-The daily FWI and EFFIS jobs are CPU-bound, so separate matrix consumers in
-`.github/workflows/risk-refresh.yml` claim them independently throughout their 06:00–10:00 UTC
-retry window. GitHub-hosted runners may use a different egress IP, but matrix jobs can share
-runner IPs, so this is only a best-effort aid for Open-Meteo's per-IP quota. Dispatching the
-workflow remains the fastest way to fill `fwi_state` for a new commune set.
+The daily FWI and EFFIS jobs are CPU-bound, so they run on GitHub Actions
+(`.github/workflows/source-jobs-github.yml`). `private.dispatch_github_source_jobs()` runs from pg_cron every minute and fires a
+`repository_dispatch` for each due `github`-target job (GitHub's own `schedule` trigger is kept only
+as a best-effort fallback — it delivered 1 of 12 firings on 2026-09-01), using the Vault secrets
+`github_dispatch_token` (a fine-grained PAT with Contents: read/write on this repository) and
+`github_repo` (`owner/name`). The workflow can still be dispatched by hand with a contract key,
+which remains the fastest way to fill `fwi_state` for a new commune set.
 
 ## Known limitations
 

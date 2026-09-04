@@ -11,7 +11,13 @@ import {
   inQuietHours,
 } from "@/lib/alerts-rules";
 import { buildFireCap, fireCapIdentifier } from "@/lib/cap";
-import { bearingBetween, coordLabel, haversineKm } from "@/lib/nadhir";
+import { algiersToday } from "@/lib/ingest/algiers-date";
+import {
+  bearingBetween,
+  coordLabel,
+  haversineKm,
+  publishedRiskTarget,
+} from "@/lib/nadhir";
 import { fetchAllPages } from "@/lib/paginate";
 
 type Copy = {
@@ -125,7 +131,7 @@ type CapEvent = {
   shortId: string;
   lat: number;
   lon: number;
-  confidence: number;
+  confirmed: boolean;
   urgent: boolean;
   place: string;
 };
@@ -143,7 +149,7 @@ async function ensureCapAlerts(
       lat: event.lat,
       lon: event.lon,
       radiusKm: SETTLEMENT_EMERGENCY_KM,
-      confidence: event.confidence,
+      confirmed: event.confirmed,
       urgent: event.urgent,
       areaDesc: event.place,
       sentAt,
@@ -215,7 +221,7 @@ export async function evaluateAlerts(userId?: string): Promise<AlertRun> {
   const { data: allLive } = await supabaseAdmin
     .from("fire_clusters")
     .select(
-      "id, short_id, state, lat, lon, confidence, spread_bearing_deg, last_detected_at",
+      "id, short_id, state, lat, lon, confidence, spread_bearing_deg, last_detected_at, confirmed_at",
     )
     .in("state", LIVE_STATES);
 
@@ -261,16 +267,28 @@ export async function evaluateAlerts(userId?: string): Promise<AlertRun> {
       .range(from, to),
   );
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = algiersToday();
   const communeIds = [
     ...new Set(zones.map((z) => z.commune_id).filter(Boolean)),
   ] as string[];
-  const { data: forecasts } = communeIds.length
+  const { data: checkpoint, error: checkpointError } = communeIds.length
+    ? await supabaseAdmin
+        .from("risk_publication_checkpoint")
+        .select("coverage_status, snapshot_id, base_date, published_at")
+        .eq("key", "local_fwi")
+        .maybeSingle()
+    : { data: null, error: null };
+  const target = checkpointError
+    ? null
+    : publishedRiskTarget(checkpoint, today);
+  const { data: forecasts, error: forecastError } = target
     ? await supabaseAdmin
         .from("risk_forecasts")
         .select("commune_id, forecast_date, danger_level, fuel_limited")
-        .eq("forecast_date", today)
-        .eq("horizon_days", 0)
+        .eq("source", "local_fwi")
+        .eq("snapshot_id", target.snapshotId)
+        .eq("forecast_date", target.forecastDate)
+        .eq("horizon_days", target.horizon)
         .in("commune_id", communeIds)
     : {
         data: [] as {
@@ -278,9 +296,10 @@ export async function evaluateAlerts(userId?: string): Promise<AlertRun> {
           danger_level: number;
           fuel_limited: boolean;
         }[],
+        error: null,
       };
   const forecastByCommune = new Map(
-    (forecasts ?? []).map((f) => [f.commune_id, f]),
+    (forecastError ? [] : (forecasts ?? [])).map((f) => [f.commune_id, f]),
   );
 
   const placeByCluster = new Map<string, string>();
@@ -361,7 +380,7 @@ export async function evaluateAlerts(userId?: string): Promise<AlertRun> {
             shortId: cluster.short_id,
             lat: cluster.lat,
             lon: cluster.lon,
-            confidence: cluster.confidence,
+            confirmed: cluster.confirmed_at !== null,
             urgent: !!urgent,
             place: placeByCluster.get(cluster.id) ?? cluster.short_id,
           });

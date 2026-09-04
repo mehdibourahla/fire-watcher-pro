@@ -34,10 +34,32 @@ export type NewReport = {
   sighting: Sighting;
   size_hint: SizeHint;
   note: string | null;
-  photo_url: string | null;
   commune_id: string | null;
   observed_at: string;
 };
+
+export type ReportPhotoDraft = {
+  file: File;
+  objectId: string;
+  previewUrl: string;
+  dispose: () => void;
+};
+
+type ReportPhotoUpload = Pick<ReportPhotoDraft, "file" | "objectId">;
+
+export class ReportMutationError extends Error {
+  override name = "ReportMutationError";
+}
+
+async function authenticatedUser(errorKey: string) {
+  try {
+    const { data, error } = await supabase.auth.getUser();
+    if (!data.user || error) throw new Error();
+    return data.user;
+  } catch {
+    throw new ReportMutationError(errorKey);
+  }
+}
 
 const SELECT = "*";
 
@@ -52,20 +74,6 @@ export const myReportsQuery = queryOptions({
       .eq("user_id", auth.user.id)
       .order("created_at", { ascending: false })
       .limit(100);
-    if (error) throw new Error(error.message);
-    return (data ?? []) as unknown as CitizenReport[];
-  },
-});
-
-export const approvedReportsQuery = queryOptions({
-  queryKey: ["reports", "approved"],
-  queryFn: async () => {
-    const { data, error } = await supabase
-      .from("citizen_reports")
-      .select(SELECT)
-      .eq("status", "approved")
-      .order("observed_at", { ascending: false })
-      .limit(200);
     if (error) throw new Error(error.message);
     return (data ?? []) as unknown as CitizenReport[];
   },
@@ -99,21 +107,80 @@ export const myRolesQuery = queryOptions({
   },
 });
 
-export async function createReport(input: NewReport) {
-  const { data: auth } = await supabase.auth.getUser();
-  if (!auth.user) throw new Error("Not signed in");
-  const { error } = await supabase
-    .from("citizen_reports")
-    .insert({ ...input, user_id: auth.user.id, status: "pending" });
-  if (error) throw new Error(error.message);
+export async function createReport(
+  input: NewReport,
+  photo?: ReportPhotoUpload | null,
+) {
+  const user = await authenticatedUser("reports.submitFailed");
+  const reportId = crypto.randomUUID();
+  let photoPath: string | null = null;
+  if (photo)
+    photoPath = await uploadReportPhotoForUser(
+      photo.file,
+      user.id,
+      photo.objectId,
+    );
+  let creationFailed = false;
+  try {
+    const { error } = await supabase.from("citizen_reports").insert({
+      ...input,
+      id: reportId,
+      user_id: user.id,
+      status: "pending",
+      photo_url: photoPath,
+    });
+    creationFailed = !!error;
+  } catch {
+    try {
+      const { data: committed } = await supabase
+        .from("citizen_reports")
+        .select("id")
+        .eq("id", reportId)
+        .maybeSingle();
+      if (committed) return;
+    } catch {
+      throw new ReportMutationError("reports.submitUnknown");
+    }
+    creationFailed = true;
+  }
+  if (!creationFailed) return;
+  if (photoPath) {
+    if (!(await removeReportPhoto(photoPath)))
+      throw new ReportMutationError("reports.submitCleanupFailed");
+  }
+  throw new ReportMutationError("reports.submitFailed");
 }
 
 export async function deleteReport(id: string) {
-  const { error } = await supabase
+  const user = await authenticatedUser("reports.deleteFailed");
+  const { data: report, error: readError } = await supabase
+    .from("citizen_reports")
+    .select("id, user_id, photo_url")
+    .eq("id", id)
+    .maybeSingle();
+  if (readError || !report || report.user_id !== user.id)
+    throw new ReportMutationError("reports.deleteFailed");
+
+  if (report.photo_url) {
+    if (!isCanonicalReportPhotoPath(report.photo_url, user.id))
+      throw new ReportMutationError("reports.deletePhotoCleanupFailed");
+    if (!(await removeReportPhoto(report.photo_url)))
+      throw new ReportMutationError("reports.deletePhotoCleanupFailed");
+  }
+
+  let deletion = supabase
     .from("citizen_reports")
     .delete()
-    .eq("id", id);
-  if (error) throw new Error(error.message);
+    .eq("id", id)
+    .eq("user_id", user.id);
+  deletion = report.photo_url
+    ? deletion.eq("photo_url", report.photo_url)
+    : deletion.is("photo_url", null);
+  const { data: deleted, error: deleteError } = await deletion
+    .select("id")
+    .maybeSingle();
+  if (deleteError || !deleted)
+    throw new ReportMutationError("reports.deleteFailed");
 }
 
 export async function moderateReport(input: {
@@ -140,36 +207,97 @@ export async function moderateReport(input: {
 
 export const REPORT_PHOTO_BUCKET = "report-photos";
 
-/** Uploads a report photo into the reporter's own folder and returns its storage path. */
-export async function uploadReportPhoto(file: File): Promise<string> {
-  const { data: auth } = await supabase.auth.getUser();
-  if (!auth.user) throw new Error("Not signed in");
+const UUID_PART =
+  "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
+const REPORT_PHOTO_PATH = new RegExp(
+  `^(${UUID_PART})/(${UUID_PART})\\.(jpg|png)$`,
+);
+
+export function isCanonicalReportPhotoPath(
+  photo: string,
+  ownerId?: string,
+): boolean {
+  const match = REPORT_PHOTO_PATH.exec(photo);
+  return !!match && (!ownerId || match[1] === ownerId);
+}
+
+function validateReportPhoto(file: File) {
   if (file.size > 8 * 1024 * 1024) throw new Error("too_large");
+  if (file.type !== "image/jpeg" && file.type !== "image/png")
+    throw new Error("unsupported_type");
+}
+
+export function createReportPhotoDraft(file: File): ReportPhotoDraft {
+  validateReportPhoto(file);
+  const previewUrl = URL.createObjectURL(file);
+  let disposed = false;
+  return {
+    file,
+    objectId: crypto.randomUUID(),
+    previewUrl,
+    dispose: () => {
+      if (disposed) return;
+      disposed = true;
+      URL.revokeObjectURL(previewUrl);
+    },
+  };
+}
+
+async function removeReportPhoto(path: string): Promise<boolean> {
+  try {
+    const { error } = await supabase.storage
+      .from(REPORT_PHOTO_BUCKET)
+      .remove([path]);
+    return !error;
+  } catch {
+    return false;
+  }
+}
+
+async function uploadReportPhotoForUser(
+  file: File,
+  userId: string,
+  objectId: string,
+): Promise<string> {
+  validateReportPhoto(file);
   const clean = stripImageMetadata(
     new Uint8Array(await file.arrayBuffer()),
     file.type,
   );
   const ext = file.type === "image/png" ? "png" : "jpg";
-  const path = `${auth.user.id}/${crypto.randomUUID()}.${ext}`;
-  const { error } = await supabase.storage
-    .from(REPORT_PHOTO_BUCKET)
-    .upload(path, new Blob([clean], { type: file.type }), {
-      contentType: file.type,
-      upsert: false,
-    });
-  if (error) throw new Error(error.message);
+  const path = `${userId}/${objectId}.${ext}`;
+  try {
+    const { error } = await supabase.storage
+      .from(REPORT_PHOTO_BUCKET)
+      .upload(path, new Blob([clean], { type: file.type }), {
+        contentType: file.type,
+        upsert: true,
+      });
+    if (error) throw new Error();
+  } catch {
+    throw new ReportMutationError("reports.photoFailed");
+  }
   return path;
 }
 
-/** Photos live in a private bucket: owners and moderators read them through a signed URL. */
 export async function signedPhotoUrl(
   photo: string | null,
 ): Promise<string | null> {
-  if (!photo) return null;
-  if (/^https?:\/\//.test(photo)) return photo;
+  if (!photo || !isCanonicalReportPhotoPath(photo)) return null;
   const { data, error } = await supabase.storage
     .from(REPORT_PHOTO_BUCKET)
     .createSignedUrl(photo, 60 * 30);
-  if (error) return null;
-  return data?.signedUrl ?? null;
+  if (error || !data?.signedUrl) return null;
+  try {
+    const url = new URL(data.signedUrl);
+    if (
+      (url.protocol !== "https:" && url.protocol !== "http:") ||
+      url.username ||
+      url.password
+    )
+      return null;
+    return data.signedUrl;
+  } catch {
+    return null;
+  }
 }

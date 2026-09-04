@@ -16,6 +16,7 @@ const job = (contractKey: string): ClaimedSourceJob => ({
   scheduled_for: "2026-08-31T20:00:00.000Z",
   data_from: "2026-08-31T19:50:00.000Z",
   data_through: "2026-08-31T20:00:00.000Z",
+  dispatched_at: null,
   execution_target: "cloudflare",
   state: "running",
   enqueued_by: ["database"],
@@ -43,11 +44,20 @@ function dependencies() {
       dataThrough: "2026-08-31T19:58:00.000Z",
     }),
     ingestFci: vi.fn().mockResolvedValue({
-      fetched: 3,
+      fetched: 4,
       inserted: 2,
       outside: 1,
+      filtered: 1,
       latestSlot: "2026-08-31T19:50:00.000Z",
       ageMinutes: 10,
+    }),
+    ingestS3: vi.fn().mockResolvedValue({
+      fetched: 3,
+      inserted: 3,
+      outside: 0,
+      filtered: 0,
+      latestSlot: "2026-08-31T21:16:00Z",
+      ageMinutes: 95,
     }),
     ingestOnm: vi.fn().mockResolvedValue({
       fetched: 2,
@@ -130,7 +140,8 @@ describe("source runner registry", () => {
       results.find((result) => result.contractKey === "fci"),
     ).toMatchObject({
       upstreamPublishedAt: "2026-08-31T19:50:00.000Z",
-      recordsRejected: 1,
+      recordsRejected: 2,
+      qualityChecks: expect.objectContaining({ outside_watch_area: 1 }),
     });
     expect(
       results.find((result) => result.contractKey === "broadcast_delivery"),
@@ -161,6 +172,7 @@ describe("source runner registry", () => {
       fetched: 0,
       inserted: 0,
       outside: 0,
+      filtered: 0,
       latestSlot: null,
       ageMinutes: null,
       error: "https://secret.provider.invalid returned token=private",
@@ -171,6 +183,15 @@ describe("source runner registry", () => {
     expect(result.publicReasonCode).toBe("upstream_unreachable");
     expect(result.privateDiagnostic).toContain("secret.provider.invalid");
     expect(JSON.stringify(result.publicReasonCode)).not.toContain("private");
+  });
+
+  it("runs Sentinel-3 through the same WFS report shape as FCI", async () => {
+    const deps = dependencies();
+    const result = await createSourceRunners(deps).s3_slstr(job("s3_slstr"));
+    expect(result.outcome).toBe("succeeded");
+    expect(result.upstreamPublishedAt).toBe("2026-08-31T21:16:00Z");
+    expect(result.recordsInserted).toBe(3);
+    expect(result.qualityChecks).toMatchObject({ latest_slot_age_minutes: 95 });
   });
 
   it("passes the recorded interval to replay-capable source adapters", async () => {
@@ -207,5 +228,25 @@ describe("source runner registry", () => {
       runners.broadcast_publish(job("broadcast_publish")),
     ).resolves.toMatchObject({ outcome: "succeeded" });
     expect(deps.publishBroadcasts).toHaveBeenCalledOnce();
+  });
+
+  // the slot, not the clock: a refresh that starts before Algiers midnight and
+  // finishes after it must still publish under the day the job was scheduled for
+  it("derives the risk base date from the job slot", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-08-31T23:30:00.000Z"));
+    const deps = dependencies();
+
+    await createSourceRunners(deps).local_fwi({
+      ...job("local_fwi"),
+      scheduled_for: "2026-08-31T22:59:59.900Z",
+    });
+
+    expect(deps.refreshRiskForecasts).toHaveBeenCalledWith({
+      snapshotId: expect.any(String),
+      baseDate: "2026-08-31",
+      scheduledFor: "2026-08-31T22:59:59.900Z",
+    });
+    vi.useRealTimers();
   });
 });

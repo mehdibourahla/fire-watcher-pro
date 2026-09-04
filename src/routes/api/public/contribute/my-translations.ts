@@ -4,6 +4,11 @@ import { createFileRoute } from "@tanstack/react-router";
 export const Route = createFileRoute("/api/public/contribute/my-translations")({
   server: {
     handlers: {
+      ANY: async () => {
+        const { postOnlyMethodNotAllowed } =
+          await import("@/lib/post-only.server");
+        return postOnlyMethodNotAllowed();
+      },
       POST: async ({ request }) => {
         const { readMySuggestions } = await import("@/lib/translate.server");
         let body: unknown;

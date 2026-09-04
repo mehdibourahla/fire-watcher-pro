@@ -98,3 +98,21 @@ describe("settlements", () => {
     expect(admin.licence).toMatch(/ODbL/);
   });
 });
+
+describe("wilaya parentage", () => {
+  // the 2019 wilayas (49+) kept their communes' historical ONS codes, so only a commune
+  // filed under an older wilaya that its own code contradicts is a seeding error
+  it("files every commune under the wilaya its ONS code names", () => {
+    const misfiled = admin.communes.filter(
+      (c) =>
+        c.code !== null &&
+        c.wilaya_code != null &&
+        Number(c.wilaya_code) <= 48 &&
+        c.code.slice(0, 2) !== c.wilaya_code,
+    );
+    expect(misfiled.map((c) => c.name_fr).sort()).toEqual([
+      "Benaceur",
+      "Moulay Larbi",
+    ]);
+  });
+});

@@ -3,14 +3,21 @@ import { describe, expect, it } from "vitest";
 import {
   BROADCAST_DAILY_COMMUNE_LIMIT,
   applyDailyLimit,
+  coverageOf,
   downwindAdditions,
+  setThreadCoverage,
   fireSeverity,
+  insideCommunes,
+  onmRelayPlan,
   kmToMultiPolygon,
   planFireBroadcast,
   pointInMultiPolygon,
+  pushCodesFor,
   fuelLimitedCodes,
   targetCommunes,
   type CommuneShape,
+  type OpenThread,
+  type OnmWarning,
 } from "@/lib/broadcast-rules";
 
 const square = (
@@ -81,10 +88,12 @@ describe("targetCommunes", () => {
 });
 
 describe("fireSeverity", () => {
-  it("escalates on settlement proximity", () => {
-    expect(fireSeverity(4.9)).toBe("Extreme");
-    expect(fireSeverity(5.1)).toBe("Severe");
-    expect(fireSeverity(null)).toBe("Severe");
+  it("is Extreme only for an intense fire near a settlement", () => {
+    expect(fireSeverity(3, 45)).toBe("Extreme");
+    expect(fireSeverity(3, 9.7)).toBe("Severe");
+    expect(fireSeverity(3, null)).toBe("Severe");
+    expect(fireSeverity(12, 45)).toBe("Severe");
+    expect(fireSeverity(null, 45)).toBe("Severe");
   });
 });
 
@@ -131,12 +140,20 @@ describe("planFireBroadcast", () => {
     open: null,
     targets: ["1503", "1510"],
     additions: [],
+    inside: [],
   };
+  const thread = (
+    phase: string,
+    communeCodes: string[],
+    severity = "Severe",
+    atMs = now - HOUR,
+  ) => ({ phase, communeCodes, insideCodes: [], severity, atMs });
 
   it("opens a thread for a confirmed cluster", () => {
     expect(planFireBroadcast(base)).toEqual({
       action: "initial",
       codes: ["1503", "1510"],
+      inside: [],
     });
   });
 
@@ -151,7 +168,7 @@ describe("planFireBroadcast", () => {
         ...base,
         state: "contained_guess",
         lastDetectedMs: now - 13 * HOUR,
-        open: { phase: "initial", communeCodes: ["1503"], severity: "Severe" },
+        open: thread("initial", ["1503"]),
       }),
     ).toEqual({ action: "end" });
   });
@@ -161,7 +178,7 @@ describe("planFireBroadcast", () => {
       planFireBroadcast({
         ...base,
         state: "false_positive",
-        open: { phase: "initial", communeCodes: ["1503"], severity: "Severe" },
+        open: thread("initial", ["1503"]),
       }),
     ).toEqual({ action: "cancel" });
   });
@@ -170,10 +187,15 @@ describe("planFireBroadcast", () => {
     expect(
       planFireBroadcast({
         ...base,
-        open: { phase: "initial", communeCodes: ["1503"], severity: "Severe" },
+        open: thread("initial", ["1503"]),
         additions: ["1510"],
       }),
-    ).toEqual({ action: "update", codes: ["1503", "1510"], added: ["1510"] });
+    ).toEqual({
+      action: "update",
+      codes: ["1503", "1510"],
+      added: ["1510"],
+      inside: [],
+    });
   });
 
   it("updates when severity escalates even without new communes", () => {
@@ -181,28 +203,83 @@ describe("planFireBroadcast", () => {
       planFireBroadcast({
         ...base,
         severity: "Extreme",
-        open: { phase: "update", communeCodes: ["1503"], severity: "Severe" },
+        open: thread("update", ["1503"]),
       }),
-    ).toEqual({ action: "update", codes: ["1503"], added: [] });
+    ).toEqual({ action: "update", codes: ["1503"], added: [], inside: [] });
+  });
+
+  it("updates when the fire enters a covered commune", () => {
+    expect(
+      planFireBroadcast({
+        ...base,
+        inside: ["1503"],
+        open: thread("initial", ["1503", "1510"]),
+      }),
+    ).toEqual({
+      action: "update",
+      codes: ["1503", "1510"],
+      added: [],
+      inside: ["1503"],
+    });
   });
 
   it("stays silent while nothing changed", () => {
     expect(
       planFireBroadcast({
         ...base,
-        open: { phase: "initial", communeCodes: ["1503"], severity: "Severe" },
+        open: thread("initial", ["1503"]),
+        targets: ["1503"],
+      }),
+    ).toBeNull();
+    expect(
+      planFireBroadcast({
+        ...base,
+        inside: ["1503"],
+        open: { ...thread("initial", ["1503"]), insideCodes: ["1503"] },
         targets: ["1503"],
       }),
     ).toBeNull();
   });
 
-  it("reopens a fresh thread if a closed fire flares up again", () => {
+  it("reopens as an update while the end is less than 24 h old", () => {
     expect(
       planFireBroadcast({
         ...base,
-        open: { phase: "end", communeCodes: ["1503"], severity: "Severe" },
+        open: thread("end", ["1503"], "Severe", now - 6 * HOUR),
       }),
-    ).toEqual({ action: "initial", codes: ["1503", "1510"] });
+    ).toEqual({
+      action: "update",
+      codes: ["1503", "1510"],
+      added: ["1510"],
+      inside: [],
+    });
+  });
+
+  it("keeps the level-2 communes of the thread it reopens", () => {
+    expect(
+      planFireBroadcast({
+        ...base,
+        inside: ["1510"],
+        open: {
+          ...thread("end", ["1503", "1510"], "Severe", now - 6 * HOUR),
+          insideCodes: ["1503"],
+        },
+      }),
+    ).toEqual({
+      action: "update",
+      codes: ["1503", "1510"],
+      added: [],
+      inside: ["1503", "1510"],
+    });
+  });
+
+  it("opens a fresh thread once the end is a day old", () => {
+    expect(
+      planFireBroadcast({
+        ...base,
+        open: thread("end", ["1503"], "Severe", now - 25 * HOUR),
+      }),
+    ).toEqual({ action: "initial", codes: ["1503", "1510"], inside: [] });
   });
 });
 
@@ -258,6 +335,7 @@ describe("planFireBroadcast fuel gate", () => {
     open: null,
     targets: ["3306"],
     additions: [],
+    inside: [],
     fuelLimited: new Set(["3306"]),
   };
 
@@ -269,6 +347,7 @@ describe("planFireBroadcast fuel gate", () => {
     expect(planFireBroadcast({ ...base, targets: ["3306", "1518"] })).toEqual({
       action: "initial",
       codes: ["1518"],
+      inside: [],
     });
   });
 
@@ -277,7 +356,13 @@ describe("planFireBroadcast fuel gate", () => {
       planFireBroadcast({
         ...base,
         lastDetectedMs: now - 13 * HOUR,
-        open: { phase: "initial", communeCodes: ["3306"], severity: "Extreme" },
+        open: {
+          phase: "initial",
+          communeCodes: ["3306"],
+          insideCodes: [],
+          severity: "Extreme",
+          atMs: now - HOUR,
+        },
       }),
     ).toEqual({ action: "end" });
   });
@@ -298,5 +383,248 @@ describe("applyDailyLimit", () => {
       allowed: ["1503"],
       dropped: [],
     });
+  });
+});
+
+describe("insideCommunes", () => {
+  const east = square("1510", 4.4, 4.6, 36.6, 36.8);
+  const byCode = new Map([home, east].map((s) => [s.code, s]));
+  it("names the target communes that contain a detection pixel", () => {
+    const points = [
+      { lat: 36.7, lon: 4.3 },
+      { lat: 36.7, lon: 4.9 },
+    ];
+    expect(insideCommunes(points, ["1503", "1510", "1599"], byCode)).toEqual([
+      "1503",
+    ]);
+  });
+});
+
+describe("pushCodesFor", () => {
+  const now = Date.parse("2026-08-26T14:00:00Z");
+  const thread = (
+    communeCodes: string[],
+    insideCodes: string[] = [],
+    phase = "initial",
+  ): OpenThread => ({
+    phase,
+    severity: "Severe",
+    communeCodes,
+    insideCodes,
+    atMs: now,
+  });
+
+  it("pushes every commune of a first thread when nothing covers them", () => {
+    expect(
+      pushCodesFor({
+        clusterId: "A",
+        action: "initial",
+        codes: ["1503", "1510"],
+        inside: ["1503"],
+        previous: null,
+        coverage: coverageOf([]),
+      }),
+    ).toEqual(["1503", "1510"]);
+  });
+
+  it("stays silent for a commune another thread already covers at the same level", () => {
+    const coverage = coverageOf([["A", thread(["1503", "1510"])]]);
+    expect(
+      pushCodesFor({
+        clusterId: "B",
+        action: "initial",
+        codes: ["1510", "1520"],
+        inside: [],
+        previous: null,
+        coverage,
+      }),
+    ).toEqual(["1520"]);
+  });
+
+  it("pushes a commune the fire has entered even if a ring already covered it", () => {
+    const coverage = coverageOf([["A", thread(["1503", "1510"])]]);
+    expect(
+      pushCodesFor({
+        clusterId: "B",
+        action: "initial",
+        codes: ["1510"],
+        inside: ["1510"],
+        previous: null,
+        coverage,
+      }),
+    ).toEqual(["1510"]);
+  });
+
+  it("on update pushes only communes whose level rose for this thread", () => {
+    const previous = thread(["1503", "1510"], []);
+    const coverage = coverageOf([["A", previous]]);
+    expect(
+      pushCodesFor({
+        clusterId: "A",
+        action: "update",
+        codes: ["1503", "1510", "1520"],
+        inside: ["1503"],
+        previous,
+        coverage,
+      }),
+    ).toEqual(["1503", "1520"]);
+  });
+
+  it("does not re-push a rise another thread already announced", () => {
+    const previous = thread(["1503"], []);
+    const coverage = coverageOf([
+      ["A", previous],
+      ["B", thread(["1503"], ["1503"])],
+    ]);
+    expect(
+      pushCodesFor({
+        clusterId: "A",
+        action: "update",
+        codes: ["1503"],
+        inside: ["1503"],
+        previous,
+        coverage,
+      }),
+    ).toEqual([]);
+  });
+
+  it("ends only where no other thread still covers the commune", () => {
+    const previous = thread(["1503", "1510"]);
+    const coverage = coverageOf([
+      ["A", previous],
+      ["B", thread(["1510"])],
+    ]);
+    expect(
+      pushCodesFor({
+        clusterId: "A",
+        action: "end",
+        codes: ["1503", "1510"],
+        inside: [],
+        previous,
+        coverage,
+      }),
+    ).toEqual(["1503"]);
+  });
+
+  it("sees a thread advanced earlier in the same run", () => {
+    const coverage = coverageOf([]);
+    const a = thread(["1503", "1510"], ["1503"]);
+    setThreadCoverage(coverage, "A", a);
+    expect(
+      pushCodesFor({
+        clusterId: "B",
+        action: "initial",
+        codes: ["1503", "1510", "1520"],
+        inside: ["1503"],
+        previous: null,
+        coverage,
+      }),
+    ).toEqual(["1520"]);
+    setThreadCoverage(coverage, "A", { ...a, phase: "end" });
+    expect(
+      pushCodesFor({
+        clusterId: "B",
+        action: "initial",
+        codes: ["1503", "1510"],
+        inside: [],
+        previous: null,
+        coverage,
+      }),
+    ).toEqual(["1503", "1510"]);
+  });
+
+  it("ignores closed threads when computing coverage", () => {
+    const coverage = coverageOf([["A", thread(["1503"], [], "end")]]);
+    expect(coverage.size).toBe(0);
+  });
+});
+
+describe("onmRelayPlan", () => {
+  const t = (iso: string) => Date.parse(iso);
+  const warning = (id: string, over: Partial<OnmWarning> = {}): OnmWarning => ({
+    id,
+    wilayaId: "w-setif",
+    event: "Rain",
+    severity: "Severe",
+    sentMs: t("2026-08-31T09:31:19Z"),
+    onsetMs: t("2026-08-31T15:00:00Z"),
+    expiresMs: t("2026-09-01T00:00:00Z"),
+    ...over,
+  });
+
+  it("relays one warning and suppresses its reissues", () => {
+    const plan = onmRelayPlan(
+      [
+        warning("a"),
+        warning("b", { sentMs: t("2026-08-31T11:44:58Z") }),
+        warning("c", {
+          sentMs: t("2026-08-31T16:10:24Z"),
+          onsetMs: t("2026-08-31T18:00:00Z"),
+        }),
+      ],
+      [],
+    );
+    expect(plan.relay.map((w) => w.id)).toEqual(["a"]);
+    expect(plan.suppressed.map((w) => w.id)).toEqual(["b", "c"]);
+  });
+
+  it("suppresses a reissue of something already broadcast in an earlier run", () => {
+    const plan = onmRelayPlan([warning("b")], [warning("a")]);
+    expect(plan.relay).toEqual([]);
+    expect(plan.suppressed.map((w) => w.id)).toEqual(["b"]);
+  });
+
+  it("relays a different event, a different wilaya, and a later window", () => {
+    const relayed = [warning("a")];
+    expect(
+      onmRelayPlan([warning("b", { event: "Wind" })], relayed).relay,
+    ).toHaveLength(1);
+    expect(
+      onmRelayPlan([warning("c", { wilayaId: "w-jijel" })], relayed).relay,
+    ).toHaveLength(1);
+    expect(
+      onmRelayPlan(
+        [
+          warning("d", {
+            sentMs: t("2026-09-02T09:00:00Z"),
+            onsetMs: t("2026-09-02T15:00:00Z"),
+            expiresMs: t("2026-09-03T00:00:00Z"),
+          }),
+        ],
+        relayed,
+      ).relay,
+    ).toHaveLength(1);
+  });
+
+  it("relays an escalation but not a de-escalation of the same warning", () => {
+    const relayed = [warning("a")];
+    expect(
+      onmRelayPlan([warning("up", { severity: "Extreme" })], relayed).relay.map(
+        (w) => w.id,
+      ),
+    ).toEqual(["up"]);
+    expect(
+      onmRelayPlan([warning("down")], [warning("a", { severity: "Extreme" })])
+        .relay,
+    ).toEqual([]);
+  });
+
+  it("treats a warning with no stated expiry as covering a day, not forever", () => {
+    const open = warning("a", { expiresMs: null });
+    expect(
+      onmRelayPlan([warning("same-day", { expiresMs: null })], [open]).relay,
+    ).toEqual([]);
+    expect(
+      onmRelayPlan(
+        [
+          warning("two-days-later", {
+            expiresMs: null,
+            sentMs: t("2026-09-02T09:00:00Z"),
+            onsetMs: t("2026-09-02T15:00:00Z"),
+          }),
+        ],
+        [open],
+      ).relay,
+    ).toHaveLength(1);
   });
 });

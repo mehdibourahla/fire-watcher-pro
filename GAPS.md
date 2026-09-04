@@ -46,11 +46,14 @@ Reproduce the seasonality and discrimination numbers: the queries and scripts ar
 in the 2026-08-29 investigation; the distribution itself is
 `select danger_level, count(*) from risk_forecasts where horizon_days=0 group by 1;`
 
-### 1.2 Nobody can register
+### 1.2 Registration works but is rate-capped
 
-`auth.users` is **0**. Sign-up requires an email confirmation, and the project has no custom
-SMTP, so it falls back to Supabase's built-in sender — capped at **2 emails/hour project-wide**
-and documented by Supabase as not for production.
+**Reopened and re-measured 2026-09-02: 29 accounts exist, 16 of them email-confirmed, created
+between 30 Aug and 2 Sep, owning 19 zones across 9 people.** So registration is not the total
+wall this section described. What remains is the ceiling: without custom SMTP the project
+falls back to Supabase's built-in sender, capped at **2 emails/hour project-wide** and
+documented by Supabase as not for production, which is why 13 of 29 sign-ups are still
+unconfirmed. Reproduce: `select count(*), count(email_confirmed_at) from auth.users;`
 
 Login itself is fine, and was verified end to end: password grant issues a token, the app's
 lazy profile creation succeeds, zone creation succeeds, and RLS holds (inserting a zone under
@@ -61,8 +64,8 @@ so every confirmation link was dead, and `uri_allow_list` was empty so the app's
 `emailRedirectTo` was ignored.
 
 Remaining work: configure an SMTP provider (Resend, Postmark, SES) in Supabase Auth. Until
-then no user account can exist, so zones, alerts and the whole authenticated half of the
-product are unreachable.
+then sign-up succeeds only when the hourly quota happens to be free, so roughly half of new
+accounts never confirm and the per-user zone alerts stay unreliable.
 
 ### 1.3 No alert reaches a human
 
@@ -85,6 +88,27 @@ What is left is the delivery itself: pick a provider per channel and render the 
 it. The `cap_alerts` migration was applied to the live project on 2026-08-29
 (ledger version 20260829010000).
 
+**Commune alert state — 2026-09-02.** A push now means a commune's alert level rose:
+level 1 is a fire within the 15 km ring, level 2 a detection pixel inside the commune
+polygon, computed against every open thread so a neighbouring cluster cannot re-alert a
+commune at a level it already holds; ends push only where nothing else covers the
+commune; Extreme needs a settlement within 5 km _and_ 20 MW peak FRP; a thread ended
+under 24 h reopens as an update. `broadcasts.commune_codes` stays the coverage the
+in-app banner reads, `push_codes` the communes selected for delivery after the level and
+daily-cap rules (delivery status stays in the `*_delivered_at` columns), `inside_codes` the
+level-2 set.
+Replayed over 25–28 Aug FCI (44,534 pixels, `bun run replay:window`): 156 initials and
+1,816 commune pushes against 381 and 9,575 under the previous rules, peak 3 pushes to one
+commune in a day against 44, no cluster re-broadcast as a fresh initial against 41. Eight
+of the ten DGPC-named Jijel communes were pushed 32–42 min after their first in-polygon
+pixel; Chekfa (112 min) and Boudria Ben Yadjis (132 min) were pushed the minute their
+cluster crossed the confidence bar — single-pixel FCI slots ramp `confidenceScore`
+slowly, a fusion question, not the push rule. Rejected with numbers: requiring two looks
+before a push removed 12 of 381 initials on that night and cost 10 min at median — it
+addresses single-look artefacts, not fatigue. The FRP floor changed no Jijel initial;
+its target is the persistent low hotspot whose every look is 1–10 MW — Baraki went out as
+Extreme to 44 communes four times under the old rule.
+
 Start at: `src/lib/alerts-engine.server.ts`, `src/lib/cap.ts`.
 
 ### 1.4 Geostationary detection — wired 2026-08-30, ~30–40 min latency
@@ -98,10 +122,141 @@ from this feed; it would need the Data Store push subscription plus a decode wor
 
 Guards, stated: the layer serves a months-deep archive, so the fetch is time-filtered
 server-side; the CQL BBOX is lat-first, and a run whose features all fall outside the
-watch box errors instead of ingesting the wrong hemisphere. Flare screening applies
-unchanged (cell membership is cadence-free); the offline registry thresholds were
-derived from ~4 looks/day and must be re-derived before FCI detections are ever fed
-into registry _learning_ — today they are not.
+watch box errors instead of ingesting the wrong hemisphere. The offline registry
+thresholds were derived from ~4 looks/day and must be re-derived before FCI detections
+are ever fed into registry _learning_ — today they are not.
+
+**Corrected 2026-09-01.** This section used to claim flare screening applied unchanged.
+It does apply, but it was never sufficient, and the sentence hid a missing guard: FCI
+shipped without the `isInWatchArea` polygon `firms.server.ts` has used since the first
+commit, and its bbox spans lat 18.9–37.6 against the FIRMS feed's 33.2–37.6. Over two
+days that admitted 3,731 Saharan detections; 1,377 cleared the flare registry and
+clustered, and 25 of the 37 "active fires" on the public map were bare sand at solar
+noon. The registry cannot catch this: it is a 1.5 km lookup on recurring sites, and the
+noise does not recur — 88% of 403 desert cells were seen exactly once, against 39%
+one-shot for northern FCI fires on the same 10-minute revisit. Nor would a confidence
+threshold have helped; the artefacts carry median confidence 0.86 against 0.60 for real
+FIRMS detections. Geography was the only available discriminator. Fixed in #58, with 362
+already-clustered false positives retired in #62.
+
+Two consequences of that fix, both shipped the same day: the upstream slot time has to be
+read _before_ the watch-area filter, or freshness only advances when something is alight
+in the north and a quiet evening ages a healthy feed into `stale` (#59); and the live map
+needed the `false_positive` exclusion that `/api/public/v1/fires` and the history query
+already applied (#62).
+
+**Chain latency, measured and corrected 2026-09-02.** An earlier note in this file called
+the pipeline "four independent 10-minute polls" whose floor was structural. That was wrong.
+The contracts all carry `schedule_offset_minutes = 0`; what staggers them is the queue's
+dependency gate plus one claim per Cron Event, so production ran ingest → screen → fuse →
+publish → deliver exactly one minute apart:
+
+```
+23:00:14 fci   23:01:14 persistent_screen   23:02:14 fusion
+23:03:14 broadcast_publish   23:04:14 broadcast_delivery
+```
+
+Four minutes, not forty. The dispatcher now claims in five waves of two within a 20-second
+budget instead of four parallel claims, so one Cron Event drains the whole chain; the first
+wave always runs whatever the budget says. The remaining floor is the feed itself: FCI is
+~22 min behind real time and its slot is 10 min wide.
+
+**Persistence rule shipped 2026-09-02.** A Fire is Detected only on two distinct looks —
+two slots of one sensor, or two sensors — so two adjacent FCI pixels in one 10-minute slot
+no longer promote a cluster. Measured on production since 30 Aug: of 362 clusters retired as
+`false_positive`, 311 rest on a single look against 51 with two or more, and one live
+`active` cluster was a single-slot FCI pair at 0.60. Replayed over the Jijel night it costs
+7 of 156 initial broadcasts and 10 minutes on 4 of the 10 DGPC-named communes (32 → 42 min);
+all ten are still reached. Reproduce with the query in this section's history or
+`bun run replay:window`. The paragraph below records what was measured and rejected before
+this rule, and still stands for the variants it names.
+
+**Superseded — the earlier persistence discussion.** Nothing between ingest and the
+map requires a geostationary detection to be confirmed by a second look, so the watch-area
+polygon is the only defence left, and one missing import cost 25 false fires. Requiring
+_N_ revisits in a cell before a slot-cadence source can seed a cluster would have caught
+this independently of geography. It is not implemented because it trades against warning
+latency on a safety product: any such rule delays a genuine new ignition by at least one
+10-minute slot, and that tradeoff is a decision for the maintainers, not a cleanup.
+
+Two variants were measured on 2026-09-01 against the 31 Aug – 1 Sep detections, and both
+fail — record this before proposing either again:
+
+- **Plain "require two looks"** would suppress real fires. 39% of northern FCI cells (28
+  of 72) were one-shot, so the rule cannot separate a first detection of a genuine
+  ignition from an artefact using persistence alone.
+- **Gating it on `isFuelLimited`** to spare vegetated ground fixes that, but leaves almost
+  nothing to act on and does not work as a backstop. Of 472 detections inside the watch
+  area only 9 (1.9%) fall in a fuel-limited commune. And of the 4,239 the polygon now
+  rejects — the flood the rule was meant to catch if the polygon were ever missing again —
+  **60% are not within 60 km of any commune at all**, so there is no landcover to test and
+  the rule silently passes them. It would have caught 40% and let 2,538 through.
+
+A workable version would apply persistence to slot-cadence sources without a commune
+lookup, so it does not fail in empty terrain, and would need an FRP or confidence
+dimension to avoid the one-shot problem above. That is design work, not a patch.
+
+**Sentinel-3 SLSTR — two defects found and fixed 2026-09-02, still zero stored rows.**
+It shipped with `detections.source` checked against `('firms','fci')`, so every SLSTR pixel
+was rejected at insert while the run ledger said `partial / internal_error` (#75). It also
+keyed freshness on `upstream_published_at`: a polar orbiter passes twice a day over a country
+that is often not burning, and an empty response carries no slot, so the watermark never
+advanced and a working feed read `unavailable` for ever — the same class as FCI's `latestSlot`
+below. FIRMS is polar too and keys freshness on the poll for this reason; `s3_slstr` now does
+the same. As of 23:30 on 2 Sep the feed answers and had exactly one in-area detection all day
+(S3B, 36.777 / 4.876, FRP 13.6 MW at 10:19 UTC) which aged out of the six-hour fetch window
+before the constraint fix deployed at 19:45. The first stored row is expected on the next
+pass with a fire under it, not tonight.
+
+**Sentinel-3 SLSTR added 2026-09-02.** The same anonymous WFS serves
+`copernicus:sentinel3{a,b}_slstr_level2_frp`, pre-decoded like the FCI layer, so a second
+independent sensor (polar, ~1 km, two passes a day per satellite, NRT under 3 h) costs one
+layer descriptor in `fci.server.ts` and the `s3_slstr` contract. It runs hourly with the
+same watch-area gate; it improves recall on fires VIIRS and FCI miss, not first-alert
+latency. It shipped with `detections.source` still checked against `('firms','fci')`, so
+every SLSTR pixel was rejected at insert for three days while the run ledger said
+`partial / internal_error` and the health view said `unavailable`; widened 2026-09-02. The DGPC recall study found 7 of 42 named fires on 28 Aug with no detection at all.
+
+### 1.5 Official incident reports — first source wired 2026-09-02
+
+Satellites are the only way a fire could exist in Nadhir until now; the 2026-09-01 recall
+study found that on 28 Aug, 7 of 42 communes DGPC named as burning had **no detection at
+all**, and one (Aïn Zouit) was named three days before FIRMS saw it. The official layer
+buys that recall and the authority's own status vocabulary — bulletins arrive 1–4 times a
+day (same-day gaps median 2.7 h), so it is not early warning and must not be sold as one.
+
+Shape: per-source knowledge lives in a `text_sources` registry row (transport, authority
+tier, language, template) and a thin adapter that writes immutable `source_documents`;
+everything after is shared — classify by regex → the header's as-of and per-wilaya ongoing
+counts by regex → every fire line by one OpenRouter chat completion with a strict JSON schema
+and quoted evidence (`google/gemini-2.5-flash`; flash-lite invents fires from accident posts)
+→ a distribution gate (a commune the model names outside the authority's own per-wilaya count,
+or in excess of it, falls back to wilaya precision; the remainder of each count becomes a
+wilaya-level mention) → resolve against the
+gazetteer plus `admin_unit_aliases` → append-only `incident_mentions` → deterministic
+match & merge (same commune · kind within 48 h; highest tier and latest as-of set the
+status) → `official_incidents`. The map draws the commune polygon, never a point; the
+sheet quotes the evidence and links the post. `official_incident_recall_daily` is the
+standing metric on `/status`.
+
+Eight national press RSS feeds were registered as `media`-tier text sources on 2026-09-02
+and withdrawn the same evening: in an hour of production they yielded 102 articles, 16 about
+fires, all aftermath and solidarity, and one wilaya-only mention with no status. Web editions
+publish after the fact; live media here is television and radio, which have no text surface.
+The DGPC channel's fire bulletins arrive 1–4 times a day, a median of 10 h apart across all
+consecutive bulletins including the overnight gap (2.7 h when only same-day pairs are counted),
+and nothing at night. Sources stay national by rule — no per-wilaya or per-commune page is
+ever registered — and everything official beyond DGPC (wilaya directorates, Gendarmerie Tariki
+road status every 15 min, Info Trafic Algérie with ~1.9M followers, DGF) sits behind Facebook.
+
+Open: wilaya Civil Protection and forestry pages live
+on Facebook and need Meta page access or a Telegram/RSS surface; without `OPENROUTER_API_KEY` nothing is
+extracted and every document waits in the retry queue. Official incidents do not yet feed
+Broadcast Alerts — a deliberate scope line until the recall metric has run for a while.
+
+Citizen hazard reports now also render on the live map (hollow marker, kind, age, "unverified"
+line) from the same 24-hour `hazard_reports` view the Survival page uses; the approved-only
+query nothing consumed is gone.
 
 ## 2. Data quality
 
@@ -148,6 +303,42 @@ The layer only serves its current run, so each row is stamped with the fetch dat
 palette change on their side still degrades the source loudly (the run errors when zero
 communes match).
 
+**Upstream has been down since 2026-08-29** and still is on 2026-09-01: every EFFIS
+endpoint answers `msLoadMap(): Unable to access file` — served as **HTTP 200 with
+`text/html`**, not a 4xx or 5xx. `effis_danger` holds no rows, so §1.1's external
+comparator is unavailable, and the cold-start guard cannot fire either: it needs two
+readable sentinels and `GetFeatureInfo` returns none while the mapserver is broken.
+`res.ok` was therefore the wrong contract check — 590 bytes of HTML reached
+`PNG.sync.read`, threw, and the executor filed a JRC outage as our `internal_error`,
+pointing an on-call reader at the wrong codebase. `pngPayloadError` now checks the PNG
+signature before decoding and reports `upstream_unreachable` (#63). Nothing here brings
+EFFIS back; it recovers when JRC does.
+
+### 2.3b Three communes were parented to the wrong wilaya by OSM
+
+Adekar (ONS 0624, chef-lieu of its own daïra in Béjaïa) was seeded under Tizi Ouzou, so
+DGPC bulletins naming it never resolved — the "missing from the gazetteer" symptom this
+file used to record. Fixed 2026-09-02 in `data/geo/algeria-admin.json` and by migration.
+
+Two more have the same shape and are **not** fixed, because the right parent needs a
+source rather than a guess: `2005 Moulay Larbi` sits under Sidi Bel Abbès with a Saïda
+code, and `3017 Benaceur` under El Oued with an Ouargla code — and Benaceur may belong to
+Touggourt (55) since the 2019 reform. Both are outside the fire watch area. Reproduce:
+
+```sql
+select c.code, c.name_fr, w.name_fr as parent
+from admin_units c join admin_units w on w.id = c.parent_id
+where c.level = 'commune' and left(c.code, 2) <> lpad(w.code, 2, '0')
+  and w.code::int <= 48;
+```
+
+A code prefix that disagrees with the parent is normal for the wilayas created in 2019
+(49–58), which kept their communes' historical ONS codes; the query above excludes them.
+
+Separately, "Larbaa" is not an alias gap: three communes carry the name (Batna, Blida,
+Tissemsilt), so a bulletin naming it resolves only when the wilaya is extracted, since the
+national fallback demands a unique name.
+
 ### 2.3 Commune-to-wilaya assignment — reconciled with Loi 26-06 (2026-08-30)
 
 The law (JORADP N° 25, transcribed with citations in `data/geo/loi-26-06.json`) is now
@@ -180,16 +371,45 @@ short jobs run on the Worker, while FWI and EFFIS have separate GitHub consumers
 retry windows are bounded, expired leases are recovered, missing intervals become `source_gaps`,
 and exact interval replay accepts only a recorded FIRMS or FCI gap UUID inside provider
 retention. Terminal gaps for other contracts are marked unrecoverable rather than pretending
-they can be reconstructed. A five-minute GitHub watchdog queries Supabase
-directly, so the Worker is not its own monitor. Its failures report breached database evidence,
+they can be reconstructed. A watchdog queries Supabase directly from GitHub
+Actions, so the Worker is not its own monitor. Its failures report breached database evidence,
 not an inferred Worker crash. Queue, lease, gap, run, and replay internals remain service-role-only.
 Current-only backlog is explicit: an older queued slot is failed with an audited `data_delayed`
 run and unrecoverable gap before the consumer drains the newest useful slot.
 Consumers keep polling while a retry is pending, and an expired usefulness window is terminalized
 in bounded 25-row maintenance batches with an audited run plus a replayable or explicitly
 unrecoverable gap. Replayability also respects the provider's retention window.
-This implementation is locally verified but not yet deployed; production observation is still
-required before claiming operational reliability.
+Deployed 2026-08-31 (#52). The production observation this section asked for happened on
+2026-09-01 and found one defect the local verification could not see. `local_fwi` and
+`effis` are the only contracts with `execution_target = 'github'`, so nothing in the
+every-minute Cloudflare path can claim them; their 06:00 slots carried
+`retry_window_minutes = 240`, closing the window at 10:00, while GitHub delivered the
+scheduled workflow at 11:33, 13:09, 11:34 and 12:30 on consecutive days. The runner
+therefore arrived after the claim function's maintenance loop had already expired the job
+it came to do, found nothing, printed `{"claimed":false,"pending":false}` and exited 0 —
+a green workflow over a source that had not run since the cutover. `source_gaps` records
+it exactly: both contracts hold `unrecoverable` rows stamped `detected_at 11:33:19Z`.
+
+The daily fire-danger refresh was consequently stale for a day and its horizon thinned by
+one day per day. The window is now 720 minutes and the workflow cron runs hourly across
+it rather than four times an hour inside four (#63); GitHub drops bunched schedules, which
+is why sixteen requested runs produced roughly one. The adapter itself was never at
+fault — invoked directly it completed all 1,536 communes in 63 requests without error.
+
+**The watchdog was inside the Worker again, and is not any more (2026-09-02).** #67 moved
+it into the Worker's own cron with a Telegram DM, which is the fastest signal while the
+Worker is alive and no signal at all when it is not — the failure that silences every
+10-minute source at once. A second watchdog now runs in GitHub Actions twice an hour,
+queries Supabase directly, and adds the one issue the in-Worker one cannot raise:
+`worker_silent`, when no `cloudflare`-target contract has started a run in 25 minutes. It
+keeps its own fingerprint (`external_watchdog`), so the two do not overwrite each other's
+transition state. `TELEGRAM_BOT_TOKEN` is now a repository secret; **`NADHIR_OPERATOR_CHAT_ID`
+is not**, and until it is the workflow fails loudly rather than skipping the DM in silence.
+
+Worth carrying into M3/M4: a consumer that reports success when it claimed nothing cannot
+distinguish "drained" from "never arrived", and that is the same shape as the two other
+blind signals found the same day (§2.2's outage filed as our own error, and ONM stuck
+`partial` on one trailing letter).
 
 What is deliberately still open:
 
@@ -205,6 +425,12 @@ window. The inactive database HTTP helper and token table also remain until the 
 release completes its observation window. The contract-release checklist in
 `docs/superpowers/plans/2026-08-31-source-health-contract-cleanup.md` removes them after
 production evidence proves that no deployed code still uses them.
+
+That evidence now exists for the two relations, gathered 2026-09-01: `ingest_runs` has no
+writer and no reader anywhere outside the generated types, and `data_sources` is written
+only by `scripts/seed-geo.ts` and read by nothing, its last row dated 2026-08-31T18:30Z —
+before the cutover. Both still carry public read grants, so they read as live surface to
+anyone reviewing the schema. The checklist can proceed for them.
 
 ## 3. Product surface
 
@@ -345,6 +571,21 @@ Things that cost real debugging time here, none of them obvious from the code.
   by `anon` from 2026-08-28 until 2026-08-30 — enough to exhaust any caller's bucket. Revoke
   from `anon, authenticated` by name, and check with
   `select proname, proacl from pg_proc where proname = '<fn>'`.
+- **A source job is split across two runners by `execution_target`.** `local_fwi` and
+  `effis` run on GitHub; everything else runs on the Worker. `claim_source_job` filters on
+  that column, so a job perfectly visible in `source_jobs` is unclaimable by the scheduler
+  you happen to be reading about, and the consumer that _can_ claim it reports success
+  when it claimed nothing. Check `execution_target` and the matching workflow before
+  concluding a contract is broken, and remember a green _Source jobs (github target)_ run may mean
+  the queue was empty, not drained.
+- **Freshness computed downstream of a filter stops meaning freshness.** FCI's
+  `latestSlot` was assigned after a row was accepted, so once the watch-area gate rejected
+  the Saharan majority the feed's `upstream_published_at` only advanced when something was
+  alight in the north — a healthy source aged into `stale` in 53 minutes. Any watermark
+  read after a `continue` inherits that filter's semantics. The same class bit the map
+  (`false_positive` excluded by the API and history, not by `clustersQuery`) and ONM
+  (`85/87` forever on one trailing letter). When a signal cannot separate _working and
+  quiet_ from _broken_, it is not a signal.
 - **The CSP blocked the local-stack workflow this file documents.** `connect-src` allowed only
   `https://*.supabase.co`, so a contributor following CONTRIBUTING.md's `supabase start`
   instructions got a browser that silently refused every call to their own database.

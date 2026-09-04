@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronDown, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -14,32 +14,18 @@ import {
   adminUnitsQuery,
   onmVigilanceQuery,
   effisDangerQuery,
+  isStaleForecastDate,
   relativeTime,
   riskForecastsQuery,
   unitName,
   wilayaGroups,
   type AdminUnit,
 } from "@/lib/nadhir";
+import { pageMeta } from "@/lib/page-meta";
 
 export const Route = createFileRoute("/forecast")({
   head: () => ({
-    meta: [
-      { title: "Fire danger forecast — Nadhir Algeria" },
-      {
-        name: "description",
-        content:
-          "Six-day Fire Weather Index outlook and plain-language safety guidance for every commune covered by Nadhir.",
-      },
-      {
-        property: "og:title",
-        content: "Fire danger forecast — Nadhir Algeria",
-      },
-      {
-        property: "og:description",
-        content:
-          "Daily fire danger levels and 6-day FWI outlook for Algerian communes.",
-      },
-    ],
+    meta: pageMeta("risk.metaTitle", "risk.metaDescription"),
   }),
   loader: ({ context }) =>
     Promise.all([
@@ -49,7 +35,13 @@ export const Route = createFileRoute("/forecast")({
   component: ForecastPage,
 });
 
-type Day = { fwi: number; level: number; fuelLimited: boolean };
+type Day = {
+  date: string;
+  fwi: number;
+  percentile: number | null;
+  level: number;
+  fuelLimited: boolean;
+};
 type Row = { commune: AdminUnit; days: Record<number, Day> };
 
 const rankedLevel = (r: Row) =>
@@ -74,7 +66,9 @@ function ForecastPage() {
     for (const f of forecasts.data ?? []) {
       const entry = byCommune.get(f.commune_id) ?? {};
       entry[f.horizon_days] = {
+        date: f.forecast_date,
         fwi: f.fwi,
+        percentile: f.fwi_percentile,
         level: f.danger_level,
         fuelLimited: f.fuel_limited,
       };
@@ -145,6 +139,17 @@ function ForecastPage() {
           <DangerScale
             level={featured.days[0]?.level ?? 1}
             fwi={featured.days[0]?.fwi ?? 0}
+            percentile={featured.days[0]?.percentile ?? null}
+            staleCaption={
+              featured.days[0] && isStaleForecastDate(featured.days[0].date)
+                ? t("risk.staleAsOf", {
+                    time: relativeTime(
+                      `${featured.days[0].date}T00:00:00Z`,
+                      locale,
+                    ),
+                  })
+                : null
+            }
             size="lg"
             guidance
             className="mt-4"
@@ -203,7 +208,12 @@ function ForecastPage() {
                     {h === 0 ? t("risk.today") : t("risk.dayLabel", { n: h })}
                   </span>
                   {day ? (
-                    <DangerScale level={day.level} fwi={day.fwi} size="sm" />
+                    <DangerScale
+                      level={day.level}
+                      fwi={day.fwi}
+                      percentile={day.percentile}
+                      size="sm"
+                    />
                   ) : (
                     <span className="text-sm text-muted-foreground">
                       {t("common.none")}
@@ -233,7 +243,21 @@ function ForecastPage() {
         </div>
       </div>
 
-      {filtered.length === 0 ? (
+      {rows.length === 0 ? (
+        <EmptyState
+          title={t("risk.unavailableTitle")}
+          body={t("risk.unavailableBody")}
+          action={
+            <Link
+              to="/status"
+              className="text-sm font-medium text-primary underline"
+            >
+              {t("nav.status")}
+            </Link>
+          }
+          className="mt-4"
+        />
+      ) : filtered.length === 0 ? (
         <EmptyState title={t("risk.noResults")} className="mt-4" />
       ) : searching ? (
         <ul className="mt-4 flex flex-col gap-2">

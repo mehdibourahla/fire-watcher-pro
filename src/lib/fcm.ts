@@ -109,3 +109,32 @@ export function fcmMessagesForAuthority(args: {
       );
   return out;
 }
+
+export function fcmMessagesForOfficial(args: {
+  broadcastId: string;
+  severity: string;
+  communeCodes: string[];
+  info: { language: string; headline: string; description: string }[];
+}): FcmMessage[] {
+  const data = {
+    broadcast_id: args.broadcastId,
+    severity: args.severity,
+    kind: "official",
+  };
+  const out: FcmMessage[] = [];
+  for (const code of args.communeCodes)
+    for (const lang of FCM_LANGS) {
+      const block = args.info.find((i) => i.language.split("-")[0] === lang);
+      if (!block) continue;
+      out.push(
+        message(
+          fcmTopic(code, lang),
+          block.headline,
+          block.description,
+          APP_URL,
+          data,
+        ),
+      );
+    }
+  return out;
+}

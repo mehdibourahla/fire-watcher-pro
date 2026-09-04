@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   SURVIVAL_AUTO_KM,
   checkInMessage,
+  entryStatusKey,
   nearestThreat,
   positionCard,
 } from "@/lib/survival";
@@ -17,13 +18,19 @@ const cluster = (over: Partial<FireCluster>): FireCluster => ({
   lat: 36.5,
   lon: 4.0,
   detection_count: 3,
+  confirmed_at: null,
+  confirmed_mention_id: null,
   sources: ["firms"],
   max_frp_mw: 10,
   confidence: 0.8,
   est_area_ha: 5,
+  fci_growth: null,
   wind_speed_kmh: 20,
   wind_dir_deg: 225,
   spread_bearing_deg: null,
+  wind_gust_kmh: null,
+  vpd_kpa: null,
+  soil_moisture_m3m3: null,
   commune_id: null,
   wilaya_id: null,
   nearest_settlement_id: null,
@@ -211,5 +218,18 @@ describe("checkInMessage", () => {
       t,
     });
     expect(msg).toContain("28.0000 N · 1.0000 E");
+  });
+});
+
+describe("entryStatusKey", () => {
+  it("never claims a saved pack or a position it does not have", () => {
+    expect(entryStatusKey(false, false, false)).toBe("survival.enterFetching");
+    expect(entryStatusKey(false, true, false)).toBe("survival.enterDenied");
+    expect(entryStatusKey(true, false, false)).toBe("survival.enterSaving");
+    expect(entryStatusKey(true, false, true)).toBe("survival.enterReady");
+  });
+
+  it("reports denial even once a stale pack exists", () => {
+    expect(entryStatusKey(false, true, true)).toBe("survival.enterDenied");
   });
 });

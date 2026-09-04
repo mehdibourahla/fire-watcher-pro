@@ -25,6 +25,20 @@ export const fr: Translation = {
     demoModeNote:
       "Les flux satellites en direct ne sont pas encore connectés. Les chiffres affichés proviennent d'un scénario de démonstration.",
   },
+  meta: {
+    defaultTitle: "Nadhir — Alerte précoce aux feux de forêt en Algérie",
+    titleTemplate: "{{page}} — Nadhir",
+  },
+  notFound: {
+    metaTitle: "Page introuvable — Nadhir",
+    title: "Page introuvable",
+    body: "La page que vous cherchez n'existe pas ou a été déplacée.",
+    home: "Retour à l'accueil",
+  },
+  errorPage: {
+    title: "Cette page n'a pas pu se charger",
+    body: "Un problème est survenu de notre côté. Vous pouvez actualiser ou revenir à l'accueil.",
+  },
   survival: {
     mode: "Mode survie",
     online: "En ligne",
@@ -33,8 +47,11 @@ export const fr: Translation = {
     enterTitle: "Êtes-vous près d'un feu en ce moment ?",
     enterBody:
       "Le mode survie montre une seule chose à faire à la fois, garde votre zone enregistrée hors ligne et prépare votre position pour un appel à la Protection Civile au 14.",
-    enterFetching:
-      "Localisation GPS en cours · enregistrement du pack hors ligne…",
+    enterFetching: "Localisation GPS en cours…",
+    enterDenied:
+      "La localisation est désactivée : les conseils seront généraux. Vous pouvez tout de même entrer.",
+    enterSaving: "Position trouvée · enregistrement du pack hors ligne…",
+    enterReady: "Position trouvée · pack hors ligne enregistré.",
     enterYes: "Oui — activer le mode survie",
     enterCancel: "Annuler",
     enterFootnote:
@@ -67,6 +84,26 @@ export const fr: Translation = {
     bySatellite: "satellite",
     wind: "Vent {{kmh}} km/h du secteur {{bearing}}",
     windToward: "souffle du feu vers vous",
+    gusts: "rafales {{kmh}} km/h",
+    dust: "Poussière saharienne {{value}} µg/m³ · poussière minérale, pas de la fumée",
+    smoke: "Fumée · PM2.5 {{value}} µg/m³",
+    smokePeak: "pic prévu aujourd'hui {{value}}",
+    smokeWho: "{{ratio}}× la valeur guide OMS sur 24 h",
+    smokeSource: "modèle CAMS · {{time}}",
+    smokeLevel: {
+      low: "faible",
+      elevated: "élevé",
+      high: "fort",
+      severe: "sévère",
+    },
+    smokeGuidance: {
+      low: "Peu de fumée mesurée. Le modèle est horaire — si vous voyez ou sentez de la fumée, fiez-vous à cela d'abord.",
+      elevated:
+        "Gardez les fenêtres fermées. Limitez le temps dehors si vous êtes asthmatique ou cardiaque.",
+      high: "Restez à l'intérieur, fenêtres fermées. Si vous devez sortir, portez un masque FFP2 ou N95 ; un tissu ne filtre pas la fumée. Ne roulez pas vers la fumée.",
+      severe:
+        "Fumée dangereuse. Restez à l'intérieur, calfeutrez portes et fenêtres avec un linge humide. Ne sortez qu'avec un masque FFP2 ou N95. Appelez le 14 si vous respirez mal.",
+    },
     noFreshData:
       "Aucune observation récente près de vous. Cela signifie que Nadhir n'a rien vu — pas qu'il n'y a rien.",
     noPosition:
@@ -179,6 +216,8 @@ export const fr: Translation = {
     searchFires: "Rechercher un feu par lieu ou wilaya",
     unassigned: "Hors wilayas d'Algérie",
     fireCount: "{{count}} feux",
+    fireCount_one: "{{count}} feu",
+    fireCount_other: "{{count}} feux",
     unverifiedHint:
       "Les détections non vérifiées apparaissent automatiquement à partir du zoom 9.",
     title: "Carte des feux en direct",
@@ -195,6 +234,12 @@ export const fr: Translation = {
     sources: "Sources",
     layers: "Couches",
     layerFires: "Feux actifs",
+    layerOfficial: "Signalements officiels",
+    layerReports: "Signalements citoyens",
+    reportEyebrow: "Signalement citoyen",
+    reportObserved: "Vu {{time}}",
+    reportUnverified:
+      "Non vérifié — affiché tel que reçu, avec son ancienneté. La modération peut le confirmer ou le retirer.",
     layerRisk: "Prévision de danger",
     layerUnverified: "Détections non vérifiées",
     layerIndustrialSources: "Sources thermiques industrielles connues",
@@ -206,6 +251,29 @@ export const fr: Translation = {
       "Certaines sources sont dégradées — les détections peuvent être retardées.",
     openDetail: "Ouvrir la fiche du feu",
   },
+  official: {
+    eyebrow: "Signalement officiel",
+    inWilaya: "Wilaya de {{wilaya}}",
+    wilayaLevel: "Localisation connue à l’échelle de la wilaya seulement",
+    status: "État",
+    asOf: "Situation au",
+    reports: "Bulletins",
+    source: "Source",
+    sourceFallback: "Canal officiel",
+    listing: "Mention",
+    unlisted:
+      "Non citée dans le bulletin de {{when}}. La Protection civile ne publie pas de fin d'alerte par commune : ce n'est pas un signe que le feu est éteint.",
+    viewPost: "Voir la publication d’origine",
+    disclaimer:
+      "Relayé depuis un canal officiel, à la précision du bulletin — la zone ombrée est la commune, pas le feu. Nadhir n’ajoute rien au texte.",
+    statuses: {
+      ongoing: "En cours",
+      contained: "Maîtrisé",
+      extinguished: "Éteint",
+      monitoring: "Sous surveillance",
+      unknown: "Non précisé",
+    },
+  },
   fire: {
     nearSettlement: "À {{km}} km de {{settlement}}",
     detail: "Détail de l'incendie",
@@ -216,12 +284,26 @@ export const fr: Translation = {
     firstSeen: "Première détection",
     lastSeen: "Dernière détection",
     area: "Surface estimée",
-    confidence: "Confiance",
+    stage: "Éléments",
     peakFrp: "Puissance radiative max",
     detectionCount: "Détections",
     wind: "Vent",
+    gusts: "rafales {{kmh}} km/h",
+    vpd: "Sécheresse de l'air",
+    soilMoisture: "Humidité du sol en surface",
+    air: "L'air sur le feu",
+    airPm25: "Fumée PM2.5",
+    airDust: "Poussière saharienne",
+    airDustNote: "poussière minérale, pas de la fumée",
+    airWho: "{{ratio}}× la valeur guide OMS sur 24 h",
+    airSource: "modèle CAMS · {{time}}",
     windToward:
       "Le vent souffle vers {{bearing}} — {{settlement}} se trouve dans cette direction",
+    growthGrowing:
+      "En progression — les d\u00e9tections satellite sont pass\u00e9es de {{earlier}} \u00e0 {{recent}} depuis {{time}}",
+    growthFading:
+      "Moins de d\u00e9tections depuis {{time}} — cela peut aussi \u00eatre un nuage ou de la fum\u00e9e, pas un feu plus petit",
+    growthSteady: "D\u00e9tections stables depuis {{time}}",
     timeline: "Chronologie des détections",
     nearest: "Localités les plus proches",
     settlement: "Localité",
@@ -233,6 +315,18 @@ export const fr: Translation = {
     commune: "Commune",
     wilaya: "Wilaya",
   },
+  evidence: {
+    title: "Éléments",
+    looks: "{{count}} observation",
+    looks_other: "{{count}} observations",
+    official: "{{status}} — selon le bulletin de {{when}}",
+    note: "Deux pixels voisins d'un même passage satellite comptent pour une observation, pas deux. Seule une source officielle confirme un incendie.",
+  },
+  stage: {
+    candidate: "Détection unique",
+    detected: "Détecté par satellite",
+    confirmed: "Confirmé par la Protection civile",
+  },
   state: {
     unconfirmed: "Non confirmé",
     active: "Actif",
@@ -242,6 +336,8 @@ export const fr: Translation = {
   },
   explain: {
     fwi: "Indice For\u00eat-M\u00e9t\u00e9o (FWI) : vitesse de propagation et difficult\u00e9 de contr\u00f4le attendues, calcul\u00e9es \u00e0 partir de la temp\u00e9rature, de l'humidit\u00e9, du vent et des pluies r\u00e9centes.",
+    fwiPercentile:
+      "L'indice Feu-Météo du jour de prévision comparé à l'historique de cette commune à cette même date, sur 86 ans. Un lieu toujours extrême en été peut rester à son propre plafond historique.",
     dangerLevel:
       "Niveau de danger 1 \u00e0 5, d\u00e9riv\u00e9 du FWI selon l'\u00e9chelle europ\u00e9enne EFFIS.",
     notRated:
@@ -250,13 +346,16 @@ export const fr: Translation = {
     frp: "Puissance radiative maximale du feu, mesur\u00e9e par satellite, en m\u00e9gawatts.",
     detections:
       "Nombre de d\u00e9tections thermiques satellite regroup\u00e9es dans ce feu.",
-    confidence:
-      "Probabilit\u00e9 qu'il s'agisse d'un vrai feu, combinant l'accord des capteurs, la persistance et les sources connues de fausses alertes.",
+    stage:
+      "Une seule observation satellite est une détection unique. Deux observations indépendantes en font une détection satellite. Seule la Protection civile confirme un incendie ; Nadhir ne le fait jamais.",
     firstSeen:
       "Heure de la premi\u00e8re d\u00e9tection satellite. Un feu peut d\u00e9marrer avant le premier passage.",
     lastSeen:
       "D\u00e9tection satellite la plus r\u00e9cente. Un feu peut continuer entre deux passages.",
     wind: "Vent actuel sur le feu selon le mod\u00e8le m\u00e9t\u00e9o. Le feu se propage surtout sous le vent.",
+    vpd: "Déficit de pression de vapeur : la force avec laquelle l'air tire l'eau du combustible. Au-delà de 2 kPa, les combustibles morts sèchent en quelques heures.",
+    soilMoisture:
+      "Eau dans le premier centimètre du sol, selon le modèle météo. Proche de zéro, litière et herbe sont prêtes à brûler.",
     sources: "Syst\u00e8mes satellites ayant d\u00e9tect\u00e9 ce feu.",
     nearest: "Distance au lieu habit\u00e9 connu le plus proche.",
   },
@@ -268,9 +367,15 @@ export const fr: Translation = {
     dayLabel: "J{{n}}",
     today: "Aujourd'hui",
     fwi: "IFM",
+    staleAsOf:
+      "Ceci est la prévision de {{time}} — celle d'aujourd'hui n'a pas encore été publiée.",
+    percentile: "IFM plus élevé que {{pct}} % des années à cette date",
     level: "Niveau de danger",
     searchCommune: "Rechercher une commune",
     noResults: "Aucune commune ne correspond.",
+    unavailableTitle: "La prévision du danger d'incendie est indisponible",
+    unavailableBody:
+      "La dernière actualisation ne s'est pas terminée : aucune prévision n'est publiée pour le moment. Consultez la page d'état des sources.",
     legend: "Échelle de danger",
     sixDay: "Perspective 6 jours",
     low: "Faible",
@@ -279,6 +384,8 @@ export const fr: Translation = {
     very_high: "Très élevé",
     extreme: "Extrême",
     communeCount: "{{count}} communes",
+    communeCount_one: "{{count}} commune",
+    communeCount_other: "{{count}} communes",
     groupWorst: "Niveau de la commune la plus exposée de la wilaya",
     effis: "EFFIS/GWIS (autorité européenne) classe cette commune : {{class}}",
     fuelLimited: "Non évalué — végétation combustible négligeable",
@@ -309,7 +416,14 @@ export const fr: Translation = {
     noWilaya:
       "Aucun incendie de cette période n'a pu être rattaché à une wilaya.",
     unlocated:
-      "{{count}} incendie(s) n'ont pas pu être rattachés à une wilaya et sont exclus de ce classement.",
+      "{{count}} incendies n'ont pas pu être rattachés à une wilaya et sont exclus de ce classement.",
+    unlocated_one:
+      "{{count}} incendie n'a pas pu être rattaché à une wilaya et est exclu de ce classement.",
+    unlocated_other:
+      "{{count}} incendies n'ont pas pu être rattachés à une wilaya et sont exclus de ce classement.",
+    fireCount: "{{count}} feux",
+    fireCount_one: "{{count}} feu",
+    fireCount_other: "{{count}} feux",
     metaTitle: "Historique et statistiques des feux — Nadhir Algérie",
     metaDescription:
       "Archive des foyers détectés, surfaces estimées et wilayas les plus touchées en Algérie.",
@@ -334,11 +448,18 @@ export const fr: Translation = {
   },
   status: {
     degradedCount:
-      "{{count}} source(s) de données affectée(s) — la capacité actuelle peut être réduite.",
+      "{{count}} sources de données affectées — la capacité actuelle peut être réduite.",
+    degradedCount_one:
+      "{{count}} source de données affectée — la capacité actuelle peut être réduite.",
+    degradedCount_other:
+      "{{count}} sources de données affectées — la capacité actuelle peut être réduite.",
     metaTitle: "État des sources de données — Nadhir",
     metaDescription:
       "État en direct des flux satellites, météo et géodonnées qui alimentent les alertes Nadhir.",
     title: "Sources de données",
+    recallTitle: "Signalements officiels et satellites",
+    recallBody:
+      "Sur {{total}} communes citées dans les bulletins officiels en {{days}} jours, les satellites ont détecté un feu dans {{seen}}.",
     subtitle:
       "Un rapport honnête de ce qui fonctionne et de ce qui ne fonctionne pas.",
     source: "Source",
@@ -390,7 +511,7 @@ export const fr: Translation = {
     mission:
       "Détecter les feux en Algérie aussi tôt que les satellites le permettent, prévoir le danger quotidien et diffuser des alertes claires en arabe, français, anglais et tamazight — libre et gratuit.",
     howTitle: "Comment fonctionne la détection",
-    how: "Les points chauds de NASA FIRMS (VIIRS/MODIS) et d'EUMETSAT Meteosat MTG FCI sont dédupliqués, regroupés dans l'espace et le temps, puis notés en confiance. Un feu devient « actif » lorsque deux détections concordent ou qu'une détection très fiable tombe sur un terrain plausible.",
+    how: "Les points chauds de NASA FIRMS (VIIRS/MODIS), d'EUMETSAT Meteosat MTG FCI et de Copernicus Sentinel-3 SLSTR sont dédupliqués et regroupés dans l'espace et le temps. Une observation reste une détection unique ; deux observations indépendantes en font une détection satellite. Nadhir ne déclare jamais un incendie confirmé : seule la Protection civile le fait, et ses mots et son horodatage sont repris tels quels.",
     dangerTitle: "Comment le danger est évalué",
     danger:
       "Le danger utilise l'indice forêt-météo canadien, calculé à partir de la température, l'humidité, le vent et la pluie, recoupé avec EFFIS/GWIS, puis ajusté selon le couvert forestier et le vent.",
@@ -421,8 +542,9 @@ export const fr: Translation = {
     zoneLimit:
       "Vous avez atteint le maximum de 10 zones. Supprimez-en une pour en ajouter une autre.",
     zoneFires:
-      "{{count}} incendie(s) actif(s) à proximité — le plus proche à {{km}} km",
+      "{{count}} incendies actifs dans cette zone — le plus proche à {{km}} km.",
     authTitle: "Se connecter à Nadhir",
+    authMetaTitle: "Se connecter",
     authSubtitle: "Enregistrez les lieux qui comptent et soyez alerté tôt.",
     email: "E-mail",
     password: "Mot de passe",
@@ -432,6 +554,15 @@ export const fr: Translation = {
     noAccount: "Pas encore de compte ? En créer un",
     haveAccount: "Déjà un compte ? Se connecter",
     checkEmail: "Vérifiez votre boîte mail pour confirmer votre adresse.",
+    errorInvalidCredentials: "Cet e-mail ou ce mot de passe est incorrect.",
+    errorEmailNotConfirmed:
+      "Confirmez d'abord votre adresse e-mail — vérifiez votre boîte mail.",
+    errorUserExists: "Un compte existe déjà pour cet e-mail. Connectez-vous.",
+    errorWeakPassword:
+      "Choisissez un mot de passe plus long, au moins 8 caractères.",
+    errorRateLimited: "Trop de tentatives. Patientez un instant et réessayez.",
+    errorUnavailable:
+      "La connexion est momentanément indisponible. Réessayez dans un instant.",
     zonesTitle: "Mes zones surveillées",
     zonesSubtitle:
       "Nadhir surveille ces lieux et vous alerte quand le feu ou le danger s'en approche.",
@@ -475,6 +606,8 @@ export const fr: Translation = {
       "Le danger extrême et les feux dans une zone passent toujours outre les heures calmes.",
     save: "Enregistrer",
     saved: "Enregistré",
+    saveFailed:
+      "Impossible d’enregistrer les paramètres. Vérifiez vos choix et réessayez.",
   },
   reports: {
     title: "Signaler un feu",
@@ -519,9 +652,18 @@ export const fr: Translation = {
     submit: "Envoyer le signalement",
     submitting: "Envoi…",
     submitted: "Merci. Votre signalement est en attente de modération.",
+    submitFailed:
+      "Le signalement n’a pas pu être envoyé. Vérifiez-le et réessayez.",
+    submitCleanupFailed:
+      "Le signalement n’a pas été envoyé et sa photo téléversée n’a pas pu être supprimée. Réessayez plus tard.",
+    submitUnknown:
+      "Impossible de confirmer l’envoi. Consultez Mes signalements avant de réessayer.",
     mine: "Mes signalements",
     empty: "Vous n'avez encore envoyé aucun signalement.",
     delete: "Supprimer",
+    deleteFailed: "Le signalement n’a pas pu être supprimé. Réessayez.",
+    deletePhotoCleanupFailed:
+      "Le signalement n’a pas été supprimé car sa photo privée n’a pas pu être retirée.",
     statusPending: "En attente de vérification",
     statusApproved: "Confirmé par un modérateur",
     statusRejected: "Non retenu",
@@ -541,6 +683,14 @@ export const fr: Translation = {
     revoke: "Retirer {{role}}",
     role_moderator: "modérateur",
     role_admin: "administrateur",
+    confirmSelfAdminRevoke:
+      "Retirer votre propre accès administrateur ? Vous perdrez immédiatement l’accès à la gestion de l’équipe.",
+    lastAdminDisabled:
+      "Nadhir doit toujours avoir un administrateur. Nommez-en un autre avant de retirer votre accès.",
+    lastAdminError:
+      "Au moins un administrateur doit rester. Le rôle n’a pas été modifié.",
+    updateError: "Impossible de modifier ce rôle. Réessayez.",
+    loadError: "Impossible de charger tous les rôles de l’équipe. Réessayez.",
   },
   admin: {
     tabTranslations: "Traductions",
@@ -808,6 +958,11 @@ export const fr: Translation = {
     save: "Enregistrer",
     saving: "Enregistrement…",
     created: "Point de réception créé.",
+    kindsRequired: "Sélectionnez au moins un type d’alerte.",
+    saveFailed:
+      "Impossible d’enregistrer le point de réception. Vérifiez les champs et réessayez.",
+    updateFailed: "Impossible de modifier le point de réception. Réessayez.",
+    deleteFailed: "Impossible de supprimer le point de réception. Réessayez.",
     httpsOnly: "Seules les URL https:// sont acceptées.",
     empty: "Aucun point de réception.",
     pause: "Suspendre",
@@ -844,6 +999,12 @@ export const fr: Translation = {
   legal: {
     terms: "Conditions d'utilisation",
     privacy: "Confidentialité",
+    termsMetaTitle: "Conditions d'utilisation et avertissement — Nadhir",
+    termsMetaDescription:
+      "Nadhir est un service d'information et d'alerte précoce aux feux de forêt en Algérie. Consultez les conditions d'utilisation, les limites et l'avertissement de sécurité.",
+    privacyMetaTitle: "Politique de confidentialité — Nadhir",
+    privacyMetaDescription:
+      "Quelles données personnelles Nadhir conserve pour les alertes, pendant combien de temps, et comment supprimer les données de votre compte.",
     termsTitle: "Conditions d'utilisation et avertissement",
     terms_purpose_title: "Ce qu'est Nadhir",
     terms_purpose_body:
@@ -908,6 +1069,10 @@ export const fr: Translation = {
     wilaya: "Wilaya",
     severity: "Sévérité",
     submit: "Relayer l'avertissement",
+    warningRequired: "Saisissez l'autorité et le texte de l'avertissement.",
+    warningFailed:
+      "Impossible de mettre l'avertissement en attente. Vérifiez les champs et réessayez.",
+    toggleFailed: "Impossible de modifier la diffusion. Réessayez.",
     relayed: "diffusé",
     pendingRelay: "en attente",
     auditTitle: "Journal d'audit",
@@ -915,6 +1080,8 @@ export const fr: Translation = {
     colTime: "Quand",
     colAction: "Action",
     colReason: "Motif",
+    colActor: "Auteur",
+    systemActor: "Système",
     colCommunes: "Communes",
   },
   push: {

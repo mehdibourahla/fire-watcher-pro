@@ -15,7 +15,7 @@ export type CapInfo = {
   description: string;
   instruction: string;
   areaDesc: string;
-  circle: string;
+  circle?: string;
 };
 
 export type CapAlert = {
@@ -42,7 +42,7 @@ export type FireCapInput = {
   lat: number;
   lon: number;
   radiusKm: number;
-  confidence: number;
+  confirmed: boolean;
   urgent: boolean;
   areaDesc: string;
   sentAt: Date;
@@ -51,7 +51,6 @@ export type FireCapInput = {
 
 export const CAP_SENDER = "alerts@nadhir.app";
 const VALID_FOR_MINUTES = 180;
-const OBSERVED_CONFIDENCE = 0.8;
 
 /** CAP 1.2 forbids the "Z" designator; Algeria is UTC+01:00 all year. */
 function capDateTime(date: Date): string {
@@ -82,8 +81,7 @@ export function buildFireCap(input: FireCapInput): CapAlert {
       event: text.event,
       urgency: input.urgent ? "Immediate" : "Expected",
       severity: input.urgent ? "Extreme" : "Severe",
-      certainty:
-        input.confidence >= OBSERVED_CONFIDENCE ? "Observed" : "Likely",
+      certainty: input.confirmed ? "Observed" : "Likely",
       effective,
       expires,
       headline: text.headline,
@@ -104,7 +102,7 @@ export type BroadcastCapInput = {
   lat: number;
   lon: number;
   severity: "Extreme" | "Severe";
-  confidence: number;
+  confirmed: boolean;
   areaDesc: string;
   sentAt: Date;
   texts: CapText[];
@@ -145,7 +143,7 @@ export function buildBroadcastCap(input: BroadcastCapInput): CapAlert {
       ? "Unlikely"
       : input.phase === "end"
         ? "Possible"
-        : input.confidence >= OBSERVED_CONFIDENCE
+        : input.confirmed
           ? "Observed"
           : "Likely";
 
@@ -212,7 +210,7 @@ export function capToXml(alert: CapAlert): string {
         `    ${tag("instruction", i.instruction)}`,
         "    <area>",
         `      ${tag("areaDesc", i.areaDesc)}`,
-        `      ${tag("circle", i.circle)}`,
+        ...(i.circle ? [`      ${tag("circle", i.circle)}`] : []),
         "    </area>",
         "  </info>",
       ].join("\n"),
@@ -232,4 +230,44 @@ export function capToXml(alert: CapAlert): string {
     info,
     "</alert>",
   ].join("\n");
+}
+
+export type OfficialCapInput = {
+  incidentId: string;
+  areaDesc: string;
+  sentAt: Date;
+  asOf: Date;
+  texts: CapText[];
+};
+
+export function officialCapIdentifier(incidentId: string): string {
+  return `nadhir-off-${incidentId.slice(0, 8)}`;
+}
+
+/* No circle: the authority named a commune, not a point with a radius, and the
+ * areaDesc is the only geometry claim Nadhir can make for it. */
+export function buildOfficialCap(input: OfficialCapInput): CapAlert {
+  const sent = capDateTime(input.sentAt);
+  return {
+    identifier: officialCapIdentifier(input.incidentId),
+    sender: CAP_SENDER,
+    sent,
+    status: "Actual",
+    msgType: "Alert",
+    scope: "Public",
+    info: input.texts.map((text) => ({
+      language: text.language,
+      category: "Fire",
+      event: text.event,
+      urgency: "Expected",
+      severity: "Severe",
+      certainty: "Observed",
+      effective: capDateTime(input.asOf),
+      expires: capDateTime(new Date(input.sentAt.getTime() + 24 * 60 * 60_000)),
+      headline: text.headline,
+      description: text.description,
+      instruction: text.instruction,
+      areaDesc: input.areaDesc,
+    })),
+  };
 }

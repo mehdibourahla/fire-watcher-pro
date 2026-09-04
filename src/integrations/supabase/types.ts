@@ -235,6 +235,7 @@ export type Database = {
       broadcast_audit: {
         Row: {
           action: string;
+          actor_id: string | null;
           at: string;
           cluster_id: string | null;
           commune_codes: string[] | null;
@@ -248,6 +249,7 @@ export type Database = {
         };
         Insert: {
           action: string;
+          actor_id?: string | null;
           at?: string;
           cluster_id?: string | null;
           commune_codes?: string[] | null;
@@ -261,6 +263,7 @@ export type Database = {
         };
         Update: {
           action?: string;
+          actor_id?: string | null;
           at?: string;
           cluster_id?: string | null;
           commune_codes?: string[] | null;
@@ -302,9 +305,12 @@ export type Database = {
           fcm_delivered_at: string | null;
           fcm_topics: number | null;
           id: string;
+          inside_codes: string[];
           kind: string;
+          official_incident_id: string | null;
           onm_vigilance_id: string | null;
           phase: string;
+          push_codes: string[];
           severity: string;
           telegram_channels: number | null;
           telegram_delivered_at: string | null;
@@ -318,9 +324,12 @@ export type Database = {
           fcm_delivered_at?: string | null;
           fcm_topics?: number | null;
           id?: string;
+          inside_codes?: string[];
           kind: string;
+          official_incident_id?: string | null;
           onm_vigilance_id?: string | null;
           phase?: string;
+          push_codes: string[];
           severity: string;
           telegram_channels?: number | null;
           telegram_delivered_at?: string | null;
@@ -334,9 +343,12 @@ export type Database = {
           fcm_delivered_at?: string | null;
           fcm_topics?: number | null;
           id?: string;
+          inside_codes?: string[];
           kind?: string;
+          official_incident_id?: string | null;
           onm_vigilance_id?: string | null;
           phase?: string;
+          push_codes?: string[];
           severity?: string;
           telegram_channels?: number | null;
           telegram_delivered_at?: string | null;
@@ -361,6 +373,13 @@ export type Database = {
             columns: ["cluster_id"];
             isOneToOne: false;
             referencedRelation: "fire_clusters";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "broadcasts_official_incident_id_fkey";
+            columns: ["official_incident_id"];
+            isOneToOne: false;
+            referencedRelation: "official_incidents";
             referencedColumns: ["id"];
           },
           {
@@ -692,6 +711,35 @@ export type Database = {
           },
         ];
       };
+      document_extractions: {
+        Row: {
+          attempts: number;
+          document_id: string;
+          last_error: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          attempts?: number;
+          document_id: string;
+          last_error?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          attempts?: number;
+          document_id?: string;
+          last_error?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "document_extractions_document_id_fkey";
+            columns: ["document_id"];
+            isOneToOne: true;
+            referencedRelation: "source_documents";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       effis_danger: {
         Row: {
           commune_id: string;
@@ -728,9 +776,12 @@ export type Database = {
         Row: {
           commune_id: string | null;
           confidence: number;
+          confirmed_at: string | null;
+          confirmed_mention_id: string | null;
           created_at: string;
           detection_count: number;
           est_area_ha: number | null;
+          fci_growth: Json | null;
           first_detected_at: string;
           hull: Json | null;
           id: string;
@@ -748,18 +799,24 @@ export type Database = {
           sources: string[];
           spread_bearing_deg: number | null;
           state: string;
+          soil_moisture_m3m3: number | null;
           suspected_persistent_source: boolean;
           updated_at: string;
+          vpd_kpa: number | null;
           wilaya_id: string | null;
           wind_dir_deg: number | null;
+          wind_gust_kmh: number | null;
           wind_speed_kmh: number | null;
         };
         Insert: {
           commune_id?: string | null;
           confidence?: number;
+          confirmed_at?: string | null;
+          confirmed_mention_id?: string | null;
           created_at?: string;
           detection_count?: number;
           est_area_ha?: number | null;
+          fci_growth?: Json | null;
           first_detected_at: string;
           hull?: Json | null;
           id?: string;
@@ -777,18 +834,24 @@ export type Database = {
           sources?: string[];
           spread_bearing_deg?: number | null;
           state?: string;
+          soil_moisture_m3m3?: number | null;
           suspected_persistent_source?: boolean;
           updated_at?: string;
+          vpd_kpa?: number | null;
           wilaya_id?: string | null;
           wind_dir_deg?: number | null;
+          wind_gust_kmh?: number | null;
           wind_speed_kmh?: number | null;
         };
         Update: {
           commune_id?: string | null;
           confidence?: number;
+          confirmed_at?: string | null;
+          confirmed_mention_id?: string | null;
           created_at?: string;
           detection_count?: number;
           est_area_ha?: number | null;
+          fci_growth?: Json | null;
           first_detected_at?: string;
           hull?: Json | null;
           id?: string;
@@ -806,10 +869,13 @@ export type Database = {
           sources?: string[];
           spread_bearing_deg?: number | null;
           state?: string;
+          soil_moisture_m3m3?: number | null;
           suspected_persistent_source?: boolean;
           updated_at?: string;
+          vpd_kpa?: number | null;
           wilaya_id?: string | null;
           wind_dir_deg?: number | null;
+          wind_gust_kmh?: number | null;
           wind_speed_kmh?: number | null;
         };
         Relationships: [
@@ -830,6 +896,38 @@ export type Database = {
           {
             foreignKeyName: "fire_clusters_wilaya_id_fkey";
             columns: ["wilaya_id"];
+            isOneToOne: false;
+            referencedRelation: "admin_units";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      fwi_climatology: {
+        Row: {
+          breakpoints: number[];
+          built_at: string;
+          commune_id: string;
+          day: number;
+          month: number;
+        };
+        Insert: {
+          breakpoints: number[];
+          built_at?: string;
+          commune_id: string;
+          day: number;
+          month: number;
+        };
+        Update: {
+          breakpoints?: number[];
+          built_at?: string;
+          commune_id?: string;
+          day?: number;
+          month?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "fwi_climatology_commune_id_fkey";
+            columns: ["commune_id"];
             isOneToOne: false;
             referencedRelation: "admin_units";
             referencedColumns: ["id"];
@@ -922,6 +1020,327 @@ export type Database = {
           created_at?: string;
           id?: boolean;
           token?: string;
+        };
+        Relationships: [];
+      };
+      admin_unit_aliases: {
+        Row: {
+          admin_unit_id: string;
+          alias_ar: string;
+          source: string;
+        };
+        Insert: {
+          admin_unit_id: string;
+          alias_ar: string;
+          source: string;
+        };
+        Update: {
+          admin_unit_id?: string;
+          alias_ar?: string;
+          source?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "admin_unit_aliases_admin_unit_id_fkey";
+            columns: ["admin_unit_id"];
+            isOneToOne: false;
+            referencedRelation: "admin_units";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      incident_mentions: {
+        Row: {
+          as_of: string;
+          commune_id: string | null;
+          created_at: string;
+          document_id: string;
+          evidence: string;
+          extractor: string;
+          fire_count: number;
+          id: string;
+          incident_id: string | null;
+          kind: string;
+          place_text: string | null;
+          precision: string;
+          status: string;
+          text_source_id: string;
+          wilaya_id: string;
+        };
+        Insert: {
+          as_of: string;
+          commune_id?: string | null;
+          created_at?: string;
+          document_id: string;
+          evidence: string;
+          extractor: string;
+          fire_count?: number;
+          id?: string;
+          incident_id?: string | null;
+          kind: string;
+          place_text?: string | null;
+          precision: string;
+          status: string;
+          text_source_id: string;
+          wilaya_id: string;
+        };
+        Update: {
+          as_of?: string;
+          commune_id?: string | null;
+          created_at?: string;
+          document_id?: string;
+          evidence?: string;
+          extractor?: string;
+          fire_count?: number;
+          id?: string;
+          incident_id?: string | null;
+          kind?: string;
+          place_text?: string | null;
+          precision?: string;
+          status?: string;
+          text_source_id?: string;
+          wilaya_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "incident_mentions_commune_id_fkey";
+            columns: ["commune_id"];
+            isOneToOne: false;
+            referencedRelation: "admin_units";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "incident_mentions_document_id_fkey";
+            columns: ["document_id"];
+            isOneToOne: false;
+            referencedRelation: "source_documents";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "incident_mentions_incident_id_fkey";
+            columns: ["incident_id"];
+            isOneToOne: false;
+            referencedRelation: "official_incidents";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "incident_mentions_text_source_id_fkey";
+            columns: ["text_source_id"];
+            isOneToOne: false;
+            referencedRelation: "text_sources";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "incident_mentions_wilaya_id_fkey";
+            columns: ["wilaya_id"];
+            isOneToOne: false;
+            referencedRelation: "admin_units";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      official_incidents: {
+        Row: {
+          as_of: string;
+          authority_tier: string;
+          commune_id: string | null;
+          evidence: string;
+          first_reported_at: string;
+          id: string;
+          kind: string;
+          last_reported_at: string;
+          latest_mention_id: string | null;
+          mention_count: number;
+          place_text: string | null;
+          precision: string;
+          status: string;
+          unlisted_at: string | null;
+          updated_at: string;
+          wilaya_id: string;
+        };
+        Insert: {
+          as_of: string;
+          authority_tier: string;
+          commune_id?: string | null;
+          evidence: string;
+          first_reported_at: string;
+          id?: string;
+          kind: string;
+          last_reported_at: string;
+          latest_mention_id?: string | null;
+          mention_count?: number;
+          place_text?: string | null;
+          precision: string;
+          status: string;
+          unlisted_at?: string | null;
+          updated_at?: string;
+          wilaya_id: string;
+        };
+        Update: {
+          as_of?: string;
+          authority_tier?: string;
+          commune_id?: string | null;
+          evidence?: string;
+          first_reported_at?: string;
+          id?: string;
+          kind?: string;
+          last_reported_at?: string;
+          latest_mention_id?: string | null;
+          mention_count?: number;
+          place_text?: string | null;
+          precision?: string;
+          status?: string;
+          unlisted_at?: string | null;
+          updated_at?: string;
+          wilaya_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "official_incidents_commune_id_fkey";
+            columns: ["commune_id"];
+            isOneToOne: false;
+            referencedRelation: "admin_units";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "official_incidents_latest_mention_fkey";
+            columns: ["latest_mention_id"];
+            isOneToOne: false;
+            referencedRelation: "incident_mentions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "official_incidents_wilaya_id_fkey";
+            columns: ["wilaya_id"];
+            isOneToOne: false;
+            referencedRelation: "admin_units";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      source_documents: {
+        Row: {
+          body: string;
+          content_hash: string;
+          external_id: string;
+          fetched_at: string;
+          id: string;
+          published_at: string;
+          raw: Json | null;
+          text_source_id: string;
+          url: string;
+        };
+        Insert: {
+          body: string;
+          content_hash: string;
+          external_id: string;
+          fetched_at?: string;
+          id?: string;
+          published_at: string;
+          raw?: Json | null;
+          text_source_id: string;
+          url: string;
+        };
+        Update: {
+          body?: string;
+          content_hash?: string;
+          external_id?: string;
+          fetched_at?: string;
+          id?: string;
+          published_at?: string;
+          raw?: Json | null;
+          text_source_id?: string;
+          url?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "source_documents_text_source_id_fkey";
+            columns: ["text_source_id"];
+            isOneToOne: false;
+            referencedRelation: "text_sources";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      text_sources: {
+        Row: {
+          authority_tier: string;
+          created_at: string;
+          enabled: boolean;
+          id: string;
+          key: string;
+          kind: string;
+          label: string;
+          language: string;
+          template: string | null;
+          url: string;
+          wilaya_id: string | null;
+        };
+        Insert: {
+          authority_tier: string;
+          created_at?: string;
+          enabled?: boolean;
+          id?: string;
+          key: string;
+          kind: string;
+          label: string;
+          language?: string;
+          template?: string | null;
+          url: string;
+          wilaya_id?: string | null;
+        };
+        Update: {
+          authority_tier?: string;
+          created_at?: string;
+          enabled?: boolean;
+          id?: string;
+          key?: string;
+          kind?: string;
+          label?: string;
+          language?: string;
+          template?: string | null;
+          url?: string;
+          wilaya_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "text_sources_key_fkey";
+            columns: ["key"];
+            isOneToOne: true;
+            referencedRelation: "source_contracts";
+            referencedColumns: ["key"];
+          },
+          {
+            foreignKeyName: "text_sources_key_fkey";
+            columns: ["key"];
+            isOneToOne: true;
+            referencedRelation: "source_health";
+            referencedColumns: ["key"];
+          },
+          {
+            foreignKeyName: "text_sources_wilaya_id_fkey";
+            columns: ["wilaya_id"];
+            isOneToOne: false;
+            referencedRelation: "admin_units";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      operator_alert_state: {
+        Row: {
+          fingerprint: string;
+          key: string;
+          updated_at: string;
+        };
+        Insert: {
+          fingerprint: string;
+          key: string;
+          updated_at?: string;
+        };
+        Update: {
+          fingerprint?: string;
+          key?: string;
+          updated_at?: string;
         };
         Relationships: [];
       };
@@ -1160,8 +1579,10 @@ export type Database = {
           forecast_date: string;
           fuel_limited: boolean;
           fwi: number;
+          fwi_percentile: number | null;
           horizon_days: number;
           id: string;
+          snapshot_id: string | null;
           source: string;
         };
         Insert: {
@@ -1172,8 +1593,10 @@ export type Database = {
           forecast_date: string;
           fuel_limited?: boolean;
           fwi: number;
+          fwi_percentile?: number | null;
           horizon_days: number;
           id?: string;
+          snapshot_id?: string | null;
           source: string;
         };
         Update: {
@@ -1184,8 +1607,10 @@ export type Database = {
           forecast_date?: string;
           fuel_limited?: boolean;
           fwi?: number;
+          fwi_percentile?: number | null;
           horizon_days?: number;
           id?: string;
+          snapshot_id?: string | null;
           source?: string;
         };
         Relationships: [
@@ -1195,6 +1620,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "admin_units";
             referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "risk_forecasts_snapshot_id_fkey";
+            columns: ["snapshot_id"];
+            isOneToOne: false;
+            referencedRelation: "risk_publications";
+            referencedColumns: ["snapshot_id"];
           },
         ];
       };
@@ -1558,6 +1990,7 @@ export type Database = {
           created_at: string;
           data_from: string;
           data_through: string;
+          dispatched_at: string | null;
           enqueued_by: string[];
           execution_target: string;
           finished_at: string | null;
@@ -1583,6 +2016,7 @@ export type Database = {
           created_at?: string;
           data_from: string;
           data_through: string;
+          dispatched_at?: string | null;
           enqueued_by?: string[];
           execution_target: string;
           finished_at?: string | null;
@@ -1608,6 +2042,7 @@ export type Database = {
           created_at?: string;
           data_from?: string;
           data_through?: string;
+          dispatched_at?: string | null;
           enqueued_by?: string[];
           execution_target?: string;
           finished_at?: string | null;
@@ -2008,6 +2443,143 @@ export type Database = {
           },
         ];
       };
+
+      risk_forecast_snapshot_runs: {
+        Row: {
+          base_date: string;
+          created_at: string;
+          finished_at: string | null;
+          heartbeat_at: string;
+          scheduled_for: string;
+          snapshot_id: string;
+          status: string;
+        };
+        Insert: {
+          base_date: string;
+          created_at?: string;
+          finished_at?: string | null;
+          heartbeat_at?: string;
+          scheduled_for: string;
+          snapshot_id: string;
+          status?: string;
+        };
+        Update: {
+          base_date?: string;
+          created_at?: string;
+          finished_at?: string | null;
+          heartbeat_at?: string;
+          scheduled_for?: string;
+          snapshot_id?: string;
+          status?: string;
+        };
+        Relationships: [];
+      };
+      risk_forecast_staging: {
+        Row: {
+          commune_id: string;
+          components: Json | null;
+          danger_level: number;
+          forecast_date: string;
+          fuel_limited: boolean;
+          fwi: number;
+          fwi_percentile: number | null;
+          horizon_days: number;
+          snapshot_id: string;
+          staged_at: string;
+        };
+        Insert: {
+          commune_id: string;
+          components?: Json | null;
+          danger_level: number;
+          forecast_date: string;
+          fuel_limited?: boolean;
+          fwi: number;
+          fwi_percentile?: number | null;
+          horizon_days: number;
+          snapshot_id: string;
+          staged_at?: string;
+        };
+        Update: {
+          commune_id?: string;
+          components?: Json | null;
+          danger_level?: number;
+          forecast_date?: string;
+          fuel_limited?: boolean;
+          fwi?: number;
+          fwi_percentile?: number | null;
+          horizon_days?: number;
+          snapshot_id?: string;
+          staged_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "risk_forecast_staging_commune_id_fkey";
+            columns: ["commune_id"];
+            isOneToOne: false;
+            referencedRelation: "admin_units";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      risk_publication_checkpoint: {
+        Row: {
+          base_date: string;
+          coverage_status: string;
+          key: string;
+          published_at: string;
+          scheduled_for: string;
+          snapshot_id: string;
+        };
+        Insert: {
+          base_date: string;
+          coverage_status?: string;
+          key: string;
+          published_at: string;
+          scheduled_for: string;
+          snapshot_id: string;
+        };
+        Update: {
+          base_date?: string;
+          coverage_status?: string;
+          key?: string;
+          published_at?: string;
+          scheduled_for?: string;
+          snapshot_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "risk_publication_checkpoint_snapshot_id_fkey";
+            columns: ["snapshot_id"];
+            isOneToOne: false;
+            referencedRelation: "risk_publications";
+            referencedColumns: ["snapshot_id"];
+          },
+        ];
+      };
+      risk_publications: {
+        Row: {
+          base_date: string;
+          published_at: string;
+          row_count: number;
+          scheduled_for: string;
+          snapshot_id: string;
+        };
+        Insert: {
+          base_date: string;
+          published_at: string;
+          row_count: number;
+          scheduled_for: string;
+          snapshot_id: string;
+        };
+        Update: {
+          base_date?: string;
+          published_at?: string;
+          row_count?: number;
+          scheduled_for?: string;
+          snapshot_id?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       hazard_reports: {
@@ -2040,6 +2612,15 @@ export type Database = {
           observed_at?: string | null;
           sighting?: string | null;
           status?: string | null;
+        };
+        Relationships: [];
+      };
+      official_incident_recall_daily: {
+        Row: {
+          communes: number | null;
+          day: string | null;
+          mentions: number | null;
+          with_cluster: number | null;
         };
         Relationships: [];
       };
@@ -2092,8 +2673,37 @@ export type Database = {
         };
         Relationships: [];
       };
+
+      published_contribution_ideas: {
+        Row: {
+          id: string | null;
+          lane: string | null;
+          message: string | null;
+          published_at: string | null;
+          score: number | null;
+        };
+        Insert: {
+          id?: string | null;
+          lane?: string | null;
+          message?: string | null;
+          published_at?: string | null;
+          score?: number | null;
+        };
+        Update: {
+          id?: string | null;
+          lane?: string | null;
+          message?: string | null;
+          published_at?: string | null;
+          score?: number | null;
+        };
+        Relationships: [];
+      };
     };
     Functions: {
+      bump_official_incident: {
+        Args: { _id: string; _patch: Json };
+        Returns: undefined;
+      };
       claim_source_job: {
         Args: {
           _contract_key?: string;
@@ -2109,6 +2719,7 @@ export type Database = {
           created_at: string;
           data_from: string;
           data_through: string;
+          dispatched_at: string | null;
           enqueued_by: string[];
           execution_target: string;
           finished_at: string | null;
@@ -2164,6 +2775,7 @@ export type Database = {
           created_at: string;
           data_from: string;
           data_through: string;
+          dispatched_at: string | null;
           enqueued_by: string[];
           execution_target: string;
           finished_at: string | null;
@@ -2247,6 +2859,121 @@ export type Database = {
       };
       vote_on_idea: {
         Args: { _idea: string; _value: number; _voter: string };
+        Returns: number;
+      };
+
+      begin_risk_forecast_snapshot: {
+        Args: {
+          _base_date: string;
+          _scheduled_for: string;
+          _snapshot_id: string;
+          _stale_before: string;
+        };
+        Returns: number;
+      };
+      current_risk_forecasts: {
+        Args: never;
+        Returns: {
+          admin_level: string;
+          commune_code: string;
+          commune_id: string;
+          components: Json;
+          created_at: string;
+          danger_level: number;
+          forecast_date: string;
+          fuel_limited: boolean;
+          fwi: number;
+          fwi_percentile: number | null;
+          horizon_days: number;
+          id: string;
+          name_ar: string;
+          name_en: string;
+          name_fr: string;
+          snapshot_id: string;
+          source: string;
+        }[];
+      };
+      discard_risk_forecast_snapshot: {
+        Args: {
+          _base_date: string;
+          _scheduled_for: string;
+          _snapshot_id: string;
+        };
+        Returns: boolean;
+      };
+      list_contribution_ideas_for_moderation: {
+        Args: never;
+        Returns: {
+          contact: string | null;
+          created_at: string;
+          id: string;
+          lane: string;
+          locale: string;
+          message: string;
+          moderated_by: string | null;
+          moderation_note: string | null;
+          published_at: string | null;
+          score: number;
+          status: string;
+        }[];
+        SetofOptions: {
+          from: "*";
+          to: "contribution_ideas";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
+      list_translation_suggestions_for_moderation: {
+        Args: never;
+        Returns: {
+          created_at: string;
+          current_text: string;
+          id: string;
+          key_path: string;
+          locale: string;
+          moderated_by: string | null;
+          moderation_note: string | null;
+          note: string | null;
+          reviewer_key: string;
+          reviewer_name: string | null;
+          source_text: string;
+          status: string;
+          suggestion: string | null;
+          verdict: string;
+        }[];
+        SetofOptions: {
+          from: "*";
+          to: "translation_suggestions";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
+      moderate_contribution_idea: {
+        Args: { _idea: string; _moderation_note?: string; _status: string };
+        Returns: undefined;
+      };
+      moderate_translation_suggestion: {
+        Args: {
+          _moderation_note?: string;
+          _status: string;
+          _suggestion: string;
+        };
+        Returns: undefined;
+      };
+      publish_risk_forecast_snapshot: {
+        Args: {
+          _base_date: string;
+          _scheduled_for: string;
+          _snapshot_id: string;
+        };
+        Returns: Json;
+      };
+      set_broadcast_enabled: {
+        Args: { _enabled: boolean };
+        Returns: Json;
+      };
+      stage_risk_forecast_batch: {
+        Args: { _rows: Json; _snapshot_id: string };
         Returns: number;
       };
     };

@@ -5,6 +5,10 @@ import type { SourceHealth } from "@/lib/source-health";
 export const Route = createFileRoute("/api/public/v1/status")({
   server: {
     handlers: {
+      ANY: async () => {
+        const { methodNotAllowed } = await import("@/lib/public-api.server");
+        return methodNotAllowed();
+      },
       OPTIONS: async () => {
         const { preflight } = await import("@/lib/public-api.server");
         return preflight();

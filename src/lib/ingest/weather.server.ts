@@ -3,7 +3,6 @@ import { fetchAllPages } from "@/lib/paginate";
 
 import { isFuelLimited, type LandcoverFractions } from "@/lib/zonal";
 
-import { algiersToday } from "./algiers-date";
 import { dailyFromHourly, type HourlyBlock } from "./noon-weather";
 import {
   FWI_START,
@@ -16,7 +15,6 @@ import {
 
 const HORIZON_DAYS = 6;
 const SPINUP_DAYS = 92;
-const SOURCE = "local_fwi";
 const BATCH = 25;
 const RETRY_LIMIT = 5;
 const RETRY_BASE_MS = 2000;
@@ -44,6 +42,14 @@ export type RiskRun = {
   rows: number;
   requests?: number;
   error?: string;
+  publishedAt?: string;
+  superseded?: boolean;
+};
+
+export type RiskRefreshIdentity = {
+  snapshotId: string;
+  baseDate: string;
+  scheduledFor: string;
 };
 
 async function fetchDaily(
@@ -71,17 +77,30 @@ async function fetchDaily(
   // Open-Meteo weights a call by locations x days, so 1500+ communes trip the
   // free-tier limit long before the request count looks high.
   let lastStatus = 0;
+  let unreadable = false;
   for (let attempt = 0; attempt < RETRY_LIMIT; attempt += 1) {
     const res = await fetch(url);
     if (res.ok) {
-      const json = (await res.json()) as OpenMeteoResponse;
-      const list = Array.isArray(json) ? json : [json];
-      return lats.map((_, i) => {
-        const hourly = list[i]?.hourly;
-        return hourly ? dailyFromHourly(hourly) : null;
-      });
+      // Open-Meteo answers its own streaming timeouts with a 200 and a plain-text body
+      let json: OpenMeteoResponse | null = null;
+      try {
+        json = JSON.parse(await res.text()) as OpenMeteoResponse;
+      } catch {
+        unreadable = true;
+      }
+      if (json) {
+        const list = Array.isArray(json) ? json : [json];
+        return lats.map((_, i) => {
+          const hourly = list[i]?.hourly;
+          return hourly ? dailyFromHourly(hourly) : null;
+        });
+      }
     }
     lastStatus = res.status;
+    if (res.ok) {
+      await sleep(RETRY_BASE_MS * 2 ** attempt + Math.random() * 500);
+      continue;
+    }
     if (res.status !== 429 && res.status < 500) break;
     const retryAfter = Number(res.headers.get("retry-after"));
     const backoff =
@@ -90,7 +109,11 @@ async function fetchDaily(
         : RETRY_BASE_MS * 2 ** attempt;
     await sleep(backoff + Math.random() * 500);
   }
-  throw new Error(`open-meteo ${lastStatus}`);
+  throw new Error(
+    unreadable
+      ? "open-meteo upstream answered with a non-JSON body"
+      : `open-meteo ${lastStatus}`,
+  );
 }
 
 export type StoredState = {
@@ -175,7 +198,63 @@ export function seriesFwi(
   return { days: out, carried };
 }
 
-export async function refreshRiskForecasts(): Promise<RiskRun> {
+// breakpoints[i] is the i-th percentile FWI value for one commune on one calendar day
+// (101 points, monotonic). A tie at either end reads as the higher percentile: a value
+// equal to every historical observation on a locally invariant day should read as "at
+// the historical ceiling," not "below everything."
+export function percentileFor(
+  breakpoints: number[],
+  fwi: number,
+): number | null {
+  if (breakpoints.length !== 101) return null;
+  if (fwi >= breakpoints[100]!) return 100;
+  if (fwi < breakpoints[0]!) return 0;
+  let lo = 0;
+  let hi = 100;
+  while (hi - lo > 1) {
+    const mid = (lo + hi) >> 1;
+    if (breakpoints[mid]! <= fwi) lo = mid;
+    else hi = mid;
+  }
+  const span = breakpoints[hi]! - breakpoints[lo]!;
+  const frac = span > 0 ? (fwi - breakpoints[lo]!) / span : 1;
+  return Math.round(lo + frac);
+}
+
+export async function refreshRiskForecasts({
+  snapshotId,
+  baseDate,
+  scheduledFor,
+}: RiskRefreshIdentity): Promise<RiskRun> {
+  const staleBefore = new Date(Date.now() - 24 * 60 * 60_000).toISOString();
+  const { error: startError } = await supabaseAdmin.rpc(
+    "begin_risk_forecast_snapshot",
+    {
+      _snapshot_id: snapshotId,
+      _base_date: baseDate,
+      _scheduled_for: scheduledFor,
+      _stale_before: staleBefore,
+    },
+  );
+  if (startError)
+    return {
+      communes: 0,
+      rows: 0,
+      error: `risk snapshot start failed: ${startError.message}`,
+    };
+
+  const discard = async () => {
+    const { error } = await supabaseAdmin.rpc(
+      "discard_risk_forecast_snapshot",
+      {
+        _snapshot_id: snapshotId,
+        _base_date: baseDate,
+        _scheduled_for: scheduledFor,
+      },
+    );
+    return error;
+  };
+
   const communes = await fetchAllPages<{
     id: string;
     lat: number;
@@ -189,7 +268,10 @@ export async function refreshRiskForecasts(): Promise<RiskRun> {
       .eq("level", "commune")
       .range(from, to),
   );
-  if (!communes.length) return { communes: 0, rows: 0 };
+  if (!communes.length) {
+    await discard();
+    return { communes: 0, rows: 0 };
+  }
 
   const stored = new Map<string, StoredState>();
   for (const row of await fetchAllPages<StoredState & { commune_id: string }>(
@@ -204,7 +286,7 @@ export async function refreshRiskForecasts(): Promise<RiskRun> {
     if (!stored.has(row.commune_id)) stored.set(row.commune_id, row);
   }
 
-  const todayMs = Date.parse(algiersToday());
+  const todayMs = Date.parse(`${baseDate}T00:00:00Z`);
   const daysSince = (date: string) =>
     Math.round((todayMs - Date.parse(date)) / 86400000);
 
@@ -226,12 +308,36 @@ export async function refreshRiskForecasts(): Promise<RiskRun> {
     else groups.set(w, [c]);
   }
 
+  // one small fetch per horizon date, not the whole table: fwi_climatology has no
+  // percentile outside April-October, and a wholesale fetch would run into the tens
+  // of megabytes for a value that is only ever looked up by (commune, calendar day)
+  const climatology = new Map<string, number[]>();
+  for (let h = 0; h < HORIZON_DAYS; h += 1) {
+    const d = new Date(todayMs + h * 86_400_000);
+    const month = d.getUTCMonth() + 1;
+    const day = d.getUTCDate();
+    for (const row of await fetchAllPages<{
+      commune_id: string;
+      breakpoints: number[];
+    }>((from, to) =>
+      supabaseAdmin
+        .from("fwi_climatology")
+        .select("commune_id, breakpoints")
+        .eq("month", month)
+        .eq("day", day)
+        .range(from, to),
+    )) {
+      climatology.set(`${row.commune_id}:${month}:${day}`, row.breakpoints);
+    }
+  }
+
   type Row = {
+    snapshot_id: string;
     commune_id: string;
     forecast_date: string;
     horizon_days: number;
-    source: string;
     fwi: number;
+    fwi_percentile: number | null;
     danger_level: number;
     fuel_limited: boolean;
     components: Record<string, number>;
@@ -242,13 +348,12 @@ export async function refreshRiskForecasts(): Promise<RiskRun> {
     states: (StoredState & { commune_id: string })[],
   ) => {
     for (let i = 0; i < rows.length; i += 500) {
-      const { error } = await supabaseAdmin
-        .from("risk_forecasts")
-        .upsert(rows.slice(i, i + 500), {
-          onConflict: "commune_id,forecast_date,horizon_days,source",
-        });
+      const { error } = await supabaseAdmin.rpc("stage_risk_forecast_batch", {
+        _snapshot_id: snapshotId,
+        _rows: rows.slice(i, i + 500),
+      });
       if (error)
-        throw new Error(`risk_forecasts upsert failed: ${error.message}`);
+        throw new Error(`risk forecast staging failed: ${error.message}`);
     }
     for (let i = 0; i < states.length; i += 500) {
       const { error } = await supabaseAdmin.from("fwi_state").upsert(
@@ -261,6 +366,25 @@ export async function refreshRiskForecasts(): Promise<RiskRun> {
 
   let written = 0;
   let requests = 0;
+
+  const fail = async (error: unknown): Promise<RiskRun> => {
+    const message =
+      typeof error === "string"
+        ? error
+        : error instanceof Error
+          ? error.message
+          : "refresh failed";
+    const cleanupError = await discard();
+    const cleanupMessage = cleanupError?.message;
+    return {
+      communes: communes.length,
+      rows: written,
+      requests,
+      error: cleanupMessage
+        ? `${message}; staging cleanup failed: ${cleanupMessage}`
+        : message,
+    };
+  };
 
   for (const [pastDays, members] of groups) {
     for (let i = 0; i < members.length; i += BATCH) {
@@ -275,14 +399,7 @@ export async function refreshRiskForecasts(): Promise<RiskRun> {
         );
         requests += 1;
       } catch (e) {
-        // whatever already flushed stays committed, so the next run resumes
-        // from stored state instead of restarting the whole bootstrap
-        return {
-          communes: communes.length,
-          rows: written,
-          requests,
-          error: e instanceof Error ? e.message : "fetch failed",
-        };
+        return fail(e);
       }
       const rows: Row[] = [];
       const nextState: (StoredState & { commune_id: string })[] = [];
@@ -308,24 +425,104 @@ export async function refreshRiskForecasts(): Promise<RiskRun> {
             (Date.parse(`${day.date}T00:00:00Z`) - todayMs) / 86400000,
           );
           if (horizon < 0 || horizon >= HORIZON_DAYS) return;
+          const [, month, dom] = day.date.split("-").map(Number);
+          const breakpoints = climatology.get(`${commune.id}:${month}:${dom}`);
           rows.push({
+            snapshot_id: snapshotId,
             commune_id: commune.id,
             forecast_date: day.date,
             horizon_days: horizon,
-            source: SOURCE,
             fwi: day.fwi,
+            fwi_percentile: breakpoints
+              ? percentileFor(breakpoints, day.fwi)
+              : null,
             danger_level: day.level,
             fuel_limited: fuelLimited,
             components: day.components,
           });
         });
       });
-      await flush(rows, nextState);
+      try {
+        await flush(rows, nextState);
+      } catch (error) {
+        return fail(error);
+      }
       written += rows.length;
     }
   }
 
-  return { communes: communes.length, rows: written, requests };
+  const promotionArgs = {
+    _snapshot_id: snapshotId,
+    _base_date: baseDate,
+    _scheduled_for: scheduledFor,
+  };
+  let promotion = await supabaseAdmin.rpc(
+    "publish_risk_forecast_snapshot",
+    promotionArgs,
+  );
+  if (promotion.error)
+    promotion = await supabaseAdmin.rpc(
+      "publish_risk_forecast_snapshot",
+      promotionArgs,
+    );
+  const { data: promoted, error: promotionError } = promotion;
+  if (promotionError)
+    return fail(`risk snapshot promotion failed: ${promotionError.message}`);
+  const publication = promoted as {
+    status?: string;
+    rows?: number;
+    published_at?: string | null;
+  } | null;
+  if (publication?.status === "superseded")
+    return {
+      communes: communes.length,
+      rows: written,
+      requests,
+      superseded: true,
+    };
+  if (
+    publication?.status !== "promoted" ||
+    publication.rows !== written ||
+    !publication.published_at
+  )
+    return fail(
+      `risk snapshot promotion count mismatch: expected ${written}, got ${publication?.rows ?? "invalid response"}`,
+    );
+
+  return {
+    communes: communes.length,
+    rows: written,
+    requests,
+    publishedAt: publication.published_at,
+  };
+}
+
+export type ClusterWeather = {
+  wind_speed_kmh: number;
+  wind_dir_deg: number;
+  spread_bearing_deg: number;
+  wind_gust_kmh: number | null;
+  vpd_kpa: number | null;
+  soil_moisture_m3m3: number | null;
+};
+
+const num = (v: unknown) =>
+  typeof v === "number" && Number.isFinite(v) ? v : null;
+
+export function clusterWeatherUpdate(current: unknown): ClusterWeather | null {
+  if (typeof current !== "object" || current === null) return null;
+  const c = current as Record<string, unknown>;
+  const speed = num(c["wind_speed_10m"]);
+  const dir = num(c["wind_direction_10m"]);
+  if (speed === null || dir === null) return null;
+  return {
+    wind_speed_kmh: speed,
+    wind_dir_deg: dir,
+    spread_bearing_deg: (dir + 180) % 360,
+    wind_gust_kmh: num(c["wind_gusts_10m"]),
+    vpd_kpa: num(c["vapour_pressure_deficit"]),
+    soil_moisture_m3m3: num(c["soil_moisture_0_to_1cm"]),
+  };
 }
 
 /** Attach current wind to live clusters so the spread arrow is real. */
@@ -342,40 +539,32 @@ export async function enrichClusterWinds(): Promise<number> {
   const url = new URL("https://api.open-meteo.com/v1/forecast");
   url.searchParams.set("latitude", clusters.map((c) => c.lat).join(","));
   url.searchParams.set("longitude", clusters.map((c) => c.lon).join(","));
-  url.searchParams.set("current", "wind_speed_10m,wind_direction_10m");
+  url.searchParams.set(
+    "current",
+    "wind_speed_10m,wind_direction_10m,wind_gusts_10m,vapour_pressure_deficit,soil_moisture_0_to_1cm",
+  );
   const res = await fetch(url);
   // returning 0 here made a failed fetch indistinguishable from "no live fires"
   if (!res.ok) throw new Error(`open-meteo wind ${res.status}`);
   const json = (await res.json()) as
-    | { current?: { wind_speed_10m: number; wind_direction_10m: number } }
-    | Array<{
-        current?: { wind_speed_10m: number; wind_direction_10m: number };
-      }>;
+    { current?: unknown } | Array<{ current?: unknown }>;
   const list = Array.isArray(json) ? json : [json];
 
-  const updates = clusters
-    .map((cluster, i) => ({ cluster, current: list[i]?.current }))
-    .filter(
-      (
-        u,
-      ): u is {
-        cluster: (typeof clusters)[number];
-        current: { wind_speed_10m: number; wind_direction_10m: number };
-      } => !!u.current,
-    );
+  const updates = clusters.flatMap((cluster, i) => {
+    const weather = clusterWeatherUpdate(list[i]?.current);
+    return weather ? [{ cluster, weather }] : [];
+  });
 
   for (let i = 0; i < updates.length; i += 10) {
     await Promise.all(
-      updates.slice(i, i + 10).map(({ cluster, current }) =>
-        supabaseAdmin
-          .from("fire_clusters")
-          .update({
-            wind_speed_kmh: current.wind_speed_10m,
-            wind_dir_deg: current.wind_direction_10m,
-            spread_bearing_deg: (current.wind_direction_10m + 180) % 360,
-          })
-          .eq("id", cluster.id),
-      ),
+      updates
+        .slice(i, i + 10)
+        .map(({ cluster, weather }) =>
+          supabaseAdmin
+            .from("fire_clusters")
+            .update(weather)
+            .eq("id", cluster.id),
+        ),
     );
   }
   return updates.length;

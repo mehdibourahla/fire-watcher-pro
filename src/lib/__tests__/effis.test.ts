@@ -6,20 +6,26 @@ import {
   EFFIS_HEIGHT,
   EFFIS_WIDTH,
   classifyPixel,
-  isColdStart,
-  parseFeatureInfoDc,
+  effisMapUrl,
+  isColdStartDistribution,
   pixelFor,
+  pngPayloadError,
 } from "@/lib/ingest/effis.server";
 
 describe("EFFIS palette", () => {
   it("maps every legend color to its class and nothing else", () => {
-    expect(classifyPixel(145, 252, 170)).toBe("low");
-    expect(classifyPixel(210, 225, 74)).toBe("moderate");
-    expect(classifyPixel(241, 179, 0)).toBe("high");
-    expect(classifyPixel(231, 117, 0)).toBe("very_high");
-    expect(classifyPixel(192, 0, 12)).toBe("extreme");
+    expect(classifyPixel(156, 255, 192)).toBe("low");
+    expect(classifyPixel(205, 226, 78)).toBe("moderate");
+    expect(classifyPixel(230, 172, 0)).toBe("high");
+    expect(classifyPixel(217, 112, 16)).toBe("very_high");
+    expect(classifyPixel(173, 6, 14)).toBe("extreme");
     expect(classifyPixel(58, 0, 21)).toBe("very_extreme");
-    expect(classifyPixel(146, 252, 170)).toBeNull();
+    expect(classifyPixel(157, 255, 192)).toBeNull();
+
+    // the retired ECMWF palette must stop matching, or a stale layer would
+    // classify as though nothing had changed
+    expect(classifyPixel(145, 252, 170)).toBeNull();
+    expect(classifyPixel(192, 0, 12)).toBeNull();
   });
 
   it("classifies EFFIS's white no-rating mask as masked, not as absent", () => {
@@ -38,43 +44,78 @@ describe("EFFIS palette", () => {
   });
 });
 
+describe("effisMapUrl", () => {
+  it("asks the layer for one exact day", () => {
+    const url = effisMapUrl("2026-09-03");
+
+    expect(url).toContain("maps.effis.emergency.copernicus.eu");
+    expect(url).toContain("layers=mf010.fwi");
+    expect(url).toContain("TIME=2026-09-03");
+  });
+
+  // MapServer 8 rejects GetMap without STYLES, and an absent TIME silently
+  // serves the layer default of 2021-01-01 rather than today
+  it("sends STYLES, which the new server requires", () => {
+    expect(effisMapUrl("2026-09-03")).toContain("STYLES=");
+  });
+
+  it("dates each day separately so a replayed gap fetches its own day", () => {
+    expect(effisMapUrl("2026-09-01")).not.toEqual(effisMapUrl("2026-09-02"));
+  });
+});
+
 describe("cold-start guard", () => {
-  const html = `<H2>Fire Danger</H2>
-<table id="main">
-<tr><td>Fire Weather Index (FWI)</td><td>0.65873992</td></tr>
-<tr><td>Duff Moisture Code (DMC)</td><td>6.5276856</td></tr>
-<tr><td>Drought Code (DC)</td><td>17.270311</td></tr>
-<tr><td>Initial Spread Index (ISI)</td><td>1.3386426</td></tr>
-</table>`;
+  const many = (cls: "low" | "extreme", n: number) =>
+    Array.from({ length: n }, () => cls);
 
-  it("reads the DC value out of a GetFeatureInfo html table", () => {
-    expect(parseFeatureInfoDc(html)).toBeCloseTo(17.270311);
+  it("flags a dry-season run rated low nearly everywhere", () => {
+    expect(isColdStartDistribution(many("low", 100), 8)).toBe(true);
   });
 
-  it("returns null for a body with no DC row", () => {
-    expect(parseFeatureInfoDc("")).toBeNull();
-    expect(parseFeatureInfoDc("<html>error</html>")).toBeNull();
+  it("accepts a real dry-season day, where low is a small minority", () => {
+    expect(
+      isColdStartDistribution([...many("low", 3), ...many("extreme", 97)], 8),
+    ).toBe(false);
   });
 
-  it("flags a summer run whose sentinels all sit at initialization DC", () => {
-    expect(isColdStart([17.3, 17.5, 16.4], 8)).toBe(true);
+  it("never flags outside the dry season, when low everywhere is legitimate", () => {
+    expect(isColdStartDistribution(many("low", 100), 1)).toBe(false);
   });
 
-  it("accepts a summer run when any sentinel carries real drought", () => {
-    expect(isColdStart([17.3, 512.8, 16.4], 8)).toBe(false);
+  it("ignores the mask, which is not a danger rating", () => {
+    const masked = Array.from({ length: 500 }, () => "masked" as const);
+    expect(
+      isColdStartDistribution([...masked, ...many("extreme", 100)], 8),
+    ).toBe(false);
   });
 
-  it("never flags outside the dry season, when low DC is legitimate", () => {
-    expect(isColdStart([17.3, 17.5, 16.4], 1)).toBe(false);
+  it("is inconclusive when almost nothing carries a rating", () => {
+    expect(isColdStartDistribution(many("low", 1), 8)).toBe(false);
+    expect(isColdStartDistribution([], 8)).toBe(false);
+  });
+});
+
+describe("pngPayloadError", () => {
+  const png = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+
+  it("accepts a body carrying the PNG signature", () => {
+    expect(pngPayloadError("image/png", png)).toBeNull();
   });
 
-  it("is inconclusive with fewer than two readable sentinels", () => {
-    expect(isColdStart([], 8)).toBe(false);
-    expect(isColdStart([17.3], 8)).toBe(false);
+  // JRC serves mapserver failures as 200 text/html, so res.ok is not a contract
+  it("rejects the MapServer error page JRC returns with HTTP 200", () => {
+    const html = new TextEncoder().encode("<HTML>\n<HEAD><TITLE>MapServer");
+    const error = pngPayloadError("text/html; charset=UTF-8", html);
+    expect(error).toContain("text/html");
+    expect(error).toContain("upstream");
   });
 
-  it("still flags with two of three sentinels readable", () => {
-    expect(isColdStart([17.3, 16.4], 8)).toBe(true);
+  it("rejects a body too short to carry a signature", () => {
+    expect(pngPayloadError("image/png", new Uint8Array([0x89]))).not.toBeNull();
+  });
+
+  it("names the failure even when no content type is given", () => {
+    expect(pngPayloadError(null, new Uint8Array())).toContain("upstream");
   });
 });
 

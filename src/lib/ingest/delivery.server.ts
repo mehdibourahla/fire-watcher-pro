@@ -2,6 +2,7 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import {
   fcmMessagesForAuthority,
   fcmMessagesForFire,
+  fcmMessagesForOfficial,
   fcmMessagesForOnm,
   type FcmMessage,
 } from "@/lib/fcm";
@@ -34,6 +35,7 @@ type PendingRow = {
   kind: string;
   severity: string;
   commune_codes: string[];
+  push_codes: string[];
   cluster_id: string | null;
   cap_alert_id: string | null;
   onm_vigilance_id: string | null;
@@ -56,7 +58,7 @@ async function pendingRows(channelColumn: string): Promise<PendingRow[]> {
   const { data, error } = await supabaseAdmin
     .from("broadcasts")
     .select(
-      "id, kind, severity, commune_codes, cluster_id, cap_alert_id, onm_vigilance_id, authority_warning_id",
+      "id, kind, severity, commune_codes, push_codes, cluster_id, cap_alert_id, onm_vigilance_id, authority_warning_id",
     )
     .is(channelColumn, null)
     .gte("created_at", windowStart)
@@ -137,7 +139,7 @@ function fcmMessagesFor(
     return fcmMessagesForFire({
       broadcastId: row.id,
       severity: row.severity,
-      communeCodes: row.commune_codes,
+      communeCodes: row.push_codes,
       shortId,
       info,
     });
@@ -150,9 +152,21 @@ function fcmMessagesFor(
     return fcmMessagesForOnm({
       broadcastId: row.id,
       severity: row.severity,
-      communeCodes: row.commune_codes,
+      communeCodes: row.push_codes,
       title: onm.title,
       headlineFr: onm.headline_fr,
+    });
+  }
+  if (row.kind === "official") {
+    const info = row.cap_alert_id
+      ? context.infoByCap.get(row.cap_alert_id)
+      : null;
+    if (!info) return null;
+    return fcmMessagesForOfficial({
+      broadcastId: row.id,
+      severity: row.severity,
+      communeCodes: row.push_codes,
+      info,
     });
   }
   if (row.kind === "authority") {
@@ -163,7 +177,7 @@ function fcmMessagesFor(
     return fcmMessagesForAuthority({
       broadcastId: row.id,
       severity: row.severity,
-      communeCodes: row.commune_codes,
+      communeCodes: row.push_codes,
       source: warning.source,
       body: warning.body,
     });
@@ -239,6 +253,19 @@ function telegramHtmlFor(
       headlineFr: onm.headline_fr,
     });
   }
+  if (row.kind === "official") {
+    const info = row.cap_alert_id
+      ? context.infoByCap.get(row.cap_alert_id)
+      : null;
+    const block =
+      info?.find((i) => i.language.startsWith("fr")) ?? info?.[0] ?? null;
+    return block
+      ? telegramAuthorityHtml({
+          source: block.headline,
+          body: block.description,
+        })
+      : null;
+  }
   if (row.kind === "authority") {
     const warning = row.authority_warning_id
       ? context.authorityById.get(row.authority_warning_id)
@@ -272,7 +299,7 @@ async function deliverTelegram(errors: string[]): Promise<{
     .from("admin_units")
     .select("code, parent_id")
     .eq("level", "commune")
-    .in("code", [...new Set(pending.flatMap((p) => p.commune_codes))]);
+    .in("code", [...new Set(pending.flatMap((p) => p.push_codes))]);
   if (communesError) throw new Error(communesError.message);
   const wilayaByCode = new Map(
     (communes ?? []).map((c) => [c.code, c.parent_id]),
@@ -285,7 +312,7 @@ async function deliverTelegram(errors: string[]): Promise<{
     const wilayaIds = html
       ? [
           ...new Set(
-            row.commune_codes
+            row.push_codes
               .map((code) => wilayaByCode.get(code))
               .filter((id): id is string => Boolean(id)),
           ),

@@ -1,4 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
+import type { FeatureCollection } from "geojson";
 
 import { supabase } from "@/integrations/supabase/client";
 import { fetchAllPages } from "@/lib/paginate";
@@ -58,3 +59,16 @@ export const hazardReportsQuery = queryOptions({
     return (data ?? []) as unknown as HazardReport[];
   },
 });
+
+export function hazardReportsGeoJSON(
+  reports: HazardReport[],
+): FeatureCollection {
+  return {
+    type: "FeatureCollection",
+    features: reports.map((r) => ({
+      type: "Feature",
+      geometry: { type: "Point", coordinates: [r.lon, r.lat] },
+      properties: { id: r.id, kind: r.kind, status: r.status },
+    })),
+  };
+}

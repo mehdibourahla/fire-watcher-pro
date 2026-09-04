@@ -2,26 +2,11 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { EmergencyNumbers } from "@/components/SiteChrome";
+import { pageMeta } from "@/lib/page-meta";
 
 export const Route = createFileRoute("/about")({
   head: () => ({
-    meta: [
-      { title: "About Nadhir — methodology & data sources" },
-      {
-        name: "description",
-        content:
-          "How Nadhir detects wildfires in Algeria, how fire danger is computed, and which open data sources and licences it uses.",
-      },
-      {
-        property: "og:title",
-        content: "About Nadhir — methodology & data sources",
-      },
-      {
-        property: "og:description",
-        content:
-          "Detection method, fire danger rating, limits and open data licences behind Nadhir.",
-      },
-    ],
+    meta: pageMeta("about.metaTitle", "about.metaDescription"),
   }),
   component: AboutPage,
 });

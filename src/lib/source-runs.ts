@@ -51,11 +51,12 @@ export function publicReasonForError(error: string): PublicSourceReason {
   )
     return "credentials_missing";
 
+  // a parse failure is usually an error page from a flaky upstream, not a schema
+  // change; calling it permanent retires the job with retries still budgeted
   if (
     message.includes("schema") ||
     message.includes("axis order") ||
-    message.includes("malformed") ||
-    message.includes("parse")
+    message.includes("malformed")
   )
     return "schema_invalid";
 

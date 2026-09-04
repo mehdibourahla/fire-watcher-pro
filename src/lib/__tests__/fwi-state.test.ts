@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { DailyBlock } from "@/lib/ingest/weather.server";
-import { seriesFwi } from "@/lib/ingest/weather.server";
+import { percentileFor, seriesFwi } from "@/lib/ingest/weather.server";
 
 // Field names match the Open-Meteo `daily` block the pipeline actually requests.
 function block(days: number, offset = 0): DailyBlock {
@@ -83,5 +83,36 @@ describe("seriesFwi", () => {
         (d: { level: number }, i: number) => d.level > bare.days[i]!.level,
       ),
     ).toBe(true);
+  });
+});
+
+describe("percentileFor", () => {
+  const flat = Array.from({ length: 101 }, (_, i) => i);
+
+  it("returns the exact rank for a value on a breakpoint", () => {
+    expect(percentileFor(flat, 0)).toBe(0);
+    expect(percentileFor(flat, 50)).toBe(50);
+    expect(percentileFor(flat, 100)).toBe(100);
+  });
+
+  it("interpolates and rounds between two breakpoints", () => {
+    expect(percentileFor(flat, 50.4)).toBe(50);
+    expect(percentileFor(flat, 50.6)).toBe(51);
+  });
+
+  it("clamps a value outside the observed range instead of extrapolating", () => {
+    expect(percentileFor(flat, -5)).toBe(0);
+    expect(percentileFor(flat, 500)).toBe(100);
+  });
+
+  it("returns null when the breakpoints are not a valid 101-point table", () => {
+    expect(percentileFor([1, 2, 3], 2)).toBeNull();
+    expect(percentileFor([], 2)).toBeNull();
+  });
+
+  it("handles a commune whose FWI never varies on that calendar day", () => {
+    const constant = Array.from({ length: 101 }, () => 12);
+    expect(percentileFor(constant, 12)).toBe(100);
+    expect(percentileFor(constant, 5)).toBe(0);
   });
 });

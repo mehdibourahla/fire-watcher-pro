@@ -4,12 +4,14 @@ import { ChevronDown, Flame, LifeBuoy, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import type { MapLayers } from "@/components/FireMap";
+import { DEFAULT_MAP_LAYERS, type MapLayers } from "@/components/map-layers";
 import { MapCanvas } from "@/components/MapCanvas";
 import { DangerScale } from "@/components/nadhir/DangerScale";
 import { Explain } from "@/components/nadhir/Explain";
 import { DetailSheet } from "@/components/nadhir/DetailSheet";
 import { LayerToggle } from "@/components/nadhir/LayerToggle";
+import { HazardReportDetail } from "@/components/nadhir/HazardReportDetail";
+import { OfficialIncidentDetail } from "@/components/nadhir/OfficialIncidentDetail";
 import { riskSolid } from "@/components/nadhir/risk-visuals";
 import { BroadcastBanner } from "@/components/nadhir/BroadcastBanner";
 import { SubscribeInvite } from "@/components/nadhir/SubscribeSheet";
@@ -21,11 +23,18 @@ import {
 } from "@/components/SiteChrome";
 import type { Locale } from "@/i18n";
 import { alertsQuery } from "@/lib/alerts";
+import { hazardReportsGeoJSON, hazardReportsQuery } from "@/lib/open-areas";
+import { pageMeta } from "@/lib/page-meta";
 import {
   LIVE_STATES,
   adminUnitsQuery,
   clustersQuery,
+  communeGeomsQuery,
   dangerLevelKey,
+  isStaleForecastDate,
+  nationalMaximum,
+  officialIncidentsGeoJSON,
+  officialIncidentsQuery,
   sourceHealthQuery,
   relativeTime,
   riskForecastsQuery,
@@ -33,6 +42,7 @@ import {
   placeLabel,
   unitName,
   type FireCluster,
+  fireStage,
 } from "@/lib/nadhir";
 import { sourceHealthCapabilityAffected } from "@/lib/source-health";
 import {
@@ -44,30 +54,16 @@ import {
 
 export const Route = createFileRoute("/")({
   head: () => ({
-    meta: [
-      { title: "Nadhir — Live wildfire map for Algeria" },
-      {
-        name: "description",
-        content:
-          "Live satellite fire detections, fused fire clusters and daily fire danger levels across Algeria's wilayas and communes.",
-      },
-      {
-        property: "og:title",
-        content: "Nadhir — Live wildfire map for Algeria",
-      },
-      {
-        property: "og:description",
-        content:
-          "Satellite wildfire detection and daily fire danger forecasting for Algeria, free and open source.",
-      },
-    ],
+    meta: pageMeta("map.metaTitle", "map.metaDescription"),
   }),
-  loader: ({ context }) =>
-    Promise.all([
+  loader: async ({ context }) => {
+    await Promise.all([
       context.queryClient.ensureQueryData(clustersQuery),
       context.queryClient.ensureQueryData(adminUnitsQuery),
       context.queryClient.ensureQueryData(riskForecastsQuery),
-    ]),
+    ]);
+    return { renderedAt: Date.now() };
+  },
   component: LiveMapPage,
 });
 
@@ -78,21 +74,55 @@ function stateRank(c: FireCluster) {
 function LiveMapPage() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language as Locale;
+  const { renderedAt } = Route.useLoaderData();
+  const [now, setNow] = useState(renderedAt);
   const [selected, setSelected] = useState<string | null>(null);
-  const [layers, setLayers] = useState<MapLayers>({
-    fires: true,
-    unverified: false,
-    industrialSources: false,
-  });
+  const [selectedOfficial, setSelectedOfficial] = useState<string | null>(null);
+  const [selectedReport, setSelectedReport] = useState<string | null>(null);
+  const [layers, setLayers] = useState<MapLayers>(DEFAULT_MAP_LAYERS);
   const [railSearch, setRailSearch] = useState("");
 
   const clusters = useQuery(clustersQuery);
   const units = useQuery(adminUnitsQuery);
   const risk = useQuery(riskForecastsQuery);
+  const official = useQuery({ ...officialIncidentsQuery, retry: false });
+  const officialCommuneIds = useMemo(
+    () =>
+      (official.data ?? []).flatMap((i) =>
+        i.commune_id ? [i.commune_id] : [],
+      ),
+    [official.data],
+  );
+  const communeGeoms = useQuery(communeGeomsQuery(officialCommuneIds));
+  const officialGeoJSON = useMemo(
+    () =>
+      officialIncidentsGeoJSON(
+        official.data ?? [],
+        communeGeoms.data ?? new Map(),
+        now,
+      ),
+    [official.data, communeGeoms.data, now],
+  );
+  const selectedIncident =
+    (official.data ?? []).find((i) => i.id === selectedOfficial) ?? null;
+  const hazards = useQuery({ ...hazardReportsQuery, retry: false });
+  const hazardGeoJSON = useMemo(
+    () => hazardReportsGeoJSON(hazards.data ?? []),
+    [hazards.data],
+  );
+  const selectedHazard =
+    (hazards.data ?? []).find((r) => r.id === selectedReport) ?? null;
   const settlements = useQuery(settlementsQuery);
   const sources = useQuery(sourceHealthQuery);
   const alerts = useQuery({ ...alertsQuery, retry: false });
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const refresh = () => setNow(Date.now());
+    refresh();
+    const interval = window.setInterval(refresh, 60_000);
+    return () => window.clearInterval(interval);
+  }, [renderedAt]);
 
   const [interstitial, setInterstitial] = useState<{
     km: number;
@@ -156,18 +186,13 @@ function LiveMapPage() {
     [settlements.data],
   );
 
-  const national = useMemo(() => {
-    const today = (risk.data ?? []).filter(
-      (r) => r.horizon_days === 0 && !r.fuel_limited,
-    );
-    return today.reduce(
-      (acc, r) =>
-        r.danger_level > acc.level
-          ? { level: r.danger_level, fwi: r.fwi }
-          : acc,
-      { level: 1, fwi: 0 },
-    );
-  }, [risk.data]);
+  const national = useMemo(() => nationalMaximum(risk.data ?? []), [risk.data]);
+  const nationalStale =
+    national && isStaleForecastDate(national.forecastDate, now)
+      ? t("risk.staleAsOf", {
+          time: relativeTime(`${national.forecastDate}T00:00:00Z`, locale, now),
+        })
+      : null;
 
   const degraded = sourceHealthCapabilityAffected(
     sources.data ?? [],
@@ -313,7 +338,7 @@ function LiveMapPage() {
         </span>
         <span className="text-xs text-muted-foreground">
           {t("map.lastPass", {
-            time: relativeTime(cluster.last_detected_at, locale),
+            time: relativeTime(cluster.last_detected_at, locale, now),
           })}
         </span>
       </button>
@@ -373,13 +398,28 @@ function LiveMapPage() {
         <section className="card p-4">
           <h1 className="text-base">{t("map.todayIn")}</h1>
           <div className="mt-3 flex items-start justify-between gap-4">
-            <DangerScale
-              level={national.level}
-              fwi={national.fwi}
-              size="md"
-              caption={t("map.nationalMax")}
-              className="flex-1"
-            />
+            {national ? (
+              <DangerScale
+                level={national.level}
+                fwi={national.fwi}
+                size="md"
+                caption={t("map.nationalMax")}
+                staleCaption={nationalStale}
+                className="flex-1"
+              />
+            ) : (
+              <div className="flex-1">
+                <p className="text-sm font-medium">
+                  {t("risk.unavailableTitle")}
+                </p>
+                <Link
+                  to="/status"
+                  className="text-xs font-medium text-primary underline"
+                >
+                  {t("nav.status")}
+                </Link>
+              </div>
+            )}
             <div className="text-end">
               <p className="font-display tabular text-3xl leading-none">
                 {activeCount}
@@ -419,9 +459,13 @@ function LiveMapPage() {
           ) : sorted.length === 0 ? (
             <EmptyState
               title={t("map.activeFires_zero")}
-              body={t("map.empty", {
-                level: t(`risk.${dangerLevelKey(national.level)}`),
-              })}
+              {...(national
+                ? {
+                    body: t("map.empty", {
+                      level: t(`risk.${dangerLevelKey(national.level)}`),
+                    }),
+                  }
+                : {})}
               className="border-0"
             />
           ) : railQ ? (
@@ -487,7 +531,24 @@ function LiveMapPage() {
         <MapCanvas
           clusters={clusters.data ?? []}
           selectedShortId={selected}
-          onSelect={(c) => setSelected(c.short_id)}
+          onSelect={(c) => {
+            setSelectedOfficial(null);
+            setSelectedReport(null);
+            setSelected(c.short_id);
+          }}
+          official={officialGeoJSON}
+          selectedOfficialId={selectedOfficial}
+          onSelectOfficial={(id) => {
+            setSelected(null);
+            setSelectedReport(null);
+            setSelectedOfficial(id);
+          }}
+          reports={hazardGeoJSON}
+          onSelectReport={(id) => {
+            setSelected(null);
+            setSelectedOfficial(null);
+            setSelectedReport(id);
+          }}
           layers={layers}
         />
         <LayerToggle layers={layers} onChange={setLayers} />
@@ -499,11 +560,33 @@ function LiveMapPage() {
           <LifeBuoy aria-hidden className="size-4" />
           {t("survival.pill")}
         </Link>
-        <DetailSheet open={!!selectedCluster} onClose={() => setSelected(null)}>
+        <DetailSheet
+          open={!!selectedCluster || !!selectedIncident || !!selectedHazard}
+          onClose={() => {
+            setSelected(null);
+            setSelectedOfficial(null);
+            setSelectedReport(null);
+          }}
+        >
+          {selectedHazard ? (
+            <HazardReportDetail
+              report={selectedHazard}
+              locale={locale}
+              now={now}
+            />
+          ) : null}
+          {selectedIncident ? (
+            <OfficialIncidentDetail
+              incident={selectedIncident}
+              locale={locale}
+              now={now}
+            />
+          ) : null}
           {selectedCluster ? (
             <ClusterDetail
               cluster={selectedCluster}
               locale={locale}
+              now={now}
               placeName={(() => {
                 const p = labelFor(selectedCluster);
                 return p.approximate
@@ -557,7 +640,7 @@ function LiveMapPage() {
                 </dt>
                 <dd className="font-semibold">
                   {t("survival.interSatellite", {
-                    time: relativeTime(interstitial.seen, locale),
+                    time: relativeTime(interstitial.seen, locale, now),
                   })}
                 </dd>
               </div>
@@ -601,11 +684,13 @@ function LiveMapPage() {
 function ClusterDetail({
   cluster,
   locale,
+  now,
   placeName,
   settlementName,
 }: {
   cluster: FireCluster;
   locale: Locale;
+  now: number;
   placeName: string;
   settlementName: string | null;
 }) {
@@ -617,7 +702,7 @@ function ClusterDetail({
         <p className="text-sm text-muted-foreground">
           {t(`state.${cluster.state}`)} ·{" "}
           {t("map.lastPass", {
-            time: relativeTime(cluster.last_detected_at, locale),
+            time: relativeTime(cluster.last_detected_at, locale, now),
           })}
         </p>
       </div>
@@ -668,16 +753,10 @@ function ClusterDetail({
             </dd>
           </div>
         </Explain>
-        <Explain text={t("explain.confidence")}>
+        <Explain text={t("explain.stage")}>
           <div className="card p-2.5">
-            <dt className="text-xs text-muted-foreground">
-              {t("fire.confidence")}
-            </dt>
-            <dd className="font-medium">
-              <span className="tabular">
-                {Math.round(cluster.confidence * 100)}%
-              </span>
-            </dd>
+            <dt className="text-xs text-muted-foreground">{t("fire.stage")}</dt>
+            <dd className="font-medium">{t(`stage.${fireStage(cluster)}`)}</dd>
           </div>
         </Explain>
       </dl>

@@ -174,25 +174,25 @@ export type TranslationSuggestion = {
   note: string | null;
   reviewer_name: string | null;
   status: SuggestionStatus;
+  moderated_by: string | null;
+  moderation_note: string | null;
 };
 
 export const suggestionQueueQuery = queryOptions({
   queryKey: ["translation-suggestions", "queue"],
   queryFn: async () => {
-    const { data, error } = await supabase
-      .from("translation_suggestions")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(500);
+    const { data, error } = await supabase.rpc(
+      "list_translation_suggestions_for_moderation",
+    );
     if (error) throw new Error(error.message);
     return (data ?? []) as unknown as TranslationSuggestion[];
   },
 });
 
 export async function moderateSuggestion(id: string, status: SuggestionStatus) {
-  const { error } = await supabase
-    .from("translation_suggestions")
-    .update({ status })
-    .eq("id", id);
+  const { error } = await supabase.rpc("moderate_translation_suggestion", {
+    _suggestion: id,
+    _status: status,
+  });
   if (error) throw new Error(error.message);
 }

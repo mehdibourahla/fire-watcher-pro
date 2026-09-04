@@ -1,15 +1,18 @@
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { Wind } from "lucide-react";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { TrendingUp, Wind } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { MapCanvas } from "@/components/MapCanvas";
 import { DetectionStrip } from "@/components/nadhir/DetectionStrip";
+import { FireEvidence } from "@/components/nadhir/FireEvidence";
+import { AirQualityCard } from "@/components/nadhir/AirQualityCard";
 import { StatCard } from "@/components/nadhir/StatCard";
 import { EmptyState, Skeleton } from "@/components/nadhir/states";
 import { EmergencyNumbers } from "@/components/SiteChrome";
 import type { Locale } from "@/i18n";
 import { downwindSettlement } from "@/lib/alerts-rules";
+import { pageMeta } from "@/lib/page-meta";
 import {
   adminUnitsQuery,
   algiersTime,
@@ -21,27 +24,22 @@ import {
   relativeTime,
   settlementsQuery,
   unitName,
+  fireStage,
 } from "@/lib/nadhir";
 
 export const Route = createFileRoute("/fire/$id")({
   head: ({ params }) => ({
-    meta: [
-      { title: `Fire ${params.id} — Nadhir Algeria` },
-      {
-        name: "description",
-        content:
-          "Detection timeline, spread direction and nearby settlements for a detected fire in Algeria.",
-      },
-      { property: "og:title", content: `Fire ${params.id} — Nadhir Algeria` },
-      {
-        property: "og:description",
-        content:
-          "Satellite detection timeline and nearby settlements for this fire cluster.",
-      },
-    ],
+    meta: pageMeta("fire.metaTitle", "fire.metaDescription", {
+      id: params.id,
+    }),
   }),
-  loader: ({ context, params }) =>
-    context.queryClient.ensureQueryData(clusterDetailQuery(params.id)),
+  loader: async ({ context, params }) => {
+    const detail = await context.queryClient.ensureQueryData(
+      clusterDetailQuery(params.id),
+    );
+    if (!detail) throw notFound();
+    return detail;
+  },
   component: FireDetail,
 });
 
@@ -80,7 +78,7 @@ function FireDetail() {
     );
   }
 
-  const { cluster, detections } = detail.data;
+  const { cluster, detections, confirmation } = detail.data;
   const wilaya = (units.data ?? []).find((u) => u.id === cluster.wilaya_id);
   const place = placeLabel(
     cluster,
@@ -128,11 +126,9 @@ function FireDetail() {
           </h1>
           <p className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
             {wilaya ? <span>{unitName(wilaya, locale)} ·</span> : null}
-            <span>{t(`state.${cluster.state}`)}</span>
+            <span>{t(`stage.${fireStage(cluster)}`)}</span>
+            <span>· {t(`state.${cluster.state}`)}</span>
             <span className="tabular text-xs">· {cluster.short_id}</span>
-            <span className="tabular text-xs">
-              · {t("fire.confidence")} {Math.round(cluster.confidence * 100)}%
-            </span>
           </p>
         </div>
 
@@ -150,6 +146,34 @@ function FireDetail() {
               settlement: downwind.name,
             })}
           </p>
+        ) : null}
+
+        {cluster.fci_growth ? (
+          cluster.fci_growth.trend === "growing" ? (
+            <p
+              className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium"
+              style={{
+                backgroundColor: "var(--emergency-surface)",
+                color: "var(--emergency)",
+              }}
+            >
+              <TrendingUp aria-hidden className="size-4 shrink-0" />
+              {t("fire.growthGrowing", {
+                earlier: cluster.fci_growth.earlier,
+                recent: cluster.fci_growth.recent,
+                time: algiersTime(cluster.fci_growth.since),
+              })}
+            </p>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              {t(
+                cluster.fci_growth.trend === "fading"
+                  ? "fire.growthFading"
+                  : "fire.growthSteady",
+                { time: algiersTime(cluster.fci_growth.since) },
+              )}
+            </p>
+          )
         ) : null}
 
         <div className="h-[45vh] overflow-hidden rounded-xl border border-border">
@@ -186,9 +210,9 @@ function FireDetail() {
             value={cluster.detection_count}
           />
           <StatCard
-            explain={t("explain.confidence")}
-            label={t("fire.confidence")}
-            value={`${Math.round(cluster.confidence * 100)}%`}
+            explain={t("explain.stage")}
+            label={t("fire.stage")}
+            value={t(`stage.${fireStage(cluster)}`)}
           />
           <StatCard
             explain={t("explain.firstSeen")}
@@ -208,7 +232,29 @@ function FireDetail() {
                 ? "—"
                 : `${Math.round(cluster.wind_speed_kmh)} ${t("common.kmh")}`
             }
-            sub={bearingLabel(cluster.wind_dir_deg)}
+            sub={
+              cluster.wind_gust_kmh == null
+                ? bearingLabel(cluster.wind_dir_deg)
+                : `${bearingLabel(cluster.wind_dir_deg)} · ${t("fire.gusts", { kmh: Math.round(cluster.wind_gust_kmh) })}`
+            }
+          />
+          <StatCard
+            explain={t("explain.vpd")}
+            label={t("fire.vpd")}
+            value={
+              cluster.vpd_kpa == null
+                ? "—"
+                : `${cluster.vpd_kpa.toFixed(1)} kPa`
+            }
+          />
+          <StatCard
+            explain={t("explain.soilMoisture")}
+            label={t("fire.soilMoisture")}
+            value={
+              cluster.soil_moisture_m3m3 == null
+                ? "—"
+                : `${Math.round(cluster.soil_moisture_m3m3 * 100)} %`
+            }
           />
           <StatCard
             explain={t("explain.sources")}
@@ -223,6 +269,15 @@ function FireDetail() {
           <h2 className="text-base">{t("fire.timeline")}</h2>
           <DetectionStrip detections={detections} className="mt-3" />
         </section>
+
+        <FireEvidence
+          detections={detections}
+          confirmation={confirmation}
+          locale={locale}
+          now={Date.now()}
+        />
+
+        <AirQualityCard lat={cluster.lat} lon={cluster.lon} locale={locale} />
 
         <section className="card p-4">
           <h2 className="text-base">{t("fire.nearest")}</h2>

@@ -1,8 +1,10 @@
 import { definePlugin } from "nitro";
 
+import { notifyOperatorOnWatchdog } from "./ingest/operator-alerts.server";
 import {
   dispatchScheduledSources,
   sourceSchedulerConfig,
+  watchdogDue,
 } from "./source-scheduler.server";
 
 export default definePlugin((nitroApp) => {
@@ -18,5 +20,17 @@ export default definePlugin((nitroApp) => {
         ...result,
       }),
     );
+    if (!watchdogDue(controller.scheduledTime)) return;
+    try {
+      const watchdog = await notifyOperatorOnWatchdog();
+      console.log(JSON.stringify({ message: "source watchdog", ...watchdog }));
+    } catch (error) {
+      console.error(
+        JSON.stringify({
+          message: "source watchdog failed",
+          error: error instanceof Error ? error.message : String(error),
+        }),
+      );
+    }
   });
 });

@@ -6,6 +6,7 @@ import {
   buildBroadcastCap,
   buildFireCap,
   broadcastCapIdentifier,
+  buildOfficialCap,
   capToXml,
 } from "@/lib/cap";
 
@@ -14,7 +15,7 @@ const input = {
   lat: 36.5553,
   lon: 5.4707,
   radiusKm: 5,
-  confidence: 0.83,
+  confirmed: false,
   urgent: false,
   areaDesc: "Béjaïa",
   sentAt: new Date("2026-08-28T12:00:00Z"),
@@ -64,11 +65,11 @@ describe("buildFireCap", () => {
   });
 
   it("reports certainty from how strongly the fire was detected", () => {
+    expect(buildFireCap({ ...input, confirmed: true }).info[0]!.certainty).toBe(
+      "Observed",
+    );
     expect(
-      buildFireCap({ ...input, confidence: 0.83 }).info[0]!.certainty,
-    ).toBe("Observed");
-    expect(
-      buildFireCap({ ...input, confidence: 0.62 }).info[0]!.certainty,
+      buildFireCap({ ...input, confirmed: false }).info[0]!.certainty,
     ).toBe("Likely");
   });
 
@@ -98,7 +99,7 @@ const broadcastInput = {
   lat: 36.7447,
   lon: 4.3722,
   severity: "Severe" as const,
-  confidence: 0.83,
+  confirmed: false,
   areaDesc: "Azazga, Tizi Ouzou",
   sentAt: new Date("2026-08-30T12:00:00Z"),
   texts: [
@@ -262,5 +263,40 @@ describe("capToXml", () => {
     );
     expect(xml).toContain("&lt;near&gt; &quot;Béjaïa&quot; &amp; Sétif");
     expect(xml).not.toContain("<near>");
+  });
+});
+
+describe("buildOfficialCap", () => {
+  const texts = [
+    {
+      language: "fr-DZ",
+      event: "Feu de forêt",
+      headline: "Protection civile : incendie à Aïn Zouit, Skikda",
+      description: "Opérations en cours selon le bulletin de 28/08 08:00.",
+      instruction: "Éloignez-vous de la fumée.",
+    },
+  ];
+  const cap = buildOfficialCap({
+    incidentId: "3f2a9b71-0000-4000-8000-000000000001",
+    areaDesc: "Aïn Zouit, Skikda",
+    sentAt: new Date("2026-08-28T10:00:00Z"),
+    asOf: new Date("2026-08-28T07:00:00Z"),
+    texts,
+  });
+
+  it("is Observed because an authority reported it", () => {
+    expect(cap.info[0]!.certainty).toBe("Observed");
+  });
+
+  it("effective is the bulletin's as-of, not the relay time", () => {
+    expect(cap.info[0]!.effective).toBe("2026-08-28T08:00:00+01:00");
+    expect(cap.sent).toBe("2026-08-28T11:00:00+01:00");
+  });
+
+  it("claims a commune, never a circle", () => {
+    expect(cap.info[0]!.circle).toBeUndefined();
+    const xml = capToXml(cap);
+    expect(xml).toContain("<areaDesc>Aïn Zouit, Skikda</areaDesc>");
+    expect(xml).not.toContain("<circle>");
   });
 });

@@ -26,26 +26,11 @@ import {
   unitName,
   type FireCluster,
 } from "@/lib/nadhir";
+import { pageMeta } from "@/lib/page-meta";
 
 export const Route = createFileRoute("/history")({
   head: () => ({
-    meta: [
-      { title: "Fire history & statistics — Nadhir Algeria" },
-      {
-        name: "description",
-        content:
-          "Archive of detected fire clusters, estimated area affected and the worst-hit wilayas across Algeria, by season.",
-      },
-      {
-        property: "og:title",
-        content: "Fire history & statistics — Nadhir Algeria",
-      },
-      {
-        property: "og:description",
-        content:
-          "Recorded wildfire clusters, seasonal comparison and estimated burned area by wilaya in Algeria.",
-      },
-    ],
+    meta: pageMeta("history.metaTitle", "history.metaDescription"),
   }),
   loader: ({ context }) =>
     Promise.all([
@@ -389,7 +374,7 @@ function HistoryPage() {
                     <div className="flex items-baseline justify-between text-sm">
                       <span>{unitName(r.wilaya!, locale)}</span>
                       <span className="tabular text-muted-foreground">
-                        {r.fires} {t("history.fires")} ·{" "}
+                        {t("history.fireCount", { count: r.fires })} ·{" "}
                         {Math.round(r.area).toLocaleString()} {t("common.ha")}
                       </span>
                     </div>

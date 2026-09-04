@@ -4,6 +4,7 @@ import type { TablesUpdate } from "@/integrations/supabase/types";
 import { fetchAllPages } from "@/lib/paginate";
 
 import { estimateAreaHa, nearestFrom } from "./fusion-geometry";
+import { distinctLooks } from "@/lib/looks";
 import { haversineKm } from "@/lib/nadhir";
 
 const LIVE = ["active", "unconfirmed", "contained_guess"];
@@ -50,11 +51,66 @@ export function confidenceScore(dets: Det[]) {
 
 export function stateFor(dets: Det[], lastMs: number, now: number) {
   const ageH = (now - lastMs) / HOUR;
-  const sources = new Set(dets.map((d) => d.sensor)).size;
   if (ageH > 24) return "extinguished";
   if (ageH > 6) return "contained_guess";
-  if (dets.length >= 2 || sources >= 2) return "active";
+  if (distinctLooks(dets) >= 2) return "active";
   return "unconfirmed";
+}
+
+export type FciGrowth = {
+  trend: "growing" | "steady" | "fading";
+  earlier: number;
+  recent: number;
+  since: string;
+  latestAt: string;
+};
+
+const GROWTH_WINDOW_MS = 6 * HOUR;
+const GROWTH_STALE_MS = 2 * HOUR;
+const GROWTH_MIN_SLOTS = 4;
+
+/* FCI repeats every 10 minutes, so its pixel count per slot is the only series
+ * dense enough to show a trend within a fire's lifetime. A falling count can be
+ * cloud or smoke rather than a dying fire, so callers must not present "fading"
+ * as reassurance. Halves are compared rather than single slots because adjacent
+ * slots bounce by a pixel either way. */
+export function fciGrowth(dets: Det[], now: number): FciGrowth | null {
+  const perSlot = new Map<string, number>();
+  for (const d of dets) {
+    if (d.sensor !== "FCI") continue;
+    const t = Date.parse(d.detected_at);
+    if (!Number.isFinite(t) || now - t > GROWTH_WINDOW_MS) continue;
+    perSlot.set(d.detected_at, (perSlot.get(d.detected_at) ?? 0) + 1);
+  }
+  if (perSlot.size < GROWTH_MIN_SLOTS) return null;
+
+  const slots = [...perSlot.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+  const latestAt = slots[slots.length - 1]![0];
+  if (now - Date.parse(latestAt) > GROWTH_STALE_MS) return null;
+
+  const half = Math.floor(slots.length / 2);
+  const mean = (part: [string, number][]) =>
+    part.reduce((sum, [, n]) => sum + n, 0) / part.length;
+  const earlier = mean(slots.slice(0, half));
+  const recent = mean(slots.slice(slots.length - half));
+
+  // a pixel of movement is threshold flicker at these counts, not a real change
+  const moved = Math.abs(recent - earlier) >= 1.5;
+  const trend = !moved
+    ? "steady"
+    : recent >= earlier * 1.5
+      ? "growing"
+      : recent <= earlier * 0.67
+        ? "fading"
+        : "steady";
+
+  return {
+    trend,
+    earlier: Math.round(earlier * 10) / 10,
+    recent: Math.round(recent * 10) / 10,
+    since: slots[0]![0],
+    latestAt,
+  };
 }
 
 /** Rough burned-area proxy from detection footprint and FRP. */
@@ -367,6 +423,7 @@ export async function fuseDetections(lookbackHours = 48): Promise<FusionRun> {
         max_frp_mw: Math.max(...list.map((d) => d.frp_mw ?? 0)) || null,
         confidence: confidenceScore(list),
         est_area_ha: estimateAreaHa(list),
+        fci_growth: fciGrowth(list, now),
         nearest_settlement_id: nearestId,
         nearest_settlement_km:
           nearestKm === null ? null : Math.round(nearestKm * 10) / 10,

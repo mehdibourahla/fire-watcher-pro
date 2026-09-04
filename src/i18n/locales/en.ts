@@ -23,6 +23,20 @@ export const en = {
     demoModeNote:
       "Live satellite feeds are not connected yet. Figures shown come from a seeded demonstration scenario.",
   },
+  meta: {
+    defaultTitle: "Nadhir — Wildfire early warning for Algeria",
+    titleTemplate: "{{page}} — Nadhir",
+  },
+  notFound: {
+    metaTitle: "Page not found — Nadhir",
+    title: "Page not found",
+    body: "The page you're looking for doesn't exist or has been moved.",
+    home: "Go home",
+  },
+  errorPage: {
+    title: "This page didn't load",
+    body: "Something went wrong on our end. You can try refreshing or head back home.",
+  },
   survival: {
     mode: "Survival Mode",
     online: "Online",
@@ -31,7 +45,11 @@ export const en = {
     enterTitle: "Are you near a fire right now?",
     enterBody:
       "Survival Mode shows one thing to do at a time, keeps your area saved offline, and prepares your position for a call to Civil Protection 14.",
-    enterFetching: "Getting your GPS position · saving your offline pack…",
+    enterFetching: "Getting your GPS position…",
+    enterDenied:
+      "Location is off, so guidance will be general. You can still enter.",
+    enterSaving: "Position found · saving your offline pack…",
+    enterReady: "Position found · offline pack saved.",
     enterYes: "Yes — enter Survival Mode",
     enterCancel: "Cancel",
     enterFootnote:
@@ -64,6 +82,26 @@ export const en = {
     bySatellite: "satellite",
     wind: "Wind {{kmh}} km/h from {{bearing}}",
     windToward: "blowing from the fire toward you",
+    gusts: "gusts {{kmh}} km/h",
+    dust: "Saharan dust {{value}} µg/m³ · mineral dust, not smoke",
+    smoke: "Smoke · PM2.5 {{value}} µg/m³",
+    smokePeak: "forecast peak today {{value}}",
+    smokeWho: "{{ratio}}× the WHO 24-hour guideline",
+    smokeSource: "CAMS model · {{time}}",
+    smokeLevel: {
+      low: "low",
+      elevated: "elevated",
+      high: "high",
+      severe: "severe",
+    },
+    smokeGuidance: {
+      low: "Little smoke measured. The model is hourly — if you see or smell smoke, trust that first.",
+      elevated:
+        "Keep windows closed. Limit time outside if you have asthma or a heart condition.",
+      high: "Stay indoors, windows closed. If you must go out, wear an FFP2 or N95 respirator; cloth does not filter smoke. Do not drive toward smoke.",
+      severe:
+        "Dangerous smoke. Stay inside, seal door and window gaps with wet cloth. Go out only with an FFP2 or N95 respirator. Call 14 if breathing is hard.",
+    },
     noFreshData:
       "No recent observation near you. That means Nadhir has not seen anything — not that nothing is there.",
     noPosition:
@@ -174,7 +212,11 @@ export const en = {
     nearPlace: "near {{place}}",
     searchFires: "Search fires by place or wilaya",
     unassigned: "Outside Algeria's wilayas",
+    // base stays: Arabic needs _few/_many, which parity with en cannot carry,
+    // and i18next renders the raw key when a plural category is missing
     fireCount: "{{count}} fires",
+    fireCount_one: "{{count}} fire",
+    fireCount_other: "{{count}} fires",
     unverifiedHint: "Unverified detections appear automatically from zoom 9.",
     title: "Live fire map",
     metaTitle: "Nadhir — Live wildfire map for Algeria",
@@ -189,6 +231,12 @@ export const en = {
     sources: "Sources",
     layers: "Layers",
     layerFires: "Active fires",
+    layerOfficial: "Official incident reports",
+    layerReports: "Citizen hazard reports",
+    reportEyebrow: "Citizen report",
+    reportObserved: "Seen {{time}}",
+    reportUnverified:
+      "Unverified — shown as received, with its age. Moderators can confirm or remove it.",
     layerRisk: "Danger forecast",
     layerUnverified: "Unverified detections",
     layerIndustrialSources: "Known industrial heat sources",
@@ -198,6 +246,29 @@ export const en = {
     nationalMax: "National maximum danger",
     degraded: "Some data sources are degraded — detections may be delayed.",
     openDetail: "Open fire detail",
+  },
+  official: {
+    eyebrow: "Official report",
+    inWilaya: "Wilaya {{wilaya}}",
+    wilayaLevel: "Location known to the wilaya only",
+    status: "Status",
+    asOf: "As of",
+    reports: "Reports",
+    source: "Source",
+    sourceFallback: "Official channel",
+    listing: "Listing",
+    unlisted:
+      "Not named in the bulletin of {{when}}. Protection Civile does not publish a per-commune all-clear, so this is not a sign the fire is out.",
+    viewPost: "View the original post",
+    disclaimer:
+      "Relayed from an official channel, shown at the precision of the report — the shaded area is the commune, not the fire. Nadhir adds nothing to the wording.",
+    statuses: {
+      ongoing: "Ongoing",
+      contained: "Contained",
+      extinguished: "Extinguished",
+      monitoring: "Under watch",
+      unknown: "Not stated",
+    },
   },
   fire: {
     nearSettlement: "{{km}} km from {{settlement}}",
@@ -209,12 +280,26 @@ export const en = {
     firstSeen: "First seen",
     lastSeen: "Last detection",
     area: "Estimated area",
-    confidence: "Confidence",
+    stage: "Evidence",
     peakFrp: "Peak radiative power",
     detectionCount: "Detections",
     wind: "Wind",
+    gusts: "gusts {{kmh}} km/h",
+    vpd: "Air dryness",
+    soilMoisture: "Topsoil moisture",
+    air: "Air at the fire",
+    airPm25: "Smoke PM2.5",
+    airDust: "Saharan dust",
+    airDustNote: "mineral dust, not smoke",
+    airWho: "{{ratio}}× the WHO 24-hour guideline",
+    airSource: "CAMS model · {{time}}",
     windToward:
       "Wind is blowing toward {{bearing}} — {{settlement}} lies in that direction",
+    growthGrowing:
+      "Growing — satellite detections rose from {{earlier}} to {{recent}} since {{time}}",
+    growthFading:
+      "Fewer detections since {{time}} — this can also be cloud or smoke, not a smaller fire",
+    growthSteady: "Detections steady since {{time}}",
     timeline: "Detection timeline",
     nearest: "Nearest settlements",
     settlement: "Settlement",
@@ -226,6 +311,18 @@ export const en = {
     commune: "Commune",
     wilaya: "Wilaya",
   },
+  evidence: {
+    title: "Evidence",
+    looks: "{{count}} look",
+    looks_other: "{{count}} looks",
+    official: "{{status}} — as stated in the bulletin of {{when}}",
+    note: "Two adjacent pixels in one satellite pass are one look, not two. Only an official source confirms a fire.",
+  },
+  stage: {
+    candidate: "Single detection",
+    detected: "Detected by satellite",
+    confirmed: "Confirmed by Protection Civile",
+  },
   state: {
     unconfirmed: "Unconfirmed",
     active: "Active",
@@ -235,6 +332,8 @@ export const en = {
   },
   explain: {
     fwi: "Fire Weather Index: how fast a fire would spread and how hard it would be to control, computed from temperature, humidity, wind and recent rain.",
+    fwiPercentile:
+      "The forecast day's Fire Weather Index compared with this commune's own history on that calendar day, over 86 years. A place that is always extreme in summer can still be at its own historical ceiling — this is what discriminates that.",
     dangerLevel:
       "Danger level 1\u20135, mapped from the Fire Weather Index on the European EFFIS scale.",
     notRated:
@@ -242,13 +341,16 @@ export const en = {
     area: "Estimated burned area from the size and count of satellite detections \u2014 an approximation, not a measured perimeter.",
     frp: "Peak Fire Radiative Power: the strongest heat output measured by satellite, in megawatts.",
     detections: "Number of satellite heat detections grouped into this fire.",
-    confidence:
-      "How likely this is a real fire, combining sensor agreement, persistence and known false-alarm sources.",
+    stage:
+      "One satellite look is a single detection. Two independent looks make it a satellite detection. Only Protection Civile confirms a fire; Nadhir never does.",
     firstSeen:
       "Time of the first satellite detection. A fire can start before the first satellite pass.",
     lastSeen:
       "Most recent satellite detection. Fires can keep burning between satellite passes.",
     wind: "Current wind at the fire from the weather model. Fires spread fastest downwind.",
+    vpd: "Vapour pressure deficit: how hard the air pulls water out of fuel. Above 2 kPa, dead fuels dry within hours.",
+    soilMoisture:
+      "Water in the top centimetre of soil, from the weather model. Near zero means litter and grass are ready to burn.",
     sources: "Satellite systems that detected this fire.",
     nearest: "Distance to the nearest known settlement.",
   },
@@ -260,9 +362,14 @@ export const en = {
     dayLabel: "D{{n}}",
     today: "Today",
     fwi: "FWI",
+    staleAsOf: "This is {{time}}'s forecast — today's has not published yet.",
+    percentile: "higher FWI than {{pct}}% of years on this date",
     level: "Danger level",
     searchCommune: "Search a commune",
     noResults: "No commune matches that search.",
+    unavailableTitle: "The fire danger forecast is unavailable",
+    unavailableBody:
+      "The latest refresh did not complete, so no forecast is published right now. Check the source status page for details.",
     legend: "Danger scale",
     sixDay: "6-day outlook",
     low: "Low",
@@ -271,6 +378,8 @@ export const en = {
     very_high: "Very high",
     extreme: "Extreme",
     communeCount: "{{count}} communes",
+    communeCount_one: "{{count}} commune",
+    communeCount_other: "{{count}} communes",
     groupWorst: "Highest commune level in this wilaya",
     effis: "EFFIS/GWIS (European fire authority) rates this commune: {{class}}",
     fuelLimited: "Not rated — negligible burnable vegetation",
@@ -300,7 +409,14 @@ export const en = {
     empty: "No fires recorded for this filter.",
     noWilaya: "No fire in this period could be matched to a wilaya.",
     unlocated:
-      "{{count}} fire(s) could not be matched to a wilaya and are excluded from this ranking.",
+      "{{count}} fires could not be matched to a wilaya and are excluded from this ranking.",
+    unlocated_one:
+      "{{count}} fire could not be matched to a wilaya and is excluded from this ranking.",
+    unlocated_other:
+      "{{count}} fires could not be matched to a wilaya and are excluded from this ranking.",
+    fireCount: "{{count}} fires",
+    fireCount_one: "{{count}} fire",
+    fireCount_other: "{{count}} fires",
     metaTitle: "Fire history & statistics — Nadhir Algeria",
     metaDescription:
       "Archive of detected fire clusters, estimated burned area and worst-affected wilayas in Algeria.",
@@ -325,11 +441,18 @@ export const en = {
   },
   status: {
     degradedCount:
-      "{{count}} data source(s) affected — current capability may be reduced.",
+      "{{count}} data sources affected — current capability may be reduced.",
+    degradedCount_one:
+      "{{count}} data source affected — current capability may be reduced.",
+    degradedCount_other:
+      "{{count}} data sources affected — current capability may be reduced.",
     metaTitle: "Data source health — Nadhir",
     metaDescription:
       "Live health of the satellite, weather and geodata feeds that power Nadhir's fire warnings.",
     title: "Data sources",
+    recallTitle: "Official reports vs satellites",
+    recallBody:
+      "Of {{total}} communes named in official fire reports over {{days}} days, satellites detected fire in {{seen}}.",
     subtitle: "Honest reporting of what is flowing and what is not.",
     source: "Source",
     health: "Status",
@@ -377,7 +500,7 @@ export const en = {
     mission:
       "Detect wildfires in Algeria as early as satellite data allows, forecast daily fire danger, and deliver clear alerts in Arabic, French, English and Tamazight — free and open source.",
     howTitle: "How detection works",
-    how: "Satellite hotspots from NASA FIRMS (VIIRS/MODIS) and EUMETSAT Meteosat MTG FCI are de-duplicated, clustered in space and time, and scored for confidence. A fire only becomes 'active' once two detections agree or one high-confidence detection lands in plausible terrain.",
+    how: "Satellite hotspots from NASA FIRMS (VIIRS/MODIS), EUMETSAT Meteosat MTG FCI and Copernicus Sentinel-3 SLSTR are de-duplicated and clustered in space and time. One look is a single detection; two independent looks make it a satellite detection. Nadhir never calls a fire confirmed — only Protection Civile does, and its wording and timestamp are shown as they were published.",
     dangerTitle: "How danger is rated",
     danger:
       "Fire danger uses the Canadian Fire Weather Index, computed from temperature, humidity, wind and rainfall, cross-checked against EFFIS/GWIS forecasts, then adjusted for forest cover and wind.",
@@ -406,8 +529,10 @@ export const en = {
     zoneCount: "{{used}} of {{max}} zones used",
     zoneLimit:
       "You have reached the maximum of 10 zones. Delete one to add another.",
-    zoneFires: "{{count}} active fire(s) nearby — closest {{km}} km",
+    zoneFires: "{{count}} active fires in this zone — nearest {{km}} km away.",
     authTitle: "Sign in to Nadhir",
+    // authTitle carries the brand for the heading; the head template adds its own
+    authMetaTitle: "Sign in",
     authSubtitle: "Save the places you care about and get warned early.",
     email: "Email",
     password: "Password",
@@ -417,6 +542,14 @@ export const en = {
     noAccount: "No account yet? Create one",
     haveAccount: "Already have an account? Sign in",
     checkEmail: "Check your inbox to confirm your address.",
+    errorInvalidCredentials: "That email or password is not correct.",
+    errorEmailNotConfirmed:
+      "Confirm your email address first — check your inbox.",
+    errorUserExists: "An account already exists for this email. Sign in.",
+    errorWeakPassword: "Choose a longer password, at least 8 characters.",
+    errorRateLimited: "Too many attempts. Wait a moment and try again.",
+    errorUnavailable:
+      "Sign-in is temporarily unavailable. Please try again in a moment.",
     zonesTitle: "My watch zones",
     zonesSubtitle:
       "Nadhir watches these places and warns you when fire or danger reaches them.",
@@ -459,6 +592,8 @@ export const en = {
       "Extreme danger and fires inside a zone always break through quiet hours.",
     save: "Save",
     saved: "Saved",
+    saveFailed:
+      "Settings could not be saved. Check your choices and try again.",
   },
   reports: {
     title: "Report a fire",
@@ -502,9 +637,17 @@ export const en = {
     submit: "Send report",
     submitting: "Sending…",
     submitted: "Thank you. Your report is awaiting moderation.",
+    submitFailed: "The report could not be sent. Check it and try again.",
+    submitCleanupFailed:
+      "The report was not sent, and its uploaded photo could not be removed. Try again later.",
+    submitUnknown:
+      "We could not confirm whether the report was sent. Check My reports before trying again.",
     mine: "My reports",
     empty: "You have not sent any report yet.",
     delete: "Delete",
+    deleteFailed: "The report could not be deleted. Try again.",
+    deletePhotoCleanupFailed:
+      "The report was not deleted because its private photo could not be removed.",
     statusPending: "Awaiting review",
     statusApproved: "Confirmed by moderator",
     statusRejected: "Not retained",
@@ -524,6 +667,14 @@ export const en = {
     revoke: "Remove {{role}}",
     role_moderator: "moderator",
     role_admin: "admin",
+    confirmSelfAdminRevoke:
+      "Remove your own administrator access? You will immediately lose access to team administration.",
+    lastAdminDisabled:
+      "Nadhir must always have an administrator. Add another administrator before removing your access.",
+    lastAdminError:
+      "At least one administrator must remain. The role was not changed.",
+    updateError: "Could not update this role. Try again.",
+    loadError: "Could not load the complete team roles. Try again.",
   },
   admin: {
     tabTranslations: "Translations",
@@ -788,6 +939,11 @@ export const en = {
     save: "Save endpoint",
     saving: "Saving…",
     created: "Endpoint created.",
+    kindsRequired: "Select at least one alert type.",
+    saveFailed:
+      "The endpoint could not be saved. Check the fields and try again.",
+    updateFailed: "The endpoint could not be updated. Try again.",
+    deleteFailed: "The endpoint could not be deleted. Try again.",
     httpsOnly: "Only https:// URLs are accepted.",
     empty: "No endpoint yet.",
     pause: "Pause",
@@ -824,6 +980,12 @@ export const en = {
   legal: {
     terms: "Terms of use",
     privacy: "Privacy",
+    termsMetaTitle: "Terms of use & disclaimer — Nadhir",
+    termsMetaDescription:
+      "Nadhir is an informational wildfire early-warning service for Algeria. Read the terms of use, limitations and safety disclaimer.",
+    privacyMetaTitle: "Privacy policy — Nadhir",
+    privacyMetaDescription:
+      "What personal data Nadhir stores for wildfire alerts, how long it is kept, and how to delete your account data.",
     termsTitle: "Terms of use & disclaimer",
     terms_purpose_title: "What Nadhir is",
     terms_purpose_body:
@@ -887,6 +1049,10 @@ export const en = {
     wilaya: "Wilaya",
     severity: "Severity",
     submit: "Relay warning",
+    warningRequired: "Enter an authority and warning text.",
+    warningFailed:
+      "Could not queue the warning. Check the fields and try again.",
+    toggleFailed: "Could not change broadcasting. Try again.",
     relayed: "relayed",
     pendingRelay: "queued",
     auditTitle: "Audit log",
@@ -894,6 +1060,8 @@ export const en = {
     colTime: "When",
     colAction: "Action",
     colReason: "Reason",
+    colActor: "Actor",
+    systemActor: "System",
     colCommunes: "Communes",
   },
   push: {

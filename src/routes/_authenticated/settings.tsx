@@ -2,28 +2,18 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 
 import { requestNotificationPermission } from "@/components/AlertNotifier";
 
 import { supabase } from "@/integrations/supabase/client";
 import { LOCALES, LOCALE_LABELS, applyLocale, type Locale } from "@/i18n";
-import { profileQuery } from "@/lib/account";
+import { profileQuery, saveProfileSettings } from "@/lib/account";
+import { titledMeta } from "@/lib/page-meta";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({
-    meta: [
-      { title: "Alert settings — Nadhir" },
-      {
-        name: "description",
-        content:
-          "Choose your language, alert channels and quiet hours for Nadhir wildfire warnings.",
-      },
-      { property: "og:title", content: "Alert settings — Nadhir" },
-      {
-        property: "og:description",
-        content: "Control how and when Nadhir warns you about wildfires.",
-      },
-    ],
+    meta: titledMeta("nav.settings"),
   }),
   component: SettingsPage,
 });
@@ -63,33 +53,27 @@ function SettingsPage() {
   }, [profile.data]);
 
   const save = useMutation({
-    mutationFn: async () => {
-      const { data: auth } = await supabase.auth.getUser();
-      if (!auth.user) throw new Error("no session");
-      const { error } = await supabase
-        .from("profiles")
-        .update({
-          display_name: draft.display_name || null,
-          phone: draft.phone || null,
-          locale: draft.locale,
-          alert_email: draft.alert_email,
-          alert_push: draft.alert_push,
-          min_danger_level: draft.min_danger_level,
-          quiet_hours_start:
-            draft.quiet_hours_start === ""
-              ? null
-              : Number(draft.quiet_hours_start),
-          quiet_hours_end:
-            draft.quiet_hours_end === "" ? null : Number(draft.quiet_hours_end),
-        })
-        .eq("id", auth.user.id);
-      if (error) throw new Error(error.message);
-    },
+    mutationFn: () =>
+      saveProfileSettings({
+        display_name: draft.display_name || null,
+        phone: draft.phone || null,
+        locale: draft.locale,
+        alert_email: draft.alert_email,
+        alert_push: draft.alert_push,
+        min_danger_level: draft.min_danger_level,
+        quiet_hours_start:
+          draft.quiet_hours_start === ""
+            ? null
+            : Number(draft.quiet_hours_start),
+        quiet_hours_end:
+          draft.quiet_hours_end === "" ? null : Number(draft.quiet_hours_end),
+      }),
     onSuccess: () => {
       setSaved(true);
       applyLocale(draft.locale as Locale);
       void qc.invalidateQueries({ queryKey: ["profile"] });
     },
+    onError: (error: Error) => toast.error(t(error.message)),
   });
 
   async function signOut() {

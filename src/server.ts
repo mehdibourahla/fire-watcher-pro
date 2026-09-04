@@ -11,31 +11,57 @@ type ServerEntry = {
   ) => Promise<Response> | Response;
 };
 
-// CONTRIBUTING.md tells contributors to run their own Supabase stack, which
-// serves over http on localhost — without this the browser blocks every call to
-// it and the documented local workflow cannot work. Never added in production.
-const LOCAL_SUPABASE = import.meta.env.DEV
-  ? " http://127.0.0.1:* http://localhost:* ws://127.0.0.1:* ws://localhost:*"
-  : "";
+function configuredStorageOrigin(
+  configuredUrl: string | undefined,
+  dev: boolean,
+): string | null {
+  if (!configuredUrl) return null;
+  try {
+    const url = new URL(configuredUrl);
+    if (url.username || url.password) return null;
+    if (url.protocol === "https:") return url.origin;
+    if (
+      dev &&
+      url.protocol === "http:" &&
+      (url.hostname === "localhost" || url.hostname === "127.0.0.1")
+    )
+      return url.origin;
+    return null;
+  } catch {
+    return null;
+  }
+}
 
-const CSP = [
-  "default-src 'self'",
-  "base-uri 'self'",
-  "object-src 'none'",
-  "frame-ancestors 'none'",
-  "form-action 'self'",
-  // streaming SSR emits a different inline hydration script per render, so no stable hash exists
-  "script-src 'self' 'unsafe-inline'",
-  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-  "font-src 'self' https://fonts.gstatic.com",
-  "img-src 'self' data: blob: https://*.cartocdn.com",
-  // the two hosts the Firebase SDK calls to mint a push registration token
-  `connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.cartocdn.com https://firebaseinstallations.googleapis.com https://fcmregistrations.googleapis.com${LOCAL_SUPABASE}`,
-  "worker-src 'self' blob:",
-  "manifest-src 'self'",
-  // would rewrite a contributor's http://localhost stack to https and break it
-  ...(import.meta.env.DEV ? [] : ["upgrade-insecure-requests"]),
-].join("; ");
+export function buildContentSecurityPolicy(
+  configuredUrl: string | undefined,
+  dev: boolean,
+): string {
+  const storageOrigin = configuredStorageOrigin(configuredUrl, dev);
+  const localSupabase = dev
+    ? " http://127.0.0.1:* http://localhost:* ws://127.0.0.1:* ws://localhost:*"
+    : "";
+  const storageSource = storageOrigin ? ` ${storageOrigin}` : "";
+  return [
+    "default-src 'self'",
+    "base-uri 'self'",
+    "object-src 'none'",
+    "frame-ancestors 'none'",
+    "form-action 'self'",
+    "script-src 'self' 'unsafe-inline'",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src 'self' https://fonts.gstatic.com",
+    `img-src 'self' data: blob: https://*.cartocdn.com${storageSource}`,
+    `connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.cartocdn.com https://firebaseinstallations.googleapis.com https://fcmregistrations.googleapis.com https://air-quality-api.open-meteo.com${storageSource}${localSupabase}`,
+    "worker-src 'self' blob:",
+    "manifest-src 'self'",
+    ...(dev ? [] : ["upgrade-insecure-requests"]),
+  ].join("; ");
+}
+
+const CSP = buildContentSecurityPolicy(
+  import.meta.env["VITE_SUPABASE_URL"] || process.env["SUPABASE_URL"],
+  import.meta.env.DEV,
+);
 
 const SECURITY_HEADERS: Record<string, string> = {
   "content-security-policy": CSP,

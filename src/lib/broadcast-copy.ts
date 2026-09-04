@@ -7,7 +7,10 @@ export type BroadcastVars = {
   bearingDeg: number | null;
   hotspots: number;
   hours: number;
+  inside: Record<Locale, string[]>;
 };
+
+type Locale = "ar" | "fr" | "en" | "kab";
 
 type Copy = {
   event: string;
@@ -22,19 +25,22 @@ type Copy = {
   endDesc: string;
   cancelHeadline: string;
   cancelDesc: string;
+  insideOne: string;
+  insideMany: string;
   instruction: string;
   compass: [string, string, string, string, string, string, string, string];
 };
 
-/* AR copy is approved maquette wording; instruction lines are the pre-approved
+/* AR copy is approved maquette wording except the inside-commune sentences and the
+ * 2026-09-02 detected/confirmed rewording, both unreviewed; instruction lines are the pre-approved
  * Standing Guidance already shipped in alerts-engine. KAB pending native review. */
 const COPY: Record<"ar" | "fr" | "en" | "kab", Copy> = {
   ar: {
     event: "حريق غابات",
-    initialHeadline: "حريق مؤكد — {{place}}، {{wilaya}}",
+    initialHeadline: "حريق مرصود بالقمر الاصطناعي — {{place}}، {{wilaya}}",
     initialDesc:
-      "حريق مؤكد عبر القمر الاصطناعي على بعد نحو {{km}} كلم من {{place}}",
-    initialDescNoKm: "حريق مؤكد عبر القمر الاصطناعي قرب {{place}}",
+      "رصدت الأقمار الاصطناعية حريقًا على بعد نحو {{km}} كلم من {{place}}",
+    initialDescNoKm: "رصدت الأقمار الاصطناعية حريقًا قرب {{place}}",
     initialDrift: "، يتقدم مع الريح نحو {{bearing}}",
     updateHeadline: "تحديث — حريق {{place}}",
     updateDesc: "اتسع الرصد إلى {{hotspots}} نقطة حرارية.",
@@ -44,6 +50,8 @@ const COPY: Record<"ar" | "fr" | "en" | "kab", Copy> = {
       "لم تُرصد نقاط حرارية منذ {{hours}} ساعة. قد تفوت الأقمار الاصطناعية نارًا نشطة — اتبع تعليمات الحماية المدنية.",
     cancelHeadline: "إلغاء تنبيه حريق {{place}}",
     cancelDesc: "تبيّن أن الرصد قرب {{place}} لم يكن حريقًا نشطًا.",
+    insideOne: " رُصدت نقاط حرارية داخل بلدية {{communes}}.",
+    insideMany: " رُصدت نقاط حرارية داخل البلديات: {{communes}}.",
     instruction:
       "ابتعد عن الدخان، واتبع تعليمات السلطات المحلية، واتصل بالحماية المدنية على 14 إذا هدّد الحريق أشخاصًا أو منازل.",
     compass: [
@@ -59,10 +67,10 @@ const COPY: Record<"ar" | "fr" | "en" | "kab", Copy> = {
   },
   fr: {
     event: "Feu de forêt",
-    initialHeadline: "Incendie confirmé — {{place}}, {{wilaya}}",
+    initialHeadline: "Incendie détecté par satellite — {{place}}, {{wilaya}}",
     initialDesc:
-      "Incendie confirmé par satellite à environ {{km}} km de {{place}}",
-    initialDescNoKm: "Incendie confirmé par satellite près de {{place}}",
+      "Incendie détecté par satellite à environ {{km}} km de {{place}}",
+    initialDescNoKm: "Incendie détecté par satellite près de {{place}}",
     initialDrift: ", poussé par le vent vers {{bearing}}",
     updateHeadline: "Mise à jour — incendie de {{place}}",
     updateDesc: "La détection s'est étendue à {{hotspots}} points chauds.",
@@ -73,6 +81,8 @@ const COPY: Record<"ar" | "fr" | "en" | "kab", Copy> = {
     cancelHeadline: "Annulation — alerte incendie de {{place}}",
     cancelDesc:
       "La détection près de {{place}} ne correspondait pas à un incendie actif.",
+    insideOne: " Détections à l'intérieur de la commune {{communes}}.",
+    insideMany: " Détections à l'intérieur des communes : {{communes}}.",
     instruction:
       "Éloignez-vous de la fumée, suivez les consignes des autorités locales et appelez la Protection Civile au 14 si le feu menace des personnes ou des habitations.",
     compass: [
@@ -88,9 +98,9 @@ const COPY: Record<"ar" | "fr" | "en" | "kab", Copy> = {
   },
   en: {
     event: "Wildfire",
-    initialHeadline: "Confirmed fire — {{place}}, {{wilaya}}",
-    initialDesc: "Satellite-confirmed fire about {{km}} km from {{place}}",
-    initialDescNoKm: "Satellite-confirmed fire near {{place}}",
+    initialHeadline: "Fire detected by satellite — {{place}}, {{wilaya}}",
+    initialDesc: "Satellite-detected fire about {{km}} km from {{place}}",
+    initialDescNoKm: "Satellite-detected fire near {{place}}",
     initialDrift: ", moving with the wind toward the {{bearing}}",
     updateHeadline: "Update — {{place}} fire",
     updateDesc: "Detection has grown to {{hotspots}} hotspots.",
@@ -100,6 +110,8 @@ const COPY: Record<"ar" | "fr" | "en" | "kab", Copy> = {
       "No hotspots detected for {{hours}} hours. Satellites can miss an active fire — follow Civil Protection instructions.",
     cancelHeadline: "Cancelled — {{place}} fire alert",
     cancelDesc: "The detection near {{place}} was not an active fire.",
+    insideOne: " Detections inside the commune of {{communes}}.",
+    insideMany: " Detections inside the communes: {{communes}}.",
     instruction:
       "Stay away from the smoke, follow instructions from local authorities, and call Civil Protection on 14 if the fire threatens people or homes.",
     compass: [
@@ -115,10 +127,10 @@ const COPY: Record<"ar" | "fr" | "en" | "kab", Copy> = {
   },
   kab: {
     event: "Times n teẓgi",
-    initialHeadline: "Times tettwatebbet — {{place}}, {{wilaya}}",
+    initialHeadline: "Times tettwaf s uḍfar n igenwan — {{place}}, {{wilaya}}",
     initialDesc:
-      "Times tettwatebbet s uḍfar n igenwan ɣef azal n {{km}} km si {{place}}",
-    initialDescNoKm: "Times tettwatebbet s uḍfar n igenwan ɣer {{place}}",
+      "Times tettwaf s uḍfar n igenwan ɣef azal n {{km}} km si {{place}}",
+    initialDescNoKm: "Times tettwaf s uḍfar n igenwan ɣer {{place}}",
     initialDrift: ", tetteddu d waḍu ɣer {{bearing}}",
     updateHeadline: "Aleqqem — times n {{place}}",
     updateDesc: "Aḍfar yewweḍ ɣer {{hotspots}} n tenqiḍin n tmes.",
@@ -128,6 +140,8 @@ const COPY: Record<"ar" | "fr" | "en" | "kab", Copy> = {
       "Ulac tinqiḍin n tmes seg {{hours}} n tsaɛtin. Igenwan zemren ad zeglen times iddren — ḍfer iwellihen n Tɣellist Tagdudant.",
     cancelHeadline: "Yefsex — alɣu n tmes n {{place}}",
     cancelDesc: "Aḍfar ɣer {{place}} mači d times iddren.",
+    insideOne: " Aḍfar deg tɣiwant n {{communes}}.",
+    insideMany: " Aḍfar deg tɣiwanin: {{communes}}.",
     instruction:
       "Ḥader iman-ik seg dexxan, ḍfer iwellihen n yidebbaren idiganen, tsiwleḍ i Tɣellist Tagdudant ɣef 14 ma tessexlaɛ times imdanen neɣ ixxamen.",
     compass: [
@@ -143,7 +157,7 @@ const COPY: Record<"ar" | "fr" | "en" | "kab", Copy> = {
   },
 };
 
-const LANGUAGE: Record<keyof typeof COPY, string> = {
+const LANGUAGE: Record<Locale, string> = {
   ar: "ar-DZ",
   fr: "fr-DZ",
   en: "en",
@@ -156,6 +170,21 @@ function fill(template: string, vars: Record<string, string | number>) {
   );
 }
 
+function frDe(name: string): string {
+  return /^[aeiouyhâéèêîôûAEIOUYH]/.test(name) ? `d'${name}` : `de ${name}`;
+}
+
+function insideSentence(copy: Copy, locale: Locale, names: string[]): string {
+  if (!names.length) return "";
+  if (names.length === 1)
+    return fill(copy.insideOne, {
+      communes: locale === "fr" ? frDe(names[0]!) : names[0]!,
+    });
+  return fill(copy.insideMany, {
+    communes: names.join(locale === "ar" ? "، " : ", "),
+  });
+}
+
 function compassWord(copy: Copy, deg: number): string {
   return copy.compass[Math.round((((deg % 360) + 360) % 360) / 45) % 8]!;
 }
@@ -163,6 +192,7 @@ function compassWord(copy: Copy, deg: number): string {
 function description(
   phase: BroadcastPhase,
   copy: Copy,
+  locale: Locale,
   vars: BroadcastVars,
 ): string {
   const slots = {
@@ -180,12 +210,12 @@ function description(
       );
       const drift =
         vars.bearingDeg === null ? "" : fill(copy.initialDrift, slots);
-      return `${base}${drift}.`;
+      return `${base}${drift}.${insideSentence(copy, locale, vars.inside[locale])}`;
     }
     case "update": {
       const drift =
         vars.bearingDeg === null ? "" : fill(copy.updateDrift, slots);
-      return `${fill(copy.updateDesc, slots)}${drift}`;
+      return `${fill(copy.updateDesc, slots)}${drift}${insideSentence(copy, locale, vars.inside[locale])}`;
     }
     case "end":
       return fill(copy.endDesc, slots);
@@ -206,7 +236,7 @@ export function broadcastTexts(
   vars: BroadcastVars,
 ): CapText[] {
   const live = phase === "initial" || phase === "update";
-  return (Object.keys(COPY) as (keyof typeof COPY)[]).map((locale) => {
+  return (Object.keys(COPY) as Locale[]).map((locale) => {
     const copy = COPY[locale];
     return {
       language: LANGUAGE[locale],
@@ -215,8 +245,100 @@ export function broadcastTexts(
         place: vars.place,
         wilaya: vars.wilaya,
       }),
-      description: description(phase, copy, vars),
+      description: description(phase, copy, locale, vars),
       instruction: live ? copy.instruction : "",
+    };
+  });
+}
+
+export type OfficialVars = {
+  commune: string;
+  wilaya: string;
+  source: string;
+  asOf: string;
+  status: "ongoing" | "contained" | "extinguished" | "monitoring" | "unknown";
+};
+
+type OfficialCopy = {
+  headline: string;
+  body: string;
+  statuses: Record<OfficialVars["status"], string>;
+  noDetection: string;
+};
+
+/* The authority's own report, relayed. Nadhir adds only the two facts it can
+ * vouch for: when the bulletin was valid, and that it has seen nothing there. */
+const OFFICIAL: Record<Locale, OfficialCopy> = {
+  ar: {
+    headline: "الحماية المدنية: حريق في {{commune}}، {{wilaya}}",
+    body: "{{status}} حسب نشرية {{asOf}} (توقيت الجزائر). المصدر: {{source}}.",
+    statuses: {
+      ongoing: "عملية الإخماد متواصلة",
+      contained: "الحريق تحت السيطرة",
+      extinguished: "تم إخماد الحريق",
+      monitoring: "الموقع تحت الحراسة",
+      unknown: "حريق مُبلَّغ عنه",
+    },
+    noDetection: " لم ترصد الأقمار الاصطناعية أي نقطة حرارية في هذه البلدية.",
+  },
+  fr: {
+    headline: "Protection civile : incendie à {{commune}}, {{wilaya}}",
+    body: "{{status}} selon le bulletin de {{asOf}} (heure d'Alger). Source : {{source}}.",
+    statuses: {
+      ongoing: "Opérations en cours",
+      contained: "Incendie maîtrisé",
+      extinguished: "Incendie éteint",
+      monitoring: "Site sous surveillance",
+      unknown: "Incendie signalé",
+    },
+    noDetection:
+      " Aucun point chaud satellite n'a été détecté dans cette commune.",
+  },
+  en: {
+    headline: "Civil Protection: fire in {{commune}}, {{wilaya}}",
+    body: "{{status}} as of the {{asOf}} bulletin (Algiers time). Source: {{source}}.",
+    statuses: {
+      ongoing: "Operations continuing",
+      contained: "Fire contained",
+      extinguished: "Fire out",
+      monitoring: "Site under watch",
+      unknown: "Fire reported",
+    },
+    noDetection: " No satellite hotspot has been detected in this commune.",
+  },
+  kab: {
+    headline: "Tɣellist Tagdudant: times deg {{commune}}, {{wilaya}}",
+    body: "{{status}} akken i d-yenna ulɣu n {{asOf}} (akud n Lezzayer). Aɣbalu: {{source}}.",
+    statuses: {
+      ongoing: "Leqdicat mazal-itent",
+      contained: "Times tettwaḥbes",
+      extinguished: "Times texsi",
+      monitoring: "Amḍiq seddaw uɛessi",
+      unknown: "Times yettwabedren",
+    },
+    noDetection: " Ulac tanqiḍt taḥmayt n igenwan deg tɣiwant-a.",
+  },
+};
+
+export function officialTexts(
+  vars: OfficialVars,
+  detected: boolean,
+): CapText[] {
+  return (Object.keys(OFFICIAL) as Locale[]).map((locale) => {
+    const copy = OFFICIAL[locale];
+    const slots = {
+      commune: vars.commune,
+      wilaya: vars.wilaya,
+      source: vars.source,
+      asOf: vars.asOf,
+      status: copy.statuses[vars.status],
+    };
+    return {
+      language: LANGUAGE[locale],
+      event: COPY[locale].event,
+      headline: fill(copy.headline, slots),
+      description: fill(copy.body, slots) + (detected ? "" : copy.noDetection),
+      instruction: COPY[locale].instruction,
     };
   });
 }
