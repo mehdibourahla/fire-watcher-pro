@@ -34,8 +34,8 @@ export function adminRevocationGuard(input: {
 export function roleMutationErrorKey(error: unknown) {
   const message = error instanceof Error ? error.message : String(error);
   return message.includes("last_admin_required")
-    ? ("team.lastAdminError" as const)
-    : ("team.updateError" as const);
+    ? ("people.lastAdminError" as const)
+    : ("people.updateError" as const);
 }
 
 /* The session no longer rides in the route context, so the self-revocation guard
@@ -91,18 +91,17 @@ export const membersQuery = queryOptions({
 });
 
 export async function grantRole(userId: string, role: AppRole) {
-  const { error } = await supabase
-    .from("user_roles")
-    .insert({ user_id: userId, role });
-  if (error && !error.message.includes("duplicate"))
-    throw new Error(error.message);
+  const { error } = await supabase.rpc("grant_user_role", {
+    _user: userId,
+    _role: role,
+  });
+  if (error) throw new Error(error.message);
 }
 
 export async function revokeRole(userId: string, role: AppRole) {
-  const { error } = await supabase
-    .from("user_roles")
-    .delete()
-    .eq("user_id", userId)
-    .eq("role", role);
+  const { error } = await supabase.rpc("revoke_user_role", {
+    _user: userId,
+    _role: role,
+  });
   if (error) throw new Error(error.message);
 }

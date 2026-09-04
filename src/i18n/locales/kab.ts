@@ -652,26 +652,6 @@ export const kab: Translation = {
     community: "Ineɣmisen n yimezdaɣ",
     communityEmpty: "Ulac ineɣmisen yettwasentmen tura.",
   },
-  team: {
-    title: "Tarbaɛt d tmahilin",
-    subtitle: "Fk neɣ kkes anekcum n uɛessas neɣ n unedbal.",
-    noAccess: "Asebter-a i inedbalen n Nadhir kan.",
-    search: "Nadi s yisem neɣ asulay",
-    empty: "Ulac imttekkiyen.",
-    unnamed: "Amttekki war isem",
-    roleUser: "Amttekki",
-    grant: "Err d {{role}}",
-    revoke: "Kkes {{role}}",
-    confirmSelfAdminRevoke:
-      "Tebɣiḍ ad tekkseḍ iman-ik seg inedbalen? Ad tesruḥeḍ imir-nni anekcum ɣer usefrek n terbaɛt.",
-    lastAdminDisabled:
-      "Nadhir ilaq ad yesɛu yal ass ma drus yiwen unedbal. Err wayeḍ d anedbal send ad tekkseḍ anekcum-ik.",
-    lastAdminError:
-      "Ilaq ad yeqqim ma drus yiwen unedbal. Tamahilt ur tettwabeddel ara.",
-    updateError: "Ur nezmir ara ad nbeddel tamahilt-a. Ɛreḍ tikkelt-nniḍen.",
-    loadError:
-      "Ur nezmir ara ad d-nawi akk timahilin n terbaɛt. Ɛreḍ tikkelt-nniḍen.",
-  },
   contribute: {
     statFuelSubDone:
       "Yal taɣiwant tesɛa tura isefka n tɣawsa n wakal. Axuṣṣ-a yemmed.",

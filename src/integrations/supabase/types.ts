@@ -2884,6 +2884,13 @@ export type Database = {
         Args: { _gap_id: string; _requested_at?: string };
         Returns: string | null;
       };
+      grant_user_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"];
+          _user: string;
+        };
+        Returns: undefined;
+      };
       has_any_role: {
         Args: {
           _roles: Database["public"]["Enums"]["app_role"][];
@@ -2917,6 +2924,13 @@ export type Database = {
           _author_kind: string;
           _idea: string;
           _reply: string;
+        };
+        Returns: undefined;
+      };
+      revoke_user_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"];
+          _user: string;
         };
         Returns: undefined;
       };

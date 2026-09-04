@@ -71,9 +71,8 @@ select set_config(
 );
 
 select throws_ok(
-  $$delete from public.user_roles
-    where user_id = 'f0140000-0000-4000-8000-000000000001'
-      and role = 'admin'$$,
+  $$select public.revoke_user_role(
+      'f0140000-0000-4000-8000-000000000001', 'admin')$$,
   'P0001',
   'last_admin_required',
   'the sole admin cannot revoke their own admin role'
@@ -96,8 +95,8 @@ select set_config(
 );
 
 select lives_ok(
-  $$insert into public.user_roles (user_id, role)
-    values ('f0140000-0000-4000-8000-000000000002', 'admin')$$,
+  $$select public.grant_user_role(
+      'f0140000-0000-4000-8000-000000000002', 'admin')$$,
   'an admin can grant a second admin role'
 );
 
@@ -107,9 +106,8 @@ select set_config(
   true
 );
 select lives_ok(
-  $$delete from public.user_roles
-    where user_id = 'f0140000-0000-4000-8000-000000000002'
-      and role = 'admin'$$,
+  $$select public.revoke_user_role(
+      'f0140000-0000-4000-8000-000000000002', 'admin')$$,
   'one of two admins can revoke their own admin role'
 );
 reset role;
@@ -131,14 +129,13 @@ select is(
   'an admin exact-count query sees every admin role'
 );
 select lives_ok(
-  $$insert into public.user_roles (user_id, role)
-    values ('f0140000-0000-4000-8000-000000000004', 'report_moderator')$$,
+  $$select public.grant_user_role(
+      'f0140000-0000-4000-8000-000000000004', 'report_moderator')$$,
   'an admin can grant a non-terminal role'
 );
 select lives_ok(
-  $$delete from public.user_roles
-    where user_id = 'f0140000-0000-4000-8000-000000000004'
-      and role = 'report_moderator'$$,
+  $$select public.revoke_user_role(
+      'f0140000-0000-4000-8000-000000000004', 'report_moderator')$$,
   'an admin can revoke a non-terminal role'
 );
 
@@ -148,8 +145,8 @@ select set_config(
   true
 );
 select throws_ok(
-  $$insert into public.user_roles (user_id, role)
-    values ('f0140000-0000-4000-8000-000000000004', 'admin')$$,
+  $$select public.grant_user_role(
+      'f0140000-0000-4000-8000-000000000004', 'admin')$$,
   '42501',
   null,
   'an ordinary user cannot grant themselves admin'
@@ -170,11 +167,12 @@ select is(
   0,
   'a report moderator exact-count query exposes no admin membership'
 );
-select lives_ok(
-  $$delete from public.user_roles
-    where user_id = 'f0140000-0000-4000-8000-000000000001'
-      and role = 'admin'$$,
-  'a report moderator delete is denied without leaking a row-policy error'
+select throws_ok(
+  $$select public.revoke_user_role(
+      'f0140000-0000-4000-8000-000000000001', 'admin')$$,
+  '42501',
+  null,
+  'a report moderator is refused outright rather than silently deleting nothing'
 );
 
 reset role;

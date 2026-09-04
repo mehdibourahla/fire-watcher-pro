@@ -73,6 +73,33 @@ export const adminFr: AdminTranslation = {
     queueEmpty: "Rien à vérifier.",
     pendingCount: "{{count}} en attente",
   },
+  people: {
+    title: "Équipe et rôles",
+    subtitle: "Accorder ou retirer l'accès modérateur et administrateur.",
+    noAccess: "Cette page est réservée aux administrateurs de Nadhir.",
+    search: "Rechercher par nom ou identifiant",
+    empty: "Aucun membre pour le moment.",
+    unnamed: "Membre sans nom",
+    roleUser: "Membre",
+    grant: "Nommer {{role}}",
+    revoke: "Retirer {{role}}",
+    confirmSelfAdminRevoke:
+      "Retirer votre propre accès administrateur ? Vous perdrez immédiatement l’accès à la gestion de l’équipe.",
+    lastAdminDisabled:
+      "Nadhir doit toujours avoir un administrateur. Nommez-en un autre avant de retirer votre accès.",
+    lastAdminError:
+      "Au moins un administrateur doit rester. Le rôle n’a pas été modifié.",
+    updateError: "Impossible de modifier ce rôle. Réessayez.",
+    loadError: "Impossible de charger tous les rôles de l’équipe. Réessayez.",
+  },
+  audit: {
+    title: "Journal",
+    subtitle: "Chaque changement enregistré, du plus récent au plus ancien.",
+    empty: "Rien d'enregistré pour l'instant.",
+    filterAll: "Tout",
+    bySystem: "par {{job}}",
+    byPerson: "par une personne",
+  },
   role: {
     admin: "administrateur",
     operator: "opérateur",

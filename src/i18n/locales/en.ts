@@ -655,25 +655,6 @@ export const en = {
     community: "Community reports",
     communityEmpty: "No confirmed community reports right now.",
   },
-  team: {
-    title: "Team & roles",
-    subtitle: "Grant or revoke moderator and administrator access.",
-    noAccess: "This page is reserved for Nadhir administrators.",
-    search: "Search by name or user ID",
-    empty: "No members yet.",
-    unnamed: "Unnamed member",
-    roleUser: "Member",
-    grant: "Make {{role}}",
-    revoke: "Remove {{role}}",
-    confirmSelfAdminRevoke:
-      "Remove your own administrator access? You will immediately lose access to team administration.",
-    lastAdminDisabled:
-      "Nadhir must always have an administrator. Add another administrator before removing your access.",
-    lastAdminError:
-      "At least one administrator must remain. The role was not changed.",
-    updateError: "Could not update this role. Try again.",
-    loadError: "Could not load the complete team roles. Try again.",
-  },
   contribute: {
     statFuelSubDone:
       "Every commune now carries land cover. This deficit closed.",

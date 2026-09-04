@@ -69,6 +69,33 @@ export const adminEn = {
     queueEmpty: "Nothing to review.",
     pendingCount: "{{count}} awaiting review",
   },
+  people: {
+    title: "Team & roles",
+    subtitle: "Grant or revoke moderator and administrator access.",
+    noAccess: "This page is reserved for Nadhir administrators.",
+    search: "Search by name or user ID",
+    empty: "No members yet.",
+    unnamed: "Unnamed member",
+    roleUser: "Member",
+    grant: "Make {{role}}",
+    revoke: "Remove {{role}}",
+    confirmSelfAdminRevoke:
+      "Remove your own administrator access? You will immediately lose access to team administration.",
+    lastAdminDisabled:
+      "Nadhir must always have an administrator. Add another administrator before removing your access.",
+    lastAdminError:
+      "At least one administrator must remain. The role was not changed.",
+    updateError: "Could not update this role. Try again.",
+    loadError: "Could not load the complete team roles. Try again.",
+  },
+  audit: {
+    title: "Audit",
+    subtitle: "Every recorded change, newest first.",
+    empty: "Nothing recorded yet.",
+    filterAll: "All",
+    bySystem: "by {{job}}",
+    byPerson: "by a person",
+  },
   role: {
     admin: "administrator",
     operator: "operator",

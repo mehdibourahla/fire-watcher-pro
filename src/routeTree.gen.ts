@@ -26,7 +26,6 @@ import { Route as AuthenticatedAlertsRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedBroadcastsRouteImport } from './routes/_authenticated/broadcasts'
 import { Route as AuthenticatedReportRouteImport } from './routes/_authenticated/report'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
-import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
 import { Route as AuthenticatedWebhooksRouteImport } from './routes/_authenticated/webhooks'
 import { Route as AuthenticatedZonesRouteImport } from './routes/_authenticated/zones'
 import { Route as FireIdRouteImport } from './routes/fire.$id'
@@ -35,6 +34,8 @@ import { Route as SurvivalAreasRouteImport } from './routes/survival/areas'
 import { Route as SurvivalCheckinRouteImport } from './routes/survival/checkin'
 import { Route as SurvivalSosRouteImport } from './routes/survival/sos'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
+import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authenticated/admin/audit'
+import { Route as AuthenticatedAdminPeopleRouteImport } from './routes/_authenticated/admin/people'
 import { Route as AuthenticatedAdminQueuesRouteImport } from './routes/_authenticated/admin/queues'
 import { Route as ContributeLanguageLocaleRouteImport } from './routes/contribute_.language.$locale'
 import { Route as ApiInternalSourceJobsRunRouteImport } from './routes/api/internal/source-jobs/run'
@@ -134,11 +135,6 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedTeamRoute = AuthenticatedTeamRouteImport.update({
-  id: '/team',
-  path: '/team',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedWebhooksRoute = AuthenticatedWebhooksRouteImport.update({
   id: '/webhooks',
   path: '/webhooks',
@@ -179,6 +175,17 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedAdminRouteRoute,
 } as any)
+const AuthenticatedAdminAuditRoute = AuthenticatedAdminAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => AuthenticatedAdminRouteRoute,
+} as any)
+const AuthenticatedAdminPeopleRoute =
+  AuthenticatedAdminPeopleRouteImport.update({
+    id: '/people',
+    path: '/people',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminQueuesRoute =
   AuthenticatedAdminQueuesRouteImport.update({
     id: '/queues',
@@ -272,7 +279,6 @@ export interface FileRoutesByFullPath {
   '/broadcasts': typeof AuthenticatedBroadcastsRoute
   '/report': typeof AuthenticatedReportRoute
   '/settings': typeof AuthenticatedSettingsRoute
-  '/team': typeof AuthenticatedTeamRoute
   '/webhooks': typeof AuthenticatedWebhooksRoute
   '/zones': typeof AuthenticatedZonesRoute
   '/fire/$id': typeof FireIdRoute
@@ -280,6 +286,8 @@ export interface FileRoutesByFullPath {
   '/survival/checkin': typeof SurvivalCheckinRoute
   '/survival/sos': typeof SurvivalSosRoute
   '/survival/': typeof SurvivalIndexRoute
+  '/admin/audit': typeof AuthenticatedAdminAuditRoute
+  '/admin/people': typeof AuthenticatedAdminPeopleRoute
   '/admin/queues': typeof AuthenticatedAdminQueuesRoute
   '/contribute/language/$locale': typeof ContributeLanguageLocaleRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
@@ -311,7 +319,6 @@ export interface FileRoutesByTo {
   '/broadcasts': typeof AuthenticatedBroadcastsRoute
   '/report': typeof AuthenticatedReportRoute
   '/settings': typeof AuthenticatedSettingsRoute
-  '/team': typeof AuthenticatedTeamRoute
   '/webhooks': typeof AuthenticatedWebhooksRoute
   '/zones': typeof AuthenticatedZonesRoute
   '/fire/$id': typeof FireIdRoute
@@ -319,6 +326,8 @@ export interface FileRoutesByTo {
   '/survival/checkin': typeof SurvivalCheckinRoute
   '/survival/sos': typeof SurvivalSosRoute
   '/survival': typeof SurvivalIndexRoute
+  '/admin/audit': typeof AuthenticatedAdminAuditRoute
+  '/admin/people': typeof AuthenticatedAdminPeopleRoute
   '/admin/queues': typeof AuthenticatedAdminQueuesRoute
   '/contribute/language/$locale': typeof ContributeLanguageLocaleRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
@@ -354,7 +363,6 @@ export interface FileRoutesById {
   '/_authenticated/broadcasts': typeof AuthenticatedBroadcastsRoute
   '/_authenticated/report': typeof AuthenticatedReportRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
-  '/_authenticated/team': typeof AuthenticatedTeamRoute
   '/_authenticated/webhooks': typeof AuthenticatedWebhooksRoute
   '/_authenticated/zones': typeof AuthenticatedZonesRoute
   '/fire/$id': typeof FireIdRoute
@@ -362,6 +370,8 @@ export interface FileRoutesById {
   '/survival/checkin': typeof SurvivalCheckinRoute
   '/survival/sos': typeof SurvivalSosRoute
   '/survival/': typeof SurvivalIndexRoute
+  '/_authenticated/admin/audit': typeof AuthenticatedAdminAuditRoute
+  '/_authenticated/admin/people': typeof AuthenticatedAdminPeopleRoute
   '/_authenticated/admin/queues': typeof AuthenticatedAdminQueuesRoute
   '/contribute_/language/$locale': typeof ContributeLanguageLocaleRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
@@ -397,7 +407,6 @@ export interface FileRouteTypes {
     | '/broadcasts'
     | '/report'
     | '/settings'
-    | '/team'
     | '/webhooks'
     | '/zones'
     | '/fire/$id'
@@ -405,6 +414,8 @@ export interface FileRouteTypes {
     | '/survival/checkin'
     | '/survival/sos'
     | '/survival/'
+    | '/admin/audit'
+    | '/admin/people'
     | '/admin/queues'
     | '/contribute/language/$locale'
     | '/admin/'
@@ -436,7 +447,6 @@ export interface FileRouteTypes {
     | '/broadcasts'
     | '/report'
     | '/settings'
-    | '/team'
     | '/webhooks'
     | '/zones'
     | '/fire/$id'
@@ -444,6 +454,8 @@ export interface FileRouteTypes {
     | '/survival/checkin'
     | '/survival/sos'
     | '/survival'
+    | '/admin/audit'
+    | '/admin/people'
     | '/admin/queues'
     | '/contribute/language/$locale'
     | '/admin'
@@ -478,7 +490,6 @@ export interface FileRouteTypes {
     | '/_authenticated/broadcasts'
     | '/_authenticated/report'
     | '/_authenticated/settings'
-    | '/_authenticated/team'
     | '/_authenticated/webhooks'
     | '/_authenticated/zones'
     | '/fire/$id'
@@ -486,6 +497,8 @@ export interface FileRouteTypes {
     | '/survival/checkin'
     | '/survival/sos'
     | '/survival/'
+    | '/_authenticated/admin/audit'
+    | '/_authenticated/admin/people'
     | '/_authenticated/admin/queues'
     | '/contribute_/language/$locale'
     | '/_authenticated/admin/'
@@ -653,13 +666,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/team': {
-      id: '/_authenticated/team'
-      path: '/team'
-      fullPath: '/team'
-      preLoaderRoute: typeof AuthenticatedTeamRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/webhooks': {
       id: '/_authenticated/webhooks'
       path: '/webhooks'
@@ -714,6 +720,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/admin/'
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/audit': {
+      id: '/_authenticated/admin/audit'
+      path: '/audit'
+      fullPath: '/admin/audit'
+      preLoaderRoute: typeof AuthenticatedAdminAuditRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/people': {
+      id: '/_authenticated/admin/people'
+      path: '/people'
+      fullPath: '/admin/people'
+      preLoaderRoute: typeof AuthenticatedAdminPeopleRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
     '/_authenticated/admin/queues': {
@@ -818,12 +838,16 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedAdminRouteRouteChildren {
+  AuthenticatedAdminAuditRoute: typeof AuthenticatedAdminAuditRoute
+  AuthenticatedAdminPeopleRoute: typeof AuthenticatedAdminPeopleRoute
   AuthenticatedAdminQueuesRoute: typeof AuthenticatedAdminQueuesRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
 
 const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren =
   {
+    AuthenticatedAdminAuditRoute: AuthenticatedAdminAuditRoute,
+    AuthenticatedAdminPeopleRoute: AuthenticatedAdminPeopleRoute,
     AuthenticatedAdminQueuesRoute: AuthenticatedAdminQueuesRoute,
     AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   }
@@ -839,7 +863,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBroadcastsRoute: typeof AuthenticatedBroadcastsRoute
   AuthenticatedReportRoute: typeof AuthenticatedReportRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
-  AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
   AuthenticatedWebhooksRoute: typeof AuthenticatedWebhooksRoute
   AuthenticatedZonesRoute: typeof AuthenticatedZonesRoute
 }
@@ -850,7 +873,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBroadcastsRoute: AuthenticatedBroadcastsRoute,
   AuthenticatedReportRoute: AuthenticatedReportRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
-  AuthenticatedTeamRoute: AuthenticatedTeamRoute,
   AuthenticatedWebhooksRoute: AuthenticatedWebhooksRoute,
   AuthenticatedZonesRoute: AuthenticatedZonesRoute,
 }

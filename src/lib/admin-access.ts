@@ -59,8 +59,8 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     roles: ["operator", "admin"],
     ready: false,
   },
-  { key: "people", path: "/admin/people", roles: ["admin"], ready: false },
-  { key: "audit", path: "/admin/audit", roles: PANEL_ROLES, ready: false },
+  { key: "people", path: "/admin/people", roles: ["admin"], ready: true },
+  { key: "audit", path: "/admin/audit", roles: PANEL_ROLES, ready: true },
 ];
 
 export function sectionsFor(roles: AppRole[]): AdminSection[] {

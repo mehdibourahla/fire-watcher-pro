@@ -35,7 +35,7 @@ describe("admin access", () => {
 
   it("marks only the sections that have a route as ready", () => {
     const ready = ADMIN_SECTIONS.filter((s) => s.ready).map((s) => s.key);
-    expect(ready).toEqual(["triage", "queues"]);
+    expect(ready).toEqual(["triage", "queues", "people", "audit"]);
   });
 
   it("has a nav label for every section", () => {

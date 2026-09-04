@@ -20,7 +20,7 @@ type AdminRevocationGuard = (input: {
 
 type RoleMutationErrorKey = (
   error: unknown,
-) => "team.lastAdminError" | "team.updateError";
+) => "people.lastAdminError" | "people.updateError";
 
 type AdminCountQuery = {
   queryFn: () => Promise<number>;
@@ -130,13 +130,13 @@ describe("adminRevocationGuard", () => {
 describe("roleMutationErrorKey", () => {
   it("maps the terminal-admin database rejection to friendly copy", () => {
     expect(roleMutationErrorKey?.(new Error("last_admin_required"))).toBe(
-      "team.lastAdminError",
+      "people.lastAdminError",
     );
   });
 
   it("maps other failures to a generic localized error", () => {
     expect(roleMutationErrorKey?.(new Error("network unavailable"))).toBe(
-      "team.updateError",
+      "people.updateError",
     );
   });
 });
