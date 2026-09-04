@@ -35,10 +35,13 @@ from (
     ('f0210000-0000-4000-8000-000000000002'::uuid, 'f021-other@example.invalid')
 ) as fixtures(id, email);
 
-insert into public.profiles (id)
-values
-  ('f0190000-0000-4000-8000-000000000001'),
-  ('f0210000-0000-4000-8000-000000000002');
+select is(
+  (select count(*)::int from public.profiles
+   where id in ('f0190000-0000-4000-8000-000000000001',
+                'f0210000-0000-4000-8000-000000000002')),
+  2,
+  'the trigger created a profile for each fixture without an explicit insert'
+);
 
 select ok(
   exists (

@@ -70,10 +70,11 @@ export const adminEn = {
     pendingCount: "{{count}} awaiting review",
   },
   people: {
+    noName: "No name set",
     title: "Team & roles",
     subtitle: "Grant or revoke moderator and administrator access.",
     noAccess: "This page is reserved for Nadhir administrators.",
-    search: "Search by name or user ID",
+    search: "Search by name, email or user ID",
     empty: "No members yet.",
     unnamed: "Unnamed member",
     roleUser: "Member",

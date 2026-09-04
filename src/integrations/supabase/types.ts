@@ -3057,6 +3057,17 @@ export type Database = {
           isSetofReturn: true;
         };
       };
+      list_members_for_admin: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          created_at: string;
+          display_name: string | null;
+          email: string;
+          id: string;
+          locale: string;
+          roles: Database["public"]["Enums"]["app_role"][];
+        }[];
+      };
       list_translation_suggestions_for_moderation: {
         Args: never;
         Returns: {

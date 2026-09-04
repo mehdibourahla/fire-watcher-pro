@@ -75,17 +75,7 @@ export const profileQuery = queryOptions({
       .eq("id", user.id)
       .maybeSingle();
     if (error) throw new Error(error.message);
-    if (data) return data as unknown as Profile;
-    const inserted = await supabase
-      .from("profiles")
-      .insert({
-        id: user.id,
-        display_name: (user.user_metadata?.["full_name"] as string) ?? null,
-      })
-      .select("*")
-      .maybeSingle();
-    if (inserted.error) throw new Error(inserted.error.message);
-    return (inserted.data ?? null) as unknown as Profile | null;
+    return (data ?? null) as unknown as Profile | null;
   },
 });
 
