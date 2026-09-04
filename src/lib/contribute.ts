@@ -34,6 +34,9 @@ export type ContributionIdea = {
   published_at: string | null;
   moderated_by: string | null;
   moderation_note: string | null;
+  reply: string | null;
+  replied_at: string | null;
+  reply_author_kind: "person" | "agent" | null;
 };
 
 export type PublishedIdea = Pick<
@@ -130,6 +133,21 @@ export async function moderateIdea(
     _idea: id,
     _status: status,
     ...(note === undefined ? {} : { _moderation_note: note }),
+  });
+  if (error) throw new Error(error.message);
+}
+
+export type ReplyAuthorKind = "person" | "agent";
+
+export async function replyToIdea(
+  id: string,
+  reply: string,
+  authorKind: ReplyAuthorKind,
+) {
+  const { error } = await supabase.rpc("reply_to_contribution_idea", {
+    _idea: id,
+    _reply: reply,
+    _author_kind: authorKind,
   });
   if (error) throw new Error(error.message);
 }

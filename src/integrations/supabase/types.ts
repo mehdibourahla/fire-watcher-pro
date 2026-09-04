@@ -582,6 +582,10 @@ export type Database = {
       };
       contribution_ideas: {
         Row: {
+          reply: string | null;
+          replied_at: string | null;
+          replied_by: string | null;
+          reply_author_kind: string | null;
           contact: string | null;
           created_at: string;
           id: string;
@@ -595,6 +599,10 @@ export type Database = {
           status: string;
         };
         Insert: {
+          reply?: string | null;
+          replied_at?: string | null;
+          replied_by?: string | null;
+          reply_author_kind?: string | null;
           contact?: string | null;
           created_at?: string;
           id?: string;
@@ -608,6 +616,10 @@ export type Database = {
           status?: string;
         };
         Update: {
+          reply?: string | null;
+          replied_at?: string | null;
+          replied_by?: string | null;
+          reply_author_kind?: string | null;
           contact?: string | null;
           created_at?: string;
           id?: string;
@@ -2872,6 +2884,13 @@ export type Database = {
         Args: { _gap_id: string; _requested_at?: string };
         Returns: string | null;
       };
+      grant_user_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"];
+          _user: string;
+        };
+        Returns: undefined;
+      };
       has_any_role: {
         Args: {
           _roles: Database["public"]["Enums"]["app_role"][];
@@ -2898,6 +2917,37 @@ export type Database = {
           _user_id: string;
         };
         Returns: boolean;
+      };
+      reply_to_contribution_idea: {
+        Args: {
+          _actor_label?: string | null;
+          _author_kind: string;
+          _idea: string;
+          _reply: string;
+        };
+        Returns: undefined;
+      };
+      replay_source_gap: {
+        Args: { _gap_id: string; _reason?: string | null };
+        Returns: string;
+      };
+      resolve_fire: {
+        Args: {
+          _cluster: string;
+          _expected_updated_at?: string | null;
+          _actor_label?: string | null;
+          _note?: string | null;
+          _reason?: string | null;
+          _state: string;
+        };
+        Returns: undefined;
+      };
+      revoke_user_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"];
+          _user: string;
+        };
+        Returns: undefined;
       };
       record_source_run: {
         Args: {
@@ -2936,6 +2986,10 @@ export type Database = {
           _now?: string;
         };
         Returns: boolean;
+      };
+      verify_open_area: {
+        Args: { _area: string; _note?: string | null; _verified?: boolean };
+        Returns: undefined;
       };
       vote_on_idea: {
         Args: { _idea: string; _value: number; _voter: string };
@@ -3039,6 +3093,28 @@ export type Database = {
           _suggestion: string;
         };
         Returns: undefined;
+      };
+      operator_discard_risk_snapshot: {
+        Args: {
+          _base_date: string;
+          _reason: string;
+          _scheduled_for: string;
+          _snapshot_id: string;
+        };
+        Returns: boolean;
+      };
+      operator_edit_incident: {
+        Args: { _id: string; _patch: Json; _reason?: string | null };
+        Returns: undefined;
+      };
+      operator_publish_risk_snapshot: {
+        Args: {
+          _base_date: string;
+          _reason?: string | null;
+          _scheduled_for: string;
+          _snapshot_id: string;
+        };
+        Returns: Json;
       };
       publish_risk_forecast_snapshot: {
         Args: {

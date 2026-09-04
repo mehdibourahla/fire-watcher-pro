@@ -14,17 +14,9 @@ import {
   type AppRole,
 } from "@/lib/roles";
 import { myRolesQuery } from "@/lib/reports";
-import { titledMeta } from "@/lib/page-meta";
 
-export const Route = createFileRoute("/_authenticated/team")({
-  head: () => ({
-    meta: [
-      ...titledMeta("team.title", "team.subtitle"),
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-    ],
-  }),
-  component: TeamPage,
+export const Route = createFileRoute("/_authenticated/admin/people")({
+  component: PeoplePage,
 });
 
 const MANAGED: AppRole[] = [
@@ -35,9 +27,8 @@ const MANAGED: AppRole[] = [
   "admin",
 ];
 
-function TeamPage() {
-  const { t } = useTranslation();
-  const { t: tAdmin } = useTranslation("admin");
+function PeoplePage() {
+  const { t } = useTranslation("admin");
   const me = useQuery(currentUserIdQuery);
   const qc = useQueryClient();
   const roles = useQuery(myRolesQuery);
@@ -61,7 +52,7 @@ function TeamPage() {
   if (roles.isLoading) {
     return (
       <main className="mx-auto max-w-4xl px-4 py-10 text-sm text-muted-foreground">
-        {t("common.loading")}
+        {t("queues.loading")}
       </main>
     );
   }
@@ -70,10 +61,10 @@ function TeamPage() {
     return (
       <main className="mx-auto w-full max-w-2xl px-4 py-16 text-center">
         <h1 className="font-display text-2xl font-semibold">
-          {t("team.title")}
+          {t("people.title")}
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          {t("team.noAccess")}
+          {t("people.noAccess")}
         </p>
       </main>
     );
@@ -90,24 +81,30 @@ function TeamPage() {
 
   return (
     <main className="mx-auto w-full max-w-4xl px-4 py-8">
-      <h1 className="font-display text-2xl font-semibold">{t("team.title")}</h1>
-      <p className="mt-1 text-sm text-muted-foreground">{t("team.subtitle")}</p>
+      <h1 className="font-display text-2xl font-semibold">
+        {t("people.title")}
+      </h1>
+      <p className="mt-1 text-sm text-muted-foreground">
+        {t("people.subtitle")}
+      </p>
 
       <input
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        placeholder={t("team.search")}
+        placeholder={t("people.search")}
         className="mt-4 w-full max-w-sm rounded-md border border-border bg-background px-2 py-1.5 text-sm"
       />
 
       {members.isLoading || adminCount.isLoading || me.isLoading ? (
         <p className="mt-6 text-sm text-muted-foreground">
-          {t("common.loading")}
+          {t("queues.loading")}
         </p>
       ) : members.isError || adminCount.isError || me.isError || !me.data ? (
-        <p className="mt-6 text-sm text-destructive">{t("team.loadError")}</p>
+        <p className="mt-6 text-sm text-destructive">{t("people.loadError")}</p>
       ) : rows.length === 0 ? (
-        <p className="mt-6 text-sm text-muted-foreground">{t("team.empty")}</p>
+        <p className="mt-6 text-sm text-muted-foreground">
+          {t("people.empty")}
+        </p>
       ) : (
         <ul className="mt-4 space-y-2">
           {rows.map((m) => {
@@ -125,20 +122,22 @@ function TeamPage() {
               >
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium">
-                    {m.display_name || t("team.unnamed")}
+                    {m.display_name || t("people.unnamed")}
                   </p>
                   <p className="truncate font-mono text-xs text-muted-foreground">
                     {m.id}
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    {m.roles.length ? m.roles.join(" · ") : t("team.roleUser")}
+                    {m.roles.length
+                      ? m.roles.join(" · ")
+                      : t("people.roleUser")}
                   </p>
                   {soleAdmin ? (
                     <p
                       id={lastAdminMessageId}
                       className="mt-2 max-w-xl text-xs text-muted-foreground"
                     >
-                      {t("team.lastAdminDisabled")}
+                      {t("people.lastAdminDisabled")}
                     </p>
                   ) : null}
                 </div>
@@ -160,7 +159,7 @@ function TeamPage() {
                         onClick={() => {
                           if (
                             guard.needsConfirmation &&
-                            !window.confirm(t("team.confirmSelfAdminRevoke"))
+                            !window.confirm(t("people.confirmSelfAdminRevoke"))
                           ) {
                             return;
                           }
@@ -177,8 +176,8 @@ function TeamPage() {
                         }
                       >
                         {has
-                          ? t("team.revoke", { role: tAdmin(`role.${role}`) })
-                          : t("team.grant", { role: tAdmin(`role.${role}`) })}
+                          ? t("people.revoke", { role: t(`role.${role}`) })
+                          : t("people.grant", { role: t(`role.${role}`) })}
                       </button>
                     );
                   })}

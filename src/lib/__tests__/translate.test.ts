@@ -149,3 +149,37 @@ describe("schema agreement", () => {
     expect(migration).toContain("unique (locale, key_path, reviewer_key)");
   });
 });
+
+describe("a suggestion must change something", () => {
+  it("refuses a suggestion identical to the current text", () => {
+    expect(
+      isSubmittable({ verdict: "suggested", suggestion: "Mdel" }, "Mdel"),
+    ).toBe(false);
+  });
+
+  it("ignores surrounding whitespace when comparing", () => {
+    expect(
+      isSubmittable({ verdict: "suggested", suggestion: "  Mdel " }, "Mdel"),
+    ).toBe(false);
+  });
+
+  it("accepts a suggestion that genuinely differs", () => {
+    expect(
+      isSubmittable({ verdict: "suggested", suggestion: "Belaɛ" }, "Mdel"),
+    ).toBe(true);
+  });
+
+  it("still accepts a confirmation, which proposes no text", () => {
+    expect(isSubmittable({ verdict: "confirmed" }, "Mdel")).toBe(true);
+  });
+
+  it("does not count an unchanged suggestion as pending", () => {
+    const drafts = {
+      "common.close": { verdict: "suggested" as const, suggestion: "Mdel" },
+      "common.back": { verdict: "suggested" as const, suggestion: "Tuɣalin" },
+    };
+    const current = (path: string) =>
+      path === "common.close" ? "Mdel" : "Uɣal";
+    expect(countSubmittable(drafts, current)).toBe(1);
+  });
+});

@@ -120,21 +120,22 @@ if (!apply) {
   process.exit(0);
 }
 
-const now = new Date().toISOString();
 let retired = 0;
 for (let i = 0; i < doomed.length; i += 10) {
   const slice = doomed.slice(i, i + 10);
   const results = await Promise.all(
     slice.map((c) =>
-      db
-        .from("fire_clusters")
-        .update({ state: "false_positive", updated_at: now })
-        .eq("id", c.id),
+      db.rpc("resolve_fire", {
+        _cluster: c.id,
+        _state: "false_positive",
+        _reason: "out_of_area",
+        _actor_label: "retire-out-of-area-clusters",
+      }),
     ),
   );
   const failed = results.find((r) => r.error);
   if (failed?.error)
-    throw new Error(`fire_clusters update failed: ${failed.error.message}`);
+    throw new Error(`resolve_fire failed: ${failed.error.message}`);
   const { error } = await db.from("cluster_events").insert(
     slice.map((c) => ({
       cluster_id: c.id,

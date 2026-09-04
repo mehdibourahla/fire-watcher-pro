@@ -280,8 +280,26 @@ Sequential; each lands green before the next starts.
 5. **Risk and incidents** — publication lifecycle, FWI state, incident editing, extractions.
 6. **Broadcasts and places** — dispatch, kill-switch, channels; admin units, open-area
    verification. Migrates `/broadcasts` and deletes it.
-7. **Script migration** — the thirteen service-role scripts call the same functions with a job
-   name. The key stops being an authority.
+7. **Script migration** — narrower than first written, after measuring what the thirteen
+   service-role scripts actually mutate. Most are reference-data seeds (`seed-geo`,
+   `seed-commune-polygons`, `seed-open-areas`, `seed-fwi-climatology`,
+   `seed-persistent-sources`, `seed-telegram-channels`, `enrich-zonal`) or derived-data
+   recomputation (`reconcile-persistent-sources`, `recompute-cluster-geometry`). Those are
+   pipeline writes, not admin decisions; auditing them per row would bury the log in noise.
+
+   One script performs a genuine admin decision: `retire-out-of-area-clusters` sets fires to
+   `false_positive`. It now calls `resolve_fire` with the job name, so a scheduled retirement
+   and an operator's resolution appear side by side in the log and are told apart by
+   `actor_label`.
+
+   That migration also surfaced a missing concept. The script wrote `false_positive` with **no
+   cause at all**, and "outside the watch area" was not in the vocabulary. Rather than force it
+   into `other`, `out_of_area` joins the `resolution_reason` set — which makes the script's
+   intent visible in the data for the first time rather than only in its filename.
+
+   The service-role key remains an authority over pipeline tables. Closing that fully means
+   revoking table grants from `service_role` across the ingest path, which is a larger change
+   than this epic and would be its own milestone.
 
 ## Explicitly deferred
 

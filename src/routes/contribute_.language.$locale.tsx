@@ -283,14 +283,19 @@ function ReviewPage() {
   }, [rows, drafts, filter, query]);
 
   const groups = useMemo(() => groupRows(visible), [visible]);
-  const pending = countSubmittable(drafts);
+  const currentFor = useMemo(() => {
+    const byPath = new Map(rows.map((r) => [r.path, r.current]));
+    return (path: string) => byPath.get(path);
+  }, [rows]);
+
+  const pending = countSubmittable(drafts, currentFor);
   const reviewed = Object.keys(drafts).length;
   const tally = summarise(drafts, statuses);
 
   const submit = useMutation({
     mutationFn: async () => {
       const payload = Object.entries(drafts)
-        .filter(([, d]) => isSubmittable(d))
+        .filter(([path, d]) => isSubmittable(d, currentFor(path)))
         .map(([path, d]) => {
           const row = rows.find((r) => r.path === path);
           return {
@@ -325,7 +330,7 @@ function ReviewPage() {
       setError(null);
       // marked rather than deleted: the reviewer must still see what they sent
       setDrafts((prev) => {
-        const next = markSent(prev);
+        const next = markSent(prev, currentFor);
         writeDrafts(locale, next);
         return next;
       });
