@@ -32,7 +32,7 @@ This is plan 1 of 7. Milestones 2–7 in the spec each get their own plan; none 
 **Interfaces:**
 - Produces: enum labels `operator`, `report_moderator`, `translator`, `incident_editor` on `public.app_role`. Nothing may use them until Task 2 (separate transaction).
 
-- [ ] **Step 1: Write the migration**
+- [x] **Step 1: Write the migration**
 
 ```sql
 -- Separate file from every use: PG refuses a new enum value in the transaction that added it.
@@ -42,14 +42,14 @@ alter type public.app_role add value if not exists 'translator';
 alter type public.app_role add value if not exists 'incident_editor';
 ```
 
-- [ ] **Step 2: Apply locally and verify the labels exist**
+- [x] **Step 2: Apply locally and verify the labels exist**
 
 Run: `supabase db reset --no-seed` is FORBIDDEN in this repo. Instead run `supabase migration up`.
 Then: `supabase db diff --schema public` — expect no drift.
 Verify: `psql -c "select unnest(enum_range(null::public.app_role));"` lists six labels.
 Expected: `admin, moderator, user, operator, report_moderator, translator, incident_editor`.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add supabase/migrations/20260904200000_admin_roles_add_values.sql
@@ -68,7 +68,7 @@ git commit -m "Add the per-domain role labels to app_role"
 - Consumes: enum labels from Task 1.
 - Produces: `public.has_any_role(uuid, public.app_role[]) returns boolean`. `user_roles.role` rejects `moderator`.
 
-- [ ] **Step 1: Write the failing pgTAP test**
+- [x] **Step 1: Write the failing pgTAP test**
 
 ```sql
 begin;
@@ -119,12 +119,12 @@ select * from finish();
 rollback;
 ```
 
-- [ ] **Step 2: Run it and watch it fail**
+- [x] **Step 2: Run it and watch it fail**
 
 Run: `supabase test db`
 Expected: FAIL — `has_any_role` does not exist.
 
-- [ ] **Step 3: Write the migration**
+- [x] **Step 3: Write the migration**
 
 Expand grants first, then rewrite policies, then lock the value out.
 
@@ -209,12 +209,12 @@ alter table public.user_roles
   add constraint user_roles_moderator_retired check (role <> 'moderator');
 ```
 
-- [ ] **Step 4: Run the test and the whole db suite**
+- [x] **Step 4: Run the test and the whole db suite**
 
 Run: `supabase test db`
 Expected: PASS, and every pre-existing test still passes.
 
-- [ ] **Step 5: Update the three pgTAP tests that grant `moderator`**
+- [x] **Step 5: Update the three pgTAP tests that grant `moderator`**
 
 `supabase/tests/last_admin_invariant.test.sql`, `contribution_moderation_privacy.test.sql`,
 `report_photo_security.test.sql` insert `'moderator'` fixtures. Replace each with the role that
@@ -224,7 +224,7 @@ now carries the privilege the test asserts: `report_moderator` for report and id
 Run: `supabase test db`
 Expected: PASS.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add supabase/migrations/20260904200100_admin_roles_retire_moderator.sql supabase/tests/
@@ -244,7 +244,7 @@ git commit -m "Retire the flat moderator role for per-domain roles"
   `public.record_admin_audit(_domain text, _action text, _target_table text, _target_id text, _before jsonb, _after jsonb, _reason text, _actor_label text) returns uuid`.
   Every later admin function calls it as its last statement.
 
-- [ ] **Step 1: Write the failing pgTAP test**
+- [x] **Step 1: Write the failing pgTAP test**
 
 ```sql
 begin;
@@ -271,12 +271,12 @@ select * from finish();
 rollback;
 ```
 
-- [ ] **Step 2: Run it and watch it fail**
+- [x] **Step 2: Run it and watch it fail**
 
 Run: `supabase test db`
 Expected: FAIL — relation `admin_audit` does not exist.
 
-- [ ] **Step 3: Write the migration**
+- [x] **Step 3: Write the migration**
 
 ```sql
 create table public.admin_audit (
@@ -357,12 +357,12 @@ grant execute on function public.record_admin_audit(text,text,text,text,jsonb,js
 Append-only is enforced by granting no `update` or `delete` to any role. `service_role`
 bypasses RLS but not missing table privileges, so it cannot rewrite history either.
 
-- [ ] **Step 4: Run the tests**
+- [x] **Step 4: Run the tests**
 
 Run: `supabase test db`
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add supabase/migrations/20260904200200_admin_audit.sql supabase/tests/admin_audit.test.sql
@@ -371,7 +371,7 @@ git commit -m "Add the append-only admin audit log"
 
 ---
 
-### Task 4: Fold `broadcast_audit` into `admin_audit`
+### Task 4: Union `broadcast_audit` into one timeline (REVISED — do not fold)
 
 **Files:**
 - Create: `supabase/migrations/20260904200300_fold_broadcast_audit.sql`
@@ -383,12 +383,12 @@ git commit -m "Add the append-only admin audit log"
 - Consumes: `admin_audit` and `record_admin_audit` from Task 3.
 - Produces: `broadcast_audit` no longer exists; broadcast history reads `admin_audit` filtered to `domain = 'broadcasts'`.
 
-- [ ] **Step 1: Read the current writer and reader before changing either**
+- [x] **Step 1: Read the current writer and reader before changing either**
 
 Run: `grep -rn "broadcast_audit" src/ supabase/ scripts/`
 Every writer must move in this task. A missed writer means broadcast history silently stops.
 
-- [ ] **Step 2: Write the migration**
+- [x] **Step 2: Write the migration**
 
 ```sql
 insert into public.admin_audit (at, actor_kind, actor_label, domain, action, target_table, target_id, after, reason)
@@ -414,18 +414,18 @@ from public.broadcast_audit as ba;
 drop table public.broadcast_audit;
 ```
 
-- [ ] **Step 3: Move every writer and reader**
+- [x] **Step 3: Move every writer and reader**
 
 Replace each `insert into broadcast_audit (...)` with a `record_admin_audit` call carrying
 `domain => 'broadcasts'` and the same fields inside `_after`. Rewrite the history view in
 `broadcasts.tsx` to read `admin_audit` where `domain = 'broadcasts'`, ordered by `at desc`.
 
-- [ ] **Step 4: Run everything**
+- [x] **Step 4: Run everything**
 
 Run: `supabase test db && bunx tsc --noEmit && bun run test && bun run lint`
 Expected: all pass. Confirm the backfilled row count matches what step 1 reported.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add -A
@@ -445,7 +445,7 @@ git commit -m "Fold broadcast_audit into the central admin audit log"
 **Interfaces:**
 - Produces: `AdminTranslation` type (structural over `src/i18n/admin/en.ts`), i18next namespace `admin` with `en` and `fr` resources. Read with `useTranslation("admin")`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```ts
 import { describe, expect, it } from "vitest";
@@ -473,12 +473,12 @@ describe("admin namespace", () => {
 });
 ```
 
-- [ ] **Step 2: Run it and watch it fail**
+- [x] **Step 2: Run it and watch it fail**
 
 Run: `bun run test src/lib/__tests__/admin-namespace.test.ts`
 Expected: FAIL — cannot resolve `@/i18n/admin/en`.
 
-- [ ] **Step 3: Create the two bundles**
+- [x] **Step 3: Create the two bundles**
 
 ```ts
 export const adminEn = {
@@ -550,7 +550,7 @@ export const adminFr: AdminTranslation = {
 };
 ```
 
-- [ ] **Step 4: Register the namespace**
+- [x] **Step 4: Register the namespace**
 
 In `src/i18n/index.ts`, import both bundles and extend the resources so `en` and `fr` carry a
 second namespace, leaving `ar` and `kab` untouched:
@@ -567,12 +567,12 @@ resources: {
 An `ar` or `kab` operator falls back to English admin copy through `fallbackLng`, which is the
 intended behaviour rather than a gap.
 
-- [ ] **Step 5: Run the tests**
+- [x] **Step 5: Run the tests**
 
 Run: `bun run test src/lib/__tests__/admin-namespace.test.ts && bunx tsc --noEmit`
 Expected: PASS.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/i18n/admin src/i18n/index.ts src/lib/__tests__/admin-namespace.test.ts
@@ -593,7 +593,7 @@ git commit -m "Add the admin i18n namespace in English and French"
 - Consumes: `myRolesQuery` from `src/lib/reports.ts`; `AdminTranslation` from Task 5.
 - Produces: `ADMIN_SECTIONS: AdminSection[]` and `sectionsFor(roles: AppRole[]): AdminSection[]`, where `AdminSection = { key: string; path: string; roles: AppRole[] }`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```ts
 import { describe, expect, it } from "vitest";
@@ -619,12 +619,12 @@ describe("admin access", () => {
 });
 ```
 
-- [ ] **Step 2: Run it and watch it fail**
+- [x] **Step 2: Run it and watch it fail**
 
 Run: `bun run test src/lib/__tests__/admin-access.test.ts`
 Expected: FAIL — cannot resolve `@/lib/admin-access`.
 
-- [ ] **Step 3: Write the module**
+- [x] **Step 3: Write the module**
 
 ```ts
 import type { AppRole } from "./roles";
@@ -657,19 +657,19 @@ export function sectionsFor(roles: AppRole[]): AdminSection[] {
 }
 ```
 
-- [ ] **Step 4: Run the test**
+- [x] **Step 4: Run the test**
 
 Run: `bun run test src/lib/__tests__/admin-access.test.ts`
 Expected: PASS.
 
-- [ ] **Step 5: Write the shell route**
+- [x] **Step 5: Write the shell route**
 
 `src/routes/_authenticated/admin/route.tsx` renders the nav from `sectionsFor`, shows
 `shell.noAccess` when it is empty, and renders `<Outlet />` otherwise. Follow the loading
 pattern in `moderation.tsx`: hold the subtree while `myRolesQuery` resolves rather than
 flashing the denial. Labels come from `useTranslation("admin")` as `nav.<key>`.
 
-- [ ] **Step 6: Run the gates and commit**
+- [x] **Step 6: Run the gates and commit**
 
 Run: `bunx tsc --noEmit && bun run test && bun run lint`
 
@@ -692,7 +692,7 @@ git commit -m "Add the admin shell with per-section role gating"
 - Produces: `type TriageRow = { key: string; severity: 1 | 2 | 3; count?: number }` and
   `rankTriage(input: TriageInput): TriageRow[]`, ordered most severe first.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```ts
 import { describe, expect, it } from "vitest";
@@ -730,12 +730,12 @@ describe("rankTriage", () => {
 });
 ```
 
-- [ ] **Step 2: Run it and watch it fail**
+- [x] **Step 2: Run it and watch it fail**
 
 Run: `bun run test src/lib/__tests__/admin-triage.test.ts`
 Expected: FAIL — cannot resolve `@/lib/admin-triage`.
 
-- [ ] **Step 3: Write the module**
+- [x] **Step 3: Write the module**
 
 ```ts
 export type TriageInput = {
@@ -768,12 +768,12 @@ export function rankTriage(input: TriageInput): TriageRow[] {
 `sort` on an already-ordered array is stable in V8, so equal severities keep the order above,
 which is the spec's consequence ranking.
 
-- [ ] **Step 4: Run the test**
+- [x] **Step 4: Run the test**
 
 Run: `bun run test src/lib/__tests__/admin-triage.test.ts`
 Expected: PASS.
 
-- [ ] **Step 5: Wire the real inputs**
+- [x] **Step 5: Wire the real inputs**
 
 In `src/routes/_authenticated/admin/index.tsx`, gather each field with TanStack Query:
 `broadcast_settings` for the kill-switch, `source_health` for stale sources,
@@ -783,7 +783,7 @@ for unapplied translations, and the sum of pending queue rows for depth. Render 
 output with `useTranslation("admin")` on `triage.<key>`. When the list is empty render
 `triage.allClear` with `triage.checkedAt` — never a blank screen.
 
-- [ ] **Step 6: Run the gates and commit**
+- [x] **Step 6: Run the gates and commit**
 
 Run: `bunx tsc --noEmit && bun run test && bun run lint`
 
@@ -804,3 +804,41 @@ git commit -m "Add the triage home ranked by consequence"
   Task 1 so nobody reaches for it.
 - Verified: `REVIEWABLE` in `src/lib/translate.ts` is `["ar","fr","kab"]`, so the Task 5 test
   loop over those three locales typechecks as written.
+
+
+---
+
+## What actually happened
+
+All seven tasks are green: `tsc` clean, lint clean, 640 vitest tests, 455 pgTAP tests across
+18 files.
+
+Three plan assumptions were wrong and were corrected in flight:
+
+1. **Task 4 reversed.** The plan folded `broadcast_audit` into `admin_audit` and dropped it.
+   It carries `actor_id` and a constraint hardened on 2026-09-01
+   (`broadcast_audit_action_actor_valid`) requiring a human toggle to name an actor and an
+   automated decision to have none. `admin_audit`'s generic check cannot express that, so
+   folding would have traded a strong invariant for a weak one. A `admin_audit_timeline` view
+   unions the two instead.
+
+2. **Enum recreation abandoned before it started.** Re-typing `user_roles.role` would have
+   meant dropping ten RLS policies at once on live data. The enum grew additively and a
+   `check (role <> 'moderator')` makes the label unreachable.
+
+3. **Four moderation functions had to move with the policies.** `moderate_*` and `list_*`
+   checked `has_role(actor, 'moderator')` in their bodies. Retiring the role without updating
+   them would have denied every moderator the moment the constraint landed. The plan did not
+   mention them.
+
+Two things the plan did not anticipate:
+
+- `en.ts` already has an `admin.*` block for the old moderation console, so the namespace test
+  could not assert "no admin key is reviewable". It asserts the new bundle's keys specifically;
+  milestone 2 moves the old block and can tighten it.
+- `src/integrations/supabase/types.ts` is hand-extended rather than regenerated. CLI 2.116.0
+  emits unrelated RPC args as non-nullable where the committed file has them nullable, which
+  breaks `source-jobs.server.ts` and `source-runs.server.ts`. Worth resolving separately.
+
+Local note: `supabase/config.toml` needs temporary port overrides on this machine because other
+local Supabase projects hold 54321-54324. Do not commit them.
