@@ -24,7 +24,6 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
 import { Route as AuthenticatedAlertsRouteImport } from './routes/_authenticated/alerts'
 import { Route as AuthenticatedBroadcastsRouteImport } from './routes/_authenticated/broadcasts'
-import { Route as AuthenticatedModerationRouteImport } from './routes/_authenticated/moderation'
 import { Route as AuthenticatedReportRouteImport } from './routes/_authenticated/report'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
@@ -36,6 +35,7 @@ import { Route as SurvivalAreasRouteImport } from './routes/survival/areas'
 import { Route as SurvivalCheckinRouteImport } from './routes/survival/checkin'
 import { Route as SurvivalSosRouteImport } from './routes/survival/sos'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
+import { Route as AuthenticatedAdminQueuesRouteImport } from './routes/_authenticated/admin/queues'
 import { Route as ContributeLanguageLocaleRouteImport } from './routes/contribute_.language.$locale'
 import { Route as ApiInternalSourceJobsRunRouteImport } from './routes/api/internal/source-jobs/run'
 import { Route as ApiPublicContributeIdeaRouteImport } from './routes/api/public/contribute/idea'
@@ -124,11 +124,6 @@ const AuthenticatedBroadcastsRoute = AuthenticatedBroadcastsRouteImport.update({
   path: '/broadcasts',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedModerationRoute = AuthenticatedModerationRouteImport.update({
-  id: '/moderation',
-  path: '/moderation',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedReportRoute = AuthenticatedReportRouteImport.update({
   id: '/report',
   path: '/report',
@@ -184,6 +179,12 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedAdminRouteRoute,
 } as any)
+const AuthenticatedAdminQueuesRoute =
+  AuthenticatedAdminQueuesRouteImport.update({
+    id: '/queues',
+    path: '/queues',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const ContributeLanguageLocaleRoute =
   ContributeLanguageLocaleRouteImport.update({
     id: '/contribute_/language/$locale',
@@ -269,7 +270,6 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/alerts': typeof AuthenticatedAlertsRoute
   '/broadcasts': typeof AuthenticatedBroadcastsRoute
-  '/moderation': typeof AuthenticatedModerationRoute
   '/report': typeof AuthenticatedReportRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/team': typeof AuthenticatedTeamRoute
@@ -280,6 +280,7 @@ export interface FileRoutesByFullPath {
   '/survival/checkin': typeof SurvivalCheckinRoute
   '/survival/sos': typeof SurvivalSosRoute
   '/survival/': typeof SurvivalIndexRoute
+  '/admin/queues': typeof AuthenticatedAdminQueuesRoute
   '/contribute/language/$locale': typeof ContributeLanguageLocaleRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/api/internal/source-jobs/run': typeof ApiInternalSourceJobsRunRoute
@@ -308,7 +309,6 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/alerts': typeof AuthenticatedAlertsRoute
   '/broadcasts': typeof AuthenticatedBroadcastsRoute
-  '/moderation': typeof AuthenticatedModerationRoute
   '/report': typeof AuthenticatedReportRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/team': typeof AuthenticatedTeamRoute
@@ -319,6 +319,7 @@ export interface FileRoutesByTo {
   '/survival/checkin': typeof SurvivalCheckinRoute
   '/survival/sos': typeof SurvivalSosRoute
   '/survival': typeof SurvivalIndexRoute
+  '/admin/queues': typeof AuthenticatedAdminQueuesRoute
   '/contribute/language/$locale': typeof ContributeLanguageLocaleRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/api/internal/source-jobs/run': typeof ApiInternalSourceJobsRunRoute
@@ -351,7 +352,6 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/alerts': typeof AuthenticatedAlertsRoute
   '/_authenticated/broadcasts': typeof AuthenticatedBroadcastsRoute
-  '/_authenticated/moderation': typeof AuthenticatedModerationRoute
   '/_authenticated/report': typeof AuthenticatedReportRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/team': typeof AuthenticatedTeamRoute
@@ -362,6 +362,7 @@ export interface FileRoutesById {
   '/survival/checkin': typeof SurvivalCheckinRoute
   '/survival/sos': typeof SurvivalSosRoute
   '/survival/': typeof SurvivalIndexRoute
+  '/_authenticated/admin/queues': typeof AuthenticatedAdminQueuesRoute
   '/contribute_/language/$locale': typeof ContributeLanguageLocaleRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/api/internal/source-jobs/run': typeof ApiInternalSourceJobsRunRoute
@@ -394,7 +395,6 @@ export interface FileRouteTypes {
     | '/admin'
     | '/alerts'
     | '/broadcasts'
-    | '/moderation'
     | '/report'
     | '/settings'
     | '/team'
@@ -405,6 +405,7 @@ export interface FileRouteTypes {
     | '/survival/checkin'
     | '/survival/sos'
     | '/survival/'
+    | '/admin/queues'
     | '/contribute/language/$locale'
     | '/admin/'
     | '/api/internal/source-jobs/run'
@@ -433,7 +434,6 @@ export interface FileRouteTypes {
     | '/terms'
     | '/alerts'
     | '/broadcasts'
-    | '/moderation'
     | '/report'
     | '/settings'
     | '/team'
@@ -444,6 +444,7 @@ export interface FileRouteTypes {
     | '/survival/checkin'
     | '/survival/sos'
     | '/survival'
+    | '/admin/queues'
     | '/contribute/language/$locale'
     | '/admin'
     | '/api/internal/source-jobs/run'
@@ -475,7 +476,6 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_authenticated/alerts'
     | '/_authenticated/broadcasts'
-    | '/_authenticated/moderation'
     | '/_authenticated/report'
     | '/_authenticated/settings'
     | '/_authenticated/team'
@@ -486,6 +486,7 @@ export interface FileRouteTypes {
     | '/survival/checkin'
     | '/survival/sos'
     | '/survival/'
+    | '/_authenticated/admin/queues'
     | '/contribute_/language/$locale'
     | '/_authenticated/admin/'
     | '/api/internal/source-jobs/run'
@@ -638,13 +639,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBroadcastsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/moderation': {
-      id: '/_authenticated/moderation'
-      path: '/moderation'
-      fullPath: '/moderation'
-      preLoaderRoute: typeof AuthenticatedModerationRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/report': {
       id: '/_authenticated/report'
       path: '/report'
@@ -720,6 +714,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/admin/'
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/queues': {
+      id: '/_authenticated/admin/queues'
+      path: '/queues'
+      fullPath: '/admin/queues'
+      preLoaderRoute: typeof AuthenticatedAdminQueuesRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
     '/contribute_/language/$locale': {
@@ -817,11 +818,13 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedAdminRouteRouteChildren {
+  AuthenticatedAdminQueuesRoute: typeof AuthenticatedAdminQueuesRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
 
 const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren =
   {
+    AuthenticatedAdminQueuesRoute: AuthenticatedAdminQueuesRoute,
     AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   }
 
@@ -834,7 +837,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRouteRoute: typeof AuthenticatedAdminRouteRouteWithChildren
   AuthenticatedAlertsRoute: typeof AuthenticatedAlertsRoute
   AuthenticatedBroadcastsRoute: typeof AuthenticatedBroadcastsRoute
-  AuthenticatedModerationRoute: typeof AuthenticatedModerationRoute
   AuthenticatedReportRoute: typeof AuthenticatedReportRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
@@ -846,7 +848,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRouteRoute: AuthenticatedAdminRouteRouteWithChildren,
   AuthenticatedAlertsRoute: AuthenticatedAlertsRoute,
   AuthenticatedBroadcastsRoute: AuthenticatedBroadcastsRoute,
-  AuthenticatedModerationRoute: AuthenticatedModerationRoute,
   AuthenticatedReportRoute: AuthenticatedReportRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedTeamRoute: AuthenticatedTeamRoute,

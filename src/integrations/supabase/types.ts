@@ -582,6 +582,10 @@ export type Database = {
       };
       contribution_ideas: {
         Row: {
+          reply: string | null;
+          replied_at: string | null;
+          replied_by: string | null;
+          reply_author_kind: string | null;
           contact: string | null;
           created_at: string;
           id: string;
@@ -595,6 +599,10 @@ export type Database = {
           status: string;
         };
         Insert: {
+          reply?: string | null;
+          replied_at?: string | null;
+          replied_by?: string | null;
+          reply_author_kind?: string | null;
           contact?: string | null;
           created_at?: string;
           id?: string;
@@ -608,6 +616,10 @@ export type Database = {
           status?: string;
         };
         Update: {
+          reply?: string | null;
+          replied_at?: string | null;
+          replied_by?: string | null;
+          reply_author_kind?: string | null;
           contact?: string | null;
           created_at?: string;
           id?: string;
@@ -2898,6 +2910,15 @@ export type Database = {
           _user_id: string;
         };
         Returns: boolean;
+      };
+      reply_to_contribution_idea: {
+        Args: {
+          _actor_label?: string | null;
+          _author_kind: string;
+          _idea: string;
+          _reply: string;
+        };
+        Returns: undefined;
       };
       record_source_run: {
         Args: {
