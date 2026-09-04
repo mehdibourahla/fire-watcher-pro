@@ -22,7 +22,7 @@ import { adminUnitsQuery, relativeTime, unitName } from "@/lib/nadhir";
 import { myRolesQuery } from "@/lib/reports";
 import { titledMeta } from "@/lib/page-meta";
 
-export const Route = createFileRoute("/_authenticated/broadcasts")({
+export const Route = createFileRoute("/_authenticated/admin/broadcasts")({
   head: () => ({
     meta: titledMeta("broadcastAdmin.title", "broadcastAdmin.subtitle"),
   }),

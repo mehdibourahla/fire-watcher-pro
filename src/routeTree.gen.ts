@@ -23,7 +23,6 @@ import { Route as SurvivalRouteRouteImport } from './routes/survival/route'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
 import { Route as AuthenticatedAlertsRouteImport } from './routes/_authenticated/alerts'
-import { Route as AuthenticatedBroadcastsRouteImport } from './routes/_authenticated/broadcasts'
 import { Route as AuthenticatedReportRouteImport } from './routes/_authenticated/report'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedWebhooksRouteImport } from './routes/_authenticated/webhooks'
@@ -35,9 +34,11 @@ import { Route as SurvivalCheckinRouteImport } from './routes/survival/checkin'
 import { Route as SurvivalSosRouteImport } from './routes/survival/sos'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authenticated/admin/audit'
+import { Route as AuthenticatedAdminBroadcastsRouteImport } from './routes/_authenticated/admin/broadcasts'
 import { Route as AuthenticatedAdminFiresRouteImport } from './routes/_authenticated/admin/fires'
 import { Route as AuthenticatedAdminIncidentsRouteImport } from './routes/_authenticated/admin/incidents'
 import { Route as AuthenticatedAdminPeopleRouteImport } from './routes/_authenticated/admin/people'
+import { Route as AuthenticatedAdminPlacesRouteImport } from './routes/_authenticated/admin/places'
 import { Route as AuthenticatedAdminQueuesRouteImport } from './routes/_authenticated/admin/queues'
 import { Route as AuthenticatedAdminRiskRouteImport } from './routes/_authenticated/admin/risk'
 import { Route as AuthenticatedAdminSourcesRouteImport } from './routes/_authenticated/admin/sources'
@@ -124,11 +125,6 @@ const AuthenticatedAlertsRoute = AuthenticatedAlertsRouteImport.update({
   path: '/alerts',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedBroadcastsRoute = AuthenticatedBroadcastsRouteImport.update({
-  id: '/broadcasts',
-  path: '/broadcasts',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedReportRoute = AuthenticatedReportRouteImport.update({
   id: '/report',
   path: '/report',
@@ -184,6 +180,12 @@ const AuthenticatedAdminAuditRoute = AuthenticatedAdminAuditRouteImport.update({
   path: '/audit',
   getParentRoute: () => AuthenticatedAdminRouteRoute,
 } as any)
+const AuthenticatedAdminBroadcastsRoute =
+  AuthenticatedAdminBroadcastsRouteImport.update({
+    id: '/broadcasts',
+    path: '/broadcasts',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminFiresRoute = AuthenticatedAdminFiresRouteImport.update({
   id: '/fires',
   path: '/fires',
@@ -199,6 +201,12 @@ const AuthenticatedAdminPeopleRoute =
   AuthenticatedAdminPeopleRouteImport.update({
     id: '/people',
     path: '/people',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminPlacesRoute =
+  AuthenticatedAdminPlacesRouteImport.update({
+    id: '/places',
+    path: '/places',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
 const AuthenticatedAdminQueuesRoute =
@@ -302,7 +310,6 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/alerts': typeof AuthenticatedAlertsRoute
-  '/broadcasts': typeof AuthenticatedBroadcastsRoute
   '/report': typeof AuthenticatedReportRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/webhooks': typeof AuthenticatedWebhooksRoute
@@ -313,9 +320,11 @@ export interface FileRoutesByFullPath {
   '/survival/sos': typeof SurvivalSosRoute
   '/survival/': typeof SurvivalIndexRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
+  '/admin/broadcasts': typeof AuthenticatedAdminBroadcastsRoute
   '/admin/fires': typeof AuthenticatedAdminFiresRoute
   '/admin/incidents': typeof AuthenticatedAdminIncidentsRoute
   '/admin/people': typeof AuthenticatedAdminPeopleRoute
+  '/admin/places': typeof AuthenticatedAdminPlacesRoute
   '/admin/queues': typeof AuthenticatedAdminQueuesRoute
   '/admin/risk': typeof AuthenticatedAdminRiskRoute
   '/admin/sources': typeof AuthenticatedAdminSourcesRoute
@@ -346,7 +355,6 @@ export interface FileRoutesByTo {
   '/status': typeof StatusRoute
   '/terms': typeof TermsRoute
   '/alerts': typeof AuthenticatedAlertsRoute
-  '/broadcasts': typeof AuthenticatedBroadcastsRoute
   '/report': typeof AuthenticatedReportRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/webhooks': typeof AuthenticatedWebhooksRoute
@@ -357,9 +365,11 @@ export interface FileRoutesByTo {
   '/survival/sos': typeof SurvivalSosRoute
   '/survival': typeof SurvivalIndexRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
+  '/admin/broadcasts': typeof AuthenticatedAdminBroadcastsRoute
   '/admin/fires': typeof AuthenticatedAdminFiresRoute
   '/admin/incidents': typeof AuthenticatedAdminIncidentsRoute
   '/admin/people': typeof AuthenticatedAdminPeopleRoute
+  '/admin/places': typeof AuthenticatedAdminPlacesRoute
   '/admin/queues': typeof AuthenticatedAdminQueuesRoute
   '/admin/risk': typeof AuthenticatedAdminRiskRoute
   '/admin/sources': typeof AuthenticatedAdminSourcesRoute
@@ -394,7 +404,6 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/alerts': typeof AuthenticatedAlertsRoute
-  '/_authenticated/broadcasts': typeof AuthenticatedBroadcastsRoute
   '/_authenticated/report': typeof AuthenticatedReportRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/webhooks': typeof AuthenticatedWebhooksRoute
@@ -405,9 +414,11 @@ export interface FileRoutesById {
   '/survival/sos': typeof SurvivalSosRoute
   '/survival/': typeof SurvivalIndexRoute
   '/_authenticated/admin/audit': typeof AuthenticatedAdminAuditRoute
+  '/_authenticated/admin/broadcasts': typeof AuthenticatedAdminBroadcastsRoute
   '/_authenticated/admin/fires': typeof AuthenticatedAdminFiresRoute
   '/_authenticated/admin/incidents': typeof AuthenticatedAdminIncidentsRoute
   '/_authenticated/admin/people': typeof AuthenticatedAdminPeopleRoute
+  '/_authenticated/admin/places': typeof AuthenticatedAdminPlacesRoute
   '/_authenticated/admin/queues': typeof AuthenticatedAdminQueuesRoute
   '/_authenticated/admin/risk': typeof AuthenticatedAdminRiskRoute
   '/_authenticated/admin/sources': typeof AuthenticatedAdminSourcesRoute
@@ -442,7 +453,6 @@ export interface FileRouteTypes {
     | '/terms'
     | '/admin'
     | '/alerts'
-    | '/broadcasts'
     | '/report'
     | '/settings'
     | '/webhooks'
@@ -453,9 +463,11 @@ export interface FileRouteTypes {
     | '/survival/sos'
     | '/survival/'
     | '/admin/audit'
+    | '/admin/broadcasts'
     | '/admin/fires'
     | '/admin/incidents'
     | '/admin/people'
+    | '/admin/places'
     | '/admin/queues'
     | '/admin/risk'
     | '/admin/sources'
@@ -486,7 +498,6 @@ export interface FileRouteTypes {
     | '/status'
     | '/terms'
     | '/alerts'
-    | '/broadcasts'
     | '/report'
     | '/settings'
     | '/webhooks'
@@ -497,9 +508,11 @@ export interface FileRouteTypes {
     | '/survival/sos'
     | '/survival'
     | '/admin/audit'
+    | '/admin/broadcasts'
     | '/admin/fires'
     | '/admin/incidents'
     | '/admin/people'
+    | '/admin/places'
     | '/admin/queues'
     | '/admin/risk'
     | '/admin/sources'
@@ -533,7 +546,6 @@ export interface FileRouteTypes {
     | '/terms'
     | '/_authenticated/admin'
     | '/_authenticated/alerts'
-    | '/_authenticated/broadcasts'
     | '/_authenticated/report'
     | '/_authenticated/settings'
     | '/_authenticated/webhooks'
@@ -544,9 +556,11 @@ export interface FileRouteTypes {
     | '/survival/sos'
     | '/survival/'
     | '/_authenticated/admin/audit'
+    | '/_authenticated/admin/broadcasts'
     | '/_authenticated/admin/fires'
     | '/_authenticated/admin/incidents'
     | '/_authenticated/admin/people'
+    | '/_authenticated/admin/places'
     | '/_authenticated/admin/queues'
     | '/_authenticated/admin/risk'
     | '/_authenticated/admin/sources'
@@ -695,13 +709,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAlertsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/broadcasts': {
-      id: '/_authenticated/broadcasts'
-      path: '/broadcasts'
-      fullPath: '/broadcasts'
-      preLoaderRoute: typeof AuthenticatedBroadcastsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/report': {
       id: '/_authenticated/report'
       path: '/report'
@@ -779,6 +786,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminAuditRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/broadcasts': {
+      id: '/_authenticated/admin/broadcasts'
+      path: '/broadcasts'
+      fullPath: '/admin/broadcasts'
+      preLoaderRoute: typeof AuthenticatedAdminBroadcastsRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/fires': {
       id: '/_authenticated/admin/fires'
       path: '/fires'
@@ -798,6 +812,13 @@ declare module '@tanstack/react-router' {
       path: '/people'
       fullPath: '/admin/people'
       preLoaderRoute: typeof AuthenticatedAdminPeopleRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/places': {
+      id: '/_authenticated/admin/places'
+      path: '/places'
+      fullPath: '/admin/places'
+      preLoaderRoute: typeof AuthenticatedAdminPlacesRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
     '/_authenticated/admin/queues': {
@@ -917,9 +938,11 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminAuditRoute: typeof AuthenticatedAdminAuditRoute
+  AuthenticatedAdminBroadcastsRoute: typeof AuthenticatedAdminBroadcastsRoute
   AuthenticatedAdminFiresRoute: typeof AuthenticatedAdminFiresRoute
   AuthenticatedAdminIncidentsRoute: typeof AuthenticatedAdminIncidentsRoute
   AuthenticatedAdminPeopleRoute: typeof AuthenticatedAdminPeopleRoute
+  AuthenticatedAdminPlacesRoute: typeof AuthenticatedAdminPlacesRoute
   AuthenticatedAdminQueuesRoute: typeof AuthenticatedAdminQueuesRoute
   AuthenticatedAdminRiskRoute: typeof AuthenticatedAdminRiskRoute
   AuthenticatedAdminSourcesRoute: typeof AuthenticatedAdminSourcesRoute
@@ -929,9 +952,11 @@ interface AuthenticatedAdminRouteRouteChildren {
 const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren =
   {
     AuthenticatedAdminAuditRoute: AuthenticatedAdminAuditRoute,
+    AuthenticatedAdminBroadcastsRoute: AuthenticatedAdminBroadcastsRoute,
     AuthenticatedAdminFiresRoute: AuthenticatedAdminFiresRoute,
     AuthenticatedAdminIncidentsRoute: AuthenticatedAdminIncidentsRoute,
     AuthenticatedAdminPeopleRoute: AuthenticatedAdminPeopleRoute,
+    AuthenticatedAdminPlacesRoute: AuthenticatedAdminPlacesRoute,
     AuthenticatedAdminQueuesRoute: AuthenticatedAdminQueuesRoute,
     AuthenticatedAdminRiskRoute: AuthenticatedAdminRiskRoute,
     AuthenticatedAdminSourcesRoute: AuthenticatedAdminSourcesRoute,
@@ -946,7 +971,6 @@ const AuthenticatedAdminRouteRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRouteRoute: typeof AuthenticatedAdminRouteRouteWithChildren
   AuthenticatedAlertsRoute: typeof AuthenticatedAlertsRoute
-  AuthenticatedBroadcastsRoute: typeof AuthenticatedBroadcastsRoute
   AuthenticatedReportRoute: typeof AuthenticatedReportRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedWebhooksRoute: typeof AuthenticatedWebhooksRoute
@@ -956,7 +980,6 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRouteRoute: AuthenticatedAdminRouteRouteWithChildren,
   AuthenticatedAlertsRoute: AuthenticatedAlertsRoute,
-  AuthenticatedBroadcastsRoute: AuthenticatedBroadcastsRoute,
   AuthenticatedReportRoute: AuthenticatedReportRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedWebhooksRoute: AuthenticatedWebhooksRoute,

@@ -45,7 +45,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     key: "broadcasts",
     path: "/admin/broadcasts",
     roles: ["operator", "admin"],
-    ready: false,
+    ready: true,
   },
   {
     key: "queues",
@@ -57,7 +57,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     key: "places",
     path: "/admin/places",
     roles: ["operator", "admin"],
-    ready: false,
+    ready: true,
   },
   { key: "people", path: "/admin/people", roles: ["admin"], ready: true },
   { key: "audit", path: "/admin/audit", roles: PANEL_ROLES, ready: true },

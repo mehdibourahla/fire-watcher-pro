@@ -157,6 +157,18 @@ export const adminFr: AdminTranslation = {
     status_monitoring: "Sous surveillance",
     status_unknown: "Inconnu",
   },
+  places: {
+    title: "Lieux",
+    subtitle:
+      "Espaces ouverts pouvant servir d'abri, et ceux que personne n'a vérifiés.",
+    coverage: "{{verified}} sur {{total}} vérifiés sur le terrain",
+    filterVerified: "Vérifiés",
+    filterUnverified: "Non vérifiés",
+    verify: "Marquer vérifié",
+    verified: "Vérifié",
+    unnamed: "Espace sans nom",
+    notePlaceholder: "Qu'avez-vous constaté ?",
+  },
   role: {
     admin: "administrateur",
     operator: "opérateur",

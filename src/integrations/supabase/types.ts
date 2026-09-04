@@ -2986,6 +2986,10 @@ export type Database = {
         };
         Returns: boolean;
       };
+      verify_open_area: {
+        Args: { _area: string; _note?: string | null; _verified?: boolean };
+        Returns: undefined;
+      };
       vote_on_idea: {
         Args: { _idea: string; _value: number; _voter: string };
         Returns: number;

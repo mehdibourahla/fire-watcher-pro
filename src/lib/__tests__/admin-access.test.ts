@@ -41,7 +41,9 @@ describe("admin access", () => {
       "fires",
       "risk",
       "incidents",
+      "broadcasts",
       "queues",
+      "places",
       "people",
       "audit",
     ]);

@@ -154,6 +154,18 @@ export const adminEn = {
     status_monitoring: "Monitoring",
     status_unknown: "Unknown",
   },
+  places: {
+    title: "Places",
+    subtitle:
+      "Open areas people could shelter in, and whether anyone has checked them.",
+    coverage: "{{verified}} of {{total}} verified in the field",
+    filterVerified: "Verified",
+    filterUnverified: "Not yet verified",
+    verify: "Mark verified",
+    verified: "Verified",
+    unnamed: "Unnamed area",
+    notePlaceholder: "What did you find?",
+  },
   role: {
     admin: "administrator",
     operator: "operator",
