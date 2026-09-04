@@ -1,6 +1,8 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 
+import { adminEn } from "./admin/en";
+import { adminFr } from "./admin/fr";
 import { ar } from "./locales/ar";
 import { en } from "./locales/en";
 import { fr } from "./locales/fr";
@@ -48,8 +50,8 @@ if (!i18n.isInitialized) {
   void i18n.use(initReactI18next).init({
     resources: {
       ar: { translation: ar },
-      fr: { translation: fr },
-      en: { translation: en },
+      fr: { translation: fr, admin: adminFr },
+      en: { translation: en, admin: adminEn },
       kab: { translation: kab },
     },
     lng: "ar",

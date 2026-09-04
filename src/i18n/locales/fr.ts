@@ -681,8 +681,6 @@ export const fr: Translation = {
     roleUser: "Membre",
     grant: "Nommer {{role}}",
     revoke: "Retirer {{role}}",
-    role_moderator: "modérateur",
-    role_admin: "administrateur",
     confirmSelfAdminRevoke:
       "Retirer votre propre accès administrateur ? Vous perdrez immédiatement l’accès à la gestion de l’équipe.",
     lastAdminDisabled:

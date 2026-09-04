@@ -665,8 +665,6 @@ export const en = {
     roleUser: "Member",
     grant: "Make {{role}}",
     revoke: "Remove {{role}}",
-    role_moderator: "moderator",
-    role_admin: "admin",
     confirmSelfAdminRevoke:
       "Remove your own administrator access? You will immediately lose access to team administration.",
     lastAdminDisabled:
