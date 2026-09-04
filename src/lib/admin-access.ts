@@ -33,13 +33,13 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     key: "risk",
     path: "/admin/risk",
     roles: ["operator", "admin"],
-    ready: false,
+    ready: true,
   },
   {
     key: "incidents",
     path: "/admin/incidents",
     roles: ["incident_editor", "operator", "admin"],
-    ready: false,
+    ready: true,
   },
   {
     key: "broadcasts",

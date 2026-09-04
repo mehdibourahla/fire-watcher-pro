@@ -3089,6 +3089,28 @@ export type Database = {
         };
         Returns: undefined;
       };
+      operator_discard_risk_snapshot: {
+        Args: {
+          _base_date: string;
+          _reason: string;
+          _scheduled_for: string;
+          _snapshot_id: string;
+        };
+        Returns: boolean;
+      };
+      operator_edit_incident: {
+        Args: { _id: string; _patch: Json; _reason?: string | null };
+        Returns: undefined;
+      };
+      operator_publish_risk_snapshot: {
+        Args: {
+          _base_date: string;
+          _reason?: string | null;
+          _scheduled_for: string;
+          _snapshot_id: string;
+        };
+        Returns: Json;
+      };
       publish_risk_forecast_snapshot: {
         Args: {
           _base_date: string;

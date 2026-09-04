@@ -36,8 +36,10 @@ import { Route as SurvivalSosRouteImport } from './routes/survival/sos'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authenticated/admin/audit'
 import { Route as AuthenticatedAdminFiresRouteImport } from './routes/_authenticated/admin/fires'
+import { Route as AuthenticatedAdminIncidentsRouteImport } from './routes/_authenticated/admin/incidents'
 import { Route as AuthenticatedAdminPeopleRouteImport } from './routes/_authenticated/admin/people'
 import { Route as AuthenticatedAdminQueuesRouteImport } from './routes/_authenticated/admin/queues'
+import { Route as AuthenticatedAdminRiskRouteImport } from './routes/_authenticated/admin/risk'
 import { Route as AuthenticatedAdminSourcesRouteImport } from './routes/_authenticated/admin/sources'
 import { Route as ContributeLanguageLocaleRouteImport } from './routes/contribute_.language.$locale'
 import { Route as ApiInternalSourceJobsRunRouteImport } from './routes/api/internal/source-jobs/run'
@@ -187,6 +189,12 @@ const AuthenticatedAdminFiresRoute = AuthenticatedAdminFiresRouteImport.update({
   path: '/fires',
   getParentRoute: () => AuthenticatedAdminRouteRoute,
 } as any)
+const AuthenticatedAdminIncidentsRoute =
+  AuthenticatedAdminIncidentsRouteImport.update({
+    id: '/incidents',
+    path: '/incidents',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminPeopleRoute =
   AuthenticatedAdminPeopleRouteImport.update({
     id: '/people',
@@ -199,6 +207,11 @@ const AuthenticatedAdminQueuesRoute =
     path: '/queues',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminRiskRoute = AuthenticatedAdminRiskRouteImport.update({
+  id: '/risk',
+  path: '/risk',
+  getParentRoute: () => AuthenticatedAdminRouteRoute,
+} as any)
 const AuthenticatedAdminSourcesRoute =
   AuthenticatedAdminSourcesRouteImport.update({
     id: '/sources',
@@ -301,8 +314,10 @@ export interface FileRoutesByFullPath {
   '/survival/': typeof SurvivalIndexRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/admin/fires': typeof AuthenticatedAdminFiresRoute
+  '/admin/incidents': typeof AuthenticatedAdminIncidentsRoute
   '/admin/people': typeof AuthenticatedAdminPeopleRoute
   '/admin/queues': typeof AuthenticatedAdminQueuesRoute
+  '/admin/risk': typeof AuthenticatedAdminRiskRoute
   '/admin/sources': typeof AuthenticatedAdminSourcesRoute
   '/contribute/language/$locale': typeof ContributeLanguageLocaleRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
@@ -343,8 +358,10 @@ export interface FileRoutesByTo {
   '/survival': typeof SurvivalIndexRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/admin/fires': typeof AuthenticatedAdminFiresRoute
+  '/admin/incidents': typeof AuthenticatedAdminIncidentsRoute
   '/admin/people': typeof AuthenticatedAdminPeopleRoute
   '/admin/queues': typeof AuthenticatedAdminQueuesRoute
+  '/admin/risk': typeof AuthenticatedAdminRiskRoute
   '/admin/sources': typeof AuthenticatedAdminSourcesRoute
   '/contribute/language/$locale': typeof ContributeLanguageLocaleRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
@@ -389,8 +406,10 @@ export interface FileRoutesById {
   '/survival/': typeof SurvivalIndexRoute
   '/_authenticated/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/_authenticated/admin/fires': typeof AuthenticatedAdminFiresRoute
+  '/_authenticated/admin/incidents': typeof AuthenticatedAdminIncidentsRoute
   '/_authenticated/admin/people': typeof AuthenticatedAdminPeopleRoute
   '/_authenticated/admin/queues': typeof AuthenticatedAdminQueuesRoute
+  '/_authenticated/admin/risk': typeof AuthenticatedAdminRiskRoute
   '/_authenticated/admin/sources': typeof AuthenticatedAdminSourcesRoute
   '/contribute_/language/$locale': typeof ContributeLanguageLocaleRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
@@ -435,8 +454,10 @@ export interface FileRouteTypes {
     | '/survival/'
     | '/admin/audit'
     | '/admin/fires'
+    | '/admin/incidents'
     | '/admin/people'
     | '/admin/queues'
+    | '/admin/risk'
     | '/admin/sources'
     | '/contribute/language/$locale'
     | '/admin/'
@@ -477,8 +498,10 @@ export interface FileRouteTypes {
     | '/survival'
     | '/admin/audit'
     | '/admin/fires'
+    | '/admin/incidents'
     | '/admin/people'
     | '/admin/queues'
+    | '/admin/risk'
     | '/admin/sources'
     | '/contribute/language/$locale'
     | '/admin'
@@ -522,8 +545,10 @@ export interface FileRouteTypes {
     | '/survival/'
     | '/_authenticated/admin/audit'
     | '/_authenticated/admin/fires'
+    | '/_authenticated/admin/incidents'
     | '/_authenticated/admin/people'
     | '/_authenticated/admin/queues'
+    | '/_authenticated/admin/risk'
     | '/_authenticated/admin/sources'
     | '/contribute_/language/$locale'
     | '/_authenticated/admin/'
@@ -761,6 +786,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminFiresRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/incidents': {
+      id: '/_authenticated/admin/incidents'
+      path: '/incidents'
+      fullPath: '/admin/incidents'
+      preLoaderRoute: typeof AuthenticatedAdminIncidentsRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/people': {
       id: '/_authenticated/admin/people'
       path: '/people'
@@ -773,6 +805,13 @@ declare module '@tanstack/react-router' {
       path: '/queues'
       fullPath: '/admin/queues'
       preLoaderRoute: typeof AuthenticatedAdminQueuesRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/risk': {
+      id: '/_authenticated/admin/risk'
+      path: '/risk'
+      fullPath: '/admin/risk'
+      preLoaderRoute: typeof AuthenticatedAdminRiskRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
     '/_authenticated/admin/sources': {
@@ -879,8 +918,10 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminAuditRoute: typeof AuthenticatedAdminAuditRoute
   AuthenticatedAdminFiresRoute: typeof AuthenticatedAdminFiresRoute
+  AuthenticatedAdminIncidentsRoute: typeof AuthenticatedAdminIncidentsRoute
   AuthenticatedAdminPeopleRoute: typeof AuthenticatedAdminPeopleRoute
   AuthenticatedAdminQueuesRoute: typeof AuthenticatedAdminQueuesRoute
+  AuthenticatedAdminRiskRoute: typeof AuthenticatedAdminRiskRoute
   AuthenticatedAdminSourcesRoute: typeof AuthenticatedAdminSourcesRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
@@ -889,8 +930,10 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
   {
     AuthenticatedAdminAuditRoute: AuthenticatedAdminAuditRoute,
     AuthenticatedAdminFiresRoute: AuthenticatedAdminFiresRoute,
+    AuthenticatedAdminIncidentsRoute: AuthenticatedAdminIncidentsRoute,
     AuthenticatedAdminPeopleRoute: AuthenticatedAdminPeopleRoute,
     AuthenticatedAdminQueuesRoute: AuthenticatedAdminQueuesRoute,
+    AuthenticatedAdminRiskRoute: AuthenticatedAdminRiskRoute,
     AuthenticatedAdminSourcesRoute: AuthenticatedAdminSourcesRoute,
     AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   }
