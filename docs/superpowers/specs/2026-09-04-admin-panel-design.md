@@ -226,9 +226,14 @@ Admin strings live in their own modules, `src/i18n/admin/{en,fr}.ts`, exporting 
 `kab.ts` are unaffected and need no admin keys to typecheck. `/admin` routes read the admin
 bundle; a French or English admin locale falls back to English for any missing key.
 
-`/contribute/language/:locale` enumerates translation keys for review. It must exclude the
-admin namespace, or `ar` and `kab` reviewers receive several hundred strings they should never
-see. This is a filter in the key enumeration, and it needs a test.
+The separation is structural, not a filter. `rowsFor` in `src/lib/translate.ts` enumerates by
+walking the `en` object, so strings that live outside `Translation` are invisible to
+`/contribute/language/:locale` without any exclusion logic. Registering `admin` as a second
+i18next namespace — `en: { translation: en, admin: enAdmin }` — therefore keeps several hundred
+admin strings out of the `ar` and `kab` review queues for free.
+
+A regression test still asserts that no reviewable row has a path under `admin.`, so a later
+merge of admin keys into `en.ts` fails loudly rather than quietly flooding a translator.
 
 ## Verification
 
@@ -239,7 +244,8 @@ see. This is a filter in the key enumeration, and it needs a test.
 - **Audit completeness test** asserting every admin RPC in the migration set writes
   `admin_audit`. A function that mutates without auditing fails the suite.
 - **Vitest** for pure logic: triage ranking, permission mapping, error-code mapping.
-- **Translation namespace test** asserting the review enumeration excludes `admin.*`.
+- **Translation namespace test** asserting `rowsFor` yields no path under `admin.`, so admin
+  strings can never leak into a translator's queue.
 
 ## Delivery milestones
 
