@@ -2935,6 +2935,7 @@ export type Database = {
         Args: {
           _cluster: string;
           _expected_updated_at?: string | null;
+          _actor_label?: string | null;
           _note?: string | null;
           _reason?: string | null;
           _state: string;

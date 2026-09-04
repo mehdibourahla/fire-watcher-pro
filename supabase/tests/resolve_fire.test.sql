@@ -2,7 +2,7 @@ begin;
 
 set local search_path = public, extensions;
 
-select plan(8);
+select plan(11);
 
 insert into auth.users (
   instance_id, id, aud, role, email, encrypted_password,
@@ -86,9 +86,44 @@ select is(
 
 select is(
   (select after ->> 'state' from public.admin_audit
-   where action = 'fire.resolve' order by at desc limit 1),
+   where action = 'fire.resolve'
+     and target_id = 'ad060000-0000-4000-8000-0000000000aa'),
   'false_positive',
   'the resolution is audited'
+);
+
+insert into public.fire_clusters (id, short_id, lat, lon, first_detected_at, last_detected_at, state)
+values (
+  'ad060000-0000-4000-8000-0000000000bb', 'AD06BB', 30.1, 2.2,
+  now() - interval '4 hours', now() - interval '3 hours', 'active'
+);
+
+-- the claim is transaction-local and outlives the role switch, so a job has to clear it
+select set_config('request.jwt.claim.sub', '', true);
+set local role service_role;
+
+select throws_ok(
+  $$select public.resolve_fire(
+      'ad060000-0000-4000-8000-0000000000bb', 'false_positive', 'out_of_area')$$,
+  null, null,
+  'a job with no session and no label is refused'
+);
+
+select lives_ok(
+  $$select public.resolve_fire(
+      'ad060000-0000-4000-8000-0000000000bb', 'false_positive', 'out_of_area',
+      null, null, 'retire-out-of-area-clusters')$$,
+  'a labelled job resolves a fire outside the watch area'
+);
+
+reset role;
+
+select is(
+  (select actor_label from public.admin_audit
+   where action = 'fire.resolve'
+     and target_id = 'ad060000-0000-4000-8000-0000000000bb'),
+  'retire-out-of-area-clusters',
+  'the job that retired the fire is named in the audit log'
 );
 
 select * from finish();

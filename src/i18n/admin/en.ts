@@ -113,6 +113,7 @@ export const adminEn = {
     reason_glint: "Sun glint",
     reason_industry: "Industrial heat",
     reason_agri_burn: "Agricultural burn",
+    reason_out_of_area: "Outside the watch area",
     reason_other: "Other",
   },
   sources: {

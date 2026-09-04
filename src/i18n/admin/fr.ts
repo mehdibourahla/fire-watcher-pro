@@ -116,6 +116,7 @@ export const adminFr: AdminTranslation = {
     reason_glint: "Reflet solaire",
     reason_industry: "Chaleur industrielle",
     reason_agri_burn: "Brûlage agricole",
+    reason_out_of_area: "Hors de la zone surveillée",
     reason_other: "Autre",
   },
   sources: {

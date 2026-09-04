@@ -17,6 +17,7 @@ export const RESOLUTION_REASONS = [
   "glint",
   "industry",
   "agri_burn",
+  "out_of_area",
   "other",
 ] as const;
 
