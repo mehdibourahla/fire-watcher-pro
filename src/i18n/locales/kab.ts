@@ -662,8 +662,6 @@ export const kab: Translation = {
     roleUser: "Amttekki",
     grant: "Err d {{role}}",
     revoke: "Kkes {{role}}",
-    role_moderator: "aɛessas",
-    role_admin: "anedbal",
     confirmSelfAdminRevoke:
       "Tebɣiḍ ad tekkseḍ iman-ik seg inedbalen? Ad tesruḥeḍ imir-nni anekcum ɣer usefrek n terbaɛt.",
     lastAdminDisabled:

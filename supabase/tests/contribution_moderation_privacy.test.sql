@@ -38,7 +38,8 @@ from (
 
 insert into public.user_roles (user_id, role)
 values
-  ('f0270000-0000-4000-8000-000000000002', 'moderator'),
+  ('f0270000-0000-4000-8000-000000000002', 'report_moderator'),
+  ('f0270000-0000-4000-8000-000000000002', 'translator'),
   ('f0270000-0000-4000-8000-000000000003', 'admin');
 
 insert into public.contribution_ideas (
@@ -301,7 +302,7 @@ select is(
     "contact": "private-pending@example.invalid",
     "moderation_note": "private pending note"
   }'::jsonb,
-  'moderators retain private idea queue fields needed for review'
+  'report moderators retain private idea queue fields needed for review'
 );
 select is(
   pg_temp.qa_scalar(
@@ -316,7 +317,7 @@ select is(
     "reviewer_name": "Private reviewer",
     "suggestion": "Suggested fixture"
   }'::jsonb,
-  'moderators retain the full translation queue'
+  'translators retain the full translation queue'
 );
 select throws_ok(
   $$select public.moderate_contribution_idea(
@@ -344,7 +345,7 @@ select lives_ok(
       'published',
       'reviewed by moderator'
     )$$,
-  'a moderator can publish an idea'
+  'a report moderator can publish an idea'
 );
 select lives_ok(
   $$select public.moderate_translation_suggestion(
@@ -352,7 +353,7 @@ select lives_ok(
       'accepted',
       null
     )$$,
-  'a moderator can accept a translation'
+  'a translator can accept a translation'
 );
 
 reset role;

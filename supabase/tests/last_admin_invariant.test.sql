@@ -40,7 +40,7 @@ from (
 insert into public.user_roles (user_id, role)
 values
   ('f0140000-0000-4000-8000-000000000001', 'admin'),
-  ('f0140000-0000-4000-8000-000000000003', 'moderator');
+  ('f0140000-0000-4000-8000-000000000003', 'report_moderator');
 
 delete from public.user_roles
 where role = 'admin'
@@ -49,7 +49,7 @@ where role = 'admin'
 set local role service_role;
 select throws_ok(
   $$update public.user_roles
-    set role = 'moderator'
+    set role = 'report_moderator'
     where user_id = 'f0140000-0000-4000-8000-000000000001'
       and role = 'admin'$$,
   'P0001',
@@ -132,13 +132,13 @@ select is(
 );
 select lives_ok(
   $$insert into public.user_roles (user_id, role)
-    values ('f0140000-0000-4000-8000-000000000004', 'moderator')$$,
+    values ('f0140000-0000-4000-8000-000000000004', 'report_moderator')$$,
   'an admin can grant a non-terminal role'
 );
 select lives_ok(
   $$delete from public.user_roles
     where user_id = 'f0140000-0000-4000-8000-000000000004'
-      and role = 'moderator'$$,
+      and role = 'report_moderator'$$,
   'an admin can revoke a non-terminal role'
 );
 
@@ -168,20 +168,20 @@ select set_config(
 select is(
   (select count(*)::integer from public.user_roles where role = 'admin'),
   0,
-  'a moderator exact-count query exposes no admin membership'
+  'a report moderator exact-count query exposes no admin membership'
 );
 select lives_ok(
   $$delete from public.user_roles
     where user_id = 'f0140000-0000-4000-8000-000000000001'
       and role = 'admin'$$,
-  'a moderator delete is denied without leaking a row-policy error'
+  'a report moderator delete is denied without leaking a row-policy error'
 );
 
 reset role;
 select is(
   (select count(*)::integer from public.user_roles where role = 'admin'),
   1,
-  'the moderator cannot remove an admin role'
+  'the report moderator cannot remove an admin role'
 );
 
 set local role service_role;

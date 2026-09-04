@@ -2,7 +2,13 @@ import { queryOptions } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
 
-export type AppRole = "admin" | "moderator" | "user";
+export type AppRole =
+  | "admin"
+  | "operator"
+  | "report_moderator"
+  | "translator"
+  | "incident_editor"
+  | "user";
 
 export type Member = {
   id: string;

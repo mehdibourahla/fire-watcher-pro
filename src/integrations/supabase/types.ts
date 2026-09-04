@@ -1023,6 +1023,51 @@ export type Database = {
         };
         Relationships: [];
       };
+      admin_audit: {
+        Row: {
+          action: string;
+          actor_kind: string;
+          actor_label: string | null;
+          actor_user_id: string | null;
+          after: Json | null;
+          at: string;
+          before: Json | null;
+          domain: string;
+          id: string;
+          reason: string | null;
+          target_id: string | null;
+          target_table: string;
+        };
+        Insert: {
+          action: string;
+          actor_kind: string;
+          actor_label?: string | null;
+          actor_user_id?: string | null;
+          after?: Json | null;
+          at?: string;
+          before?: Json | null;
+          domain: string;
+          id?: string;
+          reason?: string | null;
+          target_id?: string | null;
+          target_table: string;
+        };
+        Update: {
+          action?: string;
+          actor_kind?: string;
+          actor_label?: string | null;
+          actor_user_id?: string | null;
+          after?: Json | null;
+          at?: string;
+          before?: Json | null;
+          domain?: string;
+          id?: string;
+          reason?: string | null;
+          target_id?: string | null;
+          target_table?: string;
+        };
+        Relationships: [];
+      };
       admin_unit_aliases: {
         Row: {
           admin_unit_id: string;
@@ -2582,6 +2627,21 @@ export type Database = {
       };
     };
     Views: {
+      admin_audit_timeline: {
+        Row: {
+          action: string | null;
+          actor_kind: string | null;
+          actor_label: string | null;
+          actor_user_id: string | null;
+          at: string | null;
+          domain: string | null;
+          id: string | null;
+          reason: string | null;
+          target_id: string | null;
+          target_table: string | null;
+        };
+        Relationships: [];
+      };
       hazard_reports: {
         Row: {
           created_at: string | null;
@@ -2812,6 +2872,26 @@ export type Database = {
         Args: { _gap_id: string; _requested_at?: string };
         Returns: string | null;
       };
+      has_any_role: {
+        Args: {
+          _roles: Database["public"]["Enums"]["app_role"][];
+          _user_id: string;
+        };
+        Returns: boolean;
+      };
+      record_admin_audit: {
+        Args: {
+          _action: string;
+          _actor_label?: string | null;
+          _after?: Json | null;
+          _before?: Json | null;
+          _domain: string;
+          _reason?: string | null;
+          _target_id?: string | null;
+          _target_table: string;
+        };
+        Returns: string;
+      };
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"];
@@ -2978,7 +3058,14 @@ export type Database = {
       };
     };
     Enums: {
-      app_role: "admin" | "moderator" | "user";
+      app_role:
+        | "admin"
+        | "moderator"
+        | "user"
+        | "operator"
+        | "report_moderator"
+        | "translator"
+        | "incident_editor";
     };
     CompositeTypes: {
       [_ in never]: never;
@@ -3109,7 +3196,15 @@ export const Constants = {
   },
   public: {
     Enums: {
-      app_role: ["admin", "moderator", "user"],
+      app_role: [
+        "admin",
+        "moderator",
+        "user",
+        "operator",
+        "report_moderator",
+        "translator",
+        "incident_editor",
+      ],
     },
   },
 } as const;

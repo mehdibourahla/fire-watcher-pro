@@ -649,8 +649,6 @@ export const ar: Translation = {
     roleUser: "عضو",
     grant: "تعيين {{role}}",
     revoke: "سحب {{role}}",
-    role_moderator: "مشرف",
-    role_admin: "مدير",
     confirmSelfAdminRevoke:
       "هل تريد سحب صلاحية الإدارة من حسابك؟ ستفقد فوراً إمكانية إدارة الفريق.",
     lastAdminDisabled:

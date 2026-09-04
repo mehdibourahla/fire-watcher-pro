@@ -2,6 +2,7 @@ import { queryOptions } from "@tanstack/react-query";
 
 import { stripImageMetadata } from "@/lib/image-metadata";
 import { supabase } from "@/integrations/supabase/client";
+import type { AppRole } from "./roles";
 
 export type ReportStatus = "pending" | "approved" | "rejected";
 export type Sighting = "smoke" | "flames" | "smell" | "other";
@@ -97,13 +98,13 @@ export const myRolesQuery = queryOptions({
   queryKey: ["roles", "mine"],
   queryFn: async () => {
     const { data: auth } = await supabase.auth.getUser();
-    if (!auth.user) return [] as string[];
+    if (!auth.user) return [] as AppRole[];
     const { data, error } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", auth.user.id);
     if (error) throw new Error(error.message);
-    return (data ?? []).map((r) => r.role as string);
+    return (data ?? []).map((r) => r.role as AppRole);
   },
 });
 

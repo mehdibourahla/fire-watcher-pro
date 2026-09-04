@@ -27,10 +27,17 @@ export const Route = createFileRoute("/_authenticated/team")({
   component: TeamPage,
 });
 
-const MANAGED: AppRole[] = ["moderator", "admin"];
+const MANAGED: AppRole[] = [
+  "operator",
+  "report_moderator",
+  "translator",
+  "incident_editor",
+  "admin",
+];
 
 function TeamPage() {
   const { t } = useTranslation();
+  const { t: tAdmin } = useTranslation("admin");
   const me = useQuery(currentUserIdQuery);
   const qc = useQueryClient();
   const roles = useQuery(myRolesQuery);
@@ -135,7 +142,7 @@ function TeamPage() {
                     </p>
                   ) : null}
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   {MANAGED.map((role) => {
                     const has = m.roles.includes(role);
                     const guard =
@@ -170,8 +177,8 @@ function TeamPage() {
                         }
                       >
                         {has
-                          ? t("team.revoke", { role: t(`team.role_${role}`) })
-                          : t("team.grant", { role: t(`team.role_${role}`) })}
+                          ? t("team.revoke", { role: tAdmin(`role.${role}`) })
+                          : t("team.grant", { role: tAdmin(`role.${role}`) })}
                       </button>
                     );
                   })}
