@@ -2,19 +2,19 @@ import type { Translation } from "./en";
 
 export const kab: Translation = {
   common: {
-    close: "Mdel",
+    close: "Belaɛ",
     dismiss: "Ffer",
     delete: "Kkes",
     appName: "Nadhir",
     tagline: "Alɣu zik ɣef tmessi n teẓgi di Lezzayer",
     loading: "Yessalay",
     error: "Tella-d tuccḍa",
-    retry: "Ɛreḍ tikkelt-nniḍen",
+    retry: "Ɛiwed tikkelt-nniḍen",
     none: "—",
     km: "km",
     ha: "ha",
     mw: "MW",
-    kmh: "km/s",
+    kmh: "km/h",
     updated: "Yettwaleqqem {{time}}",
     viewAll: "Wali kullec",
     back: "Uɣal",
@@ -26,14 +26,14 @@ export const kab: Translation = {
       "Isaduf n usaṭelit ur qqinen ara akka tura. Izwilen d wid n uskan.",
   },
   meta: {
-    defaultTitle: "Nadhir — Alɣu azawar n tmessi n teẓgi di Lezzayer",
+    defaultTitle: "Nadhir — Alɣu azawar n tmess n teẓgi di Lezzayer",
     titleTemplate: "{{page}} — Nadhir",
   },
   notFound: {
     metaTitle: "Ur nufi ara asebter — Nadhir",
     title: "Ur nufi ara asebter",
-    body: "Asebter i tettnadiḍ ulac-it neɣ yettwabeddel umidag-is.",
-    home: "Uɣal ɣer usebter agejdan",
+    body: "Asebter i tettnadiḍ ulac-it neɣ yettwabeddel umkan-is.",
+    home: "Uɣal ɣer usebter akham",
   },
   errorPage: {
     title: "Asebter-a ur d-yuli ara",
@@ -44,7 +44,7 @@ export const kab: Translation = {
     online: "Yeqqen",
     offline: "Ur yeqqin ara",
     pill: "Di lxaṭer?",
-    enterTitle: "Aql-ak tura ɣer tama n tmessi?",
+    enterTitle: "Aql-ak tura ɣer tama n tmess?",
     enterBody:
       "Askar n leslak yeskan yiwet n tɣawsa ara txedmeḍ yal tikkelt, iḥerrez tamnaḍt-ik war aẓeṭṭa, iheggi amkan-ik i usiwel ɣer Wemmesten Aɣarim ɣef 14.",
     enterFetching: "Yessalay amkan GPS…",
@@ -246,7 +246,7 @@ export const kab: Translation = {
     selectHint: "Fren tamessi ɣef tkarḍa akken ad twaliḍ talqayt.",
     nationalMax: "Aɣilif afellay aɣelnaw",
     degraded: "Kra n yiɣbula ceḍḍen — tifin tzemer ad teɛṭel.",
-    openDetail: "Ldi talqayt n tmessi",
+    openDetail: "Ldi talqayt n tmess",
   },
   official: {
     eyebrow: "Aneɣmis unṣib",
