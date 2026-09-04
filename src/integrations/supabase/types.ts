@@ -3064,9 +3064,16 @@ export type Database = {
           display_name: string | null;
           email: string;
           id: string;
+          last_sign_in_at: string | null;
           locale: string;
+          report_count: number;
           roles: Database["public"]["Enums"]["app_role"][];
+          zone_count: number;
         }[];
+      };
+      member_detail_for_admin: {
+        Args: { _user: string };
+        Returns: Json;
       };
       list_translation_suggestions_for_moderation: {
         Args: never;
