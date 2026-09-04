@@ -37,7 +37,7 @@ from (
 ) as fixtures(id, email);
 
 insert into public.user_roles (user_id, role)
-values ('f0200000-0000-4000-8000-000000000003', 'moderator');
+values ('f0200000-0000-4000-8000-000000000003', 'report_moderator');
 
 select ok(
   exists (
@@ -212,7 +212,7 @@ select is(
   (select count(*)::integer from public.citizen_reports
     where id = 'f0201000-0000-4000-8000-000000000001'),
   1,
-  'a moderator retains private report visibility'
+  'a report moderator retains private report visibility'
 );
 
 reset role;
