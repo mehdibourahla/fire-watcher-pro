@@ -45,7 +45,7 @@ function ModerationPage() {
   const qc = useQueryClient();
   const roles = useQuery(myRolesQuery);
   const isModerator = (roles.data ?? []).some(
-    (r) => r === "moderator" || r === "admin",
+    (r) => r === "report_moderator" || r === "translator" || r === "admin",
   );
   const queue = useQuery({ ...moderationQueueQuery, enabled: isModerator });
   const clusters = useQuery({ ...clustersQuery, enabled: isModerator });

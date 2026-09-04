@@ -64,7 +64,7 @@ function ReportPage() {
   const mine = useQuery(myReportsQuery);
   const roles = useQuery(myRolesQuery);
   const isModerator = (roles.data ?? []).some(
-    (r) => r === "moderator" || r === "admin",
+    (r) => r === "report_moderator" || r === "admin",
   );
 
   const [lat, setLat] = useState("36.60");
