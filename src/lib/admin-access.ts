@@ -51,7 +51,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     key: "queues",
     path: "/admin/queues",
     roles: ["report_moderator", "translator", "admin"],
-    ready: false,
+    ready: true,
   },
   {
     key: "places",

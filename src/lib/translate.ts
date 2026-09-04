@@ -70,21 +70,36 @@ export type Draft = {
 
 export type DraftMap = Record<string, Draft>;
 
-export function isSubmittable(draft: Draft): boolean {
+export type CurrentLookup = (path: string) => string | undefined;
+
+export function isSubmittable(draft: Draft, current?: string): boolean {
   if (draft.sent) return false;
   if (draft.verdict === "confirmed") return true;
   const text = (draft.suggestion ?? "").trim();
-  return text.length > 0 && text.length <= SUGGESTION_MAX;
+  if (text.length === 0 || text.length > SUGGESTION_MAX) return false;
+  // A suggestion identical to the current text proposes nothing; five such rows reached
+  // moderation and read as a reviewer defending the old wording.
+  return current === undefined || text !== current.trim();
 }
 
-export function countSubmittable(drafts: DraftMap): number {
-  return Object.values(drafts).filter(isSubmittable).length;
+export function countSubmittable(
+  drafts: DraftMap,
+  currentFor?: CurrentLookup,
+): number {
+  return Object.entries(drafts).filter(([path, draft]) =>
+    isSubmittable(draft, currentFor?.(path)),
+  ).length;
 }
 
-export function markSent(drafts: DraftMap): DraftMap {
+export function markSent(
+  drafts: DraftMap,
+  currentFor?: CurrentLookup,
+): DraftMap {
   const next: DraftMap = {};
   for (const [path, draft] of Object.entries(drafts)) {
-    next[path] = isSubmittable(draft) ? { ...draft, sent: true } : draft;
+    next[path] = isSubmittable(draft, currentFor?.(path))
+      ? { ...draft, sent: true }
+      : draft;
   }
   return next;
 }
