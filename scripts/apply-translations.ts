@@ -12,9 +12,11 @@ if (!url || !key) {
   process.exit(1);
 }
 
-const locale = process.argv[2];
+const args = process.argv.slice(2);
+const check = args.includes("--check");
+const locale = args.find((a) => !a.startsWith("--"));
 if (!locale || !["ar", "fr", "kab"].includes(locale)) {
-  console.error("Usage: bun run apply:translations <ar|fr|kab>");
+  console.error("Usage: bun run apply:translations <ar|fr|kab> [--check]");
   process.exit(1);
 }
 
@@ -46,6 +48,45 @@ const rows = (data ?? []) as Row[];
 if (rows.length === 0) {
   console.log("Nothing accepted and unapplied.");
   process.exit(0);
+}
+
+if (check) {
+  const mod = (await import(
+    join(import.meta.dirname, "..", "src", "i18n", "locales", `${locale}.ts`)
+  )) as Record<string, unknown>;
+  const read = (path: string) =>
+    path
+      .split(".")
+      .reduce<unknown>(
+        (acc, k) =>
+          acc && typeof acc === "object"
+            ? (acc as Record<string, unknown>)[k]
+            : undefined,
+        mod[locale],
+      );
+
+  const unapplied: string[] = [];
+  const drifted: string[] = [];
+  for (const row of rows) {
+    if (!row.suggestion) continue;
+    const live = read(row.key_path);
+    if (live === row.suggestion) continue;
+    if (live === row.current_text) unapplied.push(row.key_path);
+    else drifted.push(row.key_path);
+  }
+
+  for (const path of drifted)
+    console.log(`drifted (needs a human): ${locale}.${path}`);
+  if (unapplied.length === 0) {
+    console.log(`${locale}: every accepted suggestion is in the file.`);
+    process.exit(0);
+  }
+  console.error(
+    `${locale}: ${unapplied.length} accepted suggestion(s) never applied.`,
+  );
+  for (const path of unapplied) console.error(`  ${path}`);
+  console.error("Run: bun run apply:translations " + locale);
+  process.exit(1);
 }
 
 const file = join(
