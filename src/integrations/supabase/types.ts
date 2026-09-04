@@ -2627,6 +2627,21 @@ export type Database = {
       };
     };
     Views: {
+      admin_audit_timeline: {
+        Row: {
+          action: string | null;
+          actor_kind: string | null;
+          actor_label: string | null;
+          actor_user_id: string | null;
+          at: string | null;
+          domain: string | null;
+          id: string | null;
+          reason: string | null;
+          target_id: string | null;
+          target_table: string | null;
+        };
+        Relationships: [];
+      };
       hazard_reports: {
         Row: {
           created_at: string | null;

@@ -121,9 +121,18 @@ One append-only table.
 
 Indexed on `at desc`, `(domain, at desc)` and `(actor_user_id, at desc)`.
 
-`broadcast_audit` folds into it. Its `commune_codes`, `phase`, `severity`, `kind` and
-`cluster_id` move into `before`/`after`, and the table is dropped in the same migration. Two
-audit systems that can disagree is worse than one rewrite of the `/broadcasts` audit view.
+`broadcast_audit` **stays**, and an earlier draft of this spec was wrong to fold it. That draft
+rested on the original `create table`, which had no actor. Later migrations added `actor_id` and
+then hardened an invariant on 2026-09-01
+(`broadcast_audit_action_actor_valid`): a human toggle (`enabled`/`disabled`) must carry
+`reason = 'admin_toggle'` and a non-null actor, while an automated decision
+(`published`/`suppressed`) must carry a null actor. That makes it structurally impossible to
+attribute an automated broadcast to a person, or to record a kill-switch flip anonymously.
+
+`admin_audit`'s generic check cannot express that, so folding would trade a strong
+domain invariant for a weak generic one. Instead a read-only view `admin_audit_timeline`
+unions the two, projecting `broadcast_audit` into the same shape. One timeline to read, one
+write per event, no drift, and the invariant survives where it was deliberately put.
 
 Rows are never updated or deleted. `revoke update, delete` from every role including
 `service_role`.
@@ -262,7 +271,7 @@ merge of admin keys into `en.ts` fails loudly rather than quietly flooding a tra
 
 Sequential; each lands green before the next starts.
 
-1. **Foundation** — enum recreation, `has_any_role`, `admin_audit`, `broadcast_audit` fold,
+1. **Foundation** — enum growth, `has_any_role`, `admin_audit`, `admin_audit_timeline`,
    `/admin` shell, nav, role gating, FR/EN scaffolding.
 2. **Queues** — reports, hazard reports, ideas, translations; contribution replies; the
    translation form defect. Migrates `/moderation` and deletes it.
