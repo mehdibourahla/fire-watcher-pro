@@ -35,6 +35,13 @@ describe("admin namespace", () => {
           .reduce<unknown>((acc, key) => (acc as never)[key], tree);
       return read(adminEn) === read(adminFr);
     });
-    expect(shared).toEqual(["nav.triage", "nav.sources", "nav.incidents"]);
+    expect(shared).toEqual([
+      "nav.triage",
+      "nav.sources",
+      "nav.incidents",
+      "fires.reason",
+      "sources.title",
+      "sources.colSource",
+    ]);
   });
 });

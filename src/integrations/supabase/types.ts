@@ -2927,6 +2927,20 @@ export type Database = {
         };
         Returns: undefined;
       };
+      replay_source_gap: {
+        Args: { _gap_id: string; _reason?: string | null };
+        Returns: string;
+      };
+      resolve_fire: {
+        Args: {
+          _cluster: string;
+          _expected_updated_at?: string | null;
+          _note?: string | null;
+          _reason?: string | null;
+          _state: string;
+        };
+        Returns: undefined;
+      };
       revoke_user_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"];

@@ -96,6 +96,38 @@ export const adminEn = {
     bySystem: "by {{job}}",
     byPerson: "by a person",
   },
+  fires: {
+    title: "Fires awaiting resolution",
+    subtitle:
+      "Satellite fires nobody has closed out yet, strongest evidence first.",
+    empty: "Every fire has been resolved.",
+    detail:
+      "{{lat}}, {{lon}} · confidence {{confidence}}% · {{detections}} detections",
+    reason: "Cause",
+    note: "Note (optional)",
+    markFalse: "Not a fire",
+    markEnded: "Ended",
+    staleWrite:
+      "Someone else changed this fire while you were looking. Reload to see their change.",
+    reason_flare: "Gas flare",
+    reason_glint: "Sun glint",
+    reason_industry: "Industrial heat",
+    reason_agri_burn: "Agricultural burn",
+    reason_other: "Other",
+  },
+  sources: {
+    title: "Sources",
+    subtitle: "Feed health and the gaps waiting to be refilled.",
+    health: "Health",
+    gaps: "Open gaps",
+    gapsEmpty: "No open gaps.",
+    colSource: "Source",
+    colState: "State",
+    colCriticality: "Criticality",
+    colLastSuccess: "Last success",
+    replay: "Replay",
+    replayCount: "{{count}} replays",
+  },
   role: {
     admin: "administrator",
     operator: "operator",
