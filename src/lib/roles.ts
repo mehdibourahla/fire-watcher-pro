@@ -12,6 +12,7 @@ export type AppRole =
 
 export type Member = {
   id: string;
+  email: string;
   display_name: string | null;
   locale: string;
   created_at: string;
@@ -62,31 +63,13 @@ export const adminCountQuery = queryOptions({
   },
 });
 
-/** Admin-only: every profile plus its granted roles. RLS blocks non-admins. */
+/** Admin-only: every account with its email, since a profile may carry no name at all. */
 export const membersQuery = queryOptions({
   queryKey: ["roles", "members"],
   queryFn: async () => {
-    const [{ data: profiles, error }, { data: roles, error: rolesError }] =
-      await Promise.all([
-        supabase
-          .from("profiles")
-          .select("id, display_name, locale, created_at")
-          .order("created_at", { ascending: false })
-          .limit(500),
-        supabase.from("user_roles").select("user_id, role"),
-      ]);
+    const { data, error } = await supabase.rpc("list_members_for_admin");
     if (error) throw new Error(error.message);
-    if (rolesError) throw new Error(rolesError.message);
-    const byUser = new Map<string, AppRole[]>();
-    for (const row of roles ?? []) {
-      const list = byUser.get(row.user_id) ?? [];
-      list.push(row.role as AppRole);
-      byUser.set(row.user_id, list);
-    }
-    return (profiles ?? []).map((p) => ({
-      ...p,
-      roles: byUser.get(p.id) ?? [],
-    })) as Member[];
+    return (data ?? []) as Member[];
   },
 });
 

@@ -74,10 +74,11 @@ export const adminFr: AdminTranslation = {
     pendingCount: "{{count}} en attente",
   },
   people: {
+    noName: "Aucun nom renseigné",
     title: "Équipe et rôles",
     subtitle: "Accorder ou retirer l'accès modérateur et administrateur.",
     noAccess: "Cette page est réservée aux administrateurs de Nadhir.",
-    search: "Rechercher par nom ou identifiant",
+    search: "Rechercher par nom, e-mail ou identifiant",
     empty: "Aucun membre pour le moment.",
     unnamed: "Membre sans nom",
     roleUser: "Membre",

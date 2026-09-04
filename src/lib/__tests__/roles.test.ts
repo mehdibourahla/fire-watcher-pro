@@ -1,13 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { eq, from, select } = vi.hoisted(() => ({
+const { eq, from, select, rpc } = vi.hoisted(() => ({
   eq: vi.fn(),
   from: vi.fn(),
   select: vi.fn(),
+  rpc: vi.fn(),
 }));
 
 vi.mock("@/integrations/supabase/client", () => ({
-  supabase: { from },
+  supabase: { from, rpc },
 }));
 
 import * as roles from "@/lib/roles";
@@ -27,7 +28,7 @@ type AdminCountQuery = {
 };
 
 type MembersQuery = {
-  queryFn: () => Promise<unknown>;
+  queryFn: () => Promise<{ email: string }[]>;
 };
 
 const adminRevocationGuard = Reflect.get(roles, "adminRevocationGuard") as
@@ -77,21 +78,35 @@ describe("adminCountQuery", () => {
 });
 
 describe("membersQuery", () => {
-  it("rejects when role memberships fail after profiles load", async () => {
-    const profileLimit = vi.fn().mockResolvedValue({ data: [], error: null });
-    const profileOrder = vi.fn().mockReturnValue({ limit: profileLimit });
-    const profileSelect = vi.fn().mockReturnValue({ order: profileOrder });
-    const membershipSelect = vi.fn().mockResolvedValue({
-      data: null,
-      error: { message: "role memberships unavailable" },
+  it("reads accounts through the admin function, not the profiles table", async () => {
+    rpc.mockResolvedValueOnce({
+      data: [
+        {
+          id: "user-1",
+          email: "someone@example.invalid",
+          display_name: null,
+          locale: "ar",
+          created_at: "2026-09-01T00:00:00Z",
+          roles: ["translator"],
+        },
+      ],
+      error: null,
     });
-    from
-      .mockReturnValueOnce({ select: profileSelect })
-      .mockReturnValueOnce({ select: membershipSelect });
 
-    await expect(membersQuery.queryFn()).rejects.toThrow(
-      "role memberships unavailable",
-    );
+    const members = await membersQuery.queryFn();
+
+    expect(rpc).toHaveBeenCalledWith("list_members_for_admin");
+    expect(from).not.toHaveBeenCalledWith("profiles");
+    expect(members[0]?.email).toBe("someone@example.invalid");
+  });
+
+  it("rejects when the member list is unavailable", async () => {
+    rpc.mockResolvedValueOnce({
+      data: null,
+      error: { message: "admin_role_required" },
+    });
+
+    await expect(membersQuery.queryFn()).rejects.toThrow("admin_role_required");
   });
 });
 

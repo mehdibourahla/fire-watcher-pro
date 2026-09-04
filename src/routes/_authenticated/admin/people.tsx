@@ -75,6 +75,7 @@ function PeoplePage() {
     (m) =>
       !q ||
       (m.display_name ?? "").toLowerCase().includes(q) ||
+      m.email.toLowerCase().includes(q) ||
       m.id.toLowerCase().includes(q),
   );
   const authoritativeAdminCount = adminCount.data ?? 0;
@@ -122,10 +123,10 @@ function PeoplePage() {
               >
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium">
-                    {m.display_name || t("people.unnamed")}
+                    {m.display_name || m.email}
                   </p>
-                  <p className="truncate font-mono text-xs text-muted-foreground">
-                    {m.id}
+                  <p className="truncate text-xs text-muted-foreground">
+                    {m.display_name ? m.email : t("people.noName")}
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">
                     {m.roles.length
