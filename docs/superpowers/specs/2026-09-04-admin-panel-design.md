@@ -52,11 +52,22 @@ These were settled in brainstorming and are not open during implementation.
 `app_role` becomes `admin, operator, report_moderator, translator, incident_editor, user`.
 Today's `moderator` is retired, not aliased.
 
-Postgres has no `ALTER TYPE ... DROP VALUE`, so the enum is recreated and `user_roles.role`
-re-typed in one migration. Existing `moderator` grants expand to `report_moderator`,
-`translator` and `incident_editor` so no volunteer loses access mid-season. Leaving a dead
-`moderator` value would keep passing every `has_role(..., 'moderator')` check written before
-the split, which is precisely the legacy this project does not keep.
+Postgres has no `ALTER TYPE ... DROP VALUE`. Recreating the enum was the first plan and was
+rejected on measurement: roughly ten RLS policies across `citizen_reports`, `storage.objects`,
+`fire_clusters`, `translation_suggestions` and `contribution_ideas` embed
+`has_role(auth.uid(), 'moderator')`, and re-typing the column requires dropping and recreating
+every one of them in a strict order on a live database. That concentrates risk precisely where
+a mistake means data exposure.
+
+Instead the enum grows by `alter type ... add value`, every policy is rewritten to the new
+roles so nothing references `moderator`, and `user_roles.role` gains
+`check (role <> 'moderator')` so the value can never be granted again. Existing `moderator`
+grants expand to `report_moderator`, `translator` and `incident_editor` in the same migration,
+so no volunteer loses access mid-season.
+
+The end state is the one that matters: no policy checks it, no code names it, no grant can
+create it. What survives is a label in `pg_enum` that nothing can reach — a smaller residue
+than a ten-policy security rewrite performed in one transaction.
 
 `has_role` keeps its signature. A new `has_any_role(uuid, app_role[])` covers surfaces that
 several roles reach.
