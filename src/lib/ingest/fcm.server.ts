@@ -86,7 +86,16 @@ function requireAccount(): ServiceAccount {
   return account;
 }
 
-export async function fcmSend(message: FcmMessage): Promise<void> {
+export type FcmDeviceTest = {
+  token: string;
+  notification: { title: string; body: string };
+  webpush: { headers: { TTL: string }; fcm_options: { link: string } };
+  data: { kind: "test" };
+};
+
+export async function fcmSend(
+  message: FcmMessage | FcmDeviceTest,
+): Promise<void> {
   const account = requireAccount();
   const token = await accessToken(account);
   const res = await fetch(
@@ -103,11 +112,8 @@ export async function fcmSend(message: FcmMessage): Promise<void> {
   );
   // a topic nobody subscribed yet is not a failure; aborting here would
   // re-send the row's earlier topics next run as duplicates
-  if (res.status === 404) return;
-  if (!res.ok)
-    throw new Error(
-      `fcm send failed (${res.status}) for ${message.topic}: ${(await res.text()).slice(0, 300)}`,
-    );
+  if (res.status === 404 && "topic" in message) return;
+  if (!res.ok) throw new Error(`fcm send failed (${res.status})`);
 }
 
 export async function fcmSubscribeTopics(

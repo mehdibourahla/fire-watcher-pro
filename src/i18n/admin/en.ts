@@ -144,6 +144,13 @@ export const adminEn = {
     reason_other: "Other",
   },
   sources: {
+    pushTestTitle: "Private push test",
+    pushTestHelp:
+      "Tap the button, then return to your iPhone Home Screen. One test notification goes to this device only.",
+    pushTestButton: "Test this device",
+    pushTestWaiting: "Sending — return to Home Screen",
+    pushTestAccepted:
+      "Provider accepted the test. Confirm the notification appeared on your device.",
     ensemble: {
       title: "Ensemble weather preview",
       description:

@@ -43,6 +43,7 @@ import { Route as AuthenticatedAdminQueuesRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAdminRiskRouteImport } from './routes/_authenticated/admin/risk'
 import { Route as AuthenticatedAdminSourcesRouteImport } from './routes/_authenticated/admin/sources'
 import { Route as ApiPrivateEnsembleRouteImport } from './routes/api/private/ensemble'
+import { Route as ApiPrivatePushTestRouteImport } from './routes/api/private/push-test'
 import { Route as ContributeLanguageLocaleRouteImport } from './routes/contribute_.language.$locale'
 import { Route as ApiInternalSourceJobsRunRouteImport } from './routes/api/internal/source-jobs/run'
 import { Route as ApiPublicContributeIdeaRouteImport } from './routes/api/public/contribute/idea'
@@ -232,6 +233,11 @@ const ApiPrivateEnsembleRoute = ApiPrivateEnsembleRouteImport.update({
   path: '/api/private/ensemble',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPrivatePushTestRoute = ApiPrivatePushTestRouteImport.update({
+  id: '/api/private/push-test',
+  path: '/api/private/push-test',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ContributeLanguageLocaleRoute =
   ContributeLanguageLocaleRouteImport.update({
     id: '/contribute_/language/$locale',
@@ -335,6 +341,7 @@ export interface FileRoutesByFullPath {
   '/admin/risk': typeof AuthenticatedAdminRiskRoute
   '/admin/sources': typeof AuthenticatedAdminSourcesRoute
   '/api/private/ensemble': typeof ApiPrivateEnsembleRoute
+  '/api/private/push-test': typeof ApiPrivatePushTestRoute
   '/contribute/language/$locale': typeof ContributeLanguageLocaleRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/api/internal/source-jobs/run': typeof ApiInternalSourceJobsRunRoute
@@ -381,6 +388,7 @@ export interface FileRoutesByTo {
   '/admin/risk': typeof AuthenticatedAdminRiskRoute
   '/admin/sources': typeof AuthenticatedAdminSourcesRoute
   '/api/private/ensemble': typeof ApiPrivateEnsembleRoute
+  '/api/private/push-test': typeof ApiPrivatePushTestRoute
   '/contribute/language/$locale': typeof ContributeLanguageLocaleRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/api/internal/source-jobs/run': typeof ApiInternalSourceJobsRunRoute
@@ -431,6 +439,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/risk': typeof AuthenticatedAdminRiskRoute
   '/_authenticated/admin/sources': typeof AuthenticatedAdminSourcesRoute
   '/api/private/ensemble': typeof ApiPrivateEnsembleRoute
+  '/api/private/push-test': typeof ApiPrivatePushTestRoute
   '/contribute_/language/$locale': typeof ContributeLanguageLocaleRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/api/internal/source-jobs/run': typeof ApiInternalSourceJobsRunRoute
@@ -481,6 +490,7 @@ export interface FileRouteTypes {
     | '/admin/risk'
     | '/admin/sources'
     | '/api/private/ensemble'
+    | '/api/private/push-test'
     | '/contribute/language/$locale'
     | '/admin/'
     | '/api/internal/source-jobs/run'
@@ -527,6 +537,7 @@ export interface FileRouteTypes {
     | '/admin/risk'
     | '/admin/sources'
     | '/api/private/ensemble'
+    | '/api/private/push-test'
     | '/contribute/language/$locale'
     | '/admin'
     | '/api/internal/source-jobs/run'
@@ -576,6 +587,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/risk'
     | '/_authenticated/admin/sources'
     | '/api/private/ensemble'
+    | '/api/private/push-test'
     | '/contribute_/language/$locale'
     | '/_authenticated/admin/'
     | '/api/internal/source-jobs/run'
@@ -607,6 +619,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   FireIdRoute: typeof FireIdRoute
   ApiPrivateEnsembleRoute: typeof ApiPrivateEnsembleRoute
+  ApiPrivatePushTestRoute: typeof ApiPrivatePushTestRoute
   ContributeLanguageLocaleRoute: typeof ContributeLanguageLocaleRoute
   ApiInternalSourceJobsRunRoute: typeof ApiInternalSourceJobsRunRoute
   ApiPublicContributeIdeaRoute: typeof ApiPublicContributeIdeaRoute
@@ -862,6 +875,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPrivateEnsembleRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/private/push-test': {
+      id: '/api/private/push-test'
+      path: '/api/private/push-test'
+      fullPath: '/api/private/push-test'
+      preLoaderRoute: typeof ApiPrivatePushTestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/contribute_/language/$locale': {
       id: '/contribute_/language/$locale'
       path: '/contribute/language/$locale'
@@ -1042,6 +1062,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   FireIdRoute: FireIdRoute,
   ApiPrivateEnsembleRoute: ApiPrivateEnsembleRoute,
+  ApiPrivatePushTestRoute: ApiPrivatePushTestRoute,
   ContributeLanguageLocaleRoute: ContributeLanguageLocaleRoute,
   ApiInternalSourceJobsRunRoute: ApiInternalSourceJobsRunRoute,
   ApiPublicContributeIdeaRoute: ApiPublicContributeIdeaRoute,
