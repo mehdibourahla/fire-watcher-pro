@@ -1,5 +1,10 @@
 # Broadcast Alerts fan out at the platform, not at the origin
 
+2026-09-08: public Telegram channels relay only official incidents from the registered
+Protection Civile feed (`dgpc_telegram`). Satellite, ONM and free-text manual authority
+broadcasts stay off Telegram. Satellite coverage can suppress duplicate FCM pushes,
+but never the official Telegram relay. Private operator watchdog notifications are separate.
+
 Mass alerting (the AMBER epic) needs to reach every subscriber of an area within
 seconds. Real alerting systems (WEA/EU-Alert, FCM/APNs topics) publish one message
 per area and let the distribution network fan out; the origin never loops over

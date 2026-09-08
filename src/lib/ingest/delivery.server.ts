@@ -6,12 +6,7 @@ import {
   fcmMessagesForOnm,
   type FcmMessage,
 } from "@/lib/fcm";
-import {
-  telegramAuthorityHtml,
-  telegramFireHtml,
-  telegramOnmHtml,
-  telegramSeverityAllowed,
-} from "@/lib/telegram";
+import { telegramAuthorityHtml, telegramSeverityAllowed } from "@/lib/telegram";
 
 import { fcmConfigured, fcmSend } from "./fcm.server";
 import { sendTelegram, telegramConfigured } from "./telegram.server";
@@ -42,7 +37,12 @@ type PendingRow = {
   authority_warning_id: string | null;
 };
 
-type CapText = { language: string; headline: string; description: string };
+type CapText = {
+  language: string;
+  headline: string;
+  description: string;
+  parameter?: { valueName: string; value: string }[];
+};
 
 type DeliveryContext = {
   infoByCap: Map<string, CapText[]>;
@@ -227,54 +227,20 @@ function telegramHtmlFor(
   context: DeliveryContext,
 ): string | null {
   if (!telegramSeverityAllowed(row.severity)) return null;
-  if (row.kind === "fire") {
-    const info = row.cap_alert_id
-      ? context.infoByCap.get(row.cap_alert_id)
-      : null;
-    const shortId = row.cluster_id
-      ? context.shortIdByCluster.get(row.cluster_id)
-      : null;
-    // French block: the wilaya channels are shared surfaces, one language each
-    const fr = info?.find((i) => i.language.startsWith("fr")) ?? info?.[0];
-    if (!fr || !shortId) return null;
-    return telegramFireHtml({
-      headline: fr.headline,
-      description: fr.description,
-      shortId,
-    });
-  }
-  if (row.kind === "onm") {
-    const onm = row.onm_vigilance_id
-      ? context.onmById.get(row.onm_vigilance_id)
-      : null;
-    if (!onm) return null;
-    return telegramOnmHtml({
-      title: onm.title,
-      headlineFr: onm.headline_fr,
-    });
-  }
   if (row.kind === "official") {
     const info = row.cap_alert_id
       ? context.infoByCap.get(row.cap_alert_id)
       : null;
     const block =
       info?.find((i) => i.language.startsWith("fr")) ?? info?.[0] ?? null;
-    return block
+    return block?.parameter?.some(
+      (p) => p.valueName === "source_key" && p.value === "dgpc_telegram",
+    )
       ? telegramAuthorityHtml({
           source: block.headline,
           body: block.description,
         })
       : null;
-  }
-  if (row.kind === "authority") {
-    const warning = row.authority_warning_id
-      ? context.authorityById.get(row.authority_warning_id)
-      : null;
-    if (!warning) return null;
-    return telegramAuthorityHtml({
-      source: warning.source,
-      body: warning.body,
-    });
   }
   return null;
 }
@@ -299,7 +265,7 @@ async function deliverTelegram(errors: string[]): Promise<{
     .from("admin_units")
     .select("code, parent_id")
     .eq("level", "commune")
-    .in("code", [...new Set(pending.flatMap((p) => p.push_codes))]);
+    .in("code", [...new Set(pending.flatMap((p) => p.commune_codes))]);
   if (communesError) throw new Error(communesError.message);
   const wilayaByCode = new Map(
     (communes ?? []).map((c) => [c.code, c.parent_id]),
@@ -312,7 +278,7 @@ async function deliverTelegram(errors: string[]): Promise<{
     const wilayaIds = html
       ? [
           ...new Set(
-            row.push_codes
+            row.commune_codes
               .map((code) => wilayaByCode.get(code))
               .filter((id): id is string => Boolean(id)),
           ),

@@ -1,5 +1,24 @@
 # Known gaps
 
+## Takeover check — 2026-09-08
+
+The older inventory below needs reconciliation. Atomic risk publication is implemented;
+production's `local_fwi` checkpoint is complete for 2026-09-08. Local FWI percentiles and
+the admin console are also implemented. Telegram is live: the last 24 hours contained
+nine satellite broadcasts with six recorded channel sends.
+
+Priorities checked against current code:
+
+1. Restrict public Telegram to DGPC Protection Civile relays (hotfix in review).
+2. Make delivery retries durable per channel: `delivery.server.ts` stamps a broadcast only
+   after all sends, so partial failures can repeat successful sends on retry.
+3. Reconcile this inventory and `roadmap.md` with shipped code before scheduling work.
+   The zone alert engine still implements R1/R3/R4, without growth (R2) or all-clear (R5).
+4. Review the still-open feature PR #31 against current main before reviving it;
+   eight dependency PRs are also open. GitHub has no open issues tracking the backlog.
+
+The remaining historical claims below have not all been revalidated.
+
 What Nadhir does not do yet, why it matters, and where to start. Every claim here was checked
 against the running system on 2026-08-28; where a number is quoted, the query that produced it
 is named so you can re-run it rather than trust this file.
