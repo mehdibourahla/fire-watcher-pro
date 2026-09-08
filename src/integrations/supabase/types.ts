@@ -34,6 +34,75 @@ export type Database = {
   };
   public: {
     Tables: {
+      ita_feed_state: {
+        Row: {
+          checked_at: string | null;
+          etag: string | null;
+          singleton: boolean;
+        };
+        Insert: {
+          checked_at?: string | null;
+          etag?: string | null;
+          singleton?: boolean;
+        };
+        Update: {
+          checked_at?: string | null;
+          etag?: string | null;
+          singleton?: boolean;
+        };
+        Relationships: [];
+      };
+      ita_reports: {
+        Row: {
+          body: string;
+          content_hash: string;
+          extracted_at: string | null;
+          extraction: Json | null;
+          extraction_attempts: number;
+          extraction_error: string | null;
+          fetched_at: string;
+          id: string;
+          next_extraction_at: string;
+          published_at: string;
+          raw: Json;
+          source_page: string;
+          source_post_id: string;
+          source_url: string;
+        };
+        Insert: {
+          body: string;
+          content_hash: string;
+          extracted_at?: string | null;
+          extraction?: Json | null;
+          extraction_attempts?: number;
+          extraction_error?: string | null;
+          fetched_at?: string;
+          id?: string;
+          next_extraction_at?: string;
+          published_at: string;
+          raw: Json;
+          source_page: string;
+          source_post_id: string;
+          source_url: string;
+        };
+        Update: {
+          body?: string;
+          content_hash?: string;
+          extracted_at?: string | null;
+          extraction?: Json | null;
+          extraction_attempts?: number;
+          extraction_error?: string | null;
+          fetched_at?: string;
+          id?: string;
+          next_extraction_at?: string;
+          published_at?: string;
+          raw?: Json;
+          source_page?: string;
+          source_post_id?: string;
+          source_url?: string;
+        };
+        Relationships: [];
+      };
       incident_archive_daily: {
         Row: {
           contract_key: string;
@@ -2997,6 +3066,55 @@ export type Database = {
       };
     };
     Functions: {
+      assert_ita_source_lease: {
+        Args: { _attempt: number; _job: string };
+        Returns: undefined;
+      };
+      claim_ita_extractions: {
+        Args: { _attempt: number; _job: string; _limit?: number };
+        Returns: {
+          body: string;
+          content_hash: string;
+          extracted_at: string | null;
+          extraction: Json | null;
+          extraction_attempts: number;
+          extraction_error: string | null;
+          fetched_at: string;
+          id: string;
+          next_extraction_at: string;
+          published_at: string;
+          raw: Json;
+          source_page: string;
+          source_post_id: string;
+          source_url: string;
+        }[];
+        SetofOptions: {
+          from: "*";
+          to: "ita_reports";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
+      finish_ita_extraction: {
+        Args: {
+          _attempt: number;
+          _error: string | null;
+          _extraction: Json;
+          _id: string;
+          _job: string;
+        };
+        Returns: undefined;
+      };
+      save_ita_feed: {
+        Args: {
+          _attempt: number;
+          _etag: string | null;
+          _job: string;
+          _not_modified: boolean;
+          _posts: Json;
+        };
+        Returns: number;
+      };
       prune_reliability_history: { Args: never; Returns: Json };
 
       set_source_paused: {

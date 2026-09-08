@@ -36,6 +36,14 @@ const job = (contractKey: string): ClaimedSourceJob => ({
 
 function dependencies() {
   return {
+    runItaSource: vi.fn().mockResolvedValue({
+      fetched: 3,
+      stored: 3,
+      extracted: 3,
+      failed: 0,
+      pending: 0,
+      notModified: false,
+    }),
     ingestFirms: vi.fn().mockResolvedValue({
       fetched: 2,
       inserted: 1,
@@ -104,6 +112,30 @@ function dependencies() {
 }
 
 describe("source runner registry", () => {
+  it("keeps ITA failures visible without invoking any alert publisher", async () => {
+    const deps = dependencies();
+    deps.runItaSource.mockResolvedValue({
+      fetched: 0,
+      stored: 0,
+      extracted: 0,
+      failed: 0,
+      pending: 2,
+      notModified: true,
+      error: "ITA extraction backlog: 2 reports",
+    });
+    const result = await createSourceRunners(deps).ita_website(
+      job("ita_website"),
+    );
+    expect(result.outcome).toBe("failed");
+    expect(result.qualityChecks).toMatchObject({
+      extraction_pending: 2,
+      not_modified: true,
+    });
+    expect(deps.publishBroadcasts).not.toHaveBeenCalled();
+    expect(deps.deliverBroadcasts).not.toHaveBeenCalled();
+    expect(deps.evaluateAlerts).not.toHaveBeenCalled();
+    expect(deps.fuseDetections).not.toHaveBeenCalled();
+  });
   it("contains exactly one runner for every runtime contract", () => {
     expect(Object.keys(createSourceRunners(dependencies())).sort()).toEqual(
       [...RUNTIME_CONTRACT_KEYS].sort(),

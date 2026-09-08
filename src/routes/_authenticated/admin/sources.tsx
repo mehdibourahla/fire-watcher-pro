@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import type { AnyLocale } from "@/i18n";
 import { EnsemblePreview } from "@/components/admin/EnsemblePreview";
 import { PushDeviceTest } from "@/components/admin/PushDeviceTest";
+import { ItaReports } from "@/components/admin/ItaReports";
 import {
   acknowledgeIncident,
   deliveryQueueQuery,
@@ -217,6 +218,7 @@ function SourcesPage() {
         </p>
       ) : null}
 
+      <ItaReports />
       <PushDeviceTest />
       <EnsemblePreview />
 

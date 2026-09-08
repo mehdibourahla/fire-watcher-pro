@@ -1,5 +1,17 @@
 export const adminKab = {
   sources: {
+    ita: {
+      title: "Info Trafic Algérie",
+      description:
+        "50 n lqem ineggura yettwajemɛen. Isallen n tɣamsa s AI, ilaq asenqed n umdan. Igzul s tefransist. Ulac ilɣa azayez.",
+      empty: "Ulac isallen ITA yettwajemɛen yakan.",
+      received: "Yettwajemɛ {{time}}",
+      extracted: "Asegzi AI — ur yettwasenqed ara",
+      failed: "Asegzi ur yeddi ara",
+      pending: "Yettṛaǧu asegzi AI",
+      original: "Asali aẓetṭan",
+      analysis: "Asegzi s talɣa",
+    },
     pushTestTitle: "Asekyed uslig n telɣut",
     pushTestHelp:
       "Sit ɣef tqeffalt, syin uɣal ɣer ugdil agejdan n iPhone. Talɣut n usekyed ad truḥ ɣer yibenk-a kan.",
