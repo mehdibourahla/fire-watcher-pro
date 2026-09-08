@@ -66,6 +66,7 @@ async function accessToken(account: ServiceAccount): Promise<string> {
   if (cached && cached.expiresAt > Date.now()) return cached.token;
   const jwt = await signJwt(account);
   const res = await fetch(account.token_uri, {
+    signal: AbortSignal.timeout(15_000),
     method: "POST",
     headers: { "content-type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
@@ -91,6 +92,7 @@ export async function fcmSend(message: FcmMessage): Promise<void> {
   const res = await fetch(
     `https://fcm.googleapis.com/v1/projects/${account.project_id}/messages:send`,
     {
+      signal: AbortSignal.timeout(15_000),
       method: "POST",
       headers: {
         authorization: `Bearer ${token}`,

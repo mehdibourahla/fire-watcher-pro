@@ -168,12 +168,14 @@ Slices, in dependency order:
 - [x] M3 Atomic daily risk: complete commune × 6-horizon snapshots, one transactional
       publication pointer, and stale/partial-product guards are implemented. The takeover
       observed a complete `local_fwi` checkpoint for 2026-09-08.
-- [ ] M4 Delivery reliability: destination receipts and independent retry progress implemented,
-      pending deployment. Separate channel queues, backlog objectives and incidents remain.
+- [ ] M4 Delivery reliability: destination receipts deployed in #121. Independent leased
+      channel queues, bounded retries/expiry and backlog incidents are implemented on the
+      release branch; production rollout and real receipt verification remain.
 - [ ] M5 Operator response: admin fire resolution, replay, risk publication, incident editing,
       moderation replies, place verification and audit trail are implemented. Remaining:
-      reliability-incident lifecycle/acknowledgement, pause/resume, retention, independently
-      verified notifications and failure drills.
+      source pause/resume, retention, independently verified notifications and production
+      failure drills. Delivery pause/resume and reliability-incident acknowledgement/recovery
+      are implemented on the release branch.
 - [ ] M6 New-source gate: require every proposed layer to ship an adapter contract, captured
       producer fixtures, licence/provenance, coverage and recency validation, fallback behavior,
       and replay tests. Candidate layers remain NDVI/fuel condition, soil moisture, lightning,

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { fetchEnsemblePreview } from "@/lib/ensemble.client";
+import { fetchEnsemblePreview } from "@/lib/ensemble-preview";
 import type { MemberRange } from "@/lib/ensemble";
 
 const range = (value: MemberRange) =>

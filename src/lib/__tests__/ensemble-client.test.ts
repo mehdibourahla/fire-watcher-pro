@@ -3,7 +3,7 @@ const session = vi.hoisted(() => vi.fn());
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: { auth: { getSession: session } },
 }));
-import { fetchEnsemblePreview } from "@/lib/ensemble.client";
+import { fetchEnsemblePreview } from "@/lib/ensemble-preview";
 
 afterEach(() => {
   vi.unstubAllGlobals();
