@@ -144,6 +144,18 @@ export const adminEn = {
     reason_other: "Other",
   },
   sources: {
+    ita: {
+      title: "Info Trafic Algérie reports",
+      description:
+        "Latest 50 collected revisions. Media reports interpreted by AI, awaiting human verification. French summaries. No public alerts are sent.",
+      empty: "No ITA reports collected yet.",
+      received: "Collected {{time}}",
+      extracted: "AI interpretation — unverified",
+      failed: "Interpretation failed",
+      pending: "Awaiting AI interpretation",
+      original: "Original report",
+      analysis: "Structured interpretation",
+    },
     pushTestTitle: "Private push test",
     pushTestHelp:
       "Tap the button, then return to your iPhone Home Screen. One test notification goes to this device only.",

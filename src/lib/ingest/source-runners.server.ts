@@ -14,6 +14,7 @@ import {
 } from "@/lib/source-runs";
 
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { runItaSource } from "@/lib/text-sources/ita-pipeline.server";
 import {
   runTextSource,
   type TextSourceRun,
@@ -34,6 +35,7 @@ import {
 import { enrichClusterWinds, refreshRiskForecasts } from "./weather.server";
 
 export const RUNTIME_CONTRACT_KEYS = [
+  "ita_website",
   "firms",
   "fci",
   "s3_slstr",
@@ -53,6 +55,7 @@ export type SourceRunner = (job: ClaimedSourceJob) => Promise<SourceJobResult>;
 export type SourceRunnerRegistry = Record<RuntimeContractKey, SourceRunner>;
 
 export type SourceRunnerDependencies = {
+  runItaSource: typeof runItaSource;
   ingestFirms: typeof ingestFirms;
   ingestFci: typeof ingestFci;
   ingestS3: typeof ingestS3;
@@ -154,6 +157,26 @@ export function createSourceRunners(
   dependencies: SourceRunnerDependencies,
 ): SourceRunnerRegistry {
   return {
+    ita_website: async (job) => {
+      const run = await dependencies.runItaSource(job);
+      const health = adapterHealth({
+        accepted: run.stored + run.extracted,
+        error: run.error,
+      });
+      return {
+        ...baseReport(job),
+        ...health,
+        ...coveredInterval(job, health.outcome === "succeeded"),
+        recordsSeen: run.fetched,
+        recordsInserted: run.stored,
+        recordsUpdated: run.extracted,
+        qualityChecks: {
+          extraction_failed: run.failed,
+          extraction_pending: run.pending,
+          not_modified: run.notModified,
+        },
+      };
+    },
     firms: async (job) => {
       const run = await dependencies.ingestFirms(replayInterval(job));
       const health = adapterHealth({ accepted: run.fetched, error: run.error });
@@ -353,6 +376,7 @@ export function createSourceRunners(
 }
 
 const sourceRunnerDependencies: SourceRunnerDependencies = {
+  runItaSource,
   ingestFirms,
   ingestFci,
   ingestS3,

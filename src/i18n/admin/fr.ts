@@ -148,6 +148,18 @@ export const adminFr: AdminTranslation = {
     reason_other: "Autre",
   },
   sources: {
+    ita: {
+      title: "Signalements Info Trafic Algérie",
+      description:
+        "50 dernières versions collectées. Informations de presse interprétées par IA, à vérifier. Résumés en français. Aucune alerte publique envoyée.",
+      empty: "Aucun signalement ITA collecté.",
+      received: "Collecté le {{time}}",
+      extracted: "Interprétation IA — non vérifiée",
+      failed: "Échec de l’interprétation",
+      pending: "En attente d’interprétation IA",
+      original: "Signalement original",
+      analysis: "Interprétation structurée",
+    },
     pushTestTitle: "Test privé des notifications",
     pushTestHelp:
       "Touchez le bouton, puis revenez à l’écran d’accueil de l’iPhone. Une notification de test sera envoyée uniquement à cet appareil.",
