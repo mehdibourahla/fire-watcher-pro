@@ -184,6 +184,7 @@ export const kab: Translation = {
     },
   },
   nav: {
+    admin: "Tadbelt",
     menu: "Umuɣ",
     contribute: "Ttekki",
     settings: "Iɣewwaṛen",

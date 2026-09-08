@@ -169,13 +169,13 @@ Slices, in dependency order:
       publication pointer, and stale/partial-product guards are implemented. The takeover
       observed a complete `local_fwi` checkpoint for 2026-09-08.
 - [ ] M4 Delivery reliability: destination receipts deployed in #121. Independent leased
-      channel queues, bounded retries/expiry and backlog incidents are implemented on the
-      release branch; production rollout and real receipt verification remain.
+      channel queues, bounded retries/expiry and backlog incidents shipped in #122.
+      Private Telegram receipt is confirmed; iPhone push receipt remains unverified.
 - [ ] M5 Operator response: admin fire resolution, replay, risk publication, incident editing,
       moderation replies, place verification and audit trail are implemented. Remaining:
-      source pause/resume, retention, independently verified notifications and production
-      failure drills. Delivery pause/resume and reliability-incident acknowledgement/recovery
-      are implemented on the release branch.
+      iPhone push receipt and production failure drills. Source pause/resume, retention and
+      admin navigation are implemented on the release branch; see `docs/source-operations.md`.
+      Delivery pause/resume and reliability-incident acknowledgement/recovery shipped in #122.
 - [ ] M6 New-source gate: require every proposed layer to ship an adapter contract, captured
       producer fixtures, licence/provenance, coverage and recency validation, fallback behavior,
       and replay tests. Candidate layers remain NDVI/fuel condition, soil moisture, lightning,

@@ -14,8 +14,10 @@ import {
   openGapsQuery,
   replayGap,
   sourceHealthQuery,
+  setSourcePaused,
 } from "@/lib/admin-sources";
 import { relativeTime } from "@/lib/nadhir";
+import { myRolesQuery } from "@/lib/reports";
 
 export const Route = createFileRoute("/_authenticated/admin/sources")({
   component: SourcesPage,
@@ -32,6 +34,8 @@ function SourcesPage() {
   const locale = i18n.language as AnyLocale;
   const qc = useQueryClient();
   const health = useQuery(sourceHealthQuery);
+  const roles = useQuery(myRolesQuery);
+  const isAdmin = !roles.isError && (roles.data ?? []).includes("admin");
   const gaps = useQuery(openGapsQuery);
   const queues = useQuery(deliveryQueueQuery);
   const incidents = useQuery(operationalIncidentsQuery);
@@ -51,6 +55,11 @@ function SourcesPage() {
     mutationFn: acknowledgeIncident,
     onSuccess: refresh,
   });
+  const source = useMutation({
+    mutationFn: ({ key, paused }: { key: string; paused: boolean }) =>
+      setSourcePaused(key, paused),
+    onSuccess: refresh,
+  });
 
   const replay = useMutation({
     mutationFn: (id: string) => replayGap(id, null),
@@ -64,7 +73,7 @@ function SourcesPage() {
         {t("sources.subtitle")}
       </p>
 
-      {[health, gaps, queues, incidents].map((query, index) =>
+      {[health, gaps, queues, incidents, roles].map((query, index) =>
         query.isError ? (
           <p
             key={index}
@@ -212,6 +221,9 @@ function SourcesPage() {
       <EnsemblePreview />
 
       <h2 className="mt-6 text-sm font-medium">{t("sources.health")}</h2>
+      <p className="mt-1 text-xs text-muted-foreground">
+        {t("sources.sourcePauseHelp")}
+      </p>
       <div className="mt-2 overflow-x-auto">
         <table className="w-full min-w-[36rem] text-sm">
           <thead>
@@ -220,6 +232,7 @@ function SourcesPage() {
               <th className="py-1 pr-3">{t("sources.colState")}</th>
               <th className="py-1 pr-3">{t("sources.colCriticality")}</th>
               <th className="py-1">{t("sources.colLastSuccess")}</th>
+              {isAdmin ? <th className="py-1">{t("sources.action")}</th> : null}
             </tr>
           </thead>
           <tbody>
@@ -239,11 +252,38 @@ function SourcesPage() {
                     ? relativeTime(row.last_success_at, locale)
                     : "—"}
                 </td>
+                {isAdmin ? (
+                  <td className="py-1.5">
+                    <button
+                      type="button"
+                      disabled={source.isPending || !row.key}
+                      aria-label={t(
+                        row.enabled
+                          ? "sources.pauseSource"
+                          : "sources.resumeSource",
+                        { source: row.label ?? row.key },
+                      )}
+                      onClick={() =>
+                        row.key &&
+                        source.mutate({ key: row.key, paused: row.enabled })
+                      }
+                      className="rounded-md border border-border px-3 py-1 text-xs disabled:opacity-50"
+                    >
+                      {t(row.enabled ? "sources.pause" : "sources.resume")}
+                    </button>
+                  </td>
+                ) : null}
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      {source.isError ? (
+        <p role="alert" className="mt-2 text-sm text-[var(--emergency)]">
+          {t("sources.actionFailed")}: {source.error.message}
+        </p>
+      ) : null}
 
       <h2 className="mt-8 text-sm font-medium">{t("sources.gaps")}</h2>
       {gaps.isSuccess && gaps.data.length === 0 ? (

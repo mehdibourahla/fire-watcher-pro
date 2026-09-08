@@ -181,6 +181,7 @@ export const ar: Translation = {
     },
   },
   nav: {
+    admin: "الإدارة",
     menu: "القائمة",
     contribute: "المساهمة",
     settings: "الإعدادات",

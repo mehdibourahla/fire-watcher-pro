@@ -16,7 +16,8 @@ Priorities checked against current code:
    read-only check found no receipt rows yet. Real DGPC, device push and signup receipt remain unverified.
 3. Release branch implements independent channel queues, backlog incidents, acknowledgement
    and audited pause/resume. Browser QA also corrected operator access to the source replay list.
-   Production failure drills, source pause/resume and retention remain operational follow-ups.
+   Source pause/resume and retention are implemented on the release branch. Production
+   failure drills remain an operational follow-up; see `docs/source-operations.md`.
 4. Eight dependency PR intents are integrated on the release branch. PR #31's source intent
    is replaced with a bounded operator ensemble preview; see `docs/source-successors.md`.
 5. R2 growth and R5 observation-ended notifications are implemented on the release branch.
@@ -498,8 +499,8 @@ anyone reviewing the schema. The checklist can proceed for them.
   source-gap replay, risk publication, official-incident editing, moderation queues,
   member tools, place verification and an audit timeline. See `src/lib/admin-*.ts` and
   `src/routes/_authenticated/admin/`. Incident acknowledgement and delivery pause/resume
-  are implemented on the release branch. Source pause/resume, retention and production
-  failure drills remain part of M5.
+  shipped in #122. Source pause/resume, retention and admin navigation are implemented on
+  the release branch. Production failure drills remain part of M5.
 - **`/contribute` now has replies.** `IdeaQueue.tsx` calls `replyToIdea` and displays whether
   the reply author is a person or agent. This proves the workflow exists, not that someone
   is monitoring submissions. Voting is anonymous and keyed to a
