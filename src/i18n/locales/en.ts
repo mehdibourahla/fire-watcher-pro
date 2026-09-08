@@ -182,6 +182,7 @@ export const en = {
     },
   },
   nav: {
+    admin: "Admin",
     menu: "Menu",
     contribute: "Contribute",
     settings: "Settings",

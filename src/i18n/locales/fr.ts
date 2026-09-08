@@ -185,6 +185,7 @@ export const fr: Translation = {
     },
   },
   nav: {
+    admin: "Administration",
     menu: "Menu",
     contribute: "Contribuer",
     settings: "Réglages",

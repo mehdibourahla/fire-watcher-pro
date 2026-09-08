@@ -43,6 +43,10 @@ export const adminKab = {
     replay: "Ales",
     replayCount: "{{count}} n wallus",
     deliveryQueues: "Idrigen n tuzzna",
+    sourcePauseHelp:
+      "Inedbalen zemren ad sḥebsen aɣawas d uselkem n twuriwin timaynutin. Tid yetteddun zemrent ad fakent; aɛiwed ad yeḥrez aɣawas d umezruy n uɣbalu.",
+    pauseSource: "Sḥebs {{source}}",
+    resumeSource: "Ales {{source}}",
     pauseHelp:
       "Aḥbas iseḥbas tuzzniwin timaynutin deg ubadu-a; tid yebdan zemrent ad kemmḍent.",
     loading: "Asali…",

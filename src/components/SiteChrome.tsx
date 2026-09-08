@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import {
   Bell,
   Flame,
@@ -38,6 +39,7 @@ import {
   type Theme,
 } from "@/lib/theme";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 const PRIMARY_NAV = [
   { to: "/", key: "nav.map" },
@@ -47,6 +49,8 @@ const PRIMARY_NAV = [
   { to: "/about", key: "nav.about" },
   { to: "/contribute", key: "nav.contribute" },
 ] as const;
+
+const ADMIN_NAV = { to: "/admin", key: "nav.admin" } as const;
 
 const TABS = [
   { to: "/", key: "nav.map", Icon: MapPin },
@@ -140,7 +144,7 @@ export function SubscribeBell() {
 
 /** Below lg the inline nav is hidden, so without this the only way to any page
  * that is not a bottom tab is the footer. */
-function MobileNav() {
+function MobileNav({ isAdmin }: { isAdmin: boolean }) {
   const { t, i18n } = useTranslation();
   const [open, setOpen] = useState(false);
   // the sheet has no logical side, so it must follow the locale or it opens from
@@ -165,7 +169,7 @@ function MobileNav() {
           </SheetTitle>
         </SheetHeader>
         <nav className="flex flex-col p-2" aria-label={t("nav.menu")}>
-          {PRIMARY_NAV.map((item) => (
+          {(isAdmin ? [...PRIMARY_NAV, ADMIN_NAV] : PRIMARY_NAV).map((item) => (
             <Link
               key={item.to}
               to={item.to}
@@ -184,10 +188,32 @@ function MobileNav() {
 
 export function SiteHeader() {
   const { t } = useTranslation();
+  const [userId, setUserId] = useState<string | null>(null);
+  useEffect(() => {
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUserId(session?.user.id ?? null);
+    });
+    return () => data.subscription.unsubscribe();
+  }, []);
+  const roles = useQuery({
+    queryKey: ["roles", "navigation", userId],
+    enabled: userId !== null,
+    queryFn: async () => {
+      if (!userId) return [];
+      const { data, error } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId);
+      if (error) throw new Error(error.message);
+      return data.map((row) => row.role);
+    },
+  });
+  const isAdmin =
+    userId !== null && !roles.isError && !!roles.data?.includes("admin");
   return (
     <header className="sticky top-0 z-20 border-b border-border bg-surface/95 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-[1600px] items-center gap-2 px-3 sm:gap-4 sm:px-4">
-        <MobileNav />
+        <MobileNav isAdmin={isAdmin} />
         <Link to="/" className="flex min-w-0 items-center gap-2">
           <BrandMark className="h-7 w-7 shrink-0 rounded-[7px]" />
           {/* below 360px the wordmark plus the controls no longer fit; the logo carries it */}
@@ -203,7 +229,7 @@ export function SiteHeader() {
           className="ms-4 hidden items-center gap-1 lg:flex"
           aria-label={t("nav.map")}
         >
-          {PRIMARY_NAV.map((item) => (
+          {(isAdmin ? [...PRIMARY_NAV, ADMIN_NAV] : PRIMARY_NAV).map((item) => (
             <Link
               key={item.to}
               to={item.to}

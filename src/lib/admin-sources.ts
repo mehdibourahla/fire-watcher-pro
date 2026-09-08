@@ -10,21 +10,42 @@ export type SourceHealthRow = {
   age_minutes: number | null;
   last_success_at: string | null;
   public_reason_code: string | null;
+  enabled: boolean;
 };
 
 export const sourceHealthQuery = queryOptions({
   queryKey: ["admin", "sources", "health"],
   queryFn: async (): Promise<SourceHealthRow[]> => {
-    const { data, error } = await supabase
-      .from("source_health")
-      .select(
-        "key, label, state, criticality, age_minutes, last_success_at, public_reason_code",
-      );
-    if (error) throw new Error(error.message);
-    return (data ?? []) as SourceHealthRow[];
+    const [health, contracts] = await Promise.all([
+      supabase
+        .from("source_health")
+        .select(
+          "key, label, state, criticality, age_minutes, last_success_at, public_reason_code",
+        ),
+      supabase.from("source_contracts").select("key, enabled"),
+    ]);
+    if (health.error) throw new Error(health.error.message);
+    if (contracts.error) throw new Error(contracts.error.message);
+    const enabled = new Map(
+      contracts.data.map((row) => [row.key, row.enabled]),
+    );
+    return health.data.map((row) => {
+      const state = row.key ? enabled.get(row.key) : undefined;
+      if (state === undefined)
+        throw new Error("Source configuration unavailable");
+      return { ...row, enabled: state };
+    });
   },
   staleTime: 30_000,
 });
+
+export async function setSourcePaused(key: string, paused: boolean) {
+  const { error } = await supabase.rpc("set_source_paused", {
+    _key: key,
+    _paused: paused,
+  });
+  if (error) throw new Error(error.message);
+}
 
 export type SourceGap = {
   id: string;

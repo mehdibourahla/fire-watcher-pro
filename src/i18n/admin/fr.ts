@@ -181,6 +181,10 @@ export const adminFr: AdminTranslation = {
       unavailable: "Aperçu indisponible. Réessayez plus tard.",
     },
     deliveryQueues: "Files de diffusion",
+    sourcePauseHelp:
+      "Les administrateurs peuvent suspendre les nouvelles planifications et exécutions. Les tâches en cours peuvent se terminer ; la reprise conserve le calendrier et l’historique de la source.",
+    pauseSource: "Suspendre {{source}}",
+    resumeSource: "Reprendre {{source}}",
     pauseHelp:
       "La pause bloque les nouveaux envois sur ce canal ; les envois déjà engagés peuvent se terminer.",
     loading: "Chargement…",

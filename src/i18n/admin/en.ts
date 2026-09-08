@@ -179,6 +179,10 @@ export const adminEn = {
     deliveryQueues: "Delivery queues",
     pauseHelp:
       "Pausing stops new sends on this channel; messages already in flight may finish.",
+    sourcePauseHelp:
+      "Administrators can pause new scheduling and execution. Work already running may finish; resuming preserves the source's schedule and history.",
+    pauseSource: "Pause {{source}}",
+    resumeSource: "Resume {{source}}",
     loading: "Loading…",
     loadFailed: "Unable to load data",
     actionFailed: "Operation failed",

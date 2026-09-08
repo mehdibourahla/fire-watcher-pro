@@ -34,6 +34,83 @@ export type Database = {
   };
   public: {
     Tables: {
+      incident_archive_daily: {
+        Row: {
+          contract_key: string;
+          day: string;
+          incidents: number;
+          reason_code: string;
+        };
+        Insert: {
+          contract_key: string;
+          day: string;
+          incidents: number;
+          reason_code: string;
+        };
+        Update: {
+          contract_key?: string;
+          day?: string;
+          incidents?: number;
+          reason_code?: string;
+        };
+        Relationships: [];
+      };
+
+      source_run_archive_daily: {
+        Row: {
+          contract_key: string;
+          day: string;
+          outcome: string;
+          records_seen: number;
+          runs: number;
+        };
+        Insert: {
+          contract_key: string;
+          day: string;
+          outcome: string;
+          records_seen: number;
+          runs: number;
+        };
+        Update: {
+          contract_key?: string;
+          day?: string;
+          outcome?: string;
+          records_seen?: number;
+          runs?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "source_run_archive_daily_contract_key_fkey";
+            columns: ["contract_key"];
+            isOneToOne: false;
+            referencedRelation: "source_contracts";
+            referencedColumns: ["key"];
+          },
+          {
+            foreignKeyName: "source_run_archive_daily_contract_key_fkey";
+            columns: ["contract_key"];
+            isOneToOne: false;
+            referencedRelation: "source_health";
+            referencedColumns: ["key"];
+          },
+        ];
+      };
+
+      source_run_retired_keys: {
+        Row: {
+          idempotency_key: string;
+          retired_at: string;
+        };
+        Insert: {
+          idempotency_key: string;
+          retired_at?: string;
+        };
+        Update: {
+          idempotency_key?: string;
+          retired_at?: string;
+        };
+        Relationships: [];
+      };
       broadcast_delivery_queue: {
         Row: {
           attempts: number;
@@ -2920,6 +2997,12 @@ export type Database = {
       };
     };
     Functions: {
+      prune_reliability_history: { Args: never; Returns: Json };
+
+      set_source_paused: {
+        Args: { _key: string; _paused: boolean };
+        Returns: undefined;
+      };
       acknowledge_operational_incident: {
         Args: { _id: string };
         Returns: undefined;
