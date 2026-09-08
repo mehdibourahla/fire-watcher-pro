@@ -598,9 +598,6 @@ async function relayAuthorityWarnings(): Promise<number> {
 const OFFICIAL_FRESH_HOURS = 24;
 const OFFICIAL_COVERED_HOURS = 12;
 
-/* Decision 2026-09-02: an incident the authority named and no satellite saw is the one
- * case where the relay beats silence. It carries the bulletin's own "as of", never the
- * push time, and it is skipped when a live thread already put a fire inside that commune. */
 async function relayOfficialIncidents(): Promise<number> {
   const since = new Date(
     Date.now() - OFFICIAL_FRESH_HOURS * HOUR,
@@ -660,17 +657,22 @@ async function relayOfficialIncidents(): Promise<number> {
   );
 
   const sourceLabel = new Map<string, string>();
+  const sourceKey = new Map<string, string>();
   const mentionIds = pending
     .map((i) => i.latest_mention_id)
     .filter((id): id is string => id !== null);
   if (mentionIds.length) {
-    const { data } = await supabaseAdmin
+    const { data, error: sourceError } = await supabaseAdmin
       .from("incident_mentions")
-      .select("id, text_sources(label)")
+      .select("id, text_sources(label, key)")
       .in("id", mentionIds);
-    for (const row of data ?? [])
-      if (row.text_sources?.label)
+    if (sourceError) throw new Error(sourceError.message);
+    for (const row of data ?? []) {
+      if (row.text_sources?.label) {
         sourceLabel.set(row.id, row.text_sources.label);
+        sourceKey.set(row.id, row.text_sources.key);
+      }
+    }
   }
 
   let published = 0;
@@ -678,16 +680,6 @@ async function relayOfficialIncidents(): Promise<number> {
     const commune = unitById.get(incident.commune_id!);
     const wilaya = unitById.get(incident.wilaya_id);
     if (!commune) continue;
-    if (covered.has(commune.code)) {
-      await auditRow({
-        action: "suppressed",
-        reason: "already_detected",
-        kind: "official",
-        commune_codes: [commune.code],
-        payload: { official_incident_id: incident.id },
-      });
-      continue;
-    }
     const label =
       (incident.latest_mention_id
         ? sourceLabel.get(incident.latest_mention_id)
@@ -709,6 +701,9 @@ async function relayOfficialIncidents(): Promise<number> {
       asOf: new Date(incident.as_of),
       texts,
     });
+    const key = incident.latest_mention_id
+      ? sourceKey.get(incident.latest_mention_id)
+      : undefined;
     const { data: capRow, error: capError } = await supabaseAdmin
       .from("cap_alerts")
       .insert({
@@ -718,7 +713,10 @@ async function relayOfficialIncidents(): Promise<number> {
         status: cap.status,
         msg_type: cap.msgType,
         scope: cap.scope,
-        info: cap.info,
+        info: cap.info.map((info) => ({
+          ...info,
+          parameter: key ? [{ valueName: "source_key", value: key }] : [],
+        })),
       })
       .select("id")
       .single();
@@ -733,7 +731,7 @@ async function relayOfficialIncidents(): Promise<number> {
         cap_alert_id: capRow.id,
         severity: "Severe",
         commune_codes: [commune.code],
-        push_codes: [commune.code],
+        push_codes: covered.has(commune.code) ? [] : [commune.code],
       })
       .select("id")
       .single();
