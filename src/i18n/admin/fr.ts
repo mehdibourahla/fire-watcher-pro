@@ -148,6 +148,13 @@ export const adminFr: AdminTranslation = {
     reason_other: "Autre",
   },
   sources: {
+    pushTestTitle: "Test privé des notifications",
+    pushTestHelp:
+      "Touchez le bouton, puis revenez à l’écran d’accueil de l’iPhone. Une notification de test sera envoyée uniquement à cet appareil.",
+    pushTestButton: "Tester cet appareil",
+    pushTestWaiting: "Envoi — revenez à l’écran d’accueil",
+    pushTestAccepted:
+      "Le fournisseur a accepté le test. Confirmez que la notification est apparue sur votre appareil.",
     ensemble: {
       title: "Aperçu météo d’ensemble",
       description:

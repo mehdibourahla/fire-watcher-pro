@@ -1,5 +1,11 @@
 export const adminAr = {
   sources: {
+    pushTestTitle: "اختبار إشعار خاص",
+    pushTestHelp:
+      "اضغط الزر ثم عد إلى الشاشة الرئيسية للهاتف. يُرسل إشعار اختبار إلى هذا الجهاز فقط.",
+    pushTestButton: "اختبار هذا الجهاز",
+    pushTestWaiting: "جارٍ الإرسال — عد إلى الشاشة الرئيسية",
+    pushTestAccepted: "قبل المزوّد الاختبار. أكّد ظهور الإشعار على جهازك.",
     ensemble: {
       title: "معاينة التوقعات الجوية الجماعية",
       description:

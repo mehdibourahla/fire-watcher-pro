@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import type { AnyLocale } from "@/i18n";
 import { EnsemblePreview } from "@/components/admin/EnsemblePreview";
+import { PushDeviceTest } from "@/components/admin/PushDeviceTest";
 import {
   acknowledgeIncident,
   deliveryQueueQuery,
@@ -207,6 +208,7 @@ function SourcesPage() {
         </p>
       ) : null}
 
+      <PushDeviceTest />
       <EnsemblePreview />
 
       <h2 className="mt-6 text-sm font-medium">{t("sources.health")}</h2>

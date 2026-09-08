@@ -71,6 +71,31 @@ async function registrationToken(): Promise<string> {
   return token;
 }
 
+export async function testPushOnThisDevice(): Promise<void> {
+  if (!pushSupported() || Notification.permission !== "granted")
+    throw new Error("Enable notifications on this device first.");
+  const { supabase } = await import("@/integrations/supabase/client");
+  const { data, error } = await supabase.auth.getSession();
+  if (error || !data.session)
+    throw new Error("Sign in with your admin account first.");
+  const token = await registrationToken();
+  const response = await fetch("/api/private/push-test", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      authorization: `Bearer ${data.session.access_token}`,
+    },
+    body: JSON.stringify({ token }),
+    signal: AbortSignal.timeout(45000),
+  });
+  if (!response.ok) {
+    const body = (await response.json().catch(() => null)) as {
+      error?: string;
+    } | null;
+    throw new Error(body?.error ?? "Push test failed");
+  }
+}
+
 async function callSubscribeApi(
   token: string,
   communes: string[],
