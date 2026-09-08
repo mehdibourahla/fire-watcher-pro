@@ -100,10 +100,10 @@ each batch is flushed as it completes.
 Supabase cron and Cloudflare's minute Cron Trigger independently enqueue the same normalized
 contract slots. A unique contract/slot key makes duplicate triggers harmless. Cloudflare
 dispatches bounded one-job Worker requests; expired leases are recovered in Postgres. An
-independent GitHub Actions watchdog reads the private queue view every five minutes. A watchdog
+independent GitHub Actions watchdog reads the private queue view twice an hour. A watchdog
 failure means the database has evidence of a breached contract—such as a late job, expired lease,
 or missing run—not that it has inferred which process failed. Retries are bounded by each
-contract's attempt count and usefulness window. Gaps are recorded durably. FIRMS and FCI gaps
+contract's attempt count and usefulness window. Gaps are recorded durably. FIRMS, FCI and EFFIS gaps
 inside their provider retention windows can be replayed exactly, only by ID, through
 `bun run replay:source -- <gap-uuid>`; terminal gaps for other contracts are marked unrecoverable.
 Current-only jobs never run a fresh payload against an old interval: older queued slots are
@@ -164,13 +164,16 @@ Nadhir is a working data platform with an honest status page; it is **not yet a 
 service**. The full, evidence-checked list is in **[GAPS.md](GAPS.md)** — start there if you
 want to contribute. The blockers that matter most:
 
-- **The danger scale is not calibrated for Algeria.** Today 68.8% of communes read "Extreme"
-  and none read "Low". The CFFDRS maths is verified against Van Wagner to ±0.01; the
-  thresholds are borrowed from a boreal regime. Do not "fix" the arithmetic.
-- **Nobody can register.** Sign-up needs a confirmation email and no SMTP is configured, so it
-  falls back to a 2-emails/hour sender. `auth.users` is 0. Login and RLS themselves work.
-- **No alert reaches a human.** Alerts are computed and stored; push, SMS, email and Telegram
-  are all unwired.
+- **Weather danger is not a complete fire-risk model.** Fuel-limited communes are masked and
+  local FWI percentiles now accompany the absolute scale; reference-data validation and
+  land-cover refresh remain important. The old late-August Extreme percentage was seasonal,
+  not proof of broken FWI arithmetic.
+- **Registration has worked; email delivery still needs operational validation.** The dated
+  SMTP/account observations in GAPS are not a current capacity guarantee.
+- **Broadcast delivery exists, but reliability work remains.** Telegram has recorded live
+  sends and its current public policy is DGPC official relays only. FCM has an accountless
+  subscription path; validate an actual device receipt. Durable destination retries and
+  per-user zone email/SMS delivery remain priorities.
 - **Cross-border fires are watched but coarsely placed.** Detections in the Moroccan and
   Tunisian border strips are ingested and shown with coordinates rather than an Algerian
   commune name, but nothing yet says which country they are in.
@@ -187,8 +190,8 @@ want to contribute. The blockers that matter most:
 
 Issues and pull requests are welcome — [CONTRIBUTING.md](CONTRIBUTING.md) has the
 two-minute no-secrets setup and the access tiers. [GAPS.md](GAPS.md) lists every known gap
-with the file to start from and a rough sense of difficulty; the "Where to start" table at
-the end maps interests to tasks.
+with source pointers; its current priorities and open-PR review distinguish implemented
+features from remaining validation. The "Where to start" table maps interests to tasks.
 
 CI runs `tsc --noEmit`, the test suite and eslint on every pull request, and `main` requires a
 reviewed pull request — pushes straight to it are blocked. Run `bun run format` before opening

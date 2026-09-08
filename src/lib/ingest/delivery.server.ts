@@ -7,6 +7,7 @@ import {
   type FcmMessage,
 } from "@/lib/fcm";
 import { telegramAuthorityHtml, telegramSeverityAllowed } from "@/lib/telegram";
+import { fetchAllPages } from "@/lib/paginate";
 
 import { fcmConfigured, fcmSend } from "./fcm.server";
 import { sendTelegram, telegramConfigured } from "./telegram.server";
@@ -198,17 +199,26 @@ async function deliverFcm(errors: string[]): Promise<{
   for (const row of pending) {
     const messages = fcmMessagesFor(row, context);
     if (messages === null) continue;
-    if (sent + messages.length > FCM_SEND_BUDGET) break;
-    // one persistently rejected row must not silence every other pending alert
-    try {
-      for (const message of messages) {
-        await fcmSend(message);
-        sent += 1;
+    const delivered = await deliveryReceipts(row.id, "fcm");
+    let complete = true;
+    for (const message of messages) {
+      if (delivered.has(message.topic)) continue;
+      if (sent >= FCM_SEND_BUDGET) {
+        complete = false;
+        break;
       }
-    } catch (error) {
-      errors.push(error instanceof Error ? error.message : "fcm send failed");
-      continue;
+      try {
+        await fcmSend(message);
+      } catch (error) {
+        errors.push(error instanceof Error ? error.message : "fcm send failed");
+        complete = false;
+        continue;
+      }
+      sent += 1;
+      await recordDelivery(row.id, "fcm", message.topic);
+      delivered.add(message.topic);
     }
+    if (!complete) continue;
     const { error } = await supabaseAdmin
       .from("broadcasts")
       .update({
@@ -220,6 +230,39 @@ async function deliverFcm(errors: string[]): Promise<{
     rows += 1;
   }
   return { rows, sent };
+}
+
+async function deliveryReceipts(
+  broadcastId: string,
+  channel: "fcm" | "telegram",
+) {
+  const receipts = await fetchAllPages<{ destination: string }>((from, to) =>
+    supabaseAdmin
+      .from("broadcast_delivery_receipts")
+      .select("destination")
+      .eq("broadcast_id", broadcastId)
+      .eq("channel", channel)
+      .order("destination")
+      .range(from, to),
+  );
+  return new Set(receipts.map((r) => r.destination));
+}
+
+async function recordDelivery(
+  broadcastId: string,
+  channel: "fcm" | "telegram",
+  destination: string,
+) {
+  const { error } = await supabaseAdmin
+    .from("broadcast_delivery_receipts")
+    .upsert(
+      { broadcast_id: broadcastId, channel, destination },
+      {
+        onConflict: "broadcast_id,channel,destination",
+        ignoreDuplicates: true,
+      },
+    );
+  if (error) throw new Error(error.message);
 }
 
 function telegramHtmlFor(
@@ -293,17 +336,25 @@ async function deliverTelegram(errors: string[]): Promise<{
           .filter((chat): chat is string => Boolean(chat)),
       ),
     ];
-    try {
-      for (const chat of chats) {
+    const delivered = chats.length
+      ? await deliveryReceipts(row.id, "telegram")
+      : new Set<string>();
+    let complete = true;
+    for (const chat of chats) {
+      if (delivered.has(chat)) continue;
+      try {
         await sendTelegram(chat, html!);
-        sent += 1;
+      } catch (error) {
+        errors.push(
+          error instanceof Error ? error.message : "telegram send failed",
+        );
+        complete = false;
+        continue;
       }
-    } catch (error) {
-      errors.push(
-        error instanceof Error ? error.message : "telegram send failed",
-      );
-      continue;
+      sent += 1;
+      await recordDelivery(row.id, "telegram", chat);
     }
+    if (!complete) continue;
     // stamped even with zero matching channels: nothing further to deliver
     const { error } = await supabaseAdmin
       .from("broadcasts")
@@ -342,15 +393,31 @@ export async function deliverBroadcasts(): Promise<DeliveryRun> {
 
   const errors: string[] = [];
   const fcmOn = fcmConfigured();
-  const fcm = fcmOn ? await deliverFcm(errors) : { rows: 0, sent: 0 };
+  let fcm = { rows: 0, sent: 0 };
+  if (fcmOn) {
+    try {
+      fcm = await deliverFcm(errors);
+    } catch (error) {
+      errors.push(
+        error instanceof Error ? error.message : "fcm delivery failed",
+      );
+    }
+  }
 
   const telegramOn = telegramConfigured();
-  const telegram = telegramOn
-    ? await deliverTelegram(errors)
-    : { rows: 0, sent: 0, channels: 0 };
+  let telegram = { rows: 0, sent: 0, channels: 0 };
+  if (telegramOn) {
+    try {
+      telegram = await deliverTelegram(errors);
+    } catch (error) {
+      errors.push(
+        error instanceof Error ? error.message : "telegram delivery failed",
+      );
+    }
+  }
 
   if (errors.length)
-    throw new Error(`${errors.length} delivery rows failed: ${errors[0]}`);
+    throw new Error(`${errors.length} delivery errors: ${errors[0]}`);
 
   return {
     rows: fcm.rows,

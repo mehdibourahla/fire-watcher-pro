@@ -1,27 +1,32 @@
 # Known gaps
 
-## Takeover check — 2026-09-08
+## Current priorities — reconciled 2026-09-08
 
-The older inventory below needs reconciliation. Atomic risk publication is implemented;
+Atomic risk publication is implemented;
 production's `local_fwi` checkpoint is complete for 2026-09-08. Local FWI percentiles and
 the admin console are also implemented. Telegram is live: the last 24 hours contained
 nine satellite broadcasts with six recorded channel sends.
 
 Priorities checked against current code:
 
-1. Restrict public Telegram to DGPC Protection Civile relays (hotfix in review).
-2. Make delivery retries durable per channel: `delivery.server.ts` stamps a broadcast only
-   after all sends, so partial failures can repeat successful sends on retry.
-3. Reconcile this inventory and `roadmap.md` with shipped code before scheduling work.
-   The zone alert engine still implements R1/R3/R4, without growth (R2) or all-clear (R5).
-4. Review the still-open feature PR #31 against current main before reviving it;
-   eight dependency PRs are also open. GitHub has no open issues tracking the backlog.
+1. DGPC-only public Telegram deployed in #120 on 2026-09-08 at 15:58 UTC; the next
+   delivery run succeeded at 16:01 UTC. Only official CAP messages carrying
+   `source_key=dgpc_telegram` are eligible.
+2. Deploy the destination-receipt retry fix: successful Telegram chats and FCM topics are
+   persisted individually and skipped on retry. Implementation and failure tests are complete.
+3. Finish operator reliability: delivery backlog objectives, incident acknowledgement,
+   pause/resume and failure drills. The admin console already has fire resolution,
+   source-gap replay, risk publication, incident edits, replies and place verification.
+4. Refresh the dependency PRs and split any useful successor to PR #31 (§4.5).
+5. Validate SMTP/FCM configuration and real delivery, then scope zone growth (R2) and
+   observation-honest end notifications (R5); the zone engine still implements R1/R3/R4.
 
-The remaining historical claims below have not all been revalidated.
+Code and open PRs were rechecked on 2026-09-08. Dated production counts below are historical
+observations, not current measurements; configuration and coverage must be refreshed before
+acting on them. Code availability alone does not prove live delivery or field verification.
 
-What Nadhir does not do yet, why it matters, and where to start. Every claim here was checked
-against the running system on 2026-08-28; where a number is quoted, the query that produced it
-is named so you can re-run it rather than trust this file.
+What Nadhir does not do yet, why it matters, and where to start. Historical measurements retain
+their dates and reproduction pointers.
 
 Nadhir is a wildfire early-warning service. A gap in a warning system is not the same as a
 missing feature in a normal app: if the danger scale is wrong or an alert never sends, the
@@ -32,7 +37,7 @@ honest status page. Treat §1 as the distance between those two things.
 
 ## 1. Blocking a real warning service
 
-### 1.1 The danger scale needs an arid-zone presentation (fuel mask shipped)
+### 1.1 Danger scale — fuel mask and local percentiles implemented
 
 An earlier version of this section said the scale "carries no information" because 68.8% of
 communes read Extreme with none at Low. That predates the noon-LST input fix and was
@@ -47,7 +52,7 @@ detections within ~10 km in 2016–25. Do not re-derive "the thresholds are unca
 the old text, and do not edit the FWI maths (verified against Van Wagner's worked example in
 `src/lib/__tests__/risk.test.ts`).
 
-Two real gaps remain:
+Current behavior:
 
 - **Fuel mask — shipped 2026-08-30.** FWI is a weather index with no fuel term; Tamanrasset
   read level 5 on 89% of all days including winter. Since the WorldCover enrichment, a
@@ -55,24 +60,25 @@ Two real gaps remain:
   `src/lib/zonal.ts`) is written with `risk_forecasts.fuel_limited`; surfaces show "not
   rated", rollups and risk alerts skip it. Dense-urban cores (Alger-Centre) mask too, same
   as EFFIS's own no-data treatment of cities. Absent land-cover data never masks.
-- **Arid-zone saturation.** The steppe (El Bayadh) is level 5 on 92 of 92 July days —
-  absolute thresholds carry no information there. The standard remedy is a local-percentile
-  view beside the absolute class; the CEMS fire-danger reanalysis (86 years of ECMWF FWI,
-  CC BY 4.0) is the calibration source, and EFFIS publishes anomaly/ranking indices per
-  pixel via the same query layer as §2.2.
+- **Local percentiles — implemented 2026-09-03.** `weather.server.ts` reads per-commune,
+  calendar-day breakpoints from `fwi_climatology`, persists `fwi_percentile`, and exposes it
+  through the forecast page and public risk API beside the absolute class. The seed path is
+  `scripts/seed-fwi-climatology.ts` and `data/ewds/`. Missing breakpoints produce null, not
+  invented calibration. Remaining work is coverage/provenance and scientific validation of
+  the seeded reference data, not building another percentile formula.
 
 Reproduce the seasonality and discrimination numbers: the queries and scripts are described
 in the 2026-08-29 investigation; the distribution itself is
 `select danger_level, count(*) from risk_forecasts where horizon_days=0 group by 1;`
 
-### 1.2 Registration works but is rate-capped
+### 1.2 Registration works; confirm current email capacity
 
 **Reopened and re-measured 2026-09-02: 29 accounts exist, 16 of them email-confirmed, created
 between 30 Aug and 2 Sep, owning 19 zones across 9 people.** So registration is not the total
-wall this section described. What remains is the ceiling: without custom SMTP the project
-falls back to Supabase's built-in sender, capped at **2 emails/hour project-wide** and
-documented by Supabase as not for production, which is why 13 of 29 sign-ups are still
-unconfirmed. Reproduce: `select count(*), count(email_confirmed_at) from auth.users;`
+wall this section described. The configuration checked then used the built-in sender with a
+**2 emails/hour project-wide** ceiling; 13 accounts were unconfirmed, but that count alone
+does not establish why they did not confirm. Reproduce:
+`select count(*), count(email_confirmed_at) from auth.users;`
 
 Login itself is fine, and was verified end to end: password grant issues a token, the app's
 lazy profile creation succeeds, zone creation succeeds, and RLS holds (inserting a zone under
@@ -82,29 +88,25 @@ Two related settings were wrong and are now fixed: `site_url` pointed at `http:/
 so every confirmation link was dead, and `uri_allow_list` was empty so the app's
 `emailRedirectTo` was ignored.
 
-Remaining work: configure an SMTP provider (Resend, Postmark, SES) in Supabase Auth. Until
-then sign-up succeeds only when the hourly quota happens to be free, so roughly half of new
-accounts never confirm and the per-user zone alerts stay unreliable.
+Remaining work: recheck the live Auth email configuration and a confirmation receipt; configure
+production SMTP if still absent. Do not use the September 2 account ratio as today's failure rate.
 
-### 1.3 No alert reaches a human
+### 1.3 Broadcast delivery exists; reliability and zone delivery remain
 
-Largely closed 2026-08-30 by the Broadcast Alerts epic: confirmed fires and ONM Severe+
-warnings publish as Broadcast Alerts and fan out to FCM commune topics and per-wilaya
-Telegram channels (`src/lib/ingest/broadcast.server.ts`, `delivery.server.ts`), with an
-accountless web subscription flow. Remaining unwired: the per-user zone `alerts` rows
-(email/SMS, still gated on §1.2), and the runtime secrets — `FIREBASE_SERVICE_ACCOUNT`
-and `TELEGRAM_BOT_TOKEN` — plus the Firebase web config, without which delivery reports
-itself degraded on /status rather than pretending.
+Broadcasts publish from satellite fires, ONM and official incident relays, with FCM topic
+delivery and an accountless subscription flow (`src/lib/ingest/broadcast.server.ts`,
+`delivery.server.ts`). Telegram has recorded live channel sends; its current public policy
+is DGPC official CAP relays only. The per-user zone `alerts` rows still lack email/SMS
+delivery. Verify FCM runtime credentials, Firebase web config and an actual device receipt
+before calling push operational; missing configuration reports degraded health.
 
 The **CAP object** every channel must render is now built (`cap_alerts`, `src/lib/cap.ts`):
 each fire alert links to one CAP 1.2 warning carrying all four languages, so a channel added
-later renders an approved object instead of inventing its own payload. It was done while zero
-channels exist because that is one table and a serializer; after four channels ship it would
-be four rewrites plus a backfill. Signing, approval chains and Cell Broadcast remain
+later renders an approved object instead of inventing its own payload. Signing, approval chains and Cell Broadcast remain
 institutional work, not code.
 
-What is left is the delivery itself: pick a provider per channel and render the CAP object to
-it. The `cap_alerts` migration was applied to the live project on 2026-08-29
+What is left is deploying destination-level retry and verifying device receipts (§2.4), plus providers
+for zone email/SMS. The `cap_alerts` migration was applied to the live project on 2026-08-29
 (ledger version 20260829010000).
 
 **Commune alert state — 2026-09-02.** A push now means a commune's alert level rose:
@@ -270,8 +272,9 @@ road status every 15 min, Info Trafic Algérie with ~1.9M followers, DGF) sits b
 
 Open: wilaya Civil Protection and forestry pages live
 on Facebook and need Meta page access or a Telegram/RSS surface; without `OPENROUTER_API_KEY` nothing is
-extracted and every document waits in the retry queue. Official incidents do not yet feed
-Broadcast Alerts — a deliberate scope line until the recall metric has run for a while.
+extracted and every document waits in the retry queue. Official incidents now feed
+Broadcast Alerts through `relayOfficialIncidents` in `broadcast.server.ts`; public
+Telegram additionally requires the DGPC source marker (§1.3).
 
 Citizen hazard reports now also render on the live map (hollow marker, kind, age, "unverified"
 line) from the same 24-hour `hazard_reports` view the Survival page uses; the approved-only
@@ -318,11 +321,11 @@ originally claimed, all verified live on 2026-08-29:
   physically impossible in late August. The ingest now checks sentinel DC values through
   the query layer and refuses the run during the dry season when all sit below 100.
 
-The layer only serves its current run, so each row is stamped with the fetch date, and a
-palette change on their side still degrades the source loudly (the run errors when zero
-communes match).
+The adapter now requests its job's date and EFFIS has a seven-day interval replay window
+(`20260903190000_effis_interval_replay.sql`). A palette change still degrades the source
+loudly when zero communes match.
 
-**Upstream has been down since 2026-08-29** and still is on 2026-09-01: every EFFIS
+**Historical outage, measured 2026-09-01:** every EFFIS
 endpoint answers `msLoadMap(): Unable to access file` — served as **HTTP 200 with
 `text/html`**, not a 4xx or 5xx. `effis_danger` holds no rows, so §1.1's external
 comparator is unavailable, and the cold-start guard cannot fire either: it needs two
@@ -373,7 +376,7 @@ has no counterpart commune in the database; `2839 Ouled Atia` exists here but in
 list; and `admin_units` holds 1537 communes against the law's 1541 — the missing rows
 are unidentified and need the Arabic original or ONS tables to name.
 
-### 2.4 Source reliability — truthful health and isolated execution built; publication remains open
+### 2.4 Source reliability — atomic publication built; delivery remains open
 
 The first slice of the Data Reliability Control Plane replaces the two most dangerous health
 shortcuts. Freshness is no longer guessed in the browser from hard-coded intervals, and raw
@@ -388,7 +391,7 @@ M2 replaces the direct HTTP cron pipelines with durable per-contract `source_job
 lease per contract. Supabase and Cloudflare independently enqueue the same normalized slots;
 short jobs run on the Worker, while FWI and EFFIS have separate GitHub consumers. Attempts and
 retry windows are bounded, expired leases are recovered, missing intervals become `source_gaps`,
-and exact interval replay accepts only a recorded FIRMS or FCI gap UUID inside provider
+and exact interval replay accepts a recorded FIRMS, FCI or EFFIS gap UUID inside provider
 retention. Terminal gaps for other contracts are marked unrecoverable rather than pretending
 they can be reconstructed. A watchdog queries Supabase directly from GitHub
 Actions, so the Worker is not its own monitor. Its failures report breached database evidence,
@@ -422,22 +425,27 @@ Worker is alive and no signal at all when it is not — the failure that silence
 queries Supabase directly, and adds the one issue the in-Worker one cannot raise:
 `worker_silent`, when no `cloudflare`-target contract has started a run in 25 minutes. It
 keeps its own fingerprint (`external_watchdog`), so the two do not overwrite each other's
-transition state. `TELEGRAM_BOT_TOKEN` is now a repository secret; **`NADHIR_OPERATOR_CHAT_ID`
-is not**, and until it is the workflow fails loudly rather than skipping the DM in silence.
+transition state. `TELEGRAM_BOT_TOKEN` was a repository secret while `NADHIR_OPERATOR_CHAT_ID`
+was missing at that observation. Recheck current configuration and receipt evidence; that
+dated absence is not proof the operator notification remains unwired today.
 
-Worth carrying into M3/M4: a consumer that reports success when it claimed nothing cannot
+Worth carrying into reliability validation: a consumer that reports success when it claimed nothing cannot
 distinguish "drained" from "never arrived", and that is the same shape as the two other
 blind signals found the same day (§2.2's outage filed as our own error, and ONM stuck
 `partial` on one trailing letter).
 
-What is deliberately still open:
+Publication and delivery status:
 
-- **Atomic FWI publication (M3).** The daily workflow records partial coverage honestly, but it
-  can still update part of the current forecast set in place. A staged 9,216-row snapshot and one
-  publication manifest must precede any new daily enrichment layer.
-- **Channel-isolated delivery (M4).** Publish and delivery health are distinct contracts now, but
-  Telegram and FCM attempts do not yet have independent durable queues, retries and backlog
-  objectives. One channel succeeding must not erase evidence that another failed.
+- **Atomic FWI publication (M3) — implemented.** `weather.server.ts` stages a generation and
+  calls `publish_risk_forecast_snapshot`; the database validates complete coverage and switches
+  the publication pointer transactionally. The 2026-09-08 takeover observed a complete
+  `local_fwi` checkpoint. Keep failure/partial-generation checks as release gates; do not
+  schedule this as an unbuilt feature.
+- **Channel-isolated delivery (M4, partial).** The receipt fix awaits deployment: private
+  `broadcast_delivery_receipts` records successful chats/topics so retries skip them; provider
+  rejection continues other destinations, and channel errors do not block the other channel.
+  Separate queues, backlog objectives and incidents remain. An accepted send with a lost
+  response or failed receipt write can still repeat; neither provider offers exactly-once sends.
 
 The dormant `data_sources` and `ingest_runs` relations exist only for the expand/contract deploy
 window. The inactive database HTTP helper and token table also remain until the queue-backed
@@ -460,7 +468,7 @@ anyone reviewing the schema. The checklist can proceed for them.
   unsanitised. The strip runs **in the browser**, so it protects a reporter from leaking their
   own GPS but is not a control against someone who uploads to Storage without it; the bucket
   enforces the size and mime limits server-side, nothing more. Captcha and antivirus scanning
-  are still missing. Currently 0 reports, so those are gaps to close before promoting the
+  are still missing. The August inventory recorded 0 reports; these are gaps to close before promoting the
   feature, not a live exposure.
 - **Persistent industrial sources are screened** since 2026-08-29. NASA's science-processed
   archive labels 76.8% of Algeria's 1.1M detections (2016–2025) as `type=2` static land
@@ -482,20 +490,18 @@ anyone reviewing the schema. The checklist can proceed for them.
   CAP XML carries FR/EN, not Arabic); publication cadence is unproven. Health is
   therefore based on successful validated polls, so a quiet weather day is not
   treated as a dead feed.
-- **Admin console** has no cluster resolve (US-6). It gained a **Suggestions** tab on
-  2026-08-30 for the `/contribute` idea board (nothing user-submitted reaches the public
-  board until a moderator publishes it), and broadcast controls at `/broadcasts`:
-  kill-switch, append-only audit view, and manual relay of attributed authority warnings
-  (the phone-call case).
-- **`/contribute` collects notes that nobody answers yet.** The box records a submission and
-  the copy says so — a person reviews it, expect days not minutes — but there is no reply
-  path. When the planned agent is wired in, its reply must state that it is an agent: a
-  project whose pitch is that every fact carries its source cannot have a bot signing as a
-  person. Voting is anonymous by necessity (§1.2 makes accounts unreachable) and keyed to a
+- **Admin console — implemented.** `/admin` includes fire resolution (`resolve_fire`),
+  source-gap replay, risk publication, official-incident editing, moderation queues,
+  member tools, place verification and an audit timeline. See `src/lib/admin-*.ts` and
+  `src/routes/_authenticated/admin/`. Operator incident acknowledgement, source pause/resume,
+  retention and failure drills remain part of M5, not a missing console.
+- **`/contribute` now has replies.** `IdeaQueue.tsx` calls `replyToIdea` and displays whether
+  the reply author is a person or agent. This proves the workflow exists, not that someone
+  is monitoring submissions. Voting is anonymous and keyed to a
   `localStorage` value, so clearing storage earns another vote; the UI says the count shows
   interest rather than a number of people. Open-area verification has a column
-  (`verified_at`) but no submission form — verifications arrive as free text in the idea box
-  and a maintainer transcribes them, so the headline deficit only moves by hand.
+  (`verified_at`) and an operator action (`verify_open_area`); contributor field verification
+  still arrives through moderation rather than a dedicated evidence-submission form.
 - **Translation review is a real surface** since 2026-08-30:
   `/contribute/language/<ar|fr|kab>` shows all 671 strings beside their English source,
   accepts a suggestion or a "reads right" confirmation per string, keeps drafts in the
@@ -508,11 +514,12 @@ anyone reviewing the schema. The checklist can proceed for them.
 - **Survival mode** (`/survival`) ships with deliberate limits, each stated in the UI
   rather than papered over: the SOS queue is **local-only** — no server inbox exists
   because nobody would monitor it (§1.3), and the copy says so; quick hazard reports
-  reuse the authenticated report flow, so they are unreachable until §1.2's SMTP wall
-  falls; `open_areas` was seeded on 2026-08-29 (2068 rows from OSM — reproduce:
-  `select count(*) from open_areas;`) but has had no field verification of any entry;
+  reuse the authenticated report flow, so registration delivery limits affect access;
+  `open_areas` was seeded on 2026-08-29 (2068 rows from OSM — reproduce:
+  `select count(*) from open_areas;`). Recheck `verified_at` before claiming any entry has
+  or has not received field verification;
   threat facts inherit §1.4's
-  hours of detection latency and always display their age; the service worker caches the
+  source-dependent detection latency and always display their age; the service worker caches the
   survival shell only; spoken/recorded guidance audio (accessibility for low literacy)
   does not exist yet and must be human-recorded, not TTS.
 - **Public API** has no WebSocket and no tiles. What exists is `/api/public/v1/fires`
@@ -522,14 +529,12 @@ anyone reviewing the schema. The checklist can proceed for them.
 
 ## 4. Contributing, tooling and licence
 
-### 4.1 Dependency advisories are dev-only
+### 4.1 Dependency advisories — audit refreshed 2026-09-08
 
-`bun audit` reports 5 high advisories in `brace-expansion`, `nanoid` and `js-yaml`. All three
-arrive through eslint, typescript-eslint and vite's postcss chain, and all are denial-of-service
-classes. None reach the deployed Worker — verified by searching the built bundle for the package
-names _and_ for their runtime signatures (nanoid's alphabet constant, js-yaml's `YAMLException`),
-which returns nothing. Dependabot is enabled and will carry the fixes; clearing them today means
-taking the eslint 10 and vitest 4 major bumps, which is a judgement call, not a security urgency.
+`bun audit --json` still reports five high-severity entries across `brace-expansion`,
+`js-yaml` and `nanoid`. Runtime reachability was not rechecked in this reconciliation, so the
+older dev-only assessment is not a current bundle guarantee. Trace the dependency paths and
+re-audit any proposed lockfile before claiming an upgrade clears these. Open PRs are in §4.5.
 
 ### 4.2 Password policy is inconsistent
 
@@ -537,22 +542,14 @@ Supabase Auth accepts a 6-character minimum while the sign-up form asks for 8. T
 real boundary, so the effective policy is 6. Captcha is disabled, which combined with §1.2's
 2-emails/hour ceiling means a bot could exhaust the project's email quota trivially.
 
-### 4.3 Test coverage is narrow
+### 4.3 Verification gaps
 
-334 tests across 40 files cover the FWI maths, FWI state advancement, alert rule evaluation, geo
-seeding, i18n key parity, ingest guards, the cross-border watch area, place labelling, Exif
-stripping, CAP construction, the public API helpers, the webhook URL guard, and the
-persistent-source grid, registration criteria, screen radius and drift heuristic. Source-run
-classification, public-status serialization, shared health summarization, job execution,
-scheduling, watchdog, and replay are included. Separate 39- and 87-assertion pgTAP suites cover
-the reliability and execution schemas, grants, state transitions, leases, gaps, and replay; a
-10-assertion two-session suite exercises lease collisions and completion/recovery races.
-Most older RLS policies, route handlers end to end, and UI behavior still have no
-coverage. Fusion remains the weakest spot: both its commune attribution and its `fp_reason` filter —
-the one the whole screening design rests on — are guarded only by assertions over the source
-text, not by exercising the function. The screening thresholds are separately gated on a
-held-out confusion matrix (`.github/workflows/screening-gate.yml`), which is a real behavioural
-test but of the registry, not of fusion.
+Current CI requires frozen-lockfile installation, TypeScript, Vitest, lint, and a fresh
+Supabase migration/pgTAP run (`.github/workflows/ci.yml`). The August test counts no longer
+describe this suite. Tests now also cover atomic risk publication and the admin workflows.
+Remaining release evidence includes real channel receipt, partial-send/retry behavior,
+operator failure drills and browser journeys; a green unit suite alone cannot establish these.
+The held-out screening confusion matrix remains a separate workflow (`screening-gate.yml`).
 
 ### 4.4 Hosting needs the Workers Paid plan
 
@@ -561,6 +558,38 @@ React SSR costs more than the Cloudflare free plan's 10 ms CPU budget. On the fr
 200 — that asymmetry is the signature of the CPU limit, not a broken deploy. The paid plan's
 default is 50 ms, which is also too low; the deployed limit is set explicitly to 30 s in
 `vite.config.ts`.
+
+### 4.5 Open PR review — 2026-09-08
+
+[PR #31](https://github.com/mehdibourahla/fire-watcher-pro/pull/31) is conflicted and still
+has changes requested on unchanged head `7255fbad`. Its only successful status is CodeRabbit,
+whose comment says automatic review was skipped; there is no passing application CI evidence.
+Do not revive the combined patch. FCI WFS ingest, CAP Telegram delivery, local percentiles
+and cited Loi reconciliation already exist on main. Remaining useful proposals are separate
+per-fire DEM spread research, measured burn-perimeter/fuel recovery, and cited geography open
+items (§2.3). The unchanged diff still rotates the shared downwind bearing, uses hard-coded
+burn circles and logistic calibration, inserts unsupported `eumetsat_fci`, and polls L1c
+`EO:EUM:DAT:0665`. Those are correctness blockers, not rebase chores. Follow the existing
+changes-requested review; no PR was closed or modified during this reconciliation.
+
+Eight dependency PRs remain open, all without reviews:
+
+| PR                                                                                       | Observed evidence                                   | Next step                                                                                                      |
+| ---------------------------------------------------------------------------------------- | --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| [#1](https://github.com/mehdibourahla/fire-watcher-pro/pull/1) checkout 7                | `check` and `db-tests` pass; blocked pending review | Refresh against main; verify every checkout caller, including newly added workflows, and runner compatibility. |
+| [#117](https://github.com/mehdibourahla/fire-watcher-pro/pull/117) cache 6               | CI passes; changes only screening/refresh workflows | Validate actual cache restore/save; normal CI did not exercise these jobs.                                     |
+| [#118](https://github.com/mehdibourahla/fire-watcher-pro/pull/118) create-pull-request 8 | CI passes; changes only monthly registry refresh    | Review permissions/token behavior and the refresh workflow before approval.                                    |
+| [#119](https://github.com/mehdibourahla/fire-watcher-pro/pull/119) grouped packages      | Frozen-lockfile install fails                       | Regenerate `bun.lock` on a refreshed branch; test router/SSR/build and Worker bundling.                        |
+| [#3](https://github.com/mehdibourahla/fire-watcher-pro/pull/3) Vitest 4                  | Frozen-lockfile install fails                       | Update lockfile, then check test configuration and full suite compatibility.                                   |
+| [#4](https://github.com/mehdibourahla/fire-watcher-pro/pull/4) ESLint 10                 | Frozen-lockfile install fails                       | Update lockfile, then validate typescript-eslint and plugin compatibility.                                     |
+| [#6](https://github.com/mehdibourahla/fire-watcher-pro/pull/6) Node types 26             | Frozen-lockfile install fails                       | Check Bun/Worker API compatibility; avoid type-checking against unavailable runtime APIs.                      |
+| [#7](https://github.com/mehdibourahla/fire-watcher-pro/pull/7) Recharts 3                | Frozen-lockfile install fails                       | Update lockfile, then verify history charts and tooltip behavior.                                              |
+
+All five package PRs change only `package.json`; their logs stop at `bun install
+--frozen-lockfile` with “lockfile had changes, but lockfile is frozen”. These are lockfile
+failures, not evidence of incompatible upgrades. Fix that first on refreshed branches, then
+run the actual CI gates and relevant runtime checks. Green Actions PRs still need review;
+none was merged, approved or rebased here.
 
 ## 5. Traps
 
@@ -612,13 +641,13 @@ Things that cost real debugging time here, none of them obvious from the code.
 
 ## Where to start
 
-| If you want                    | Look at                                                        |
-| ------------------------------ | -------------------------------------------------------------- |
-| A genuinely small first PR     | §4.1 licence, §4.3 formatting, §4.4 CI                         |
-| Data engineering               | §2.1 ESA WorldCover, §2.2 EFFIS                                |
-| Backend with real consequences | §1.3 wiring a delivery channel onto the CAP object             |
-| Domain science                 | §1.1 danger-scale calibration — the highest-value problem here |
-| Ops                            | §1.2 SMTP, §2.4 isolated execution and replay                  |
+| If you want                    | Look at                                                    |
+| ------------------------------ | ---------------------------------------------------------- |
+| A bounded maintenance PR       | §4.5 refresh one dependency PR and its lockfile            |
+| Data engineering               | §2.1 land-cover refresh, §2.3 cited geography open items   |
+| Backend with real consequences | §1.3/§2.4 delivery retries and verified channel receipts   |
+| Domain science                 | §1.1 percentile validation; §4.5 measured per-fire terrain |
+| Ops                            | §1.2 SMTP, §2.4 isolated execution and replay              |
 
 Before changing anything that decides what a user is told, read `ORIGINAL-SPEC.md` for the
 intended model and `roadmap.md` for what is already built. The spec is authoritative except on
