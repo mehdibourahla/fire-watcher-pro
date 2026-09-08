@@ -65,10 +65,10 @@ Seed and ops credentials live in `~/.config/nadhir/`, never in this repo.
 
 ## Known gaps
 
-The full, evidence-checked list lives in [GAPS.md](GAPS.md) — kept there rather than duplicated
-here so the two cannot drift. Headline blockers: the danger scale reads Extreme for 68.8% of
-communes and Low for none, registration cannot complete without SMTP, and broadcast delivery
-waits on the Firebase and Telegram runtime secrets.
+The reconciled priorities and open-PR assessment live in [GAPS.md](GAPS.md), checked against
+code on 2026-09-08. Atomic risk publication, local FWI percentiles and the admin console exist;
+registration and Telegram have worked in production. Next: delivery retries, operator failure
+response, current SMTP/FCM receipt validation, then dependency refreshes and scoped zone rules.
 
 ## Operations
 
@@ -91,11 +91,12 @@ waits on the Firebase and Telegram runtime secrets.
   Telegram message to `NADHIR_OPERATOR_CHAT_ID` per state transition (red with the issue list,
   then recovered); `operator_alert_state` holds the last announced fingerprint.
 - `bun run seed:geo --prune` — reseed geography from `data/geo/` (monthly, idempotent).
-- FIRMS and FCI gaps replay exact retained intervals only by UUID through
+- FIRMS, FCI and EFFIS gaps replay exact retained intervals only by UUID through
   `bun run replay:source -- <gap-uuid>`; unsupported terminal gaps are unrecoverable.
 - Secrets needed by the deployed app: `FIRMS_MAP_KEY`, `EUMETSAT_CONSUMER_KEY/SECRET`,
   `NADHIR_CRON_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`, `FIREBASE_SERVICE_ACCOUNT`,
-  `TELEGRAM_BOT_TOKEN` (the last two pending — delivery reports degraded until set).
+  `TELEGRAM_BOT_TOKEN`. Telegram has recorded live sends; FCM configuration and device receipt
+  still need current verification. Delivery reports degraded when required configuration is absent.
 
 ## Epic: Broadcast Alerts (codename AMBER — never user-facing)
 
@@ -126,8 +127,9 @@ Slices, in dependency order:
       gets an FCM registration token and calls the backend topic-subscribe
       endpoint (ADR-0004), re-invoked on token refresh; no durable per-subscriber
       server state.
-- [x] A4 Telegram channels: per-wilaya public channels; one message per channel
-      per alert, CAP-rendered, cluster-deduped, HTML-escaped, severity floor.
+- [x] A4 Telegram channels: per-wilaya public channels, CAP-rendered, HTML-escaped,
+      severity floor. Current delivery policy permits DGPC official relays only;
+      DGPC-only policy deployed in #120; destination receipt retries await deployment.
 - [x] A5 In-app surface: active-broadcast banner for subscribed communes, read
       from the public broadcast table (AlertNotifier and the alerts table are
       authenticated-only and cannot serve accountless subscribers); an
@@ -139,9 +141,9 @@ Slices, in dependency order:
 - [x] A7 Status honesty: `broadcast` source row + freshness; delivery metrics
       by topic count, never per-person (Subscriptions stay anonymous).
 
-Owner actions gating the epic: Firebase service account key into deploy secrets
-(exists per GAPS §1.3, unconnected); Telegram bot + channel creation; later
-SMS/email providers (per-recipient queues enter only then).
+Remaining activation evidence: verify Firebase service account/web config and a real device
+receipt, and verify DGPC-only Telegram behavior. SMS/email providers remain future zone-delivery
+work. Existing Telegram sends mean bot/channel creation is no longer a blanket epic blocker.
 
 ## Epic: Data Reliability Control Plane
 
@@ -157,17 +159,21 @@ Slices, in dependency order:
       from every current pipeline stage, four-language status UI, and the sanitized
       `/api/public/v1/status` endpoint. The legacy `data_sources` and `ingest_runs` relations
       remain dormant for one expand/contract deploy window; their removal is the next release.
-- [ ] M2 Isolated execution: implementation is complete for per-contract queue jobs and leases,
+- [x] M2 Isolated execution: implementation is complete for per-contract queue jobs and leases,
       bounded retries, recorded gaps, ID-only replay, Cloudflare plus database triggers,
       independent GitHub consumers
       for FWI/EFFIS, and an out-of-band watchdog. The old direct cron endpoints and combined
-      pipeline are removed. Production rollout and its observation window remain operator gates.
-- [ ] M3 Atomic daily risk: stage a complete 1,536-commune × 6-horizon snapshot, publish one
-      manifest transactionally, and block risk alerts from stale or partial products.
-- [ ] M4 Delivery reliability: separate FCM and Telegram attempts, retry each independently,
-      measure backlog against objectives, and open incidents without rewriting broadcast state.
-- [ ] M5 Operator response: deduplicated incidents, independent notifications, acknowledge /
-      pause / resume / replay controls, audit trail, retention, and failure drills.
+      pipeline are removed. Deployed and observed since 2026-08-31; continued gap/watchdog
+      monitoring remains necessary, not a pending initial rollout.
+- [x] M3 Atomic daily risk: complete commune × 6-horizon snapshots, one transactional
+      publication pointer, and stale/partial-product guards are implemented. The takeover
+      observed a complete `local_fwi` checkpoint for 2026-09-08.
+- [ ] M4 Delivery reliability: destination receipts and independent retry progress implemented,
+      pending deployment. Separate channel queues, backlog objectives and incidents remain.
+- [ ] M5 Operator response: admin fire resolution, replay, risk publication, incident editing,
+      moderation replies, place verification and audit trail are implemented. Remaining:
+      reliability-incident lifecycle/acknowledgement, pause/resume, retention, independently
+      verified notifications and failure drills.
 - [ ] M6 New-source gate: require every proposed layer to ship an adapter contract, captured
       producer fixtures, licence/provenance, coverage and recency validation, fallback behavior,
       and replay tests. Candidate layers remain NDVI/fuel condition, soil moisture, lightning,

@@ -73,7 +73,16 @@ function fixture(
   from.mockImplementation((table: string) => {
     const q: Record<string, unknown> = {};
     let update = false;
-    for (const method of ["select", "eq", "in", "is", "gte", "order"])
+    for (const method of [
+      "select",
+      "eq",
+      "in",
+      "is",
+      "gte",
+      "order",
+      "range",
+      "upsert",
+    ])
       q[method] = () => q;
     q["update"] = (value: unknown) => {
       writes.push(value);

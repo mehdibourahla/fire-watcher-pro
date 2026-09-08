@@ -277,6 +277,35 @@ export type Database = {
         };
         Relationships: [];
       };
+      broadcast_delivery_receipts: {
+        Row: {
+          broadcast_id: string;
+          channel: string;
+          delivered_at: string;
+          destination: string;
+        };
+        Insert: {
+          broadcast_id: string;
+          channel: string;
+          delivered_at?: string;
+          destination: string;
+        };
+        Update: {
+          broadcast_id?: string;
+          channel?: string;
+          delivered_at?: string;
+          destination?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "broadcast_delivery_receipts_broadcast_id_fkey";
+            columns: ["broadcast_id"];
+            isOneToOne: false;
+            referencedRelation: "broadcasts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       broadcast_settings: {
         Row: {
           enabled: boolean;
