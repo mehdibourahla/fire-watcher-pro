@@ -12,8 +12,8 @@ Priorities checked against current code:
 1. DGPC-only public Telegram deployed in #120 on 2026-09-08 at 15:58 UTC; the next
    delivery run succeeded at 16:01 UTC. Only official CAP messages carrying
    `source_key=dgpc_telegram` are eligible.
-2. Destination receipts deployed in #121. Production delivery runs succeed; the 17:28 UTC
-   check found no receipt rows yet. Real DGPC, device push and signup receipt remain unverified.
+2. Destination receipts deployed in #121. Production delivery runs succeed; the same-day
+   read-only check found no receipt rows yet. Real DGPC, device push and signup receipt remain unverified.
 3. Release branch implements independent channel queues, backlog incidents, acknowledgement
    and audited pause/resume. Browser QA also corrected operator access to the source replay list.
    Production failure drills, source pause/resume and retention remain operational follow-ups.
@@ -497,8 +497,9 @@ anyone reviewing the schema. The checklist can proceed for them.
 - **Admin console — implemented.** `/admin` includes fire resolution (`resolve_fire`),
   source-gap replay, risk publication, official-incident editing, moderation queues,
   member tools, place verification and an audit timeline. See `src/lib/admin-*.ts` and
-  `src/routes/_authenticated/admin/`. Operator incident acknowledgement, source pause/resume,
-  retention and failure drills remain part of M5, not a missing console.
+  `src/routes/_authenticated/admin/`. Incident acknowledgement and delivery pause/resume
+  are implemented on the release branch. Source pause/resume, retention and production
+  failure drills remain part of M5.
 - **`/contribute` now has replies.** `IdeaQueue.tsx` calls `replyToIdea` and displays whether
   the reply author is a person or agent. This proves the workflow exists, not that someone
   is monitoring submissions. Voting is anonymous and keyed to a
