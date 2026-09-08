@@ -2,6 +2,8 @@ import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 
 import { adminEn } from "./admin/en";
+import { adminAr } from "./admin/ar";
+import { adminKab } from "./admin/kab";
 import { adminFr } from "./admin/fr";
 import { ar } from "./locales/ar";
 import { en } from "./locales/en";
@@ -49,10 +51,10 @@ export const STORAGE_KEY = "nadhir.locale";
 if (!i18n.isInitialized) {
   void i18n.use(initReactI18next).init({
     resources: {
-      ar: { translation: ar },
+      ar: { translation: ar, admin: adminAr },
       fr: { translation: fr, admin: adminFr },
       en: { translation: en, admin: adminEn },
-      kab: { translation: kab },
+      kab: { translation: kab, admin: adminKab },
     },
     lng: "ar",
     fallbackLng: "en",

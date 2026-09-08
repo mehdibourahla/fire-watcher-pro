@@ -20,6 +20,9 @@ const operatorAlertDependencies: OperatorAlertDependencies = {
       ? (process.env["NADHIR_OPERATOR_CHAT_ID"] ?? null)
       : null,
   readIssues: async () => {
+    const refreshed = await supabaseAdmin.rpc("refresh_operational_incidents");
+    if (refreshed.error)
+      throw new Error(`incident refresh failed: ${refreshed.error.message}`);
     const { data, error } = await supabaseAdmin
       .from("source_watchdog")
       .select(

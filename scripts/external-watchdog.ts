@@ -22,6 +22,8 @@ function must<T>(result: {
   return result.data;
 }
 
+must(await supabase.rpc("refresh_operational_incidents"));
+
 const [issuesResult, contracts] = await Promise.all([
   supabase
     .from("source_watchdog")

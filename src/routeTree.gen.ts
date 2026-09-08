@@ -42,6 +42,7 @@ import { Route as AuthenticatedAdminPlacesRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAdminQueuesRouteImport } from './routes/_authenticated/admin/queues'
 import { Route as AuthenticatedAdminRiskRouteImport } from './routes/_authenticated/admin/risk'
 import { Route as AuthenticatedAdminSourcesRouteImport } from './routes/_authenticated/admin/sources'
+import { Route as ApiPrivateEnsembleRouteImport } from './routes/api/private/ensemble'
 import { Route as ContributeLanguageLocaleRouteImport } from './routes/contribute_.language.$locale'
 import { Route as ApiInternalSourceJobsRunRouteImport } from './routes/api/internal/source-jobs/run'
 import { Route as ApiPublicContributeIdeaRouteImport } from './routes/api/public/contribute/idea'
@@ -226,6 +227,11 @@ const AuthenticatedAdminSourcesRoute =
     path: '/sources',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const ApiPrivateEnsembleRoute = ApiPrivateEnsembleRouteImport.update({
+  id: '/api/private/ensemble',
+  path: '/api/private/ensemble',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ContributeLanguageLocaleRoute =
   ContributeLanguageLocaleRouteImport.update({
     id: '/contribute_/language/$locale',
@@ -328,6 +334,7 @@ export interface FileRoutesByFullPath {
   '/admin/queues': typeof AuthenticatedAdminQueuesRoute
   '/admin/risk': typeof AuthenticatedAdminRiskRoute
   '/admin/sources': typeof AuthenticatedAdminSourcesRoute
+  '/api/private/ensemble': typeof ApiPrivateEnsembleRoute
   '/contribute/language/$locale': typeof ContributeLanguageLocaleRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/api/internal/source-jobs/run': typeof ApiInternalSourceJobsRunRoute
@@ -373,6 +380,7 @@ export interface FileRoutesByTo {
   '/admin/queues': typeof AuthenticatedAdminQueuesRoute
   '/admin/risk': typeof AuthenticatedAdminRiskRoute
   '/admin/sources': typeof AuthenticatedAdminSourcesRoute
+  '/api/private/ensemble': typeof ApiPrivateEnsembleRoute
   '/contribute/language/$locale': typeof ContributeLanguageLocaleRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/api/internal/source-jobs/run': typeof ApiInternalSourceJobsRunRoute
@@ -422,6 +430,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/queues': typeof AuthenticatedAdminQueuesRoute
   '/_authenticated/admin/risk': typeof AuthenticatedAdminRiskRoute
   '/_authenticated/admin/sources': typeof AuthenticatedAdminSourcesRoute
+  '/api/private/ensemble': typeof ApiPrivateEnsembleRoute
   '/contribute_/language/$locale': typeof ContributeLanguageLocaleRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/api/internal/source-jobs/run': typeof ApiInternalSourceJobsRunRoute
@@ -471,6 +480,7 @@ export interface FileRouteTypes {
     | '/admin/queues'
     | '/admin/risk'
     | '/admin/sources'
+    | '/api/private/ensemble'
     | '/contribute/language/$locale'
     | '/admin/'
     | '/api/internal/source-jobs/run'
@@ -516,6 +526,7 @@ export interface FileRouteTypes {
     | '/admin/queues'
     | '/admin/risk'
     | '/admin/sources'
+    | '/api/private/ensemble'
     | '/contribute/language/$locale'
     | '/admin'
     | '/api/internal/source-jobs/run'
@@ -564,6 +575,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/queues'
     | '/_authenticated/admin/risk'
     | '/_authenticated/admin/sources'
+    | '/api/private/ensemble'
     | '/contribute_/language/$locale'
     | '/_authenticated/admin/'
     | '/api/internal/source-jobs/run'
@@ -594,6 +606,7 @@ export interface RootRouteChildren {
   StatusRoute: typeof StatusRoute
   TermsRoute: typeof TermsRoute
   FireIdRoute: typeof FireIdRoute
+  ApiPrivateEnsembleRoute: typeof ApiPrivateEnsembleRoute
   ContributeLanguageLocaleRoute: typeof ContributeLanguageLocaleRoute
   ApiInternalSourceJobsRunRoute: typeof ApiInternalSourceJobsRunRoute
   ApiPublicContributeIdeaRoute: typeof ApiPublicContributeIdeaRoute
@@ -842,6 +855,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminSourcesRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/api/private/ensemble': {
+      id: '/api/private/ensemble'
+      path: '/api/private/ensemble'
+      fullPath: '/api/private/ensemble'
+      preLoaderRoute: typeof ApiPrivateEnsembleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/contribute_/language/$locale': {
       id: '/contribute_/language/$locale'
       path: '/contribute/language/$locale'
@@ -1021,6 +1041,7 @@ const rootRouteChildren: RootRouteChildren = {
   StatusRoute: StatusRoute,
   TermsRoute: TermsRoute,
   FireIdRoute: FireIdRoute,
+  ApiPrivateEnsembleRoute: ApiPrivateEnsembleRoute,
   ContributeLanguageLocaleRoute: ContributeLanguageLocaleRoute,
   ApiInternalSourceJobsRunRoute: ApiInternalSourceJobsRunRoute,
   ApiPublicContributeIdeaRoute: ApiPublicContributeIdeaRoute,

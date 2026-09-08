@@ -34,6 +34,115 @@ export type Database = {
   };
   public: {
     Tables: {
+      broadcast_delivery_queue: {
+        Row: {
+          attempts: number;
+          broadcast_id: string;
+          channel: string;
+          created_at: string;
+          expires_at: string;
+          last_error: string | null;
+          lease_token: string | null;
+          lease_until: string | null;
+          next_attempt_at: string;
+          state: string;
+        };
+        Insert: {
+          attempts?: number;
+          broadcast_id: string;
+          channel: string;
+          created_at?: string;
+          expires_at: string;
+          last_error?: string | null;
+          lease_token?: string | null;
+          lease_until?: string | null;
+          next_attempt_at?: string;
+          state?: string;
+        };
+        Update: {
+          attempts?: number;
+          broadcast_id?: string;
+          channel?: string;
+          created_at?: string;
+          expires_at?: string;
+          last_error?: string | null;
+          lease_token?: string | null;
+          lease_until?: string | null;
+          next_attempt_at?: string;
+          state?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "broadcast_delivery_queue_broadcast_id_fkey";
+            columns: ["broadcast_id"];
+            isOneToOne: false;
+            referencedRelation: "broadcasts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "broadcast_delivery_queue_channel_fkey";
+            columns: ["channel"];
+            isOneToOne: false;
+            referencedRelation: "delivery_channel_settings";
+            referencedColumns: ["channel"];
+          },
+          {
+            foreignKeyName: "broadcast_delivery_queue_channel_fkey";
+            columns: ["channel"];
+            isOneToOne: false;
+            referencedRelation: "delivery_queue_health";
+            referencedColumns: ["channel"];
+          },
+        ];
+      };
+      delivery_channel_settings: {
+        Row: {
+          channel: string;
+          paused: boolean;
+        };
+        Insert: {
+          channel: string;
+          paused?: boolean;
+        };
+        Update: {
+          channel?: string;
+          paused?: boolean;
+        };
+        Relationships: [];
+      };
+      operational_incidents: {
+        Row: {
+          acknowledged_at: string | null;
+          acknowledged_by: string | null;
+          contract_key: string;
+          first_seen_at: string;
+          id: string;
+          last_seen_at: string;
+          reason_code: string;
+          resolved_at: string | null;
+        };
+        Insert: {
+          acknowledged_at?: string | null;
+          acknowledged_by?: string | null;
+          contract_key: string;
+          first_seen_at?: string;
+          id?: string;
+          last_seen_at?: string;
+          reason_code: string;
+          resolved_at?: string | null;
+        };
+        Update: {
+          acknowledged_at?: string | null;
+          acknowledged_by?: string | null;
+          contract_key?: string;
+          first_seen_at?: string;
+          id?: string;
+          last_seen_at?: string;
+          reason_code?: string;
+          resolved_at?: string | null;
+        };
+        Relationships: [];
+      };
       admin_units: {
         Row: {
           code: string;
@@ -2668,6 +2777,16 @@ export type Database = {
       };
     };
     Views: {
+      delivery_queue_health: {
+        Row: {
+          channel: string | null;
+          expired_count: number | null;
+          oldest_pending_at: string | null;
+          paused: boolean | null;
+          pending_count: number | null;
+        };
+        Relationships: [];
+      };
       admin_audit_timeline: {
         Row: {
           action: string | null;
@@ -2801,6 +2920,35 @@ export type Database = {
       };
     };
     Functions: {
+      acknowledge_operational_incident: {
+        Args: { _id: string };
+        Returns: undefined;
+      };
+      claim_broadcast_delivery: {
+        Args: { _channel: string; _limit?: number };
+        Returns: {
+          job: Json;
+        }[];
+      };
+      finish_broadcast_delivery: {
+        Args: {
+          _broadcast_id: string;
+          _channel: string;
+          _count: number | null;
+          _error?: string | null;
+          _lease_token: string;
+        };
+        Returns: boolean;
+      };
+      refresh_operational_incidents: { Args: never; Returns: undefined };
+      renew_broadcast_delivery: {
+        Args: { _broadcast_id: string; _channel: string; _lease_token: string };
+        Returns: boolean;
+      };
+      set_delivery_channel_paused: {
+        Args: { _channel: string; _paused: boolean };
+        Returns: undefined;
+      };
       bump_official_incident: {
         Args: { _id: string; _patch: Json };
         Returns: undefined;

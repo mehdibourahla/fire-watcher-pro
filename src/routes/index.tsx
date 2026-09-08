@@ -171,7 +171,12 @@ function LiveMapPage() {
 
   const zoneAlert = useMemo(
     () =>
-      (alerts.data ?? []).find((a) => a.kind === "fire" && !a.read_at) ?? null,
+      (alerts.data ?? []).find(
+        (a) =>
+          a.kind === "fire" &&
+          a.payload?.phase !== "observation_ended" &&
+          !a.read_at,
+      ) ?? null,
     [alerts.data],
   );
 

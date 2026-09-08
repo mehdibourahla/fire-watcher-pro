@@ -1,11 +1,12 @@
 import { beforeEach, expect, it, vi } from "vitest";
 
-const { from, sendTelegram } = vi.hoisted(() => ({
+const { from, rpc, sendTelegram } = vi.hoisted(() => ({
   from: vi.fn(),
+  rpc: vi.fn(),
   sendTelegram: vi.fn(async () => {}),
 }));
 vi.mock("@/integrations/supabase/client.server", () => ({
-  supabaseAdmin: { from },
+  supabaseAdmin: { from, rpc },
 }));
 vi.mock("@/lib/ingest/telegram.server", () => ({
   telegramConfigured: () => true,
@@ -23,12 +24,12 @@ function fixture(
   sourceKey: string | null = "dgpc_telegram",
   pushCodes = ["1501"],
 ) {
-  const writes: unknown[] = [];
   const data: Record<string, unknown> = {
     broadcast_settings: { enabled: true },
     broadcasts: [
       {
         id: "b1",
+        lease_token: "lease1",
         kind,
         severity: "Severe",
         commune_codes: ["1501"],
@@ -70,51 +71,50 @@ function fixture(
     telegram_channels: [{ wilaya_id: "w15", chat_id: "chat15" }],
     admin_units: [{ code: "1501", parent_id: "w15" }],
   };
+  let claimed = false;
+  rpc.mockImplementation(async (name: string) => {
+    if (name === "claim_broadcast_delivery") {
+      const jobs = claimed
+        ? []
+        : (data["broadcasts"] as unknown[]).map((job) => ({ job }));
+      claimed = true;
+      return { data: jobs, error: null };
+    }
+    return { data: true, error: null };
+  });
   from.mockImplementation((table: string) => {
     const q: Record<string, unknown> = {};
-    let update = false;
-    for (const method of [
-      "select",
-      "eq",
-      "in",
-      "is",
-      "gte",
-      "order",
-      "range",
-      "upsert",
-    ])
+    for (const method of ["select", "eq", "in", "order", "range", "upsert"])
       q[method] = () => q;
-    q["update"] = (value: unknown) => {
-      writes.push(value);
-      update = true;
-      return q;
-    };
     q["single"] = async () => ({ data: data[table], error: null });
     q["then"] = (resolve: (v: unknown) => unknown) =>
       Promise.resolve({
-        data: update ? null : (data[table] ?? []),
+        data: data[table] ?? [],
         error: null,
       }).then(resolve);
     return q;
   });
-  return writes;
 }
 
 beforeEach(() => {
   from.mockReset();
+  rpc.mockReset();
   sendTelegram.mockClear();
 });
 
 it.each(["fire", "onm", "authority", "unknown"])(
   "does not send %s broadcasts to Telegram and drains the pending row",
   async (kind) => {
-    const writes = fixture(kind);
+    fixture(kind);
     const result = await deliverBroadcasts();
     expect(sendTelegram).not.toHaveBeenCalled();
     expect(result.telegramSent).toBe(0);
-    expect(writes).toContainEqual({
-      telegram_channels: 0,
-      telegram_delivered_at: expect.any(String),
+    expect(rpc).toHaveBeenCalledWith("finish_broadcast_delivery", {
+      _broadcast_id: "b1",
+      _channel: "telegram",
+      _lease_token: "lease1",
+      _count: 0,
+      _error: null,
     });
   },
 );

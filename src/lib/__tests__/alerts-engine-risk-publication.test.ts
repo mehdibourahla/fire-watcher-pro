@@ -28,7 +28,7 @@ function query(table: string, result: Result, filters: [string, unknown][]) {
     filters.push([column, value]);
     return builder;
   });
-  builder["upsert"] = vi.fn(() => {
+  builder["upsert"] = vi.fn((_rows: unknown) => {
     mode = "upsert";
     return builder;
   });
@@ -50,6 +50,117 @@ describe("alert risk publication boundary", () => {
   });
 
   afterEach(() => vi.useRealTimers());
+
+  it.each(["en", "fr", "ar", "kab"])(
+    "emits honest lifecycle copy in %s and respects quiet hours",
+    async (locale) => {
+      vi.setSystemTime(new Date("2026-09-08T12:00:00Z"));
+      const baseline = {
+        id: "a",
+        user_id: "u1",
+        zone_id: "z1",
+        cluster_id: "c1",
+        created_at: "2026-09-08T10:00:00Z",
+        payload: {
+          est_area_ha: 10,
+          max_frp_mw: 20,
+          last_detected_at: "2026-09-08T10:00:00Z",
+        },
+      };
+      const profile = {
+        id: "u1",
+        locale,
+        quiet_hours_start: null as number | null,
+        quiet_hours_end: null as number | null,
+      };
+      const cluster = {
+        id: "c1",
+        short_id: "abc",
+        state: "active",
+        lat: 36,
+        lon: 3,
+        confidence: 0.9,
+        spread_bearing_deg: null,
+        confirmed_at: null,
+        est_area_ha: 20,
+        max_frp_mw: 40,
+        last_detected_at: "2026-09-08T11:50:00Z",
+      };
+      const data: Record<string, unknown> = {
+        zones: [
+          {
+            id: "z1",
+            user_id: "u1",
+            name: "Zone",
+            notify_fires: true,
+            notify_risk: false,
+            lat: 36,
+            lon: 3,
+            radius_km: 10,
+          },
+        ],
+        profiles: [profile],
+        fire_clusters: [cluster],
+        alerts: [baseline],
+        cluster_events: [
+          {
+            id: "e",
+            cluster_id: "c1",
+            event: "state:contained_guess",
+            at: "2026-09-08T11:55:00Z",
+            payload: { from: "active", detections: 2 },
+          },
+        ],
+      };
+      const writes: Record<string, unknown>[][] = [];
+      fromMock.mockImplementation((table: string) => {
+        const builder = query(
+          table,
+          { data: data[table] ?? [], error: null },
+          [],
+        );
+        const upsert = builder["upsert"] as (rows: unknown) => unknown;
+        builder["upsert"] = (rows: Record<string, unknown>[]) => {
+          if (table === "alerts") writes.push(rows);
+          return upsert(rows);
+        };
+        return builder;
+      });
+      await evaluateAlerts("u1");
+      expect(
+        writes
+          .flat()
+          .some((r) => (r["payload"] as { phase: string }).phase === "growth"),
+      ).toBe(true);
+      writes.length = 0;
+      cluster.state = "contained_guess";
+      await evaluateAlerts("u1");
+      const row = writes.flat()[0]!;
+      expect(row["severity"]).toBe(1);
+      expect(row["body"]).toContain(cluster.last_detected_at);
+      expect((row["payload"] as { phase: string }).phase).toBe(
+        "observation_ended",
+      );
+      expect(row["cap_alert_id"]).toBeNull();
+      writes.length = 0;
+      profile.quiet_hours_start = 12;
+      profile.quiet_hours_end = 14;
+      await evaluateAlerts("u1");
+      expect(writes).toEqual([]);
+      cluster.state = "active";
+      await evaluateAlerts("u1");
+      expect(writes).toEqual([]);
+      profile.quiet_hours_start = null;
+      profile.quiet_hours_end = null;
+      cluster.confidence = 0.1;
+      await evaluateAlerts("u1");
+      expect(writes).toEqual([]);
+      cluster.confidence = 0.9;
+      cluster.lat = 30;
+      await evaluateAlerts("u1");
+      expect(writes).toEqual([]);
+    },
+  );
 
   it("uses the matching stale published horizon on the Algiers calendar", async () => {
     vi.setSystemTime(new Date("2026-09-03T23:30:00.000Z"));

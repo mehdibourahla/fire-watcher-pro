@@ -9,6 +9,7 @@ export async function sendTelegram(
   const token = process.env["TELEGRAM_BOT_TOKEN"];
   if (!token) throw new Error("TELEGRAM_BOT_TOKEN not configured");
   const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    signal: AbortSignal.timeout(15_000),
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({

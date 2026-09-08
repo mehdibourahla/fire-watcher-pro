@@ -19,6 +19,11 @@ import {
   publishedRiskTarget,
 } from "@/lib/nadhir";
 import { fetchAllPages } from "@/lib/paginate";
+import {
+  zoneLifecycle,
+  type ZoneFireHistory,
+  type ZoneStateEvent,
+} from "@/lib/zone-lifecycle";
 
 type Copy = {
   fireTitle: string;
@@ -27,6 +32,8 @@ type Copy = {
   urgentBody: string;
   clearTitle: string;
   clearBody: string;
+  growthTitle: string;
+  growthBody: string;
   riskTitle: string;
   riskBody: string;
   capEvent: string;
@@ -50,9 +57,12 @@ const COPY: Record<string, Copy> = {
     urgentTitle: "عاجل: حريق يقترب من {{zone}}",
     urgentBody:
       "حريق على بعد {{km}} كم من {{zone}} والرياح تدفعه نحو {{bearing}}. استعد للإخلاء واتصل بالحماية المدنية على 14.",
-    clearTitle: "انحسر الحريق قرب {{zone}}",
+    clearTitle: "انتهت الرصود قرب {{zone}}",
     clearBody:
-      "لم يعد الحريق قرب {{zone}} نشطًا. ابقَ حذرًا حتى تأكيد الإطفاء.",
+      "آخر رصد بالقمر الصناعي قرب {{zone}}: {{observed}}. غياب الرصد لا يؤكد إخماد الحريق أو سلامة المكان.",
+    growthTitle: "زيادة الرصد قرب {{zone}}",
+    growthBody:
+      "تضاعفت المساحة المقدرة أو القدرة الإشعاعية المرصودة قرب {{zone}}. رصد بالقمر الصناعي: {{observed}}.",
     riskTitle: "خطر حرائق مرتفع في {{zone}}",
     riskBody: "مستوى الخطر اليوم {{level}}/5 في {{zone}}. تجنّب إشعال النار.",
     capEvent: "حريق غابات",
@@ -68,9 +78,12 @@ const COPY: Record<string, Copy> = {
     urgentTitle: "Urgent : incendie approchant {{zone}}",
     urgentBody:
       "Incendie à {{km}} km de {{zone}}, poussé par le vent vers {{bearing}}. Préparez-vous à évacuer et appelez la Protection Civile au 14.",
-    clearTitle: "Incendie maîtrisé près de {{zone}}",
+    clearTitle: "Fin des observations près de {{zone}}",
     clearBody:
-      "L'incendie près de {{zone}} n'est plus actif. Restez prudent jusqu'à extinction confirmée.",
+      "Dernière détection satellite près de {{zone}} : {{observed}}. L’absence de détection ne confirme ni l’extinction ni la sécurité des lieux.",
+    growthTitle: "Progression observée près de {{zone}}",
+    growthBody:
+      "La surface estimée ou la puissance radiative observée a doublé près de {{zone}}. Observation satellite : {{observed}}.",
     riskTitle: "Danger d'incendie élevé à {{zone}}",
     riskBody:
       "Niveau de danger {{level}}/5 aujourd'hui à {{zone}}. N'allumez aucun feu.",
@@ -87,9 +100,12 @@ const COPY: Record<string, Copy> = {
     urgentTitle: "Urgent: fire approaching {{zone}}",
     urgentBody:
       "Fire {{km}} km from {{zone}}, wind pushing it {{bearing}}. Prepare to leave and call Civil Protection on 14.",
-    clearTitle: "Fire near {{zone}} has eased",
+    clearTitle: "Observations ended near {{zone}}",
     clearBody:
-      "The fire near {{zone}} is no longer active. Stay alert until extinction is confirmed.",
+      "Last satellite detection near {{zone}}: {{observed}}. Absence of detections does not confirm extinction or safety.",
+    growthTitle: "Growth observed near {{zone}}",
+    growthBody:
+      "Estimated area or observed radiative power has doubled near {{zone}}. Satellite observation: {{observed}}.",
     riskTitle: "High fire danger at {{zone}}",
     riskBody:
       "Today's danger level is {{level}}/5 at {{zone}}. Do not light any fire.",
@@ -106,9 +122,12 @@ const COPY: Record<string, Copy> = {
     urgentTitle: "Aɣewwaṛ: times tettqerrib ɣer {{zone}}",
     urgentBody:
       "Times ɣef {{km}} km si {{zone}}, aḍu yessedday-itt ɣer {{bearing}}. Heggi iman-ik i tuffɣa, siwel i Tɣellist Tagdudant ɣef 14.",
-    clearTitle: "Times ɣer {{zone}} tenqes",
+    clearTitle: "Taggara n iwaliyen ɣer {{zone}}",
     clearBody:
-      "Times ɣer {{zone}} ur teddir ara tura. Qim d aɛessas alamma texsi.",
+      "Awali aneggaru s uḍfar n igenwan ɣer {{zone}}: {{observed}}. Ulac awali ur d-yemmal ara belli texsi tmessi neɣ d aɣellès.",
+    growthTitle: "Timɣer tettwawali ɣer {{zone}}",
+    growthBody:
+      "Tajumma yettwaḥesben neɣ tazmert n tmessi tettwawalin tuɣal d snat n tikal ɣer {{zone}}. Awali s uḍfar n igenwan: {{observed}}.",
     riskTitle: "Ayefki n times ɣer {{zone}}",
     riskBody:
       "Aswir n uɣilif ass-a d {{level}}/5 deg {{zone}}. Ur sserɣay ara times.",
@@ -212,18 +231,50 @@ export async function evaluateAlerts(userId?: string): Promise<AlertRun> {
   if (!zones?.length) return { evaluated: 0, created: 0, suppressed: 0 };
 
   const userIds = [...new Set(zones.map((z) => z.user_id))];
-  const { data: profiles } = await supabaseAdmin
+  const { data: profiles, error: profilesError } = await supabaseAdmin
     .from("profiles")
     .select("*")
     .in("id", userIds);
+  if (profilesError) throw new Error(profilesError.message);
   const profileById = new Map((profiles ?? []).map((p) => [p.id, p]));
 
-  const { data: allLive } = await supabaseAdmin
+  const { data: allLive, error: liveError } = await supabaseAdmin
     .from("fire_clusters")
     .select(
-      "id, short_id, state, lat, lon, confidence, spread_bearing_deg, last_detected_at, confirmed_at",
+      "id, short_id, state, lat, lon, confidence, spread_bearing_deg, last_detected_at, confirmed_at, est_area_ha, max_frp_mw",
     )
     .in("state", LIVE_STATES);
+  if (liveError) throw new Error(liveError.message);
+  const now = new Date();
+  const liveIds = (allLive ?? []).map((c) => c.id);
+  const history = liveIds.length
+    ? await fetchAllPages<ZoneFireHistory>((from, to) =>
+        supabaseAdmin
+          .from("alerts")
+          .select("id, user_id, zone_id, cluster_id, created_at, payload")
+          .in("user_id", userIds)
+          .in("cluster_id", liveIds)
+          .eq("kind", "fire")
+          .order("id")
+          .range(from, to),
+      )
+    : [];
+  if (history.length >= 40_000)
+    throw new Error("Zone alert history exceeds pagination limit");
+  const quietClusterIds = (allLive ?? [])
+    .filter((c) => c.state === "contained_guess")
+    .map((c) => c.id);
+  const stateEvents = quietClusterIds.length
+    ? await fetchAllPages<ZoneStateEvent>((from, to) =>
+        supabaseAdmin
+          .from("cluster_events")
+          .select("id, cluster_id, event, at, payload")
+          .in("cluster_id", quietClusterIds)
+          .eq("event", "state:contained_guess")
+          .order("id")
+          .range(from, to),
+      )
+    : [];
 
   const alertable = (allLive ?? []).filter((c) =>
     ALERTING_STATES.includes(c.state),
@@ -328,6 +379,45 @@ export async function evaluateAlerts(userId?: string): Promise<AlertRun> {
     );
 
     if (zone.notify_fires) {
+      for (const cluster of (allLive ?? []).filter(
+        (c) => c.state === "contained_guess",
+      )) {
+        const lifecycle = zoneLifecycle(
+          cluster,
+          history,
+          stateEvents,
+          zone.user_id,
+          zone.id,
+          now,
+        );
+        if (!lifecycle) continue;
+        if (quiet) {
+          suppressed += 1;
+          continue;
+        }
+        rows.push({
+          user_id: zone.user_id,
+          zone_id: zone.id,
+          cluster_id: cluster.id,
+          kind: "fire",
+          severity: SEVERITY.info,
+          dedupe_key: lifecycle.key,
+          title: fill(copy.clearTitle, { zone: zone.name }),
+          body: fill(copy.clearBody, {
+            zone: zone.name,
+            observed: cluster.last_detected_at,
+          }),
+          payload: {
+            phase: lifecycle.phase,
+            event_id: lifecycle.event_id,
+            short_id: cluster.short_id,
+            state: cluster.state,
+            last_detected_at: cluster.last_detected_at,
+            est_area_ha: cluster.est_area_ha,
+            max_frp_mw: cluster.max_frp_mw,
+          },
+        });
+      }
       // spec R1: the floor is per-user; the column may predate its migration
       const floor =
         (profile as { min_confidence?: number } | undefined)?.min_confidence ??
@@ -343,6 +433,40 @@ export async function evaluateAlerts(userId?: string): Promise<AlertRun> {
           if (one < km) km = one;
         }
         if (km > zone.radius_km) continue;
+        const growth = zoneLifecycle(
+          cluster,
+          history,
+          [],
+          zone.user_id,
+          zone.id,
+          now,
+        );
+        if (growth?.phase === "growth") {
+          if (quiet) suppressed += 1;
+          else
+            rows.push({
+              user_id: zone.user_id,
+              zone_id: zone.id,
+              cluster_id: cluster.id,
+              kind: "fire",
+              severity: SEVERITY.warning,
+              dedupe_key: growth.key,
+              title: fill(copy.growthTitle, { zone: zone.name }),
+              body: fill(copy.growthBody, {
+                zone: zone.name,
+                observed: cluster.last_detected_at,
+              }),
+              distance_km: km,
+              payload: {
+                phase: "growth",
+                short_id: cluster.short_id,
+                state: cluster.state,
+                est_area_ha: cluster.est_area_ha,
+                max_frp_mw: cluster.max_frp_mw,
+                last_detected_at: cluster.last_detected_at,
+              },
+            });
+        }
 
         // R3: nearest settlement inside the fire's downwind cone escalates to emergency
         let urgent: { name: string; bearing: number } | null = null;
@@ -404,6 +528,10 @@ export async function evaluateAlerts(userId?: string): Promise<AlertRun> {
           }),
           distance_km: km,
           payload: {
+            phase: urgent ? "urgent" : "new",
+            est_area_ha: cluster.est_area_ha,
+            max_frp_mw: cluster.max_frp_mw,
+            last_detected_at: cluster.last_detected_at,
             short_id: cluster.short_id,
             state: cluster.state,
             confidence: cluster.confidence,

@@ -12,14 +12,15 @@ Priorities checked against current code:
 1. DGPC-only public Telegram deployed in #120 on 2026-09-08 at 15:58 UTC; the next
    delivery run succeeded at 16:01 UTC. Only official CAP messages carrying
    `source_key=dgpc_telegram` are eligible.
-2. Deploy the destination-receipt retry fix: successful Telegram chats and FCM topics are
-   persisted individually and skipped on retry. Implementation and failure tests are complete.
-3. Finish operator reliability: delivery backlog objectives, incident acknowledgement,
-   pause/resume and failure drills. The admin console already has fire resolution,
-   source-gap replay, risk publication, incident edits, replies and place verification.
-4. Refresh the dependency PRs and split any useful successor to PR #31 (§4.5).
-5. Validate SMTP/FCM configuration and real delivery, then scope zone growth (R2) and
-   observation-honest end notifications (R5); the zone engine still implements R1/R3/R4.
+2. Destination receipts deployed in #121. Production delivery runs succeed; the same-day
+   read-only check found no receipt rows yet. Real DGPC, device push and signup receipt remain unverified.
+3. Release branch implements independent channel queues, backlog incidents, acknowledgement
+   and audited pause/resume. Browser QA also corrected operator access to the source replay list.
+   Production failure drills, source pause/resume and retention remain operational follow-ups.
+4. Eight dependency PR intents are integrated on the release branch. PR #31's source intent
+   is replaced with a bounded operator ensemble preview; see `docs/source-successors.md`.
+5. R2 growth and R5 observation-ended notifications are implemented on the release branch.
+   Email/SMS delivery still requires a named provider and private test recipients/device.
 
 Code and open PRs were rechecked on 2026-09-08. Dated production counts below are historical
 observations, not current measurements; configuration and coverage must be refreshed before
@@ -441,10 +442,11 @@ Publication and delivery status:
   the publication pointer transactionally. The 2026-09-08 takeover observed a complete
   `local_fwi` checkpoint. Keep failure/partial-generation checks as release gates; do not
   schedule this as an unbuilt feature.
-- **Channel-isolated delivery (M4, partial).** The receipt fix awaits deployment: private
+- **Channel-isolated delivery (M4).** The receipt fix deployed in #121: private
   `broadcast_delivery_receipts` records successful chats/topics so retries skip them; provider
   rejection continues other destinations, and channel errors do not block the other channel.
-  Separate queues, backlog objectives and incidents remain. An accepted send with a lost
+  The release branch adds independent leased queues, eight bounded attempts, 24-hour expiry,
+  a 15-minute backlog signal, operator pause/resume and incident acknowledgement. An accepted send with a lost
   response or failed receipt write can still repeat; neither provider offers exactly-once sends.
 
 The dormant `data_sources` and `ingest_runs` relations exist only for the expand/contract deploy
@@ -461,8 +463,10 @@ anyone reviewing the schema. The checklist can proceed for them.
 
 ## 3. Product surface
 
-- **Alert rules R2 (growth) and R5 (all-clear)** are unimplemented. R5 additionally needs the
-  `alerts.kind` CHECK constraint widened before it can be inserted.
+- **R2 growth and R5 observation-ended** are implemented on the release branch. Growth
+  requires doubling area or FRP against the last notification and a 45-minute interval.
+  End messages use the actual active-to-contained observation event and explicitly do not
+  declare extinction or safety. Both use `alerts.kind='fire'` with a payload phase.
 - **Citizen reports** strip Exif before upload (`src/lib/image-metadata.ts`), which also
   narrows accepted photos to JPEG and PNG — anything else is refused rather than stored
   unsanitised. The strip runs **in the browser**, so it protects a reporter from leaking their
@@ -493,8 +497,9 @@ anyone reviewing the schema. The checklist can proceed for them.
 - **Admin console — implemented.** `/admin` includes fire resolution (`resolve_fire`),
   source-gap replay, risk publication, official-incident editing, moderation queues,
   member tools, place verification and an audit timeline. See `src/lib/admin-*.ts` and
-  `src/routes/_authenticated/admin/`. Operator incident acknowledgement, source pause/resume,
-  retention and failure drills remain part of M5, not a missing console.
+  `src/routes/_authenticated/admin/`. Incident acknowledgement and delivery pause/resume
+  are implemented on the release branch. Source pause/resume, retention and production
+  failure drills remain part of M5.
 - **`/contribute` now has replies.** `IdeaQueue.tsx` calls `replyToIdea` and displays whether
   the reply author is a person or agent. This proves the workflow exists, not that someone
   is monitoring submissions. Voting is anonymous and keyed to a
