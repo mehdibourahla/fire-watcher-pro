@@ -12,7 +12,12 @@ export type Alert = {
   title: string;
   body: string;
   distance_km: number | null;
-  payload: { short_id?: string; state?: string; danger_level?: number } | null;
+  payload: {
+    phase?: "new" | "urgent" | "growth" | "observation_ended";
+    short_id?: string;
+    state?: string;
+    danger_level?: number;
+  } | null;
   read_at: string | null;
   created_at: string;
 };
