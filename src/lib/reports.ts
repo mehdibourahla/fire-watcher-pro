@@ -121,7 +121,7 @@ export async function createReport(
       user.id,
       photo.objectId,
     );
-  let creationFailed = false;
+  let creationFailed: boolean;
   try {
     const { error } = await supabase.from("citizen_reports").insert({
       ...input,
