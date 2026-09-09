@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import {
   DEFAULT_OPENROUTER_MODEL,
@@ -38,6 +38,22 @@ function deps(
 }
 
 describe("extractMentionsWithLlm over OpenRouter", () => {
+  it("bounds provider requests to45seconds", async () => {
+    vi.stubEnv("OPENROUTER_API_KEY", "test-only");
+    const request = vi.fn(async () =>
+      Response.json({ choices: [{ message: { content: '{"mentions":[]}' } }] }),
+    );
+    vi.stubGlobal("fetch", request);
+    const timeout = vi.spyOn(AbortSignal, "timeout");
+    try {
+      await extractMentionsWithLlm({ text, wilayaHint: null, language: "ar" });
+      expect(timeout).toHaveBeenCalledWith(45_000);
+    } finally {
+      timeout.mockRestore();
+      vi.unstubAllGlobals();
+      vi.unstubAllEnvs();
+    }
+  });
   it("skips without an API key and says so", async () => {
     const result = await extractMentionsWithLlm(
       { text, wilayaHint: null, language: "ar" },
@@ -62,17 +78,15 @@ describe("extractMentionsWithLlm over OpenRouter", () => {
     });
   });
 
-  it("drops mentions whose evidence is not in the text", async () => {
+  it("rejects incomplete grounding instead of silently dropping mentions", async () => {
     const d = deps(
       JSON.stringify({
         mentions: [{ ...good, evidence: "حريق ببلدية عزابة" }],
       }),
     );
-    const result = await extractMentionsWithLlm(
-      { text, wilayaHint: null, language: "ar" },
-      d,
-    );
-    expect(result).toEqual({ skipped: false, mentions: [] });
+    await expect(
+      extractMentionsWithLlm({ text, wilayaHint: null, language: "ar" }, d),
+    ).rejects.toThrow("unsupported evidence");
   });
 
   it("asks for a strict JSON schema and sends the post as data in the user turn", async () => {

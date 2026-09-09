@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { DangerScale } from "@/components/nadhir/DangerScale";
+import { LazyDetails } from "@/components/LazyDetails";
 import { Explain } from "@/components/nadhir/Explain";
 import { RiskChip } from "@/components/nadhir/RiskChip";
 import { EmptyState, SkeletonList } from "@/components/nadhir/states";
@@ -275,22 +276,27 @@ function ForecastPage() {
       ) : (
         <div className="mt-4 flex flex-col gap-2">
           {grouped.map(({ wilaya, rows: wRows, maxLevel }) => (
-            <details key={wilaya.id} className="card">
-              <summary className="flex cursor-pointer list-none flex-wrap items-center gap-x-4 gap-y-2 p-3 [&::-webkit-details-marker]:hidden">
-                <ChevronDown
-                  aria-hidden
-                  className="size-4 shrink-0 text-muted-foreground"
-                />
-                <span className="min-w-40 flex-1 font-medium">
-                  {unitName(wilaya, locale)}
-                </span>
-                <span className="tabular text-xs text-muted-foreground">
-                  {t("risk.communeCount", { count: wRows.length })}
-                </span>
-                <span title={t("risk.groupWorst")}>
-                  <RiskChip level={maxLevel} />
-                </span>
-              </summary>
+            <LazyDetails
+              key={wilaya.id}
+              className="card"
+              summary={
+                <summary className="flex cursor-pointer list-none flex-wrap items-center gap-x-4 gap-y-2 p-3 [&::-webkit-details-marker]:hidden">
+                  <ChevronDown
+                    aria-hidden
+                    className="size-4 shrink-0 text-muted-foreground"
+                  />
+                  <span className="min-w-40 flex-1 font-medium">
+                    {unitName(wilaya, locale)}
+                  </span>
+                  <span className="tabular text-xs text-muted-foreground">
+                    {t("risk.communeCount", { count: wRows.length })}
+                  </span>
+                  <span title={t("risk.groupWorst")}>
+                    <RiskChip level={maxLevel} />
+                  </span>
+                </summary>
+              }
+            >
               <ul className="divide-y divide-border border-t border-border">
                 {wRows.map((row) => (
                   <li key={row.commune.id}>
@@ -304,7 +310,7 @@ function ForecastPage() {
                   </li>
                 ))}
               </ul>
-            </details>
+            </LazyDetails>
           ))}
         </div>
       )}

@@ -1,3 +1,4 @@
+import { drainWebhookDeliveries } from "@/lib/webhooks.server";
 import { evaluateAlerts } from "@/lib/alerts-engine.server";
 import {
   retryDispositionForReason,
@@ -69,6 +70,7 @@ export type SourceRunnerDependencies = {
   evaluateAlerts: typeof evaluateAlerts;
   publishBroadcasts: typeof publishBroadcasts;
   deliverBroadcasts: typeof deliverBroadcasts;
+  drainWebhookDeliveries: typeof drainWebhookDeliveries;
 };
 
 function baseReport(
@@ -353,18 +355,35 @@ export function createSourceRunners(
       };
     },
     broadcast_delivery: async (job) => {
-      const run = await dependencies.deliverBroadcasts();
-      const health = deliveryRunOutcome(run);
+      const [broadcasts, webhooks] = await Promise.allSettled([
+        dependencies.deliverBroadcasts(),
+        dependencies.drainWebhookDeliveries(),
+      ]);
+      if (broadcasts.status === "rejected") throw broadcasts.reason;
+      if (webhooks.status === "rejected") throw webhooks.reason;
+      const run = broadcasts.value;
+      const webhookRun = webhooks.value;
+      const health =
+        webhookRun.failed > 0
+          ? ({
+              outcome: "partial",
+              coverageStatus: "partial",
+              publicReasonCode: "delivery_failed",
+            } as const)
+          : deliveryRunOutcome(run);
       return {
         ...baseReport(job),
         ...health,
         ...coveredInterval(job, health.outcome === "succeeded"),
-        recordsSeen: run.rows + run.telegramRows,
-        recordsUpdated: run.sent + run.telegramSent,
+        recordsSeen:
+          run.rows + run.telegramRows + webhookRun.sent + webhookRun.failed,
+        recordsUpdated: run.sent + run.telegramSent + webhookRun.sent,
         qualityChecks: {
           fcm_configured: run.fcmConfigured,
           telegram_configured: run.telegramConfigured,
           telegram_channels: run.telegramChannels,
+          webhook_sent: webhookRun.sent,
+          webhook_failed: webhookRun.failed,
         },
         retryDisposition: retryDisposition(
           health.outcome,
@@ -390,6 +409,7 @@ const sourceRunnerDependencies: SourceRunnerDependencies = {
   evaluateAlerts,
   publishBroadcasts,
   deliverBroadcasts,
+  drainWebhookDeliveries,
 };
 
 export const SOURCE_RUNNERS = createSourceRunners(sourceRunnerDependencies);
@@ -431,7 +451,7 @@ export async function textSourceRunner(
       }),
     );
     const health = adapterHealth({
-      accepted: run.mentions + run.skippedPosts,
+      accepted: run.resolved + run.skippedPosts,
       error: run.error,
     });
     return {

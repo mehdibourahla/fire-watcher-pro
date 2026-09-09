@@ -40,17 +40,20 @@ export const kab: Translation = {
     body: "Tella-d tuccḍa ɣer idis-nneɣ. Tzemreḍ ad tsmireḍ neɣ ad tuɣaleḍ ɣer usebter agejdan.",
   },
   survival: {
+    smokeUnavailable:
+      "Isefka n tɣara n waḍu n temnaḍt ur llan ara dagi. Amkan n yibenk-ik ur yettwazen ara ɣer win i d-yettakken isefka n waḍu.",
     mode: "Askar n leslak",
     online: "Yeqqen",
     offline: "Ur yeqqin ara",
     pill: "Di lxaṭer?",
     enterTitle: "Aql-ak tura ɣer tama n tmess?",
     enterBody:
-      "Askar n leslak yeskan yiwet n tɣawsa ara txedmeḍ yal tikkelt, iḥerrez tamnaḍt-ik war aẓeṭṭa, iheggi amkan-ik i usiwel ɣer Wemmesten Aɣarim ɣef 14.",
+      "Askar n leslak yeskan yiwet n tigawt yal tikkelt, yesseqdac takemmust i theggaḍ yakan deg temnaḍin-ik. Ma yella asideg, yeskan amkan-ik i usiwel ɣer Wemmesten Aɣarim ɣef 14.",
     enterFetching: "Yessalay amkan GPS…",
     enterDenied:
       "Asideg yensa, ihi ineɣmisen ad ilin d imatuten. Tzemreḍ ad tkecmeḍ.",
-    enterSaving: "Yufa-d amkan · yeḥerrez takemmust war aẓeṭṭa…",
+    enterSaving:
+      "Yufa-d amkan. Heggi takemmust war aẓeṭṭa seg temnaḍin-ik ticki teqqneḍ.",
     enterReady: "Yufa-d amkan · takemmust war aẓeṭṭa tettwaḥerz.",
     enterYes: "Ih — rmed askar n leslak",
     enterCancel: "Sefsex",
@@ -182,6 +185,23 @@ export const kab: Translation = {
       w: "utaram",
       nw: "ugafa-ataram",
     },
+    packTitle: "Aheggi war aẓeṭṭa",
+    packPrepare: "Heggi tamnaḍt-a war aẓeṭṭa",
+    packPreparing: "Aheggi n yisebtar, n yiwellihen d yisefka n temnaḍt…",
+    packReady: "Takemmust war aẓeṭṭa tettwaḥrez i {{zone}} di {{time}}.",
+    packFailed:
+      "Aheggi ur yeddi ara. Takemmust taqburt i izemren ad tettwaseqdec teqqim. Ɛreḍ ticki teqqneḍ.",
+    packMissing: "Ulac takemmust war aẓeṭṭa iheggan deg yibenk-a.",
+    packScope:
+      "Tettwaḥraz deg yibenk-a kan. Tella deg-s tkarḍa taḥerfit, imukan yeldin d yiwellihen; ulac iberdan i nettḍemmen d iɣelsanen.",
+    packMap: "Takarḍa n temnaḍt tettwaḥerzen",
+    packMapNote:
+      "Tilisa tiqribin n tɣiwant d yimukan yeldin. Mačči d takarḍa n usnirem neɣ d aḍman n tɣellist.",
+    packOrigin: "Talemmast n temnaḍt tettwaḥerzen, mačči d amkan-ik n tura",
+    packStorageFailed:
+      "Aḥraz deg yibenk ur yella ara. Tzemreḍ ad tesqedceḍ askar n leslak, maca tɣimit-a ur tettwaḥraz ara.",
+    packUnavailable:
+      "Aheggi war aẓeṭṭa yesra tuqqna d usefrek n service worker.",
   },
   nav: {
     admin: "Tadbelt",
@@ -525,6 +545,7 @@ export const kab: Translation = {
     openFire: "Ldi asebter n times",
   },
   account: {
+    enableDeviceNotifications: "Sireg ilɣa deg yibenk-a",
     zoneCount: "{{used}} seg {{max}} n temnaḍin i yettwasqedcen",
     zoneLimit:
       "Tewwḍeḍ ɣer talast n 10 n temnaḍin. Kkes yiwet akken ad ternuḍ tayeḍ.",
@@ -591,6 +612,15 @@ export const kab: Translation = {
     saved: "Yettwasekles",
     saveFailed:
       "Ur izmir ara ad isekles iɣewwaren. Senqed tifran sakin ɛreḍ tikkelt nniḍen.",
+    emailUnavailable:
+      "Tuzna s yimayl ur telli ara. Seqdec ilɣa n yiminig neɣ ilɣa push.",
+    deleteAccount: "Kkes amiḍan",
+    deleteWarning:
+      "Kkes i lebda amiḍan-ik, timnaḍin, ilɣa, webhooks d tugniwin n yineqqisen i tuzneḍ. Ur yezmir ara ad yuɣal.",
+    deleteConfirmation: "Aru DELETE i usentem.",
+    deleteFailed:
+      "Tukksa ur tekfi ara. Kra n tugniwin zemrent ad ilint ttwakksent yakan. Qqen tikkelt-nniḍen, ɛreḍ.",
+    deleteLastAdmin: "Fren anedbal-nniḍen uqbel ad tekkseḍ amiḍan-ik.",
   },
   reports: {
     title: "Mmel times",
@@ -661,33 +691,35 @@ export const kab: Translation = {
       "Ayen ixuṣṣen Nadhir ass-a, d wamek ara tallteḍ — asenqed n yimukan, taɣuri n teqbaylit, asekles n wawal, tildin n tewwura n tuddsiwin, d tangalt.",
     eyebrow: "Ttekki",
     title: "Nadhir yeḥwaǧ ugar n tengalt.",
-    lede: "Anagraw n ulɣu ɣef tmessi ifeccel ɣef tutlayt, ɣef tmusni n wakal d laman n tuddsiwin uqbel ad ifeccel ɣef useɣzan. Ayen akk i d-iteddun ixuṣṣ tura — yettwaḥsab seg taffa n yisefka tamiranit, mačči yura s ufus.",
+    lede: "Imiḍanen imiranen skanen kra n usnerni n Nadhir. Asenqed deg wannar, asenqed n tutlayt, azraw ussnan d umtawa unṣib mazal llan d leqdic agejdan.",
     measuredAt: "Yettwaɣra seg taffa n yisefka tamiranit · {{date}}",
     unavailable: "Amḍan ur yellin ara",
     statPlaces: "Imukan yettwasenqden",
-    statPlacesSub: "Ula d yiwen ur t-isenqed umdan ibedden dinna.",
+    statPlacesSub: "Imukan-a deg tkarḍa sran asenqed deg wannar.",
     statPlacesSubSome: "{{done}} senqden-ten yimdanen di tmurt.",
     statFuel: "Tiɣiwanin s yisefka n tesɣart",
     statFuelSub: "Mazal ixuṣṣ {{missing}} — amḍan-a yettembiwil.",
-    statAlerts: "Ilɣa yettwaznen",
-    statAlertsSub: "Amsedday yessefru-ten. Ulac abadu i ten-yettawin.",
+    statAlerts: "Isentamen n tuzna",
+    statAlertsSub:
+      "Tuzniwin i yeddan ttwaḥerzent; mačči d amḍan n yimdanen i yeɣran alɣu.",
     statLanguages: "Tutlayin yellan",
-    statLanguagesSub: "Taqbaylit werǧin tt-iɣra umeslay n tayemmat.",
+    statLanguagesSub:
+      "Taqbaylit mazal tettwasenqad; ur telli ara deg ufran n tutlayin.",
     lanesEyebrow: "Tiwwura",
     lanesTitle: "Anida ara tallteḍ s tidet",
     lanesLede:
       "Yettwaseggem s wakken i t-yeḥwaǧ usenfaru. Tangalt tella deg wadda acku d tidet, mačči d tawḥidt.",
     asks: "Ayen i teḥwaǧ: {{what}}",
     localTitle: "Senqed amkan yeqreb ɣur-k",
-    localDeficit: "0 seg {{total}} yettwasenqden",
+    localDeficit: "{{verified}} seg {{total}} ttwasenqden",
     localBody:
-      "Nadhir yesgez isugam, tizeqqiwin n tɣuri d wemkanen ilelliyen seg OpenStreetMap. Ulac win yebedden dinna. Ini-aɣ-d ma yettwaɣbel, ma yezmer ad yaweḍ, ma yemdel, neɣ ma yuɣal d amkan n lebni.",
+      "Imukan yeldin sran asenqed deg wannar. Ɛiwen ad nẓer ma llan d iẓebbḍanen, zemren ad ttwawḍen, medlen neɣ deg-sen lebni; takarḍa ur teḍmin ara taɣellist.",
     localAsks: "yiwet n tmeddit, tiliɣri, d wemkan i tessneḍ yakan",
     localCta: "Senqed amkan",
     languageTitle: "Ɣer taqbaylit",
-    languageDeficit: "1 seg 4 n tutlayin ur nettwaɣra ara",
+    languageDeficit: "Asenqed n teqbaylit mazal",
     languageBody:
-      "Taqbaylit tella deg usnas ass-a, tettwasuqel war amaɣru n tayemmat. Awal ur nemɣi ara deg ulɣu yesserḥu laman uqbel ad yesserḥu tiyaḍ.",
+      "Taqbaylit ur tettban ara deg ufran n tutlayin alamma senqden wid i tt-yettmeslayen s timmad-nsen, ladɣa ilɣa d yiwellihen.",
     languageAsks: "tussna n tutlayt, d umeẓẓuɣ i uswir n wawal",
     languageCta: "Ɣer iḍrisen",
     audioTitle: "Sekles awal n uneǧmuɛ",
@@ -697,9 +729,9 @@ export const kab: Translation = {
     audioAsks: "taxxamt tasusamt d uzgen n usrag",
     audioCta: "Sekles yiwen uḍris",
     institutionalTitle: "Ldi tawwurt n tuddsa",
-    institutionalDeficit: "0 n yilɣa i yettawḍen ɣer yiwen",
+    institutionalDeficit: "Amtawa unṣib ilaq",
     institutionalBody:
-      "Taɣawsa n ulɣu CAP tewjed, ulac abadu i tt-yettawin. Taḥraset tazayezt ɣur-s amkan n ulɣu yettwakelsen ur yeččur yiwen. Yiwen n umyagar yifen aseggas n usenfaru.",
+      "Nadhir yesseqdac ilɣa push, Telegram d webhooks. Ilaq mazal amɛiwen i yilɣa s umtawa unṣib.",
     institutionalAsks: "anermis n tidet, d tazmert ad t-tesqedceḍ",
     institutionalCta: "Bdu adiwenni-nni",
     scienceTitle: "Seɣzef tallunt n uneɣmis",
@@ -709,9 +741,9 @@ export const kab: Translation = {
     scienceAsks: "tussna n tmessi, neɣ tiddadanin i wemyager ɣef tlisa",
     scienceCta: "Wali ttbut",
     researchTitle: "Nadi ayen ur nettwali ara",
-    researchDeficit: "1 n uɣbalu n usnifel",
+    researchDeficit: "Taɣawsa n uɣummu tesra asenqed",
     researchBody:
-      "Yal timessi i d-yufa Nadhir tekka-d seg yiwen n usaǧǧaw. Tifin n yiɣbula imaynuten, d ubeggen belli ttdellin s tidet Lezzayer, d amahil n tnarit s yisemmiden n tidet.",
+      "Nadhir yesdukkel aṭas n yiɣbula. Ilaq asenqed ilelli n uzemz n tuzna d uɣummu deg temnaḍin.",
     researchAsks: "ṣṣbeṛ ɣef tesmilt, d ccekk",
     researchCta: "Isteqsiyen yeldin",
     coordinationTitle: "Eǧǧ amahil ad yelḥu",
@@ -950,7 +982,7 @@ export const kab: Translation = {
       "Kan i ufran n yilɣa i k-yerzan d tuzna-nsen. Ulac adellel neɣ apṛufilaj.",
     privacy_retention_title: "Tanzagt",
     privacy_retention_body:
-      "Ilɣa d yiseɣnaṣ n tuzna ttwaḥerzen i umezruy n umeẓlu. Tukksa n umiḍan tekkes amaɣnu, timnaḍin, ilɣa d iwebhooks.",
+      "Tzemreḍ ad tekkseḍ ilɣa seg usuddem-ik d umiḍan-ik deg yiɣewwaren. Tukksa n umiḍan tekkes isefka udmawanen, timnaḍin, ilɣa, webhooks d tugniwin n yineqqisen. Iɣmisen n usenqed n tmahelt qqimen war isulayen udmawanen.",
     privacy_sharing_title: "Beṭṭu",
     privacy_sharing_body:
       "Ulac isefka udmawanen i yettwabḍan. API tazayezt tesken kan times d usmenyef.",

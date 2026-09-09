@@ -1,13 +1,13 @@
-import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { ChevronLeft, ShieldCheck } from "lucide-react";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
-import { EmptyState, SkeletonList } from "@/components/nadhir/states";
+import { EmptyState } from "@/components/nadhir/states";
+import { OfflineAreaMap } from "@/components/survival/OfflineAreaMap";
 import { useSurvival } from "@/components/survival/survival-context";
 import { bearingBetween, bearingLabel, haversineKm } from "@/lib/nadhir";
-import { openAreasQuery, type OpenArea } from "@/lib/open-areas";
+import { type OpenArea } from "@/lib/open-areas";
 
 export const Route = createFileRoute("/survival/areas")({
   component: OpenAreasPage,
@@ -17,10 +17,9 @@ const LIST_MAX = 12;
 
 function OpenAreasPage() {
   const { t, i18n } = useTranslation();
-  const { online, position, pack } = useSurvival();
+  const { position, pack } = useSurvival();
 
-  const areasQ = useQuery({ ...openAreasQuery, retry: online ? 3 : false });
-  const areas = areasQ.data ?? pack?.openAreas;
+  const areas = pack?.openAreas;
   const origin = useMemo(
     () => position ?? (pack ? { lat: pack.lat, lon: pack.lon } : null),
     [position, pack],
@@ -58,15 +57,17 @@ function OpenAreasPage() {
         {t("survival.areasIntro")}
       </p>
 
+      {pack ? <OfflineAreaMap pack={pack} /> : null}
+      {!position && origin ? (
+        <p className="text-xs text-muted-foreground">
+          {t("survival.packOrigin")}
+        </p>
+      ) : null}
       {rows === null ? (
-        areasQ.isLoading ? (
-          <SkeletonList rows={3} />
-        ) : (
-          <EmptyState
-            title={t("survival.areasTitle")}
-            body={t("survival.areasEmpty")}
-          />
-        )
+        <EmptyState
+          title={t("survival.areasTitle")}
+          body={t("survival.areasEmpty")}
+        />
       ) : rows.length === 0 ? (
         <EmptyState
           title={t("survival.areasTitle")}

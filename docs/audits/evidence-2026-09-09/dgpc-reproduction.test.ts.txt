@@ -1,0 +1,223 @@
+import { describe, expect, it, vi } from "vitest";
+
+import {
+  runTextSourceWith,
+  type DocumentInsert,
+  type TextSourcePipelineDependencies,
+  type TextSourceStore,
+} from "@/lib/text-sources/pipeline.server";
+import type { LlmMention } from "@/lib/text-sources/extract-llm.server";
+import type { OpenIncident } from "@/lib/text-sources/merge";
+import type { TelegramPost } from "@/lib/text-sources/telegram-public";
+
+const SKIKDA = "w-skikda";
+const OTHER = "w-other";
+const AZZABA = "c-azzaba";
+const AIN_ZOUIT = "c-ain-zouit";
+const FAR = "c-far";
+
+const bulletin = (
+  asOfHour: string,
+  distribution: string,
+  body: string,
+  ongoing = 2,
+) =>
+  `🔴 الحالة العامة لحرائق الغطاء النباتي ليوم 02 سبتمبر 2026 على الساعة ${asOfHour}سا00د
+🔴 العدد الإجمالي للحرائق: 3
+🔴 عدد الحرائق التي تم إخمادها: 1
+🔴 عدد الحرائق المتواصلة: ${ongoing}
+✅✅ الحرائق المتواصلة موزعة على:
+${distribution}
+🔴 أهم الحرائق
+ولاية #سكيكدة:
+${body}
+#الحماية_المدنية_الجزائرية`;
+
+const mention = (over: Partial<LlmMention>): LlmMention => ({
+  wilaya: "سكيكدة",
+  commune: "عزابة",
+  place: null,
+  kind: "vegetation",
+  status: "ongoing",
+  count: 1,
+  evidence: "حريق ببلدية عزابة، العملية متواصلة...",
+  ...over,
+});
+
+const llmWith =
+  (...mentions: LlmMention[]): TextSourcePipelineDependencies["extractLlm"] =>
+  async () => ({ skipped: false, mentions });
+
+function memoryStore() {
+  const documents: { id: string; externalId: string }[] = [];
+  const mentions: Record<string, unknown>[] = [];
+  const incidents = new Map<
+    string,
+    OpenIncident & { mention_count: number; status: string }
+  >();
+  const unlisted = new Map<string, string>();
+  const stored = new Map<string, DocumentInsert & { id: string }>();
+  const retry = new Map<string, DocumentInsert & { id: string }>();
+  const confirmed: { communeId: string; asOf: string; mentionId: string }[] =
+    [];
+  let seq = 0;
+  const store: TextSourceStore = {
+    loadSource: async (key) => ({
+      id: "src-dgpc",
+      key,
+      kind: "telegram_public",
+      url: "https://t.me/s/DGPCDZ",
+      authority_tier: "national",
+      language: "ar",
+      wilaya_id: null,
+      template: "dgpc_bulletin",
+    }),
+    knownExternalIds: async () => new Set(documents.map((d) => d.externalId)),
+    insertDocuments: async (rows) =>
+      rows.map((r) => {
+        const id = `doc-${++seq}`;
+        documents.push({ id, externalId: r.external_id });
+        const full = { id, ...r };
+        stored.set(id, full);
+        return full;
+      }),
+    loadGazetteer: async () => ({
+      wilayas: [
+        { id: SKIKDA, name_ar: "سكيكدة" },
+        { id: OTHER, name_ar: "باتنة" },
+      ],
+      communesByWilaya: new Map([
+        [
+          SKIKDA,
+          [
+            { id: AZZABA, name_ar: "عزابة", aliases: [] },
+            { id: AIN_ZOUIT, name_ar: "عين زويت", aliases: [] },
+          ],
+        ],
+        [OTHER, [{ id: FAR, name_ar: "بلدة بعيدة", aliases: [] }]],
+      ]),
+    }),
+    insertMentions: async (rows) =>
+      rows.map((r) => {
+        const id = `m-${++seq}`;
+        mentions.push({ id, ...r });
+        return { id, ...r };
+      }),
+    openIncidents: async () => [...incidents.values()],
+    createIncident: async (row) => {
+      const id = `inc-${++seq}`;
+      incidents.set(id, {
+        ...row,
+        id,
+        area_id: row.commune_id ?? row.wilaya_id,
+        mention_count: 1,
+      });
+      return id;
+    },
+    updateIncident: async (id, update) => {
+      const cur = incidents.get(id)!;
+      if (update.unlisted_at === null) unlisted.delete(id);
+      incidents.set(id, {
+        ...cur,
+        ...update,
+        mention_count: cur.mention_count + 1,
+      });
+    },
+    retryableDocuments: async () => [...retry.values()],
+    mentionKeys: async (ids) =>
+      new Set(
+        mentions
+          .filter((m) => ids.includes(m["document_id"] as string))
+          .map(
+            (m) =>
+              `${m["document_id"]}:${m["commune_id"] ?? ""}:${m["evidence"]}`,
+          ),
+      ),
+    recordExtractionFailure: async (documentId) => {
+      const doc = stored.get(documentId);
+      if (doc) retry.set(documentId, doc);
+    },
+    clearExtractionFailure: async (documentId) => {
+      retry.delete(documentId);
+    },
+    confirmClusters: async (rows) => {
+      for (const row of rows) confirmed.push(row);
+      return rows.length;
+    },
+    listedIncidents: async (before) =>
+      [...incidents.values()]
+        .filter((i) => !unlisted.has(i.id) && i.last_reported_at < before)
+        .map((i) => ({ id: i.id, area_id: i.area_id })),
+    markUnlisted: async (ids, asOf) => {
+      for (const id of ids) unlisted.set(id, asOf);
+    },
+    attachMention: async (mentionId, incidentId) => {
+      const m = mentions.find((x) => x["id"] === mentionId)!;
+      m["incident_id"] = incidentId;
+    },
+  };
+  return { store, documents, mentions, incidents, unlisted, confirmed, retry };
+}
+
+function deps(
+  posts: TelegramPost[],
+  store: TextSourceStore,
+  llm: TextSourcePipelineDependencies["extractLlm"] = async () => ({
+    skipped: true,
+    reason: "no_api_key",
+  }),
+): TextSourcePipelineDependencies {
+  return { store, fetchPosts: async () => posts, extractLlm: llm };
+}
+
+const post = (id: string, publishedAt: string, text: string): TelegramPost => ({
+  externalId: `DGPCDZ/${id}`,
+  publishedAt,
+  text,
+  url: `https://t.me/DGPCDZ/${id}`,
+});
+
+const skikda2 = "⏮️⏮️ ولاية سكيكدة 02";
+const twoFires =
+  "✅⏮️ حريق ببلدية عزابة، العملية متواصلة...\n✅⏮️ حريق ببلدية عين زويت، العملية متواصلة...";
+
+describe("audit DGPC lifecycle safe expectations", () => {
+  it.each(["provider_failure", "missing_key"] as const)("keeps existing incidents listed when a new bulletin has %s", async (mode) => {
+    const fixture = memoryStore();
+    await runTextSourceWith("dgpc_telegram", deps(
+      [post("100", "2026-09-02T08:05:00Z", bulletin("07", skikda2, twoFires))],
+      fixture.store, llmWith(mention({}), mention({commune:"عين زويت"})),
+    ));
+    expect(fixture.incidents.size).toBe(2);
+    expect(fixture.unlisted.size).toBe(0);
+    const extract: TextSourcePipelineDependencies["extractLlm"] = mode === "provider_failure"
+      ? async () => { throw new Error("audit provider unavailable"); }
+      : async () => ({skipped:true,reason:"no_api_key"});
+    const result=await runTextSourceWith("dgpc_telegram", deps(
+      [post("101", "2026-09-02T12:05:00Z", bulletin("13", skikda2, twoFires))],
+      fixture.store,extract,
+    ));
+    console.log("DGPC_AUDIT_UNLIST",JSON.stringify({mode,result,incidentCount:fixture.incidents.size,unlisted:[...fixture.unlisted],retryDocuments:fixture.retry.size}));
+    expect(fixture.unlisted.size,"An unprocessed bulletin cannot establish which ongoing incidents are absent").toBe(0);
+  });
+
+  it("retries a persisted document after gazetteer loading fails", async () => {
+    const fixture=memoryStore();
+    const loadGazetteer=fixture.store.loadGazetteer;
+    fixture.store.loadGazetteer=async()=>{throw new Error("audit gazetteer database unavailable");};
+    const original=post("200","2026-09-02T12:05:00Z",bulletin("13",skikda2,twoFires));
+    const extract=vi.fn(llmWith(mention({}),mention({commune:"عين زويت"})));
+    const input: TextSourcePipelineDependencies={
+      store:fixture.store,
+      fetchPosts:async(_source,known)=>known.has(original.externalId)?[]:[original],
+      extractLlm:extract,
+    };
+    await expect(runTextSourceWith("dgpc_telegram",input)).rejects.toThrow("audit gazetteer database unavailable");
+    expect(fixture.documents.length).toBe(1);
+    fixture.store.loadGazetteer=loadGazetteer;
+    const second=await runTextSourceWith("dgpc_telegram",input);
+    console.log("DGPC_AUDIT_STRANDED",JSON.stringify({second,storedDocuments:fixture.documents.length,retryDocuments:fixture.retry.size,extractionCalls:extract.mock.calls.length,mentions:fixture.mentions.length,incidents:fixture.incidents.size}));
+    expect(extract,"Persisted but unprocessed evidence must be recovered on the next poll").toHaveBeenCalledTimes(1);
+    expect(fixture.mentions.length).toBe(2);
+  });
+});

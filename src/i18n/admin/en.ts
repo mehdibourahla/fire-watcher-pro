@@ -144,6 +144,17 @@ export const adminEn = {
     reason_other: "Other",
   },
   sources: {
+    textRecovery: {
+      title: "Text interpretation recovery",
+      description:
+        "Oldest 50 reports that exhausted automatic interpretation. Administrators may retry each report once per day, after the current source run finishes.",
+      empty: "No exhausted text reports.",
+      retry: "Retry interpretation",
+      retryFailed:
+        "Retry could not be queued. Wait for the active source run or the daily retry limit, then try again.",
+      retryQueued: "Interpretation queued for a later source run.",
+      exhausted: "Interpretation incomplete after {{count}} attempts.",
+    },
     archive: {
       title: "Raw source archive",
       description:
@@ -157,6 +168,12 @@ export const adminEn = {
       download: "Download verified payload",
     },
     ita: {
+      retry: "Retry extraction",
+      retryFailed:
+        "Retry could not be queued. An exhausted report can be requeued once per day.",
+      retryQueued: "Extraction queued for a later source run.",
+      exhaustedOnly: "Show exhausted extractions only",
+
       title: "Info Trafic Algérie reports",
       description:
         "Latest 50 collected revisions. Media reports interpreted by AI, awaiting human verification. French summaries. No public alerts are sent.",

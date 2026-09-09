@@ -42,6 +42,7 @@ import { Route as AuthenticatedAdminPlacesRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAdminQueuesRouteImport } from './routes/_authenticated/admin/queues'
 import { Route as AuthenticatedAdminRiskRouteImport } from './routes/_authenticated/admin/risk'
 import { Route as AuthenticatedAdminSourcesRouteImport } from './routes/_authenticated/admin/sources'
+import { Route as ApiPrivateAccountRouteImport } from './routes/api/private/account'
 import { Route as ApiPrivateEnsembleRouteImport } from './routes/api/private/ensemble'
 import { Route as ApiPrivatePushTestRouteImport } from './routes/api/private/push-test'
 import { Route as ContributeLanguageLocaleRouteImport } from './routes/contribute_.language.$locale'
@@ -228,6 +229,11 @@ const AuthenticatedAdminSourcesRoute =
     path: '/sources',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const ApiPrivateAccountRoute = ApiPrivateAccountRouteImport.update({
+  id: '/api/private/account',
+  path: '/api/private/account',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPrivateEnsembleRoute = ApiPrivateEnsembleRouteImport.update({
   id: '/api/private/ensemble',
   path: '/api/private/ensemble',
@@ -340,6 +346,7 @@ export interface FileRoutesByFullPath {
   '/admin/queues': typeof AuthenticatedAdminQueuesRoute
   '/admin/risk': typeof AuthenticatedAdminRiskRoute
   '/admin/sources': typeof AuthenticatedAdminSourcesRoute
+  '/api/private/account': typeof ApiPrivateAccountRoute
   '/api/private/ensemble': typeof ApiPrivateEnsembleRoute
   '/api/private/push-test': typeof ApiPrivatePushTestRoute
   '/contribute/language/$locale': typeof ContributeLanguageLocaleRoute
@@ -387,6 +394,7 @@ export interface FileRoutesByTo {
   '/admin/queues': typeof AuthenticatedAdminQueuesRoute
   '/admin/risk': typeof AuthenticatedAdminRiskRoute
   '/admin/sources': typeof AuthenticatedAdminSourcesRoute
+  '/api/private/account': typeof ApiPrivateAccountRoute
   '/api/private/ensemble': typeof ApiPrivateEnsembleRoute
   '/api/private/push-test': typeof ApiPrivatePushTestRoute
   '/contribute/language/$locale': typeof ContributeLanguageLocaleRoute
@@ -438,6 +446,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/queues': typeof AuthenticatedAdminQueuesRoute
   '/_authenticated/admin/risk': typeof AuthenticatedAdminRiskRoute
   '/_authenticated/admin/sources': typeof AuthenticatedAdminSourcesRoute
+  '/api/private/account': typeof ApiPrivateAccountRoute
   '/api/private/ensemble': typeof ApiPrivateEnsembleRoute
   '/api/private/push-test': typeof ApiPrivatePushTestRoute
   '/contribute_/language/$locale': typeof ContributeLanguageLocaleRoute
@@ -489,6 +498,7 @@ export interface FileRouteTypes {
     | '/admin/queues'
     | '/admin/risk'
     | '/admin/sources'
+    | '/api/private/account'
     | '/api/private/ensemble'
     | '/api/private/push-test'
     | '/contribute/language/$locale'
@@ -536,6 +546,7 @@ export interface FileRouteTypes {
     | '/admin/queues'
     | '/admin/risk'
     | '/admin/sources'
+    | '/api/private/account'
     | '/api/private/ensemble'
     | '/api/private/push-test'
     | '/contribute/language/$locale'
@@ -586,6 +597,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/queues'
     | '/_authenticated/admin/risk'
     | '/_authenticated/admin/sources'
+    | '/api/private/account'
     | '/api/private/ensemble'
     | '/api/private/push-test'
     | '/contribute_/language/$locale'
@@ -618,6 +630,7 @@ export interface RootRouteChildren {
   StatusRoute: typeof StatusRoute
   TermsRoute: typeof TermsRoute
   FireIdRoute: typeof FireIdRoute
+  ApiPrivateAccountRoute: typeof ApiPrivateAccountRoute
   ApiPrivateEnsembleRoute: typeof ApiPrivateEnsembleRoute
   ApiPrivatePushTestRoute: typeof ApiPrivatePushTestRoute
   ContributeLanguageLocaleRoute: typeof ContributeLanguageLocaleRoute
@@ -868,6 +881,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminSourcesRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/api/private/account': {
+      id: '/api/private/account'
+      path: '/api/private/account'
+      fullPath: '/api/private/account'
+      preLoaderRoute: typeof ApiPrivateAccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/private/ensemble': {
       id: '/api/private/ensemble'
       path: '/api/private/ensemble'
@@ -1061,6 +1081,7 @@ const rootRouteChildren: RootRouteChildren = {
   StatusRoute: StatusRoute,
   TermsRoute: TermsRoute,
   FireIdRoute: FireIdRoute,
+  ApiPrivateAccountRoute: ApiPrivateAccountRoute,
   ApiPrivateEnsembleRoute: ApiPrivateEnsembleRoute,
   ApiPrivatePushTestRoute: ApiPrivatePushTestRoute,
   ContributeLanguageLocaleRoute: ContributeLanguageLocaleRoute,

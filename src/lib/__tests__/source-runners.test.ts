@@ -98,6 +98,7 @@ function dependencies() {
     publishBroadcasts: vi
       .fn()
       .mockResolvedValue({ published: 2, suppressed: 1 }),
+    drainWebhookDeliveries: vi.fn().mockResolvedValue({ sent: 0, failed: 0 }),
     deliverBroadcasts: vi.fn().mockResolvedValue({
       rows: 2,
       sent: 2,
@@ -280,5 +281,44 @@ describe("source runner registry", () => {
       scheduledFor: "2026-08-31T22:59:59.900Z",
     });
     vi.useRealTimers();
+  });
+});
+
+describe("independent webhook delivery recovery", () => {
+  it("drains pending webhooks when there are no new broadcast rows", async () => {
+    const deps = dependencies();
+    deps.deliverBroadcasts.mockResolvedValue({
+      rows: 0,
+      sent: 0,
+      telegramRows: 0,
+      telegramSent: 0,
+      telegramChannels: 0,
+      fcmConfigured: true,
+      telegramConfigured: true,
+      disabled: false,
+    });
+    deps.drainWebhookDeliveries.mockResolvedValue({ sent: 1, failed: 0 });
+    const result = await createSourceRunners(deps).broadcast_delivery(
+      job("broadcast_delivery"),
+    );
+    expect(deps.drainWebhookDeliveries).toHaveBeenCalledOnce();
+    expect(result.recordsUpdated).toBe(1);
+  });
+  it("still drains webhooks if broadcast delivery throws", async () => {
+    const deps = dependencies();
+    deps.deliverBroadcasts.mockRejectedValue(new Error("database unavailable"));
+    await expect(
+      createSourceRunners(deps).broadcast_delivery(job("broadcast_delivery")),
+    ).rejects.toThrow();
+    expect(deps.drainWebhookDeliveries).toHaveBeenCalledOnce();
+  });
+  it("does not report successful health when webhook delivery fails", async () => {
+    const deps = dependencies();
+    deps.drainWebhookDeliveries.mockResolvedValue({ sent: 0, failed: 1 });
+    const result = await createSourceRunners(deps).broadcast_delivery(
+      job("broadcast_delivery"),
+    );
+    expect(result.outcome).toBe("partial");
+    expect(result.publicReasonCode).toBe("delivery_failed");
   });
 });

@@ -1,4 +1,5 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { LOCALES } from "@/i18n/locales-list";
 import {
   validateIdea,
   type Deficits,
@@ -29,7 +30,8 @@ export async function readDeficits(): Promise<Deficits> {
     openAreasVerified,
     communesTotal,
     communesWithFuel,
-    alertsDelivered,
+    broadcastReceipts,
+    webhookReceipts,
   ] = await Promise.all([
     count(supabaseAdmin.from("open_areas").select("id", head)),
     count(
@@ -53,7 +55,17 @@ export async function readDeficits(): Promise<Deficits> {
         .eq("level", "commune")
         .not("landcover", "is", null),
     ),
-    count(supabaseAdmin.from("alerts").select("id", head)),
+    count(
+      supabaseAdmin
+        .from("broadcast_delivery_receipts")
+        .select("broadcast_id", head),
+    ),
+    count(
+      supabaseAdmin
+        .from("webhook_deliveries")
+        .select("id", head)
+        .eq("ok", true),
+    ),
   ]);
 
   return {
@@ -61,9 +73,12 @@ export async function readDeficits(): Promise<Deficits> {
     openAreasVerified,
     communesTotal,
     communesWithFuel,
-    alertsDelivered,
-    localesShipped: 4,
-    localesReviewed: 3,
+    deliveryReceipts:
+      broadcastReceipts === UNKNOWN || webhookReceipts === UNKNOWN
+        ? UNKNOWN
+        : broadcastReceipts + webhookReceipts,
+    localesShipped: LOCALES.length,
+    localesReviewed: LOCALES.length,
     measuredAt: new Date().toISOString(),
   };
 }

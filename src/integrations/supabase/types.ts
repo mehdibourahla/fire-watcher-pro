@@ -34,6 +34,63 @@ export type Database = {
   };
   public: {
     Tables: {
+      webhook_outbox: {
+        Row: {
+          alert_id: string;
+          attempts: number;
+          available_at: string;
+          created_at: string;
+          endpoint_id: string;
+          id: string;
+          lease_token: string | null;
+          lease_until: string | null;
+          payload: Json;
+          state: string;
+          user_id: string;
+        };
+        Insert: {
+          alert_id: string;
+          attempts?: number;
+          available_at?: string;
+          created_at?: string;
+          endpoint_id: string;
+          id?: string;
+          lease_token?: string | null;
+          lease_until?: string | null;
+          payload: Json;
+          state?: string;
+          user_id: string;
+        };
+        Update: {
+          alert_id?: string;
+          attempts?: number;
+          available_at?: string;
+          created_at?: string;
+          endpoint_id?: string;
+          id?: string;
+          lease_token?: string | null;
+          lease_until?: string | null;
+          payload?: Json;
+          state?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "webhook_outbox_alert_id_fkey";
+            columns: ["alert_id"];
+            isOneToOne: false;
+            referencedRelation: "alerts";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "webhook_outbox_endpoint_id_fkey";
+            columns: ["endpoint_id"];
+            isOneToOne: false;
+            referencedRelation: "webhook_endpoints";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       source_captures: {
         Row: {
           attempt: number | null;
@@ -132,6 +189,7 @@ export type Database = {
           extraction: Json | null;
           extraction_attempts: number;
           extraction_error: string | null;
+          extraction_requeued_at: string | null;
           fetched_at: string;
           id: string;
           next_extraction_at: string;
@@ -148,6 +206,7 @@ export type Database = {
           extraction?: Json | null;
           extraction_attempts?: number;
           extraction_error?: string | null;
+          extraction_requeued_at?: string | null;
           fetched_at?: string;
           id?: string;
           next_extraction_at?: string;
@@ -164,6 +223,7 @@ export type Database = {
           extraction?: Json | null;
           extraction_attempts?: number;
           extraction_error?: string | null;
+          extraction_requeued_at?: string | null;
           fetched_at?: string;
           id?: string;
           next_extraction_at?: string;
@@ -1084,18 +1144,21 @@ export type Database = {
           attempts: number;
           document_id: string;
           last_error: string | null;
+          requeued_at: string | null;
           updated_at: string;
         };
         Insert: {
           attempts?: number;
           document_id: string;
           last_error?: string | null;
+          requeued_at?: string | null;
           updated_at?: string;
         };
         Update: {
           attempts?: number;
           document_id?: string;
           last_error?: string | null;
+          requeued_at?: string | null;
           updated_at?: string;
         };
         Relationships: [
@@ -3138,6 +3201,37 @@ export type Database = {
       };
     };
     Functions: {
+      retry_text_document: { Args: { _id: string }; Returns: undefined };
+      write_text_source: {
+        Args: {
+          _attempt?: number | null;
+          _job?: string | null;
+          _key: string;
+          _operation: string;
+          _payload: Json;
+        };
+        Returns: Json;
+      };
+      retry_ita_report: { Args: { _id: string }; Returns: undefined };
+      finish_webhook_delivery: {
+        Args: {
+          _error: string | null;
+          _id: string;
+          _status: number | null;
+          _token: string;
+        };
+        Returns: boolean;
+      };
+      claim_webhook_delivery: {
+        Args: never;
+        Returns: {
+          id: string;
+          lease_token: string;
+          payload: Json;
+          secret: string;
+          url: string;
+        }[];
+      };
       assert_ita_source_lease: {
         Args: { _attempt: number; _job: string };
         Returns: undefined;

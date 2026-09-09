@@ -7,7 +7,6 @@ export type SurvivalState = {
   position: { lat: number; lon: number } | null;
   positionDenied: boolean;
   pack: SurvivalPack | null;
-  setPack: (pack: SurvivalPack) => void;
 };
 
 export const SurvivalContext = createContext<SurvivalState | null>(null);

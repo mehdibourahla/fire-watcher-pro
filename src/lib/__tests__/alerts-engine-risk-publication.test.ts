@@ -1,15 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const { fromMock, dispatchWebhooks } = vi.hoisted(() => ({
+const { fromMock, drainWebhookDeliveries } = vi.hoisted(() => ({
   fromMock: vi.fn(),
-  dispatchWebhooks: vi.fn(async () => ({ sent: 0, failed: 0 })),
+  drainWebhookDeliveries: vi.fn(async () => ({ sent: 0, failed: 0 })),
 }));
 
 vi.mock("@/integrations/supabase/client.server", () => ({
   supabaseAdmin: { from: fromMock },
 }));
 
-vi.mock("@/lib/webhooks.server", () => ({ dispatchWebhooks }));
+vi.mock("@/lib/webhooks.server", () => ({ drainWebhookDeliveries }));
 
 import { evaluateAlerts } from "@/lib/alerts-engine.server";
 
@@ -45,7 +45,7 @@ function query(table: string, result: Result, filters: [string, unknown][]) {
 describe("alert risk publication boundary", () => {
   beforeEach(() => {
     fromMock.mockReset();
-    dispatchWebhooks.mockClear();
+    drainWebhookDeliveries.mockClear();
     vi.useFakeTimers();
   });
 
@@ -285,7 +285,7 @@ describe("alert risk publication boundary", () => {
 
       expect(result.created).toBe(0);
       expect(tables).not.toContain("risk_forecasts");
-      expect(dispatchWebhooks).not.toHaveBeenCalled();
+      expect(drainWebhookDeliveries).not.toHaveBeenCalled();
     },
   );
 
@@ -332,6 +332,6 @@ describe("alert risk publication boundary", () => {
     const result = await evaluateAlerts("u1");
 
     expect(result.created).toBe(0);
-    expect(dispatchWebhooks).not.toHaveBeenCalled();
+    expect(drainWebhookDeliveries).not.toHaveBeenCalled();
   });
 });

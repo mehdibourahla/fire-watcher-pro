@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { ChevronLeft, Phone, TriangleAlert } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -6,9 +5,9 @@ import { useTranslation } from "react-i18next";
 
 import { useSurvival } from "@/components/survival/survival-context";
 import type { Locale } from "@/i18n";
-import { adminUnitsQuery, relativeTime, settlementsQuery } from "@/lib/nadhir";
+import { haversineKm, relativeTime } from "@/lib/nadhir";
 import { enqueueSos, loadSosQueue, type SosEntry } from "@/lib/sos-queue";
-import { positionCard, type PositionCard } from "@/lib/survival";
+import { formatCoords, type PositionCard } from "@/lib/survival";
 
 export const Route = createFileRoute("/survival/sos")({
   component: SosPage,
@@ -18,48 +17,52 @@ function SosPage() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language as Locale;
   const { online, position, pack } = useSurvival();
+  const [storageFailed, setStorageFailed] = useState(false);
 
-  const units = useQuery({ ...adminUnitsQuery, retry: online ? 3 : false });
-  const settlements = useQuery({
-    ...settlementsQuery,
-    retry: online ? 3 : false,
-  });
   const [queue, setQueue] = useState<SosEntry[]>(() =>
-    loadSosQueue(localStorage),
+    (() => {
+      try {
+        return loadSosQueue(localStorage);
+      } catch {
+        return [];
+      }
+    })(),
   );
 
   const card = useMemo<PositionCard | null>(() => {
-    if (position && units.data && settlements.data)
-      return positionCard(
-        position.lat,
-        position.lon,
-        units.data,
-        settlements.data,
-        locale,
-      );
-    if (pack)
-      return {
-        commune: pack.commune,
-        wilaya: pack.wilaya,
-        nearest: pack.nearest,
-        coords: pack.coords,
-      };
-    return null;
-  }, [position, units.data, settlements.data, pack, locale]);
+    if (!position) return null;
+    const nearby =
+      pack && haversineKm(position.lat, position.lon, pack.lat, pack.lon) < 2;
+    return {
+      commune: nearby ? pack.commune : null,
+      wilaya: nearby ? pack.wilaya : null,
+      nearest: null,
+      coords: formatCoords(position.lat, position.lon),
+    };
+  }, [position, pack]);
 
   const onCall = () => {
     if (!online) {
-      enqueueSos(localStorage, {
-        lat: position?.lat ?? pack?.lat ?? null,
-        lon: position?.lon ?? pack?.lon ?? null,
-        note: null,
-      });
-      setQueue(loadSosQueue(localStorage));
+      try {
+        enqueueSos(localStorage, {
+          lat: position?.lat ?? null,
+          lon: position?.lon ?? null,
+          note: null,
+        });
+        setQueue(loadSosQueue(localStorage));
+      } catch {
+        setStorageFailed(true);
+      }
     }
   };
 
   return (
     <>
+      {storageFailed ? (
+        <p role="status" className="rounded bg-muted p-3 text-sm">
+          {t("survival.packStorageFailed")}
+        </p>
+      ) : null}
       <div className="flex items-center gap-2">
         <Link
           to="/survival"

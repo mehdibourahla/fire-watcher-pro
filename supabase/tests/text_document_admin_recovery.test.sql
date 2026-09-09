@@ -1,0 +1,38 @@
+begin;
+set local search_path=public,extensions;
+select no_plan();
+insert into auth.users(id,email) values('18000000-0000-4000-8000-000000000001','recovery-admin@example.invalid');
+insert into user_roles(user_id,role) values('18000000-0000-4000-8000-000000000001','admin');
+insert into source_contracts(key,version,label,family,criticality,freshness_basis,cadence_minutes,warning_after_minutes,stale_after_minutes,parser_version,licence,attribution,owner)
+values('test.text-admin',1,'test','official_text','optional','last_success_at',15,30,60,'test','test','test','test');
+insert into source_checkpoints(contract_key) values('test.text-admin');
+insert into text_sources(id,key,label,kind,url,authority_tier) values('18000000-0000-4000-8000-000000000002','test.text-admin','test','telegram_public','https://t.me/s/DGPCDZ','national');
+insert into source_documents(id,text_source_id,external_id,url,published_at,content_hash,body)
+values('18000000-0000-4000-8000-000000000003','18000000-0000-4000-8000-000000000002','fixture','https://t.me/DGPCDZ/1',now(),'fixture','immutable source body');
+update document_extractions set attempts=4,last_error='provider failed' where document_id='18000000-0000-4000-8000-000000000003';
+set local role anon;
+select throws_ok($$select public.retry_text_document('18000000-0000-4000-8000-000000000003')$$,'42501',null,'anonymous recovery denied');
+set local role authenticated;
+select set_config('request.jwt.claim.sub','18000000-0000-4000-8000-000000000004',true);
+select is((select count(*) from document_extractions),0::bigint,'ordinary user cannot read recovery queue');
+select throws_ok($$select public.retry_text_document('18000000-0000-4000-8000-000000000003')$$,'42501','admin_role_required','ordinary user recovery denied');
+select set_config('request.jwt.claim.sub','18000000-0000-4000-8000-000000000001',true);
+select is((select attempts from document_extractions where document_id='18000000-0000-4000-8000-000000000003'),4,'admin sees exhausted work');
+select lives_ok($$select public.retry_text_document('18000000-0000-4000-8000-000000000003')$$,'admin requeues exhausted document');
+select is((select attempts from document_extractions where document_id='18000000-0000-4000-8000-000000000003'),0,'recovery resets bounded attempt budget');
+select is((select last_error from document_extractions where document_id='18000000-0000-4000-8000-000000000003'),'provider failed','recovery retains diagnostic evidence');
+select is((select count(*) from admin_audit where action='text.retry' and target_id='18000000-0000-4000-8000-000000000003'),1::bigint,'authorized recovery audited once');
+select throws_ok($$select public.retry_text_document('18000000-0000-4000-8000-000000000003')$$,'55000','text_document_not_exhausted','pending document cannot be requeued again');
+select throws_ok($$update document_extractions set attempts=0$$,'42501',null,'admin cannot bypass audited RPC with direct update');
+reset role;
+update document_extractions set attempts=4 where document_id='18000000-0000-4000-8000-000000000003';
+set local role authenticated;
+select throws_ok($$select public.retry_text_document('18000000-0000-4000-8000-000000000003')$$,'55000','text_retry_cooldown','same-day repeated recovery denied');
+reset role;
+update document_extractions set requeued_at=clock_timestamp()-interval '2 days' where document_id='18000000-0000-4000-8000-000000000003';
+select public.enqueue_due_source_jobs(now(),'database');
+select id from public.claim_source_job('admin-recovery-test','cloudflare','test.text-admin');
+set local role authenticated;
+select throws_ok($$select public.retry_text_document('18000000-0000-4000-8000-000000000003')$$,'55000','text_extraction_in_progress','recovery cannot race an active source worker');
+select * from finish();
+rollback;

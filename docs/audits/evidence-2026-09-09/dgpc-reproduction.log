@@ -1,0 +1,54 @@
+$ vitest run src/lib/__tests__/audit-DGPC-lifecycle.test.ts
+
+ RUN  v4.1.11 /private/tmp/nadhir-platform-audit
+
+stdout | src/lib/__tests__/audit-DGPC-lifecycle.test.ts > audit DGPC lifecycle safe expectations > keeps existing incidents listed when a new bulletin has provider_failure
+DGPC_AUDIT_UNLIST {"mode":"provider_failure","result":{"fetched":1,"stored":1,"skippedPosts":0,"mentions":0,"resolved":0,"unresolved":1,"incidentsCreated":0,"incidentsUpdated":0,"incidentsUnlisted":2,"gated":0,"clustersConfirmed":0,"retried":0,"llmSkipped":false,"llmFailed":1,"error":"every llm extraction failed: audit provider unavailable"},"incidentCount":2,"unlisted":[["inc-4","2026-09-02T12:00:00.000Z"],["inc-5","2026-09-02T12:00:00.000Z"]],"retryDocuments":1}
+
+stdout | src/lib/__tests__/audit-DGPC-lifecycle.test.ts > audit DGPC lifecycle safe expectations > keeps existing incidents listed when a new bulletin has missing_key
+DGPC_AUDIT_UNLIST {"mode":"missing_key","result":{"fetched":1,"stored":1,"skippedPosts":0,"mentions":0,"resolved":0,"unresolved":1,"incidentsCreated":0,"incidentsUpdated":0,"incidentsUnlisted":2,"gated":0,"clustersConfirmed":0,"retried":0,"llmSkipped":true,"llmFailed":0},"incidentCount":2,"unlisted":[["inc-4","2026-09-02T12:00:00.000Z"],["inc-5","2026-09-02T12:00:00.000Z"]],"retryDocuments":1}
+
+stdout | src/lib/__tests__/audit-DGPC-lifecycle.test.ts > audit DGPC lifecycle safe expectations > retries a persisted document after gazetteer loading fails
+DGPC_AUDIT_STRANDED {"second":{"fetched":0,"stored":0,"skippedPosts":0,"mentions":0,"resolved":0,"unresolved":0,"incidentsCreated":0,"incidentsUpdated":0,"incidentsUnlisted":0,"gated":0,"clustersConfirmed":0,"retried":0,"llmSkipped":false,"llmFailed":0},"storedDocuments":1,"retryDocuments":0,"extractionCalls":0,"mentions":0,"incidents":0}
+
+ ❯ src/lib/__tests__/audit-DGPC-lifecycle.test.ts (3 tests | 3 failed) 17ms
+     × keeps existing incidents listed when a new bulletin has provider_failure 13ms
+     × keeps existing incidents listed when a new bulletin has missing_key 2ms
+     × retries a persisted document after gazetteer loading fails 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/lib/__tests__/audit-DGPC-lifecycle.test.ts > audit DGPC lifecycle safe expectations > keeps existing incidents listed when a new bulletin has provider_failure
+ FAIL  src/lib/__tests__/audit-DGPC-lifecycle.test.ts > audit DGPC lifecycle safe expectations > keeps existing incidents listed when a new bulletin has missing_key
+AssertionError: An unprocessed bulletin cannot establish which ongoing incidents are absent: expected 2 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ src/lib/__tests__/audit-DGPC-lifecycle.test.ts:201:113
+    199|     ));
+    200|     console.log("DGPC_AUDIT_UNLIST",JSON.stringify({mode,result,incide…
+    201|     expect(fixture.unlisted.size,"An unprocessed bulletin cannot estab…
+       |                                                                                                                 ^
+    202|   });
+    203|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/lib/__tests__/audit-DGPC-lifecycle.test.ts > audit DGPC lifecycle safe expectations > retries a persisted document after gazetteer loading fails
+AssertionError: Persisted but unprocessed evidence must be recovered on the next poll: expected "vi.fn()" to be called 1 times, but got 0 times
+ ❯ src/lib/__tests__/audit-DGPC-lifecycle.test.ts:220:93
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed (3)
+   Start at  11:53:31
+   Duration  174ms (transform 39ms, setup 0ms, import 85ms, tests 17ms, environment 0ms)
+
+error: script "test" exited with code 1

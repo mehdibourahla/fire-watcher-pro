@@ -169,13 +169,13 @@ function Deficit({ deficits }: { deficits: Deficits }) {
       <Stat
         label={t("contribute.statAlerts")}
         value={
-          known(deficits.alertsDelivered)
-            ? String(deficits.alertsDelivered)
+          known(deficits.deliveryReceipts)
+            ? String(deficits.deliveryReceipts)
             : "—"
         }
         filled={0}
         sub={
-          known(deficits.alertsDelivered)
+          known(deficits.deliveryReceipts)
             ? t("contribute.statAlertsSub")
             : unknown
         }
@@ -210,6 +210,10 @@ function LaneGrid({
           </h3>
           <span className="self-start rounded-md bg-[var(--accent-tint)] px-2 py-1 text-[11.5px] font-semibold tabular text-[var(--accent)]">
             {t(`contribute.${key}Deficit`, {
+              verified:
+                deficits.openAreasVerified >= 0
+                  ? deficits.openAreasVerified.toLocaleString()
+                  : "—",
               total:
                 deficits.openAreasTotal >= 0
                   ? deficits.openAreasTotal.toLocaleString()

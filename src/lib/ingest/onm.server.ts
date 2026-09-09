@@ -113,7 +113,10 @@ export function parseCapDetail(xml: string): CapDetail | null {
 
 const DETAIL_BATCH = 20;
 
-async function backfillCapDetails(): Promise<number> {
+export async function backfillCapDetails(): Promise<{
+  filled: number;
+  failed: number;
+}> {
   const { data, error } = await supabaseAdmin
     .from("onm_vigilance")
     .select("id, cap_url")
@@ -121,9 +124,11 @@ async function backfillCapDetails(): Promise<number> {
     .not("cap_url", "is", null)
     .order("sent", { ascending: false })
     .limit(DETAIL_BATCH);
-  if (error || !data?.length) return 0;
+  if (error) throw new Error(`CAP detail query failed: ${error.message}`);
+  if (!data?.length) return { filled: 0, failed: 0 };
 
   let filled = 0;
+  let failed = 0;
   for (const row of data) {
     const res = await archivedFetch(
       "onm",
@@ -139,9 +144,15 @@ async function backfillCapDetails(): Promise<number> {
       if (error instanceof ArchiveFailure) throw error;
       return null;
     });
-    if (!res?.ok) continue;
+    if (!res?.ok) {
+      failed++;
+      continue;
+    }
     const detail = parseCapDetail(await res.text());
-    if (!detail?.headline_fr) continue;
+    if (!detail?.headline_fr) {
+      failed++;
+      continue;
+    }
     const { error: upErr } = await supabaseAdmin
       .from("onm_vigilance")
       .update({
@@ -151,8 +162,9 @@ async function backfillCapDetails(): Promise<number> {
       })
       .eq("id", row.id);
     if (!upErr) filled += 1;
+    else failed++;
   }
-  return filled;
+  return { filled, failed };
 }
 
 export type OnmRun = {
@@ -229,5 +241,13 @@ export async function ingestOnm(): Promise<OnmRun> {
   }
 
   const detailed = await backfillCapDetails();
-  return { fetched: entries.length, stored: rows.length, unmatched, detailed };
+  return {
+    fetched: entries.length,
+    stored: rows.length,
+    unmatched,
+    detailed: detailed.filled,
+    ...(detailed.failed
+      ? { error: `ONM partial CAP detail coverage: ${detailed.failed} failed` }
+      : {}),
+  };
 }

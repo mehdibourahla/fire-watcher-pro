@@ -785,3 +785,7 @@ Not started.
 | 2026-09-01 aggregate after F-014/F-022/F-023/F-027 implementation | `bunx tsc --noEmit` | 0 | No diagnostics |
 | 2026-09-01 aggregate after F-014/F-022/F-023/F-027 implementation | `bun run lint` | 0 | 0 errors; seven pre-existing Fast Refresh warnings |
 | 2026-09-01 aggregate after F-014/F-022/F-023/F-027 implementation | all five `supabase/tests/*.test.sql` via direct local `psql` | 0 | Contribution privacy, final-admin, risk publication, source reliability, and safety-invariant suites all passed |
+
+## 9 September bounded platform repair
+
+The separate [platform audit](docs/audits/2026-09-09-platform-audit.md#authorized-repair-pass--9-september-2026) now records A-01–A-10 repairs, fresh schema/application/concurrency validation and browser evidence. This does not close historical findings or claim completion of the exhaustive two-cycle audit. Hosted password protection still requires owner dashboard access; implementation awaits merge/deployment.

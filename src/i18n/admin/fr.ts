@@ -148,6 +148,18 @@ export const adminFr: AdminTranslation = {
     reason_other: "Autre",
   },
   sources: {
+    textRecovery: {
+      title: "Reprise de l’interprétation des textes",
+      description:
+        "Les 50 rapports les plus anciens ayant épuisé les tentatives automatiques. Les administrateurs peuvent relancer chaque rapport une fois par jour, après la collecte en cours.",
+      empty: "Aucun rapport texte en échec définitif.",
+      retry: "Relancer l’interprétation",
+      retryFailed:
+        "Relance impossible. Attendez la fin de la collecte ou la limite quotidienne, puis réessayez.",
+      retryQueued:
+        "Interprétation mise en attente pour une prochaine collecte.",
+      exhausted: "Interprétation incomplète après {{count}} tentatives.",
+    },
     archive: {
       title: "Archives brutes des sources",
       description:
@@ -161,6 +173,12 @@ export const adminFr: AdminTranslation = {
       download: "Télécharger les données vérifiées",
     },
     ita: {
+      retry: "Relancer l’extraction",
+      retryFailed:
+        "La relance a échoué. Un rapport épuisé peut être relancé une fois par jour.",
+      retryQueued: "Extraction en attente du prochain traitement de la source.",
+      exhaustedOnly: "Afficher uniquement les extractions épuisées",
+
       title: "Signalements Info Trafic Algérie",
       description:
         "50 dernières versions collectées. Informations de presse interprétées par IA, à vérifier. Résumés en français. Aucune alerte publique envoyée.",

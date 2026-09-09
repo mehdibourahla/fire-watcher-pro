@@ -40,17 +40,20 @@ export const fr: Translation = {
     body: "Un problème est survenu de notre côté. Vous pouvez actualiser ou revenir à l'accueil.",
   },
   survival: {
+    smokeUnavailable:
+      "Les données locales sur la qualité de l’air sont indisponibles ici. La position de votre appareil n’est pas envoyée à un fournisseur de qualité de l’air.",
     mode: "Mode survie",
     online: "En ligne",
     offline: "Hors ligne",
     pill: "En danger ?",
     enterTitle: "Êtes-vous près d'un feu en ce moment ?",
     enterBody:
-      "Le mode survie montre une seule chose à faire à la fois, garde votre zone enregistrée hors ligne et prépare votre position pour un appel à la Protection Civile au 14.",
+      "Le mode survie présente une action à la fois et utilise le dossier hors ligne déjà préparé dans vos zones. Si la localisation est disponible, il affiche votre position pour appeler la Protection civile au 14.",
     enterFetching: "Localisation GPS en cours…",
     enterDenied:
       "La localisation est désactivée : les conseils seront généraux. Vous pouvez tout de même entrer.",
-    enterSaving: "Position trouvée · enregistrement du pack hors ligne…",
+    enterSaving:
+      "Position trouvée. Préparez un dossier hors ligne depuis vos zones avec une connexion.",
     enterReady: "Position trouvée · pack hors ligne enregistré.",
     enterYes: "Oui — activer le mode survie",
     enterCancel: "Annuler",
@@ -183,6 +186,23 @@ export const fr: Translation = {
       w: "ouest",
       nw: "nord-ouest",
     },
+    packTitle: "Préparation hors ligne",
+    packPrepare: "Préparer cette zone hors ligne",
+    packPreparing: "Préparation des pages, conseils et données de la zone…",
+    packReady: "Dossier hors ligne enregistré pour {{zone}} le {{time}}.",
+    packFailed:
+      "Échec de la préparation. Le dossier utilisable précédent a été conservé. Réessayez avec une connexion.",
+    packMissing: "Aucun dossier hors ligne prêt sur cet appareil.",
+    packScope:
+      "Enregistré uniquement sur cet appareil : carte simplifiée, points des espaces ouverts et conseils. Aucune tuile de voirie ni garantie d’itinéraire sûr.",
+    packMap: "Carte de la zone enregistrée",
+    packMapNote:
+      "Contour approximatif de la commune et points des espaces ouverts. Ce n’est ni une carte de navigation ni une évaluation de sécurité.",
+    packOrigin: "Centre de la zone enregistrée, pas votre position actuelle",
+    packStorageFailed:
+      "Le stockage de l’appareil est indisponible. Le mode survie reste utilisable, mais cette session ne peut pas être enregistrée.",
+    packUnavailable:
+      "La préparation hors ligne nécessite une connexion et la prise en charge des service workers.",
   },
   nav: {
     admin: "Administration",
@@ -539,6 +559,7 @@ export const fr: Translation = {
     openFire: "Voir l'incendie",
   },
   account: {
+    enableDeviceNotifications: "Autoriser les notifications sur cet appareil",
     zoneCount: "{{used}} zones sur {{max}} utilisées",
     zoneLimit:
       "Vous avez atteint le maximum de 10 zones. Supprimez-en une pour en ajouter une autre.",
@@ -609,6 +630,16 @@ export const fr: Translation = {
     saved: "Enregistré",
     saveFailed:
       "Impossible d’enregistrer les paramètres. Vérifiez vos choix et réessayez.",
+    emailUnavailable:
+      "L’envoi par courriel est indisponible. Utilisez les notifications du navigateur ou les notifications push.",
+    deleteAccount: "Supprimer le compte",
+    deleteWarning:
+      "Supprimez définitivement votre compte, vos zones, alertes, webhooks et photos de signalement téléversées. Cette action est irréversible.",
+    deleteConfirmation: "Saisissez DELETE pour confirmer.",
+    deleteFailed:
+      "La suppression n’a pas pu être terminée. Certaines photos ont peut-être déjà été supprimées. Reconnectez-vous et réessayez.",
+    deleteLastAdmin:
+      "Désignez un autre administrateur avant de supprimer votre compte.",
   },
   reports: {
     title: "Signaler un feu",
@@ -680,34 +711,37 @@ export const fr: Translation = {
       "Ce qui manque à Nadhir aujourd’hui, et comment aider — vérifier des lieux, relire le kabyle, enregistrer les consignes, ouvrir des portes institutionnelles, et le code.",
     eyebrow: "Contribuer",
     title: "Nadhir a besoin de bien plus que de code.",
-    lede: "Un système d’alerte aux incendies échoue sur la langue, la connaissance du terrain et la confiance institutionnelle bien avant d’échouer sur le logiciel. Tout ce qui suit manque aujourd’hui — compté dans la base de données en direct, pas écrit à la main.",
+    lede: "Les compteurs en direct montrent une partie des progrès de Nadhir. Vérifications sur le terrain, révision linguistique, validation scientifique et coordination officielle restent essentielles.",
     measuredAt: "Lu dans la base de données en direct · {{date}}",
     unavailable: "Compte indisponible",
     statPlaces: "Lieux vérifiés",
-    statPlacesSub: "Aucun n’a été vérifié par une personne sur place.",
+    statPlacesSub:
+      "Ces lieux cartographiés nécessitent une vérification sur place.",
     statPlacesSubSome: "{{done}} vérifiés par quelqu’un sur le terrain.",
     statFuel: "Communes avec données de combustible",
     statFuelSub: "Il en manque {{missing}} — et ce chiffre bouge.",
-    statAlerts: "Alertes délivrées",
-    statAlertsSub: "Le moteur les calcule. Aucun canal ne les transporte.",
-    statLanguages: "Langues livrées",
-    statLanguagesSub: "Le kabyle n’a jamais été relu par un locuteur natif.",
+    statAlerts: "Accusés de livraison",
+    statAlertsSub:
+      "Envois réussis enregistrés ; ce n’est pas le nombre de personnes ayant lu une alerte.",
+    statLanguages: "Langues disponibles",
+    statLanguagesSub:
+      "Le kabyle reste en révision et n’est pas disponible dans le sélecteur de langue.",
     lanesEyebrow: "Par où entrer",
     lanesTitle: "Là où vous aideriez vraiment",
     lanesLede:
       "Classé selon le besoin réel du projet. Le code figure en bas parce que c’est la vérité, pas par modestie.",
     asks: "Ce que cela demande : {{what}}",
     localTitle: "Vérifier un lieu près de chez vous",
-    localDeficit: "0 sur {{total}} vérifiés",
+    localDeficit: "{{verified}} sur {{total}} vérifiés",
     localBody:
-      "Nadhir liste des stades, des cours d’école et des terrains dégagés tirés d’OpenStreetMap. Personne n’y a mis les pieds. Dites-nous s’il est goudronné, accessible, fermé, ou devenu un chantier.",
+      "Les espaces ouverts nécessitent des visites sur place. Aidez à vérifier le revêtement, l’accès, les fermetures ou les travaux ; figurer sur une carte ne garantit pas la sécurité.",
     localAsks:
       "un après-midi, un téléphone, et un endroit que vous connaissez déjà",
     localCta: "Vérifier un lieu",
     languageTitle: "Relire le kabyle",
-    languageDeficit: "1 langue sur 4 non relue",
+    languageDeficit: "Révision du kabyle en attente",
     languageBody:
-      "Le taqbaylit est livré dans l’application, traduit sans relecteur natif. Un mot faux dans une alerte coûte la confiance avant de coûter autre chose.",
+      "Le kabyle reste absent du sélecteur tant que des locuteurs natifs n’ont pas révisé les textes, en particulier les alertes et les conseils.",
     languageAsks: "la maîtrise de la langue, et l’oreille du registre",
     languageCta: "Relire les textes",
     audioTitle: "Enregistrer les consignes",
@@ -717,9 +751,9 @@ export const fr: Translation = {
     audioAsks: "une pièce silencieuse et une demi-heure",
     audioCta: "Enregistrer une piste",
     institutionalTitle: "Ouvrir une porte institutionnelle",
-    institutionalDeficit: "0 alerte atteint quelqu’un",
+    institutionalDeficit: "Coordination officielle nécessaire",
     institutionalBody:
-      "L’objet d’alerte CAP est construit et aucun canal ne le transporte. La Protection Civile détient un créneau d’alerte enregistré que personne n’alimente. Une mise en relation vaut mieux qu’une année de développement.",
+      "Nadhir prend en charge les notifications push, Telegram et les webhooks. Des partenariats restent nécessaires pour des alertes coordonnées officiellement.",
     institutionalAsks: "un contact réel, et la légitimité pour l’activer",
     institutionalCta: "Engager la conversation",
     scienceTitle: "Calibrer l’échelle de danger",
@@ -730,9 +764,9 @@ export const fr: Translation = {
       "la science du feu, ou les statistiques pour discuter des seuils",
     scienceCta: "Voir les preuves",
     researchTitle: "Chercher ce que nous ne voyons pas",
-    researchDeficit: "1 source de détection",
+    researchDeficit: "Couverture à valider",
     researchBody:
-      "Chaque incendie détecté par Nadhir vient d’un seul fournisseur. Trouver de nouvelles sources, et prouver qu’elles couvrent vraiment l’Algérie, est un travail de bureau aux conséquences réelles.",
+      "Nadhir combine plusieurs sources. Leur rapidité et leur couverture régionale nécessitent encore des vérifications indépendantes.",
     researchAsks: "de la patience avec la documentation, et du scepticisme",
     researchCta: "Questions ouvertes",
     coordinationTitle: "Faire avancer le travail",
@@ -974,7 +1008,7 @@ export const fr: Translation = {
       "Uniquement pour déterminer les alertes qui vous concernent et les livrer sur les canaux activés. Ni publicité, ni profilage.",
     privacy_retention_title: "Durée",
     privacy_retention_body:
-      "Les alertes et les journaux de webhooks sont conservés pour l'historique de service ; vous pouvez supprimer vos alertes à tout moment. La suppression du compte efface profil, zones, alertes et webhooks.",
+      "Vous pouvez supprimer les alertes de votre fil et votre compte dans les paramètres. La suppression du compte retire les données personnelles, zones, alertes, webhooks et photos de signalement. Les journaux opérationnels sont conservés sans identifiants personnels.",
     privacy_sharing_title: "Partage",
     privacy_sharing_body:
       "Aucune donnée personnelle n'est partagée. L'API publique n'expose que les feux et les prévisions, jamais vos zones ni votre identité.",

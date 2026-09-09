@@ -631,34 +631,47 @@ export const recallDailyQuery = queryOptions({
   },
 });
 
-export const riskForecastsQuery = queryOptions({
-  queryKey: ["risk_forecasts"],
-  queryFn: async () => {
-    const { data: checkpoint, error } = await supabase
-      .from("risk_publication_checkpoint")
-      .select("coverage_status, snapshot_id, base_date, published_at")
-      .eq("key", "local_fwi")
-      .maybeSingle();
-    if (error) throw new Error(error.message);
-    const publication = publishedRiskSnapshot(checkpoint);
-    if (!publication) return [] as RiskForecast[];
+function riskQuery(todayOnly = false) {
+  return queryOptions({
+    queryKey: todayOnly ? ["risk_forecasts", "today"] : ["risk_forecasts"],
+    queryFn: async () => {
+      const { data: checkpoint, error } = await supabase
+        .from("risk_publication_checkpoint")
+        .select("coverage_status, snapshot_id, base_date, published_at")
+        .eq("key", "local_fwi")
+        .maybeSingle();
+      if (error) throw new Error(error.message);
+      const publication = publishedRiskSnapshot(checkpoint);
+      if (!publication) return [] as RiskForecast[];
 
-    const baseMs = Date.parse(`${publication.base}T00:00:00Z`);
-    const pairs = Array.from({ length: HORIZON_DAYS }, (_, h) => {
-      const d = new Date(baseMs + h * 86_400_000).toISOString().slice(0, 10);
-      return `and(forecast_date.eq.${d},horizon_days.eq.${h})`;
-    });
-    return fetchAllPages<RiskForecast>((from, to) =>
-      supabase
-        .rpc("current_risk_forecasts")
-        .eq("source", "local_fwi")
-        .eq("snapshot_id", publication.snapshotId)
-        .or(pairs.join(","))
-        .order("id")
-        .range(from, to),
-    );
-  },
-});
+      const baseMs = Date.parse(`${publication.base}T00:00:00Z`);
+      const pairs = Array.from(
+        { length: todayOnly ? 1 : HORIZON_DAYS },
+        (_, h) => {
+          const d = new Date(baseMs + h * 86_400_000)
+            .toISOString()
+            .slice(0, 10);
+          return `and(forecast_date.eq.${d},horizon_days.eq.${h})`;
+        },
+      );
+      return fetchAllPages<RiskForecast>((from, to) =>
+        supabase
+          .rpc("current_risk_forecasts")
+          .select(
+            "id,commune_id,forecast_date,horizon_days,source,fwi,fwi_percentile,danger_level,fuel_limited,snapshot_id",
+          )
+          .eq("source", "local_fwi")
+          .eq("snapshot_id", publication.snapshotId)
+          .or(pairs.join(","))
+          .order("id")
+          .range(from, to),
+      );
+    },
+  });
+}
+
+export const riskForecastsQuery = riskQuery();
+export const todayRiskForecastsQuery = riskQuery(true);
 
 export type FireConfirmation = {
   as_of: string;

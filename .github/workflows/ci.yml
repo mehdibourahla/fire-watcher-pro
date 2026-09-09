@@ -48,6 +48,9 @@ jobs:
       - run: bun run scripts/test-delivery-concurrency.ts
         env:
           DELIVERY_TEST_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+      - run: bun run scripts/test-webhook-concurrency.ts
+        env:
+          DELIVERY_TEST_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
 
   deploy:
     # Deploys are gated by the "production" environment: its secrets and any

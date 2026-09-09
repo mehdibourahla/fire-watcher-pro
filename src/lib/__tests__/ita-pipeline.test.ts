@@ -29,6 +29,14 @@ function setup() {
   return { store, fetchFeed, extract };
 }
 describe("ITA pipeline", () => {
+  it("processes durable backlog despite upstream failure", async () => {
+    const deps = setup();
+    deps.fetchFeed.mockRejectedValue(new Error("upstream unavailable"));
+    const run = await runItaSourceWith(deps);
+    expect(deps.extract).toHaveBeenCalledWith(post);
+    expect(run).toMatchObject({ extracted: 1, error: "upstream unavailable" });
+    expect(deps.store.saveFeed).not.toHaveBeenCalled();
+  });
   it("cancels a stalled fetch without advancing its checkpoint", async () => {
     const deps = setup();
     const controller = new AbortController();
@@ -53,15 +61,17 @@ describe("ITA pipeline", () => {
         ...deps,
         fetchFeed: (etag) => fetchItaFeed(etag, stalled),
       });
-      const rejected = expect(result).rejects.toThrow("ITA request timed out");
       await ready;
       expect(timeout).toHaveBeenCalledWith(20_000);
       controller.abort(
         new DOMException("ITA request timed out", "TimeoutError"),
       );
-      await rejected;
+      expect(await result).toMatchObject({
+        error: "ITA request timed out",
+        extracted: 1,
+      });
       expect(deps.store.saveFeed).not.toHaveBeenCalled();
-      expect(deps.store.claim).not.toHaveBeenCalled();
+      expect(deps.store.claim).toHaveBeenCalled();
     } finally {
       timeout.mockRestore();
     }
