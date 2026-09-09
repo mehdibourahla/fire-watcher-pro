@@ -85,7 +85,7 @@ function Stat({
   label: string;
   value: string;
   total?: string | undefined;
-  filled: number;
+  filled?: number;
   sub: string;
 }) {
   return (
@@ -99,12 +99,14 @@ function Stat({
           <span className="text-[20px] text-faint"> / {total}</span>
         ) : null}
       </span>
-      <div className="h-[3px] overflow-hidden rounded-full bg-raised">
-        <div
-          className="h-full rounded-full bg-primary"
-          style={{ width: `${Math.max(filled, filled > 0 ? 1 : 0)}%` }}
-        />
-      </div>
+      {filled !== undefined && (
+        <div className="h-[3px] overflow-hidden rounded-full bg-raised">
+          <div
+            className="h-full rounded-full bg-primary"
+            style={{ width: `${Math.max(filled, filled > 0 ? 1 : 0)}%` }}
+          />
+        </div>
+      )}
       <span className="text-xs leading-relaxed text-muted-foreground">
         {sub}
       </span>
@@ -169,13 +171,12 @@ function Deficit({ deficits }: { deficits: Deficits }) {
       <Stat
         label={t("contribute.statAlerts")}
         value={
-          known(deficits.alertsDelivered)
-            ? String(deficits.alertsDelivered)
+          known(deficits.deliveryReceipts)
+            ? String(deficits.deliveryReceipts)
             : "—"
         }
-        filled={0}
         sub={
-          known(deficits.alertsDelivered)
+          known(deficits.deliveryReceipts)
             ? t("contribute.statAlertsSub")
             : unknown
         }
@@ -183,7 +184,6 @@ function Deficit({ deficits }: { deficits: Deficits }) {
       <Stat
         label={t("contribute.statLanguages")}
         value={String(deficits.localesShipped)}
-        filled={percent(deficits.localesReviewed, deficits.localesShipped)}
         sub={t("contribute.statLanguagesSub")}
       />
     </div>
@@ -210,6 +210,10 @@ function LaneGrid({
           </h3>
           <span className="self-start rounded-md bg-[var(--accent-tint)] px-2 py-1 text-[11.5px] font-semibold tabular text-[var(--accent)]">
             {t(`contribute.${key}Deficit`, {
+              verified:
+                deficits.openAreasVerified >= 0
+                  ? deficits.openAreasVerified.toLocaleString()
+                  : "—",
               total:
                 deficits.openAreasTotal >= 0
                   ? deficits.openAreasTotal.toLocaleString()

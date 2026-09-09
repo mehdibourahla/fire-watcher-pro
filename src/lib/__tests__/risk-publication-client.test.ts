@@ -137,6 +137,9 @@ describe("riskForecastsQuery publication boundary", () => {
     ]);
     expect(riskFilters).toContainEqual(["source", "local_fwi"]);
     expect(rpcMock).toHaveBeenCalledWith("current_risk_forecasts");
+    expect(riskBuilder["select"]).toHaveBeenCalledWith(
+      "id,commune_id,forecast_date,horizon_days,source,fwi,fwi_percentile,danger_level,fuel_limited,snapshot_id",
+    );
     expect(riskFilters).toContainEqual([
       "snapshot_id",
       "f0220000-0000-4000-8000-000000000001",

@@ -170,7 +170,9 @@ it("archives weather enrichment without cluster or user identifiers", async () =
   };
   from.mockReturnValue(query);
   archivedFetch.mockResolvedValue(Response.json({ current: {} }));
-  await enrichClusterWinds();
+  await expect(enrichClusterWinds()).rejects.toThrow(
+    "wind observation coverage incomplete",
+  );
   expect(archivedFetch.mock.calls[0]?.[0]).toBe("openmeteo_wind");
   expect(JSON.stringify(archivedFetch.mock.calls[0]?.[4])).not.toContain(
     "private-cluster",

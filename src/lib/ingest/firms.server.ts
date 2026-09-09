@@ -167,6 +167,9 @@ export async function ingestFirms(
       fetched: 0,
       inserted: 0,
       feeds,
+      ...(feeds.length < FEEDS.length
+        ? { error: "FIRMS partial sensor coverage" }
+        : {}),
       ...(interval === undefined
         ? {}
         : {
@@ -198,6 +201,9 @@ export async function ingestFirms(
     fetched: rows.length,
     inserted,
     feeds,
+    ...(feeds.length < FEEDS.length
+      ? { error: "FIRMS partial sensor coverage" }
+      : {}),
     ...(dataFrom === undefined ? {} : { dataFrom }),
     ...(dataThrough === undefined ? {} : { dataThrough }),
   };

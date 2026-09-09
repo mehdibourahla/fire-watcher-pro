@@ -1,15 +1,13 @@
-import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { CheckCircle2, ChevronLeft, Share2, TriangleAlert } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useSurvival } from "@/components/survival/survival-context";
-import type { Locale } from "@/i18n";
-import { adminUnitsQuery, settlementsQuery } from "@/lib/nadhir";
+import { haversineKm } from "@/lib/nadhir";
 import {
   checkInMessage,
-  positionCard,
+  formatCoords,
   type PositionCard,
 } from "@/lib/survival";
 
@@ -18,39 +16,24 @@ export const Route = createFileRoute("/survival/checkin")({
 });
 
 function CheckInPage() {
-  const { t, i18n } = useTranslation();
-  const locale = i18n.language as Locale;
-  const { online, position, pack } = useSurvival();
+  const { t } = useTranslation();
+  const { position, pack } = useSurvival();
   const [kind, setKind] = useState<"ok" | "assist">("ok");
 
-  const units = useQuery({ ...adminUnitsQuery, retry: online ? 3 : false });
-  const settlements = useQuery({
-    ...settlementsQuery,
-    retry: online ? 3 : false,
-  });
-
   const card = useMemo<PositionCard | null>(() => {
-    if (position && units.data && settlements.data)
-      return positionCard(
-        position.lat,
-        position.lon,
-        units.data,
-        settlements.data,
-        locale,
-      );
-    if (pack)
-      return {
-        commune: pack.commune,
-        wilaya: pack.wilaya,
-        nearest: pack.nearest,
-        coords: pack.coords,
-      };
-    return null;
-  }, [position, units.data, settlements.data, pack, locale]);
+    if (!position) return null;
+    const nearby =
+      pack && haversineKm(position.lat, position.lon, pack.lat, pack.lon) < 2;
+    return {
+      commune: nearby ? pack.commune : null,
+      wilaya: nearby ? pack.wilaya : null,
+      nearest: null,
+      coords: formatCoords(position.lat, position.lon),
+    };
+  }, [position, pack]);
 
   // Built at render AND at send time, so a page left open never sends a stale timestamp.
   const composeMessage = () => {
-    if (!card) return null;
     const time = new Intl.DateTimeFormat("fr-DZ", {
       timeZone: "Africa/Algiers",
       hour: "2-digit",
@@ -69,7 +52,6 @@ function CheckInPage() {
 
   const onSend = () => {
     const fresh = composeMessage();
-    if (!fresh) return;
     if (navigator.share) {
       void navigator.share({ text: fresh }).catch(() => undefined);
     } else {
@@ -176,7 +158,7 @@ function CheckInPage() {
           {t("survival.checkinPreview").toUpperCase()}
         </h2>
         <p className="rounded-lg bg-muted px-3.5 py-3 text-sm leading-relaxed">
-          {message ?? t("survival.noPosition")}
+          {message}
         </p>
       </section>
 
@@ -184,7 +166,6 @@ function CheckInPage() {
         <button
           type="button"
           onClick={onSend}
-          disabled={!message}
           className="flex h-14 items-center justify-center gap-2.5 rounded-xl bg-primary text-base font-bold text-primary-foreground disabled:opacity-50"
         >
           <Share2 aria-hidden className="size-5" />

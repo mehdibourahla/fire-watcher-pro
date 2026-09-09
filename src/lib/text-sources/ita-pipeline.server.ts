@@ -75,15 +75,23 @@ export async function runItaSourceWith({
   fetchFeed,
   extract,
 }: Dependencies): Promise<ItaRun> {
-  const feed = await fetchFeed(await store.etag());
-  const stored = await store.saveFeed({
-    ...feed,
-    posts: await Promise.all(feed.posts.map(revision)),
-  });
+  const etag = await store.etag();
+  let feed: Awaited<ReturnType<typeof fetchItaFeed>> | null = null;
+  let error: string | undefined;
+  try {
+    feed = await fetchFeed(etag);
+  } catch (cause) {
+    error = cause instanceof Error ? cause.message : "ITA upstream unavailable";
+  }
+  const stored = feed
+    ? await store.saveFeed({
+        ...feed,
+        posts: await Promise.all(feed.posts.map(revision)),
+      })
+    : 0;
   const pending = await store.claim(5);
   let extracted = 0;
   let failed = 0;
-  let error: string | undefined;
   for (const report of pending) {
     let result: ItaExtraction | null = null;
     let failure: string | null = null;
@@ -104,12 +112,12 @@ export async function runItaSourceWith({
   const remaining = await store.pendingCount();
   if (remaining) error ??= `ITA extraction backlog: ${remaining} reports`;
   return {
-    fetched: feed.posts.length,
+    fetched: feed?.posts.length ?? 0,
     stored,
     extracted,
     failed,
     pending: remaining,
-    notModified: feed.notModified,
+    notModified: feed?.notModified ?? false,
     ...(error ? { error } : {}),
   };
 }

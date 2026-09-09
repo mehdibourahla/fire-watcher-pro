@@ -3,19 +3,6 @@ import { isIP } from "node:net";
 
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
-type AlertRow = {
-  id: string;
-  user_id: string;
-  kind: string;
-  severity: number;
-  title: string;
-  body: string;
-  distance_km: number | null;
-  zone_id: string | null;
-  payload: unknown;
-  created_at?: string;
-};
-
 async function sign(secret: string, body: string) {
   const { createHmac } = await import("node:crypto");
   return createHmac("sha256", secret).update(body, "utf8").digest("hex");
@@ -219,7 +206,7 @@ export async function isDeliverableUrl(
   } catch {
     return false;
   }
-  if (url.protocol !== "https:") return false;
+  if (url.protocol !== "https:" || url.username || url.password) return false;
 
   const host = url.hostname.toLowerCase().replace(/^\[|\]$/g, "");
   if (
@@ -241,6 +228,7 @@ export async function isDeliverableUrl(
 type WebhookRequestDependencies = {
   resolver?: WebhookAddressResolver;
   fetcher?: typeof fetch;
+  eventId?: string;
 };
 
 export async function sendWebhookRequest(
@@ -249,107 +237,113 @@ export async function sendWebhookRequest(
   body: string,
   dependencies: WebhookRequestDependencies = {},
 ) {
-  if (!(await isDeliverableUrl(url, dependencies.resolver)))
-    throw new Error("endpoint url must be https and publicly routable");
-  const signature = await sign(secret, body);
-  return (dependencies.fetcher ?? fetch)(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Nadhir-Signature": `sha256=${signature}`,
-    },
-    body,
-    redirect: "manual",
-    signal: AbortSignal.timeout(8000),
+  const controller = new AbortController();
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => {
+      controller.abort();
+      reject(new Error("webhook request timed out"));
+    }, 10_000);
   });
+  const request = async () => {
+    if (!(await isDeliverableUrl(url, dependencies.resolver)))
+      throw new Error("endpoint url must be https and publicly routable");
+    if (controller.signal.aborted) throw new Error("webhook request timed out");
+    const signature = await sign(secret, body);
+    const response = await (dependencies.fetcher ?? fetch)(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Nadhir-Signature": `sha256=${signature}`,
+        ...(dependencies.eventId
+          ? {
+              "Idempotency-Key": dependencies.eventId,
+              "X-Nadhir-Event-Id": dependencies.eventId,
+            }
+          : {}),
+      },
+      body,
+      redirect: "manual",
+      signal: controller.signal,
+    });
+    await response.body?.cancel();
+    return response;
+  };
+  try {
+    return await Promise.race([request(), timeout]);
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
-/** Fan alerts out to each owner's active webhook endpoints. Never throws. */
-export async function dispatchWebhooks(alerts: AlertRow[]) {
-  if (!alerts.length) return { sent: 0, failed: 0 };
-  const userIds = [...new Set(alerts.map((a) => a.user_id))];
-  const { data: endpoints } = await supabaseAdmin
-    .from("webhook_endpoints")
-    .select("*")
-    .eq("active", true)
-    .in("user_id", userIds);
-  if (!endpoints?.length) return { sent: 0, failed: 0 };
+type ClaimedWebhook = {
+  id: string;
+  lease_token: string;
+  url: string;
+  secret: string;
+  payload: unknown;
+};
 
+export type WebhookDeliveryStore = {
+  claim(): Promise<ClaimedWebhook | null>;
+  finish(
+    id: string,
+    token: string,
+    status: number | null,
+    error: string | null,
+  ): Promise<boolean>;
+};
+
+const deliveryStore: WebhookDeliveryStore = {
+  async claim() {
+    const { data, error } = await supabaseAdmin.rpc("claim_webhook_delivery");
+    if (error) throw new Error("webhook claim failed", { cause: error });
+    return data?.[0] ?? null;
+  },
+  async finish(id, token, status, deliveryError) {
+    const { data, error } = await supabaseAdmin.rpc("finish_webhook_delivery", {
+      _id: id,
+      _token: token,
+      _status: status,
+      _error: deliveryError,
+    });
+    if (error) throw new Error("webhook receipt failed", { cause: error });
+    return data === true;
+  },
+};
+
+export async function drainWebhookDeliveries(
+  dependencies: {
+    store?: WebhookDeliveryStore;
+    send?: typeof sendWebhookRequest;
+  } = {},
+) {
+  const store = dependencies.store ?? deliveryStore;
+  const send = dependencies.send ?? sendWebhookRequest;
   let sent = 0;
   let failed = 0;
-  const deliveries: Record<string, unknown>[] = [];
-  const deliveredAlertIds = new Set<string>();
-
-  for (const endpoint of endpoints) {
-    const matching = alerts.filter(
-      (a) =>
-        a.user_id === endpoint.user_id &&
-        (endpoint.kinds as string[]).includes(a.kind) &&
-        a.severity >= endpoint.min_severity,
-    );
-    for (const alert of matching) {
-      const body = JSON.stringify({
-        type: `alert.${alert.kind}`,
-        alert: {
-          id: alert.id,
-          kind: alert.kind,
-          severity: alert.severity,
-          title: alert.title,
-          body: alert.body,
-          distance_km: alert.distance_km,
-          zone_id: alert.zone_id,
-          payload: alert.payload,
-        },
-        sent_at: new Date().toISOString(),
-      });
-      let status: number | null = null;
-      let error: string | null = null;
-      try {
-        const response = await sendWebhookRequest(
-          endpoint.url,
-          endpoint.secret,
-          body,
-        );
-        status = response.status;
-        if (!response.ok) error = (await response.text()).slice(0, 300);
-      } catch (e) {
-        error = e instanceof Error ? e.message : "delivery failed";
-      }
-      const ok = status !== null && status >= 200 && status < 300;
-      if (ok) {
-        sent += 1;
-        deliveredAlertIds.add(alert.id);
-      } else {
-        failed += 1;
-      }
-      deliveries.push({
-        endpoint_id: endpoint.id,
-        user_id: endpoint.user_id,
-        alert_id: alert.id,
-        status_code: status,
-        ok,
-        error,
-      });
-      await supabaseAdmin
-        .from("webhook_endpoints")
-        .update({
-          last_status: status,
-          last_error: error,
-          last_attempt_at: new Date().toISOString(),
-        })
-        .eq("id", endpoint.id);
+  for (let i = 0; i < 5; i++) {
+    const item = await store.claim();
+    if (!item) break;
+    let status: number | null = null;
+    let error: string | null = null;
+    try {
+      const response = await send(
+        item.url,
+        item.secret,
+        JSON.stringify(item.payload),
+        { eventId: item.id },
+      );
+      status = response.status;
+      if (!response.ok) error = `http_${status}`;
+    } catch {
+      error = "delivery_failed";
     }
-  }
-
-  if (deliveries.length) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await supabaseAdmin.from("webhook_deliveries").insert(deliveries as any);
-  }
-  if (deliveredAlertIds.size) {
-    await supabaseAdmin
-      .from("alerts")
-      .update({ delivered_webhook: true })
-      .in("id", [...deliveredAlertIds]);
+    if (!(await store.finish(item.id, item.lease_token, status, error)))
+      throw new Error("webhook receipt lease lost");
+    if (error === null && status !== null && status >= 200 && status < 300)
+      sent++;
+    else failed++;
   }
   return { sent, failed };
 }

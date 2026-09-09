@@ -107,6 +107,7 @@ async function completeWithOpenRouter(
 ): Promise<{ content: string }> {
   const res = await fetch(OPENROUTER_URL, {
     method: "POST",
+    signal: AbortSignal.timeout(45_000),
     headers: {
       authorization: `Bearer ${apiKey}`,
       "content-type": "application/json",
@@ -180,8 +181,15 @@ export async function extractMentionsWithLlm(
     throw new Error(
       `llm extraction returned an unexpected shape: ${result.error.message.slice(0, 200)}`,
     );
-  const mentions = result.data.mentions
-    .filter((m) => m.evidence.length > 0 && input.text.includes(m.evidence))
-    .map((m) => ({ ...m, count: Math.max(1, m.count) }));
+  if (
+    result.data.mentions.some(
+      (m) => !m.evidence.length || !input.text.includes(m.evidence),
+    )
+  )
+    throw new Error("llm extraction contains unsupported evidence");
+  const mentions = result.data.mentions.map((m) => ({
+    ...m,
+    count: Math.max(1, m.count),
+  }));
   return { skipped: false, mentions };
 }

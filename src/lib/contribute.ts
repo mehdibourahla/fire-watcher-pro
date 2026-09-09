@@ -88,9 +88,8 @@ export type Deficits = {
   openAreasVerified: number;
   communesTotal: number;
   communesWithFuel: number;
-  alertsDelivered: number;
+  deliveryReceipts: number;
   localesShipped: number;
-  localesReviewed: number;
   measuredAt: string;
 };
 

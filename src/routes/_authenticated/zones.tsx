@@ -3,6 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { PackPreparation } from "@/components/survival/PackPreparation";
 import { RiskLegend } from "@/components/SiteChrome";
 import { supabase } from "@/integrations/supabase/client";
 import type { Locale } from "@/i18n";
@@ -293,7 +294,7 @@ function ZonesPage() {
               {t("account.noZones")}
             </p>
           ) : null}
-          {(zones.data ?? []).map((zone) => {
+          {(zones.data ?? []).map((zone, index) => {
             const nearby = liveClusters
               .map((c) => ({
                 c,
@@ -350,6 +351,7 @@ function ZonesPage() {
                         km: nearby[0]!.km.toFixed(1),
                       })}
                 </p>
+                <PackPreparation zone={zone} auto={index === 0} />
                 {!zone.active ? (
                   <p className="mt-1 text-xs text-muted-foreground">
                     {t("account.paused")}

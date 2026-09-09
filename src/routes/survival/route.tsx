@@ -11,7 +11,11 @@ import {
 import type { Locale } from "@/i18n";
 import { relativeTime } from "@/lib/nadhir";
 import { SURVIVAL_ACTIVE_KEY } from "@/lib/survival";
-import { loadPack, savePack, type SurvivalPack } from "@/lib/survival-pack";
+import {
+  deviceStorage,
+  loadPack,
+  type SurvivalPack,
+} from "@/lib/survival-pack";
 import { titledMeta } from "@/lib/page-meta";
 
 export const Route = createFileRoute("/survival")({
@@ -32,9 +36,7 @@ function SurvivalLayout() {
     null,
   );
   const [positionDenied, setPositionDenied] = useState(false);
-  const [pack, setPackState] = useState<SurvivalPack | null>(() =>
-    loadPack(localStorage),
-  );
+  const [pack] = useState<SurvivalPack | null>(() => loadPack(deviceStorage));
   const [confirmExit, setConfirmExit] = useState(false);
 
   useEffect(() => {
@@ -67,10 +69,6 @@ function SurvivalLayout() {
       position,
       positionDenied,
       pack,
-      setPack: (p) => {
-        savePack(localStorage, p);
-        setPackState(p);
-      },
     }),
     [online, position, positionDenied, pack],
   );
@@ -153,7 +151,11 @@ function SurvivalLayout() {
                 <button
                   type="button"
                   onClick={() => {
-                    localStorage.removeItem(SURVIVAL_ACTIVE_KEY);
+                    try {
+                      localStorage.removeItem(SURVIVAL_ACTIVE_KEY);
+                    } catch {
+                      // Storage denial must not block leaving Survival Mode.
+                    }
                     void navigate({ to: "/" });
                   }}
                   className="flex-1 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground"

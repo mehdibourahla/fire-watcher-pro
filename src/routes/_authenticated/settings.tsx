@@ -27,16 +27,48 @@ function SettingsPage() {
     display_name: "",
     phone: "",
     locale: "ar",
-    alert_email: true,
     alert_push: false,
     min_danger_level: 3,
     quiet_hours_start: "",
     quiet_hours_end: "",
   });
   const [saved, setSaved] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState("");
+  const removeAccount = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.auth.getSession();
+      if (error || !data.session) throw new Error("account.deleteFailed");
+      const response = await fetch("/api/private/account", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${data.session.access_token}`,
+        },
+        body: JSON.stringify({ confirmation: deleteConfirmation }),
+      });
+      const result = (await response.json()) as {
+        ok?: boolean;
+        error?: string;
+      };
+      if (!response.ok || !result.ok)
+        throw new Error(result.error ?? "account.deleteFailed");
+    },
+    onSuccess: async () => {
+      await supabase.auth.signOut({ scope: "local" });
+      qc.clear();
+      void navigate({ to: "/", replace: true });
+    },
+    onError: (error: Error) => toast.error(t(error.message)),
+  });
   const [pushState, setPushState] = useState<
     NotificationPermission | "unsupported" | null
   >(null);
+
+  useEffect(() => {
+    setPushState(
+      "Notification" in window ? Notification.permission : "unsupported",
+    );
+  }, []);
 
   useEffect(() => {
     if (!profile.data) return;
@@ -44,7 +76,6 @@ function SettingsPage() {
       display_name: profile.data.display_name ?? "",
       phone: profile.data.phone ?? "",
       locale: profile.data.locale,
-      alert_email: profile.data.alert_email,
       alert_push: profile.data.alert_push,
       min_danger_level: profile.data.min_danger_level,
       quiet_hours_start: profile.data.quiet_hours_start?.toString() ?? "",
@@ -58,7 +89,7 @@ function SettingsPage() {
         display_name: draft.display_name || null,
         phone: draft.phone || null,
         locale: draft.locale,
-        alert_email: draft.alert_email,
+        alert_email: false,
         alert_push: draft.alert_push,
         min_danger_level: draft.min_danger_level,
         quiet_hours_start:
@@ -161,35 +192,34 @@ function SettingsPage() {
           <legend className="mb-1 text-muted-foreground">
             {t("account.channels")}
           </legend>
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={draft.alert_email}
-              onChange={(e) =>
-                setDraft({ ...draft, alert_email: e.target.checked })
-              }
-            />
-            {t("account.channelEmail")}
-          </label>
+          <p className="text-muted-foreground">
+            {t("account.emailUnavailable")}
+          </p>
           <label className="flex items-center gap-2">
             <input
               type="checkbox"
               checked={draft.alert_push}
-              onChange={async (e) => {
-                const on = e.target.checked;
-                if (!on) {
-                  setDraft({ ...draft, alert_push: false });
-                  setPushState(null);
-                  return;
-                }
-                const result = await requestNotificationPermission();
-                setPushState(result);
-                setDraft({ ...draft, alert_push: result === "granted" });
-              }}
+              onChange={(e) =>
+                setDraft({ ...draft, alert_push: e.target.checked })
+              }
             />
             {t("account.channelPush")}
           </label>
-          {pushState && pushState !== "granted" ? (
+          {draft.alert_push &&
+          pushState !== "granted" &&
+          pushState !== "unsupported" ? (
+            <button
+              type="button"
+              className="rounded border border-border px-3 py-2"
+              onClick={async () =>
+                setPushState(await requestNotificationPermission())
+              }
+            >
+              {t("account.enableDeviceNotifications")}
+            </button>
+          ) : null}
+          {draft.alert_push &&
+          (pushState === "denied" || pushState === "unsupported") ? (
             <p className="text-xs text-destructive">
               {pushState === "unsupported"
                 ? t("account.pushUnsupported")
@@ -257,6 +287,29 @@ function SettingsPage() {
           ) : null}
         </div>
       </form>
+      <details className="panel mt-6 p-5">
+        <summary className="cursor-pointer font-semibold text-destructive">
+          {t("account.deleteAccount")}
+        </summary>
+        <p className="mt-3 text-sm">{t("account.deleteWarning")}</p>
+        <label className="mt-3 block text-sm">
+          {t("account.deleteConfirmation")}
+          <input
+            autoComplete="off"
+            value={deleteConfirmation}
+            onChange={(e) => setDeleteConfirmation(e.target.value)}
+            className="mt-2 block w-full rounded border border-border bg-background px-3 py-2"
+          />
+        </label>
+        <button
+          type="button"
+          disabled={deleteConfirmation !== "DELETE" || removeAccount.isPending}
+          onClick={() => removeAccount.mutate()}
+          className="mt-3 rounded bg-destructive px-4 py-2 text-destructive-foreground disabled:opacity-50"
+        >
+          {t("account.deleteAccount")}
+        </button>
+      </details>
     </div>
   );
 }

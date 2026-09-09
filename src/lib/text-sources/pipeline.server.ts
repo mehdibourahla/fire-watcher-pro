@@ -1,6 +1,8 @@
 import { archivedFetch } from "@/lib/source-archive.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { fetchAllPages } from "@/lib/paginate";
+import { getSourceArchiveContext } from "@/lib/source-archive-context.server";
+import type { Json } from "@/integrations/supabase/types";
 
 import { parseDgpcBulletin, type DgpcBulletin } from "./dgpc-template";
 import {
@@ -90,11 +92,15 @@ export type TextSourceStore = {
   loadGazetteer: () => Promise<Gazetteer>;
   insertMentions: (
     rows: MentionInsert[],
-  ) => Promise<(MentionInsert & { id: string })[]>;
+  ) => Promise<(MentionInsert & { id: string; inserted: boolean })[]>;
   openIncidents: (areaIds: string[], since: string) => Promise<OpenIncident[]>;
-  createIncident: (row: IncidentInsert) => Promise<string>;
-  updateIncident: (id: string, update: IncidentUpdate) => Promise<void>;
-  attachMention: (mentionId: string, incidentId: string) => Promise<void>;
+  applyMention: (
+    mentionId: string,
+    change:
+      | { incidentId: string; update: IncidentUpdate }
+      | { insert: IncidentInsert },
+  ) => Promise<{ id: string; applied: boolean }>;
+  pendingCount: (sourceId: string) => Promise<number>;
   listedIncidents: (
     before: string,
   ) => Promise<{ id: string; area_id: string }[]>;
@@ -105,7 +111,6 @@ export type TextSourceStore = {
   retryableDocuments: (
     sourceId: string,
   ) => Promise<(DocumentInsert & { id: string })[]>;
-  mentionKeys: (documentIds: string[]) => Promise<Set<string>>;
   recordExtractionFailure: (
     documentId: string,
     message: string,
@@ -114,6 +119,7 @@ export type TextSourceStore = {
 };
 
 export type TextSourcePipelineDependencies = {
+  now?: () => Date;
   store: TextSourceStore;
   fetchPosts: (
     source: TextSource,
@@ -303,29 +309,35 @@ async function mergeMentions(
     if (decision.action === "attach") {
       const current = open.find((i) => i.id === decision.incidentId)!;
       const next = nextIncidentState(current, mention);
-      await store.updateIncident(current.id, next);
-      await store.attachMention(row.id, current.id);
+      const applied = await store.applyMention(row.id, {
+        incidentId: current.id,
+        update: next,
+      });
+      if (!applied.applied) continue;
       Object.assign(current, next, {
         area_id: next.commune_id ?? current.area_id,
       });
       updated += 1;
       continue;
     }
-    const id = await store.createIncident({
-      wilaya_id: row.wilaya_id,
-      commune_id: row.commune_id,
-      kind: row.kind,
-      status: row.status,
-      precision: row.precision,
-      authority_tier: source.authority_tier,
-      place_text: row.place_text,
-      first_reported_at: row.as_of,
-      last_reported_at: row.as_of,
-      as_of: row.as_of,
-      latest_mention_id: row.id,
-      evidence: row.evidence,
+    const applied = await store.applyMention(row.id, {
+      insert: {
+        wilaya_id: row.wilaya_id,
+        commune_id: row.commune_id,
+        kind: row.kind,
+        status: row.status,
+        precision: row.precision,
+        authority_tier: source.authority_tier,
+        place_text: row.place_text,
+        first_reported_at: row.as_of,
+        last_reported_at: row.as_of,
+        as_of: row.as_of,
+        latest_mention_id: row.id,
+        evidence: row.evidence,
+      },
     });
-    await store.attachMention(row.id, id);
+    if (!applied.applied) continue;
+    const id = applied.id;
     open.push({
       id,
       area_id: mention.area_id,
@@ -364,7 +376,7 @@ export async function runTextSourceWith(
     llmSkipped: false,
     llmFailed: 0,
   };
-  let llmCalls = 0;
+  const now = (deps.now?.() ?? new Date()).getTime();
   let lastLlmError: string | null = null;
   const source = await deps.store.loadSource(key);
   if (!source) return { ...run, error: `text source ${key} is not registered` };
@@ -374,7 +386,12 @@ export async function runTextSourceWith(
   run.fetched = posts.length;
   const retryable = await deps.store.retryableDocuments(source.id);
   run.retried = retryable.length;
-  if (!posts.length && !retryable.length) return run;
+  if (!posts.length && !retryable.length) {
+    const pending = await deps.store.pendingCount(source.id);
+    if (pending)
+      run.error = `text extraction backlog: ${pending} documents require recovery`;
+    return run;
+  }
 
   const stored = await deps.store.insertDocuments(
     await Promise.all(
@@ -389,14 +406,8 @@ export async function runTextSourceWith(
     ),
   );
   run.stored = stored.length;
-  const documents = [...stored, ...retryable];
+  const documents = [...retryable, ...stored].slice(0, 5);
   const fresh = new Set(stored.map((d) => d.id));
-  // a retried document's mentions are already partly written: the template half
-  // survived the completion that failed
-  const alreadyWritten = await deps.store.mentionKeys(
-    retryable.map((d) => d.id),
-  );
-
   const gazetteer = await deps.store.loadGazetteer();
   const inserts: MentionInsert[] = [];
   const retriedOk: string[] = [];
@@ -408,18 +419,25 @@ export async function runTextSourceWith(
         : null;
     if (parsed && parsed.kind !== "bulletin" && parsed.kind !== "incident") {
       run.skippedPosts += 1;
+      retriedOk.push(doc.id);
       continue;
     }
     const asOf = parsed?.asOf ?? doc.published_at;
     // a full bulletin is the authority's complete list of notable fires, so what it
     // omits is no longer listed; a single-incident post says nothing about the rest
+    const publishedAt = Date.parse(doc.published_at);
+    const asOfTime = Date.parse(asOf);
+    // Daily bulletins older than 24 hours cannot establish current absence.
+    const timely =
+      publishedAt <= now &&
+      asOfTime <= publishedAt &&
+      asOfTime <= now &&
+      now - asOfTime <= 24 * 60 * 60_000;
     const coverage =
-      parsed?.kind === "bulletin" && fresh.has(doc.id)
+      parsed?.kind === "bulletin" && fresh.has(doc.id) && timely
         ? { asOf, areaIds: new Set<string>() }
         : null;
-    if (coverage) bulletins.push(coverage);
 
-    llmCalls += 1;
     let result: LlmExtractionResult;
     try {
       result = await deps.extractLlm({
@@ -445,7 +463,12 @@ export async function runTextSourceWith(
     const unresolvedNames: string[] = [];
     for (const m of result.mentions) {
       // wilaya-only lines are the distribution, read deterministically by the template
-      if (m.kind === "urban" || !m.commune) continue;
+      if (m.kind === "urban") continue;
+      if (!m.commune) {
+        unresolvedNames.push(m.wilaya ?? "unnamed location");
+        run.unresolved++;
+        continue;
+      }
       const draft = resolveLlmMention(m, asOf, gazetteer, source.wilaya_id);
       if (!draft) {
         run.unresolved += 1;
@@ -455,42 +478,70 @@ export async function runTextSourceWith(
       if (drafts.some((d) => d.commune_id === draft.commune_id)) continue;
       drafts.push(draft);
     }
+    let gated = 0;
     if (parsed?.kind === "bulletin") {
       const gate = gateByDistribution(drafts, parsed, gazetteer, asOf);
       drafts = gate.drafts;
       run.gated += gate.gated;
+      gated = gate.gated;
     }
+    const incompleteBulletin =
+      parsed?.kind === "bulletin" &&
+      (!parsed.totals ||
+        parsed.totals.total !==
+          parsed.totals.extinguished + parsed.totals.ongoing ||
+        parsed.wilayaCounts.reduce((sum, row) => sum + row.count, 0) !==
+          parsed.totals.ongoing ||
+        drafts.some((d) => d.extractor === "template") ||
+        (parsed.totals?.ongoing != null &&
+          drafts
+            .filter((d) => d.status !== "extinguished")
+            .reduce((n, d) => n + d.fire_count, 0) !== parsed.totals.ongoing) ||
+        parsed.wilayaCounts.some(
+          (c) => resolveWilaya(c.wilaya, gazetteer.wilayas) === null,
+        ));
+    if (incompleteBulletin && !unresolvedNames.length && !gated)
+      run.unresolved++;
     // an alias added after this document was first seen can resolve it later;
     // an LLM-call failure is not the only reason a document deserves another try
-    if (unresolvedNames.length)
+    if (unresolvedNames.length || gated || incompleteBulletin)
       await deps.store.recordExtractionFailure(
         doc.id,
-        `unresolved commune: ${unresolvedNames.join(", ")}`,
+        `incomplete interpretation: ${unresolvedNames.join(", ") || "distribution conflict"}`,
       );
-    else if (!fresh.has(doc.id)) retriedOk.push(doc.id);
-    if (coverage)
+    else retriedOk.push(doc.id);
+    if (
+      coverage &&
+      !unresolvedNames.length &&
+      !gated &&
+      !incompleteBulletin &&
+      parsed?.totals?.ongoing != null &&
+      drafts.every((d) => d.commune_id !== null) &&
+      drafts
+        .filter((d) => d.status !== "extinguished")
+        .reduce((n, d) => n + d.fire_count, 0) === parsed.totals.ongoing &&
+      parsed.wilayaCounts.every(
+        (c) => resolveWilaya(c.wilaya, gazetteer.wilayas) !== null,
+      )
+    ) {
       for (const d of drafts) coverage.areaIds.add(d.commune_id ?? d.wilaya_id);
+      bulletins.push(coverage);
+    }
     inserts.push(
-      ...drafts
-        .filter(
-          (d) =>
-            !alreadyWritten.has(
-              `${doc.id}:${d.commune_id ?? ""}:${d.evidence}`,
-            ),
-        )
-        .map((d) => ({
-          ...d,
-          document_id: doc.id,
-          text_source_id: source.id,
-        })),
+      ...drafts.map((d) => ({
+        ...d,
+        document_id: doc.id,
+        text_source_id: source.id,
+      })),
     );
   }
 
-  if (llmCalls > 0 && run.llmFailed === llmCalls)
-    run.error = `every llm extraction failed: ${lastLlmError}`;
+  if (run.llmFailed || run.llmSkipped || run.unresolved || run.gated)
+    run.error = run.llmSkipped
+      ? "LLM credentials missing"
+      : `incomplete llm extraction: ${lastLlmError ?? "unresolved or gated mentions"}`;
   const rows = inserts.length ? await deps.store.insertMentions(inserts) : [];
-  for (const id of retriedOk) await deps.store.clearExtractionFailure(id);
-  run.mentions = rows.length;
+  run.mentions = rows.filter((row) => row.inserted).length;
   run.resolved = rows.length;
   run.clustersConfirmed = await deps.store.confirmClusters(
     rows
@@ -516,6 +567,9 @@ export async function runTextSourceWith(
     await deps.store.markUnlisted(dropped, bulletin.asOf);
     run.incidentsUnlisted += dropped.length;
   }
+  for (const id of retriedOk) await deps.store.clearExtractionFailure(id);
+  const pending = await deps.store.pendingCount(source.id);
+  if (pending) run.error ??= `text extraction backlog: ${pending} documents`;
   return run;
 }
 
@@ -528,258 +582,178 @@ function must<T>(
   return result.data;
 }
 
-const supabaseStore: TextSourceStore = {
-  loadSource: async (key) => {
-    const { data, error } = await supabaseAdmin
-      .from("text_sources")
-      .select(
-        "id, key, kind, url, authority_tier, language, wilaya_id, template",
-      )
-      .eq("key", key)
-      .eq("enabled", true)
-      .maybeSingle();
-    if (error) throw new Error(`text source load failed: ${error.message}`);
-    return (data as TextSource | null) ?? null;
-  },
-  knownExternalIds: async (sourceId) => {
-    const data = must(
-      await supabaseAdmin
-        .from("source_documents")
-        .select("external_id")
-        .eq("text_source_id", sourceId)
-        .order("published_at", { ascending: false })
-        .limit(500),
-      "known documents",
-    );
-    return new Set(data.map((d) => d.external_id));
-  },
-  insertDocuments: async (rows) =>
-    must(
-      await supabaseAdmin
-        .from("source_documents")
-        .insert(rows)
-        .select(
-          "id, text_source_id, external_id, url, published_at, content_hash, body",
-        ),
-      "document insert",
-    ),
-  loadGazetteer: async () => {
-    const [rows, aliasRows] = await Promise.all([
-      fetchAllPages<{
-        id: string;
-        level: string;
-        name_ar: string;
-        parent_id: string | null;
-      }>((from, to) =>
-        supabaseAdmin
-          .from("admin_units")
-          .select("id, level, name_ar, parent_id")
-          .in("level", ["wilaya", "commune"])
-          .order("code")
-          .range(from, to),
-      ),
-      fetchAllPages<{ admin_unit_id: string; alias_ar: string }>((from, to) =>
-        supabaseAdmin
-          .from("admin_unit_aliases")
-          .select("admin_unit_id, alias_ar")
-          .order("admin_unit_id")
-          .range(from, to),
-      ),
-    ]);
-    const aliasById = new Map<string, string[]>();
-    for (const a of aliasRows)
-      aliasById.set(a.admin_unit_id, [
-        ...(aliasById.get(a.admin_unit_id) ?? []),
-        a.alias_ar,
-      ]);
-    const communesByWilaya = new Map<string, CommuneCandidate[]>();
-    for (const u of rows) {
-      if (u.level !== "commune" || !u.parent_id) continue;
-      const list = communesByWilaya.get(u.parent_id) ?? [];
-      list.push({
-        id: u.id,
-        name_ar: u.name_ar,
-        aliases: aliasById.get(u.id) ?? [],
-      });
-      communesByWilaya.set(u.parent_id, list);
-    }
-    return {
-      wilayas: rows
-        .filter((u) => u.level === "wilaya")
-        .map((u) => ({ id: u.id, name_ar: u.name_ar })),
-      communesByWilaya,
-    };
-  },
-  insertMentions: async (rows) =>
-    must(
-      await supabaseAdmin
-        .from("incident_mentions")
-        .insert(rows)
-        .select(
-          "id, document_id, text_source_id, wilaya_id, commune_id, place_text, kind, status, fire_count, as_of, precision, evidence, extractor",
-        ),
-      "mention insert",
-    ) as (MentionInsert & { id: string })[],
-  openIncidents: async (areaIds, since) => {
-    const data = must(
-      await supabaseAdmin
-        .from("official_incidents")
-        .select(
-          "id, wilaya_id, commune_id, kind, status, precision, authority_tier, first_reported_at, last_reported_at, as_of, place_text",
-        )
-        .gte("last_reported_at", since)
-        .or(
-          `commune_id.in.(${areaIds.join(",")}),wilaya_id.in.(${areaIds.join(",")})`,
-        ),
-      "open incidents",
-    );
-    return data.map((i) => ({
-      ...(i as Omit<OpenIncident, "area_id"> & { wilaya_id: string }),
-      area_id: i.commune_id ?? i.wilaya_id,
-    })) as OpenIncident[];
-  },
-  createIncident: async (row) => {
-    const { data, error } = await supabaseAdmin
-      .from("official_incidents")
-      .insert(row)
-      .select("id")
-      .single();
-    if (error || !data)
-      throw new Error(`incident insert: ${error?.message ?? "no row"}`);
-    return data.id;
-  },
-  updateIncident: async (id, update) => {
-    const { latest_mention_id, evidence, ...rest } = update;
-    const { error } = await supabaseAdmin.rpc("bump_official_incident", {
-      _id: id,
-      _patch: {
-        ...rest,
-        ...(latest_mention_id ? { latest_mention_id, evidence } : {}),
-      },
+function createSupabaseStore(key: string): TextSourceStore {
+  async function write<T>(operation: string, payload: unknown): Promise<T> {
+    const context = getSourceArchiveContext();
+    const { data, error } = await supabaseAdmin.rpc("write_text_source", {
+      _key: key,
+      _operation: operation,
+      _payload: payload as Json,
+      ...(context ? { _job: context.jobId, _attempt: context.attempt } : {}),
     });
-    if (error) throw new Error(`incident update failed: ${error.message}`);
-  },
-  listedIncidents: async (before) => {
-    const data = must(
-      await supabaseAdmin
-        .from("official_incidents")
-        .select("id, commune_id, wilaya_id")
-        .is("unlisted_at", null)
-        .lt("last_reported_at", before),
-      "listed incidents",
-    );
-    return data.map((row) => ({
-      id: row.id,
-      area_id: row.commune_id ?? row.wilaya_id,
-    }));
-  },
-  retryableDocuments: async (sourceId) => {
-    const data = must(
-      await supabaseAdmin
-        .from("document_extractions")
-        .select(
-          "document_id, attempts, source_documents!inner(id, text_source_id, external_id, url, published_at, content_hash, body)",
-        )
-        .lt("attempts", 4)
-        .eq("source_documents.text_source_id", sourceId)
-        .order("updated_at")
-        .limit(20),
-      "retryable documents",
-    );
-    return data.flatMap((row) =>
-      row.source_documents ? [row.source_documents] : [],
-    );
-  },
-  mentionKeys: async (documentIds) => {
-    if (!documentIds.length) return new Set<string>();
-    const data = must(
-      await supabaseAdmin
-        .from("incident_mentions")
-        .select("document_id, commune_id, evidence")
-        .in("document_id", documentIds),
-      "existing mentions",
-    );
-    return new Set(
-      data.map((m) => `${m.document_id}:${m.commune_id ?? ""}:${m.evidence}`),
-    );
-  },
-  recordExtractionFailure: async (documentId, message) => {
-    const { data } = await supabaseAdmin
-      .from("document_extractions")
-      .select("attempts")
-      .eq("document_id", documentId)
-      .maybeSingle();
-    const { error } = await supabaseAdmin.from("document_extractions").upsert({
-      document_id: documentId,
-      attempts: (data?.attempts ?? 0) + 1,
-      last_error: message.slice(0, 500),
-      updated_at: new Date().toISOString(),
-    });
-    if (error) throw new Error(`extraction failure record: ${error.message}`);
-  },
-  clearExtractionFailure: async (documentId) => {
-    const { error } = await supabaseAdmin
-      .from("document_extractions")
-      .delete()
-      .eq("document_id", documentId);
-    if (error) throw new Error(`extraction clear: ${error.message}`);
-  },
-  confirmClusters: async (rows) => {
-    let confirmed = 0;
-    for (const row of rows) {
-      const asOfMs = Date.parse(row.asOf);
-      // the same ±24 h bracket the recall view uses
+    if (error) throw new Error(`text source ${operation}: ${error.message}`);
+    return data as T;
+  }
+  return {
+    loadSource: async (key) => {
       const { data, error } = await supabaseAdmin
-        .from("fire_clusters")
-        .update({
-          confirmed_at: row.asOf,
-          confirmed_mention_id: row.mentionId,
+        .from("text_sources")
+        .select(
+          "id, key, kind, url, authority_tier, language, wilaya_id, template",
+        )
+        .eq("key", key)
+        .eq("enabled", true)
+        .maybeSingle();
+      if (error) throw new Error(`text source load failed: ${error.message}`);
+      return (data as TextSource | null) ?? null;
+    },
+    knownExternalIds: async (sourceId) => {
+      const data = must(
+        await supabaseAdmin
+          .from("source_documents")
+          .select("external_id")
+          .eq("text_source_id", sourceId)
+          .order("published_at", { ascending: false })
+          .limit(500),
+        "known documents",
+      );
+      return new Set(data.map((d) => d.external_id));
+    },
+    insertDocuments: (rows) => write("documents", rows),
+    loadGazetteer: async () => {
+      const [rows, aliasRows] = await Promise.all([
+        fetchAllPages<{
+          id: string;
+          level: string;
+          name_ar: string;
+          parent_id: string | null;
+        }>((from, to) =>
+          supabaseAdmin
+            .from("admin_units")
+            .select("id, level, name_ar, parent_id")
+            .in("level", ["wilaya", "commune"])
+            .order("code")
+            .range(from, to),
+        ),
+        fetchAllPages<{ admin_unit_id: string; alias_ar: string }>((from, to) =>
+          supabaseAdmin
+            .from("admin_unit_aliases")
+            .select("admin_unit_id, alias_ar")
+            .order("admin_unit_id")
+            .range(from, to),
+        ),
+      ]);
+      const aliasById = new Map<string, string[]>();
+      for (const a of aliasRows)
+        aliasById.set(a.admin_unit_id, [
+          ...(aliasById.get(a.admin_unit_id) ?? []),
+          a.alias_ar,
+        ]);
+      const communesByWilaya = new Map<string, CommuneCandidate[]>();
+      for (const u of rows) {
+        if (u.level !== "commune" || !u.parent_id) continue;
+        const list = communesByWilaya.get(u.parent_id) ?? [];
+        list.push({
+          id: u.id,
+          name_ar: u.name_ar,
+          aliases: aliasById.get(u.id) ?? [],
+        });
+        communesByWilaya.set(u.parent_id, list);
+      }
+      return {
+        wilayas: rows
+          .filter((u) => u.level === "wilaya")
+          .map((u) => ({ id: u.id, name_ar: u.name_ar })),
+        communesByWilaya,
+      };
+    },
+    insertMentions: (rows) => write("mentions", rows),
+    openIncidents: async (areaIds, since) => {
+      const data = must(
+        await supabaseAdmin
+          .from("official_incidents")
+          .select(
+            "id, wilaya_id, commune_id, kind, status, precision, authority_tier, first_reported_at, last_reported_at, as_of, place_text",
+          )
+          .gte("last_reported_at", since)
+          .or(
+            `commune_id.in.(${areaIds.join(",")}),wilaya_id.in.(${areaIds.join(",")})`,
+          ),
+        "open incidents",
+      );
+      return data.map((i) => ({
+        ...(i as Omit<OpenIncident, "area_id"> & { wilaya_id: string }),
+        area_id: i.commune_id ?? i.wilaya_id,
+      })) as OpenIncident[];
+    },
+    applyMention: (mentionId, change) =>
+      write("apply_mention", { mentionId, ...change }),
+    pendingCount: async (sourceId) => {
+      const { count, error } = await supabaseAdmin
+        .from("document_extractions")
+        .select("document_id,source_documents!inner(text_source_id)", {
+          count: "exact",
+          head: true,
         })
-        .eq("commune_id", row.communeId)
-        .is("confirmed_at", null)
-        .neq("state", "false_positive")
-        .lte(
-          "first_detected_at",
-          new Date(asOfMs + 24 * 3_600_000).toISOString(),
-        )
-        .gte(
-          "last_detected_at",
-          new Date(asOfMs - 24 * 3_600_000).toISOString(),
-        )
-        .select("id");
-      if (error) throw new Error(`cluster confirm failed: ${error.message}`);
-      confirmed += data?.length ?? 0;
-    }
-    return confirmed;
-  },
-  markUnlisted: async (ids, asOf) => {
-    for (let i = 0; i < ids.length; i += 200) {
-      const { error } = await supabaseAdmin
-        .from("official_incidents")
-        .update({ unlisted_at: asOf })
-        .in("id", ids.slice(i, i + 200));
-      if (error) throw new Error(`unlist failed: ${error.message}`);
-    }
-  },
-  attachMention: async (mentionId, incidentId) => {
-    const { error } = await supabaseAdmin
-      .from("incident_mentions")
-      .update({ incident_id: incidentId })
-      .eq("id", mentionId);
-    if (error) throw new Error(`mention attach failed: ${error.message}`);
-  },
-};
+        .eq("source_documents.text_source_id", sourceId);
+      if (error) throw new Error(`pending documents: ${error.message}`);
+      return count ?? 0;
+    },
+    listedIncidents: async (before) => {
+      const data = must(
+        await supabaseAdmin
+          .from("official_incidents")
+          .select("id, commune_id, wilaya_id")
+          .is("unlisted_at", null)
+          .lt("last_reported_at", before),
+        "listed incidents",
+      );
+      return data.map((row) => ({
+        id: row.id,
+        area_id: row.commune_id ?? row.wilaya_id,
+      }));
+    },
+    retryableDocuments: async (sourceId) => {
+      const data = must(
+        await supabaseAdmin
+          .from("document_extractions")
+          .select(
+            "document_id, attempts, source_documents!inner(id, text_source_id, external_id, url, published_at, content_hash, body)",
+          )
+          .lt("attempts", 4)
+          .eq("source_documents.text_source_id", sourceId)
+          .order("updated_at")
+          .limit(5),
+        "retryable documents",
+      );
+      return data.flatMap((row) =>
+        row.source_documents ? [row.source_documents] : [],
+      );
+    },
+    recordExtractionFailure: (documentId, message) =>
+      write("failure", { documentId, message }),
+    clearExtractionFailure: (documentId) => write("complete", { documentId }),
+    confirmClusters: (rows) => write("confirm", rows),
+    markUnlisted: (ids, asOf) => write("unlist", { ids, asOf }),
+  };
+}
 
 export function runTextSource(key: string): Promise<TextSourceRun> {
   return runTextSourceWith(key, {
-    store: supabaseStore,
+    store: createSupabaseStore(key),
     fetchPosts: (source, known) =>
       fetchNewTelegramPosts(source.url, known, (input, init) =>
-        archivedFetch(source.key, "public_preview", input, init, {
-          requestParams: {
-            before: new URL(String(input)).searchParams.get("before"),
+        archivedFetch(
+          source.key,
+          "public_preview",
+          input,
+          { ...init, signal: AbortSignal.timeout(20_000) },
+          {
+            requestParams: {
+              before: new URL(String(input)).searchParams.get("before"),
+            },
           },
-        }),
+        ),
       ),
     extractLlm: extractMentionsWithLlm,
   });

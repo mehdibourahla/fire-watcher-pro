@@ -38,17 +38,21 @@ export const en = {
     body: "Something went wrong on our end. You can try refreshing or head back home.",
   },
   survival: {
+    positionUnknown: "Position unavailable",
+    smokeUnavailable:
+      "Local air-quality data is unavailable here. Your device position is not sent to an air-quality provider.",
     mode: "Survival Mode",
     online: "Online",
     offline: "Offline",
     pill: "In danger?",
     enterTitle: "Are you near a fire right now?",
     enterBody:
-      "Survival Mode shows one thing to do at a time, keeps your area saved offline, and prepares your position for a call to Civil Protection 14.",
+      "Survival Mode shows one thing to do at a time and uses any offline pack already prepared in your zones. With location available, it shows your position for a call to Civil Protection 14.",
     enterFetching: "Getting your GPS position…",
     enterDenied:
       "Location is off, so guidance will be general. You can still enter.",
-    enterSaving: "Position found · saving your offline pack…",
+    enterSaving:
+      "Position found. Prepare an offline pack from your zones while online.",
     enterReady: "Position found · offline pack saved.",
     enterYes: "Yes — enter Survival Mode",
     enterCancel: "Cancel",
@@ -180,6 +184,23 @@ export const en = {
       w: "west",
       nw: "northwest",
     },
+    packTitle: "Offline preparation",
+    packPrepare: "Prepare this zone offline",
+    packPreparing: "Preparing routes, guidance and area data…",
+    packReady: "Offline pack saved for {{zone}} at {{time}}.",
+    packFailed:
+      "Preparation failed. Any previous usable pack has been kept. Retry while online.",
+    packMissing: "No offline pack is ready on this device.",
+    packScope:
+      "Saved on this device only. Includes a simplified area map, open-area points and guidance; no street tiles or safe-route claims.",
+    packMap: "Saved area map",
+    packMapNote:
+      "Approximate commune outline and open-area points. Not a navigation map or a safety assessment.",
+    packOrigin: "Saved zone centre, not your current position",
+    packStorageFailed:
+      "Device storage is unavailable. You can still use Survival Mode, but this session cannot be saved.",
+    packUnavailable:
+      "Offline preparation requires an online connection and service-worker support.",
   },
   nav: {
     admin: "Admin",
@@ -527,6 +548,7 @@ export const en = {
     openFire: "Open fire page",
   },
   account: {
+    enableDeviceNotifications: "Allow notifications on this device",
     zoneCount: "{{used}} of {{max}} zones used",
     zoneLimit:
       "You have reached the maximum of 10 zones. Delete one to add another.",
@@ -595,6 +617,16 @@ export const en = {
     saved: "Saved",
     saveFailed:
       "Settings could not be saved. Check your choices and try again.",
+    emailUnavailable:
+      "Email delivery is not available. Use browser or push notifications.",
+    deleteAccount: "Delete account",
+    deleteWarning:
+      "Permanently delete your account, zones, alerts, webhooks and uploaded report photos. This cannot be undone.",
+    deleteConfirmation: "Type DELETE to confirm.",
+    deleteFailed:
+      "Deletion could not be completed. Some photos may already have been removed. Sign in and retry.",
+    deleteLastAdmin:
+      "Assign another administrator before deleting your account.",
   },
   reports: {
     title: "Report a fire",
@@ -664,33 +696,35 @@ export const en = {
       "What is missing from Nadhir today, and how to help — verifying places, reviewing Kabyle, recording guidance, opening institutional doors, and code.",
     eyebrow: "Contribute",
     title: "Nadhir needs more than code.",
-    lede: "A wildfire warning system fails on language, local truth and institutional trust long before it fails on software. Everything below is what is missing right now — counted from the live database, not written by hand.",
+    lede: "Live counts show part of Nadhir’s progress. Field checks, language review, scientific validation and official coordination remain essential work.",
     measuredAt: "Read from the live database · {{date}}",
     unavailable: "Count unavailable",
     statPlaces: "Places verified",
-    statPlacesSub: "Not one has been checked by a person standing in it.",
+    statPlacesSub: "These mapped places need on-site verification.",
     statPlacesSubSome: "{{done}} checked by someone on the ground.",
     statFuel: "Communes with fuel data",
     statFuelSub: "{{missing}} still missing — and this one is moving.",
-    statAlerts: "Alerts delivered",
-    statAlertsSub: "The engine computes them. No channel carries them.",
-    statLanguages: "Languages shipped",
-    statLanguagesSub: "Kabyle has never been read by a native speaker.",
+    statAlerts: "Delivery receipts",
+    statAlertsSub:
+      "Recorded delivery successes; not a count of people who read an alert.",
+    statLanguages: "Available languages",
+    statLanguagesSub:
+      "Kabyle remains in review and is not available in the language picker.",
     lanesEyebrow: "Ways in",
     lanesTitle: "Where you would actually help",
     lanesLede:
       "Ordered by how badly the project needs each one. Code sits near the bottom because that is the truth, not modesty.",
     asks: "Asks of you: {{what}}",
     localTitle: "Verify a place near you",
-    localDeficit: "0 of {{total}} checked",
+    localDeficit: "{{verified}} of {{total}} checked",
     localBody:
-      "Nadhir lists stadiums, schoolyards and clearings pulled from OpenStreetMap. Nobody has stood in one. Tell us whether it is paved, reachable, locked, or now a building site.",
+      "Open areas require on-site checks. Help establish whether a place is paved, reachable, locked or under construction; a map listing does not establish safety.",
     localAsks: "an afternoon, a phone, and somewhere you already know",
     localCta: "Verify a place",
     languageTitle: "Read the Kabyle",
-    languageDeficit: "1 of 4 languages unreviewed",
+    languageDeficit: "Kabyle review pending",
     languageBody:
-      "Taqbaylit ships in the app today, translated without a native reviewer. A wrong word in a warning costs trust before it costs anything else.",
+      "Kabyle is withheld from the language picker until native speakers review the wording, especially warnings and guidance.",
     languageAsks: "fluency, and an ear for register",
     languageCta: "Review the strings",
     audioTitle: "Record the guidance",
@@ -700,9 +734,9 @@ export const en = {
     audioAsks: "a quiet room and half an hour",
     audioCta: "Record a track",
     institutionalTitle: "Open an institutional door",
-    institutionalDeficit: "0 alerts reach anyone",
+    institutionalDeficit: "Official coordination needed",
     institutionalBody:
-      "The CAP warning object is built and no channel carries it. Protection Civile holds a registered alerting slot that nobody fills. One introduction outweighs a year of engineering.",
+      "Nadhir supports push notifications, Telegram and webhooks. Partnerships are still needed for officially coordinated warnings.",
     institutionalAsks: "a real contact, and the standing to use it",
     institutionalCta: "Start that conversation",
     scienceTitle: "Calibrate the danger scale",
@@ -712,9 +746,9 @@ export const en = {
     scienceAsks: "fire science, or the statistics to argue thresholds",
     scienceCta: "See the evidence",
     researchTitle: "Research what we cannot see",
-    researchDeficit: "1 detection source",
+    researchDeficit: "Coverage needs validation",
     researchBody:
-      "Every fire Nadhir has ever found came from a single provider. Finding new sources, and proving they actually cover Algeria, is desk work with real consequences.",
+      "Nadhir combines multiple sources. Independent regional checks of their timeliness and coverage are still needed.",
     researchAsks: "patience with documentation, and scepticism",
     researchCta: "Open questions",
     coordinationTitle: "Keep the work moving",
@@ -956,7 +990,7 @@ export const en = {
       "Only to decide which alerts to raise for you and to deliver them to the channels you enabled. There is no advertising and no profiling.",
     privacy_retention_title: "How long",
     privacy_retention_body:
-      "Alerts and webhook delivery logs are kept for operational history; you can delete alerts from your feed at any time. Deleting your account removes your profile, zones, alerts and webhook endpoints.",
+      "You can delete alerts from your feed and delete your account in Settings. Account deletion removes personal data, zones, alerts, webhook endpoints and uploaded report photos. Operational audit records are retained with personal identifiers removed.",
     privacy_sharing_title: "Sharing",
     privacy_sharing_body:
       "Nothing personal is shared with third parties. The public API and public map expose fire and forecast data only — never your zones, your alerts or your identity. Approved citizen reports are shown without your name.",

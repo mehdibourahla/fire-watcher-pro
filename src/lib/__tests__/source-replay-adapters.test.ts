@@ -31,6 +31,17 @@ const originalDateNow = Date.now;
 const originalFetch = globalThis.fetch;
 
 describe("recorded source interval replay", () => {
+  it("reports partial FIRMS sensor coverage", async () => {
+    let calls = 0;
+    globalThis.fetch = vi.fn(async () =>
+      ++calls === 1
+        ? new Response(
+            "latitude,longitude,acq_date,acq_time,confidence,frp,daynight\n36.70000,3.10000,2026-08-31,1955,n,12.5,D",
+          )
+        : new Response("unavailable", { status: 503 }),
+    );
+    expect((await ingestFirms(interval)).error).toMatch(/partial/i);
+  });
   beforeEach(() => {
     Date.now = () => Date.parse("2026-08-31T20:10:00.000Z");
     process.env["FIRMS_MAP_KEY"] = "test-key";

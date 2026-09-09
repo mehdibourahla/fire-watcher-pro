@@ -117,10 +117,11 @@ promotes an Open Area to a Refuge on its own.
 _Avoid_: evacuation center (unless the authority's own wording), shelter (generic)
 
 **Survival Pack**:
-The offline bundle cached on-device before any fire: the user's commune map tiles, Open
-Areas, Standing Guidance in all four languages, emergency numbers, and last-known
-observations with their age. Fetched when a zone is set, refreshed opportunistically —
-never fetched at Survival Mode entry, because by then the network may be gone.
+The bundle prepared on this device during zone setup: a simplified commune outline,
+Open Area points, Standing Guidance, emergency numbers and dated observations. It
+contains no street tiles or safe-route claims. Readiness requires the route assets
+and area data to be saved successfully; a failed refresh preserves the previous pack.
+Survival entry reads the prepared pack and never substitutes its zone centre for GPS.
 _Avoid_: offline cache (generic), emergency data
 
 ### Distress

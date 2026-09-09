@@ -23,7 +23,7 @@ const bulletin = (
   ongoing = 2,
 ) =>
   `🔴 الحالة العامة لحرائق الغطاء النباتي ليوم 02 سبتمبر 2026 على الساعة ${asOfHour}سا00د
-🔴 العدد الإجمالي للحرائق: 3
+🔴 العدد الإجمالي للحرائق: ${ongoing + 1}
 🔴 عدد الحرائق التي تم إخمادها: 1
 🔴 عدد الحرائق المتواصلة: ${ongoing}
 ✅✅ الحرائق المتواصلة موزعة على:
@@ -79,6 +79,7 @@ function memoryStore() {
         documents.push({ id, externalId: r.external_id });
         const full = { id, ...r };
         stored.set(id, full);
+        retry.set(id, full);
         return full;
       }),
     loadGazetteer: async () => ({
@@ -99,12 +100,41 @@ function memoryStore() {
     }),
     insertMentions: async (rows) =>
       rows.map((r) => {
+        const existing = mentions.find(
+          (m) =>
+            m["document_id"] === r.document_id &&
+            m["commune_id"] === r.commune_id &&
+            m["wilaya_id"] === r.wilaya_id &&
+            m["kind"] === r.kind,
+        );
+        if (existing)
+          return { ...existing, inserted: false } as unknown as typeof r & {
+            id: string;
+            inserted: boolean;
+          };
         const id = `m-${++seq}`;
         mentions.push({ id, ...r });
-        return { id, ...r };
+        return { id, ...r, inserted: true };
       }),
     openIncidents: async () => [...incidents.values()],
-    createIncident: async (row) => {
+    pendingCount: async () => retry.size,
+    applyMention: async (mentionId, change) => {
+      const m = mentions.find((x) => x["id"] === mentionId)!;
+      if (m["incident_id"])
+        return { id: m["incident_id"] as string, applied: false };
+      if ("incidentId" in change) {
+        const { incidentId: id, update } = change;
+        const cur = incidents.get(id)!;
+        if (update.unlisted_at === null) unlisted.delete(id);
+        incidents.set(id, {
+          ...cur,
+          ...update,
+          mention_count: cur.mention_count + 1,
+        });
+        m["incident_id"] = id;
+        return { id, applied: true };
+      }
+      const row = change.insert;
       const id = `inc-${++seq}`;
       incidents.set(id, {
         ...row,
@@ -112,27 +142,10 @@ function memoryStore() {
         area_id: row.commune_id ?? row.wilaya_id,
         mention_count: 1,
       });
-      return id;
-    },
-    updateIncident: async (id, update) => {
-      const cur = incidents.get(id)!;
-      if (update.unlisted_at === null) unlisted.delete(id);
-      incidents.set(id, {
-        ...cur,
-        ...update,
-        mention_count: cur.mention_count + 1,
-      });
+      m["incident_id"] = id;
+      return { id, applied: true };
     },
     retryableDocuments: async () => [...retry.values()],
-    mentionKeys: async (ids) =>
-      new Set(
-        mentions
-          .filter((m) => ids.includes(m["document_id"] as string))
-          .map(
-            (m) =>
-              `${m["document_id"]}:${m["commune_id"] ?? ""}:${m["evidence"]}`,
-          ),
-      ),
     recordExtractionFailure: async (documentId) => {
       const doc = stored.get(documentId);
       if (doc) retry.set(documentId, doc);
@@ -151,10 +164,6 @@ function memoryStore() {
     markUnlisted: async (ids, asOf) => {
       for (const id of ids) unlisted.set(id, asOf);
     },
-    attachMention: async (mentionId, incidentId) => {
-      const m = mentions.find((x) => x["id"] === mentionId)!;
-      m["incident_id"] = incidentId;
-    },
   };
   return { store, documents, mentions, incidents, unlisted, confirmed, retry };
 }
@@ -167,7 +176,12 @@ function deps(
     reason: "no_api_key",
   }),
 ): TextSourcePipelineDependencies {
-  return { store, fetchPosts: async () => posts, extractLlm: llm };
+  return {
+    store,
+    fetchPosts: async () => posts,
+    extractLlm: llm,
+    now: () => new Date("2026-09-02T23:00:00Z"),
+  };
 }
 
 const post = (id: string, publishedAt: string, text: string): TelegramPost => ({
@@ -182,6 +196,69 @@ const twoFires =
   "✅⏮️ حريق ببلدية عزابة، العملية متواصلة...\n✅⏮️ حريق ببلدية عين زويت، العملية متواصلة...";
 
 describe("runTextSource", () => {
+  it.each(["failure", "missing-key"])(
+    "does not unlist existing incidents after %s",
+    async (mode) => {
+      const f = memoryStore();
+      await runTextSourceWith(
+        "dgpc_telegram",
+        deps(
+          [
+            post(
+              "audit-1",
+              "2026-09-02T08:05:00Z",
+              bulletin("07", skikda2, twoFires),
+            ),
+          ],
+          f.store,
+          llmWith(mention({}), mention({ commune: "عين زويت" })),
+        ),
+      );
+      const result = await runTextSourceWith(
+        "dgpc_telegram",
+        deps(
+          [
+            post(
+              "audit-2",
+              "2026-09-02T12:05:00Z",
+              bulletin("13", skikda2, twoFires),
+            ),
+          ],
+          f.store,
+          async () => {
+            if (mode === "failure") throw new Error("provider unavailable");
+            return { skipped: true, reason: "no_api_key" };
+          },
+        ),
+      );
+      expect(f.unlisted.size).toBe(0);
+      expect(result.error).toBeTruthy();
+    },
+  );
+  it("recovers persisted documents after a pre-extraction interruption", async () => {
+    const f = memoryStore(),
+      load = f.store.loadGazetteer;
+    f.store.loadGazetteer = async () => {
+      throw new Error("gazetteer unavailable");
+    };
+    const p = post(
+      "audit-3",
+      "2026-09-02T12:05:00Z",
+      bulletin("13", skikda2, twoFires),
+    );
+    const input = {
+      ...deps([p], f.store, llmWith(mention({}))),
+      fetchPosts: async (_source: unknown, known: Set<string>) =>
+        known.has(p.externalId) ? [] : [p],
+    };
+    await expect(runTextSourceWith("dgpc_telegram", input)).rejects.toThrow(
+      "gazetteer unavailable",
+    );
+    f.store.loadGazetteer = load;
+    expect(
+      (await runTextSourceWith("dgpc_telegram", input)).mentions,
+    ).toBeGreaterThan(0);
+  });
   it("turns the model's mentions into resolved mentions and one incident per commune", async () => {
     const { store, mentions, incidents } = memoryStore();
     const result = await runTextSourceWith(
@@ -228,7 +305,7 @@ describe("runTextSource", () => {
           post(
             "1",
             "2026-09-02T12:10:00Z",
-            bulletin("13", "⏮️⏮️ ولاية سكيكدة 01", twoFires),
+            bulletin("13", "⏮️⏮️ ولاية سكيكدة 01", twoFires, 1),
           ),
         ],
         store,
@@ -246,6 +323,7 @@ describe("runTextSource", () => {
               "20",
               "⏮️⏮️ لا يوجد (00)",
               "✅⏮️ حريق ببلدية عزابة، تم إخماده نهائياً...",
+              0,
             ),
           ),
         ],
@@ -606,8 +684,8 @@ describe("runTextSource LLM failures", () => {
         flaky,
       ),
     );
-    expect(result.error).toBeUndefined();
-    expect(result).toMatchObject({ llmFailed: 1, unresolved: 1, mentions: 2 });
+    expect(result.error).toMatch(/incomplete llm extraction/);
+    expect(result).toMatchObject({ llmFailed: 1, unresolved: 2, mentions: 2 });
     expect(mentions).toHaveLength(2);
 
     const dead = await runTextSourceWith(
@@ -620,7 +698,7 @@ describe("runTextSource LLM failures", () => {
         },
       ),
     );
-    expect(dead.error).toMatch(/every llm extraction failed: openrouter 502/);
+    expect(dead.error).toMatch(/incomplete llm extraction: openrouter 502/);
   });
 });
 
@@ -647,7 +725,12 @@ describe("bulletin coverage", () => {
           post(
             "2",
             "2026-09-02T14:05:00Z",
-            bulletin("13", "⏮️⏮️ ولاية سكيكدة 01", twoFires),
+            bulletin(
+              "13",
+              "⏮️⏮️ ولاية سكيكدة 01",
+              "حريق ببلدية عزابة، العملية متواصلة...",
+              1,
+            ),
           ),
         ],
         store,
@@ -682,7 +765,7 @@ describe("bulletin coverage", () => {
           post(
             "10",
             "2026-09-02T08:05:00Z",
-            bulletin("07", "⏮️⏮️ ولاية سكيكدة 01", twoFires),
+            bulletin("07", "⏮️⏮️ ولاية سكيكدة 01", twoFires, 1),
           ),
         ],
         store,
@@ -808,7 +891,7 @@ describe("extraction retry", () => {
           post(
             "60",
             "2026-09-02T08:05:00Z",
-            bulletin("07", "⏮️⏮️ ولاية سكيكدة 01", twoFires),
+            bulletin("07", "⏮️⏮️ ولاية سكيكدة 01", twoFires, 1),
           ),
         ],
         store,
@@ -840,3 +923,156 @@ describe("extraction retry", () => {
     expect(retry.size).toBe(0);
   });
 });
+
+describe("durable interpretation completion", () => {
+  it("retains incomplete bulletin interpretation instead of declaring success", async () => {
+    const f = memoryStore();
+    const result = await runTextSourceWith(
+      "dgpc_telegram",
+      deps(
+        [
+          post(
+            "incomplete",
+            "2026-09-02T12:10:00Z",
+            bulletin("13", skikda2, twoFires),
+          ),
+        ],
+        f.store,
+        llmWith(),
+      ),
+    );
+    expect(result.error).toMatch(/incomplete/);
+    expect(f.retry.size).toBe(1);
+    expect(f.unlisted.size).toBe(0);
+  });
+  it("bounds a pass to five interpretations while retaining all raw documents", async () => {
+    const f = memoryStore();
+    let calls = 0;
+    const posts = Array.from({ length: 8 }, (_, i) =>
+      post(
+        String(i),
+        "2026-09-02T12:10:00Z",
+        bulletin("13", skikda2, twoFires),
+      ),
+    );
+    await runTextSourceWith(
+      "dgpc_telegram",
+      deps(posts, f.store, async () => {
+        calls++;
+        return {
+          skipped: false,
+          mentions: [mention({}), mention({ commune: "عين زويت" })],
+        };
+      }),
+    );
+    expect(calls).toBe(5);
+    expect(f.documents.length).toBe(8);
+    expect(f.retry.size).toBe(3);
+  });
+  it("replays a committed mention after lost acknowledgement without duplicate incidents", async () => {
+    const f = memoryStore();
+    const apply = f.store.applyMention;
+    f.store.applyMention = async (...args) => {
+      await apply(...args);
+      throw new Error("response lost");
+    };
+    const input = post(
+      "lost",
+      "2026-09-02T12:10:00Z",
+      bulletin("13", "⏮️⏮️ ولاية سكيكدة 01", twoFires, 1),
+    );
+    await expect(
+      runTextSourceWith(
+        "dgpc_telegram",
+        deps([input], f.store, llmWith(mention({}))),
+      ),
+    ).rejects.toThrow("response lost");
+    f.store.applyMention = apply;
+    const replay = await runTextSourceWith(
+      "dgpc_telegram",
+      deps(
+        [],
+        f.store,
+        llmWith(
+          mention({
+            evidence: "different grounded excerpt from immutable document",
+          }),
+        ),
+      ),
+    );
+    expect(replay.mentions).toBe(0);
+    expect(replay.resolved).toBe(1);
+    expect(f.mentions).toHaveLength(1);
+    expect([...f.incidents.values()].map((i) => i.mention_count)).toEqual([1]);
+    expect(f.retry.size).toBe(0);
+  });
+});
+
+it("never applies absence from contradictory header totals", async () => {
+  const f = memoryStore();
+  await runTextSourceWith(
+    "dgpc_telegram",
+    deps(
+      [
+        post(
+          "start",
+          "2026-09-02T10:10:00Z",
+          bulletin("11", skikda2, twoFires),
+        ),
+      ],
+      f.store,
+      llmWith(mention({}), mention({ commune: "عين زويت" })),
+    ),
+  );
+  const contradictory = bulletin("13", "⏮️⏮️ لا يوجد (00)", "", 0).replace(
+    /العدد الإجمالي للحرائق: \d+/,
+    "العدد الإجمالي للحرائق: 3",
+  );
+  const result = await runTextSourceWith(
+    "dgpc_telegram",
+    deps(
+      [post("bad", "2026-09-02T12:10:00Z", contradictory)],
+      f.store,
+      llmWith(),
+    ),
+  );
+  expect(f.unlisted.size).toBe(0);
+  expect(result.error).toMatch(/incomplete/);
+});
+
+it.each(["historical", "future"])(
+  "does not reconcile absence from newly discovered %s bulletins",
+  async (mode) => {
+    const f = memoryStore();
+    await runTextSourceWith(
+      "dgpc_telegram",
+      deps(
+        [
+          post(
+            "seed",
+            "2026-09-02T10:10:00Z",
+            bulletin("11", skikda2, twoFires),
+          ),
+        ],
+        f.store,
+        llmWith(mention({}), mention({ commune: "عين زويت" })),
+      ),
+    );
+    const empty = post(
+      mode,
+      "2026-09-03T12:10:00Z",
+      bulletin("13", "⏮️⏮️ لا يوجد (00)", "", 0),
+    );
+    const input = {
+      ...deps([empty], f.store, llmWith()),
+      now: () =>
+        new Date(
+          mode === "historical"
+            ? "2026-09-05T12:00:00Z"
+            : "2026-09-02T23:00:00Z",
+        ),
+    };
+    await runTextSourceWith("dgpc_telegram", input);
+    expect(f.unlisted.size).toBe(0);
+  },
+);

@@ -604,9 +604,8 @@ export async function evaluateAlerts(userId?: string): Promise<AlertRun> {
 
   let delivered = { sent: 0, failed: 0 };
   if (inserted?.length) {
-    const { dispatchWebhooks } = await import("@/lib/webhooks.server");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    delivered = await dispatchWebhooks(inserted as any);
+    const { drainWebhookDeliveries } = await import("@/lib/webhooks.server");
+    delivered = await drainWebhookDeliveries();
   }
 
   return {

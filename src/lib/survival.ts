@@ -125,17 +125,23 @@ export function entryStatusKey(
 export function checkInMessage(opts: {
   kind: "ok" | "assist";
   name: string | null;
-  card: PositionCard;
+  card: PositionCard | null;
   time: string;
   t: (k: string, o?: Record<string, unknown>) => string;
 }): string {
   const { kind, name, card, time, t } = opts;
-  const place = card.nearest
-    ? `${card.nearest.name} (${card.nearest.km.toFixed(1)} km)`
-    : (card.commune ?? card.coords);
+  const location = card ?? {
+    commune: null,
+    wilaya: null,
+    nearest: null,
+    coords: t("survival.positionUnknown"),
+  };
+  const place = location.nearest
+    ? `${location.nearest.name} (${location.nearest.km.toFixed(1)} km)`
+    : (location.commune ?? location.coords);
   const body = t(
     kind === "ok" ? "survival.checkin.msgOk" : "survival.checkin.msgAssist",
-    { place, coords: card.coords, time },
+    { place, coords: location.coords, time },
   );
   return name ? `${name}: ${body}` : body;
 }

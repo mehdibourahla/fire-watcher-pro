@@ -538,13 +538,15 @@ export function clusterWeatherUpdate(current: unknown): ClusterWeather | null {
 
 /** Attach current wind to live clusters so the spread arrow is real. */
 export async function enrichClusterWinds(): Promise<number> {
-  const { data: clusters } = await supabaseAdmin
+  const { data: clusters, error: queryError } = await supabaseAdmin
     .from("fire_clusters")
     .select("id, lat, lon")
     .in("state", ["active", "unconfirmed", "contained_guess"])
     .gte("last_detected_at", new Date(Date.now() - 24 * 3600_000).toISOString())
     .order("last_detected_at", { ascending: false })
     .limit(100);
+  if (queryError)
+    throw new Error(`wind cluster query failed: ${queryError.message}`);
   if (!clusters?.length) return 0;
 
   const url = new URL("https://api.open-meteo.com/v1/forecast");
@@ -571,9 +573,11 @@ export async function enrichClusterWinds(): Promise<number> {
     const weather = clusterWeatherUpdate(list[i]?.current);
     return weather ? [{ cluster, weather }] : [];
   });
+  if (updates.length !== clusters.length)
+    throw new Error("wind observation coverage incomplete");
 
   for (let i = 0; i < updates.length; i += 10) {
-    await Promise.all(
+    const results = await Promise.all(
       updates
         .slice(i, i + 10)
         .map(({ cluster, weather }) =>
@@ -583,6 +587,8 @@ export async function enrichClusterWinds(): Promise<number> {
             .eq("id", cluster.id),
         ),
     );
+    const failure = results.find((result) => result.error)?.error;
+    if (failure) throw new Error(`wind update failed: ${failure.message}`);
   }
   return updates.length;
 }

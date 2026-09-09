@@ -1,10 +1,25 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { itaReportsQuery } from "@/lib/admin-ita";
+import { myRolesQuery } from "@/lib/reports";
+import { supabase } from "@/integrations/supabase/client";
 
 export function ItaReports() {
   const { t } = useTranslation("admin");
-  const reports = useQuery(itaReportsQuery);
+  const [exhaustedOnly, setExhaustedOnly] = useState(false);
+  const reports = useQuery(itaReportsQuery(exhaustedOnly));
+  const roles = useQuery(myRolesQuery);
+  const isAdmin = !roles.isError && (roles.data ?? []).includes("admin");
+  const qc = useQueryClient();
+  const retry = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.rpc("retry_ita_report", { _id: id });
+      if (error) throw new Error(t("sources.ita.retryFailed"));
+    },
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: ["admin", "sources", "ita-reports"] }),
+  });
   return (
     <section className="mt-8" aria-labelledby="ita-title">
       <h2 id="ita-title" className="text-sm font-medium">
@@ -13,6 +28,24 @@ export function ItaReports() {
       <p className="mt-1 text-sm text-muted-foreground">
         {t("sources.ita.description")}
       </p>
+      <label className="mt-2 flex gap-2 text-sm">
+        <input
+          type="checkbox"
+          checked={exhaustedOnly}
+          onChange={(e) => setExhaustedOnly(e.target.checked)}
+        />
+        {t("sources.ita.exhaustedOnly")}
+      </label>
+      {retry.isError && (
+        <p role="alert" className="text-sm text-destructive">
+          {retry.error.message}
+        </p>
+      )}
+      {retry.isSuccess && (
+        <p role="status" className="text-sm">
+          {t("sources.ita.retryQueued")}
+        </p>
+      )}
       {reports.isPending && (
         <p className="mt-2 text-sm">{t("sources.loading")}</p>
       )}
@@ -62,6 +95,18 @@ export function ItaReports() {
                 {report.extraction_error} ({report.extraction_attempts}/5)
               </p>
             )}
+            {isAdmin &&
+              !report.extraction &&
+              report.extraction_attempts >= 5 && (
+                <button
+                  type="button"
+                  className="mt-2 rounded border px-3 py-1"
+                  disabled={retry.isPending}
+                  onClick={() => retry.mutate(report.id)}
+                >
+                  {t("sources.ita.retry")}
+                </button>
+              )}
             {report.extraction?.incidents.map((incident, index) => (
               <div key={index} className="mt-2 border-s-2 border-border ps-3">
                 <p lang="fr">{incident.summary_fr}</p>

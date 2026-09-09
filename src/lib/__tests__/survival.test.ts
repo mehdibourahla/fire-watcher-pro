@@ -233,3 +233,25 @@ describe("entryStatusKey", () => {
     expect(entryStatusKey(false, true, true)).toBe("survival.enterDenied");
   });
 });
+
+it.each(["ok", "assist"] as const)(
+  "builds a manual %s check-in with explicitly unavailable position and no saved location",
+  (kind) => {
+    const message = checkInMessage({
+      kind,
+      name: null,
+      card: null,
+      time: "20:48",
+      t: (key, options) =>
+        key === "survival.positionUnknown"
+          ? "Position unavailable"
+          : JSON.stringify(options),
+    });
+    expect(JSON.parse(message)).toEqual({
+      place: "Position unavailable",
+      coords: "Position unavailable",
+      time: "20:48",
+    });
+    expect(message).not.toContain("36.5210");
+  },
+);

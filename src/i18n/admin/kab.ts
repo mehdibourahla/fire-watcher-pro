@@ -1,5 +1,16 @@
 export const adminKab = {
   sources: {
+    textRecovery: {
+      title: "Ales tesleḍt n yiḍrisen",
+      description:
+        "50 n yineqqisen iqburen i yekfan tirmitin tiwurmanin. Anedbal yezmer ad d-yales i yal aneqqis yiwet n tikkelt deg wass, mi yekfa ugmar amiran.",
+      empty: "Ulac ineqqisen n uḍris i yekfan tirmitin.",
+      retry: "Ales tesleḍt",
+      retryFailed:
+        "Ur nezmir ara ad d-nales. Rǧu ad yekfu ugmar neɣ talast n wass, sakin ɛreḍ tikkelt nniḍen.",
+      retryQueued: "Tasleḍt tettwarǧu i ugmar i d-iteddun.",
+      exhausted: "Tasleḍt ur temmid ara deffir {{count}} n tirmitin.",
+    },
     archive: {
       title: "Aɣbar n yisefka n yiɣbula",
       description:
@@ -13,6 +24,12 @@ export const adminKab = {
       download: "Sider isefka yettwasenqden",
     },
     ita: {
+      retry: "Ales asuffeɣ",
+      retryFailed:
+        "Ur izmir ara ad yales. Ales n usuffeɣ yezmer kan yiwet n tikkelt deg wass.",
+      retryQueued: "Asuffeɣ yettwarǧa i usekker i d-iteddun.",
+      exhaustedOnly: "Sken kan isallen i ifuken tikkal n usuffeɣ",
+
       title: "Info Trafic Algérie",
       description:
         "50 n lqem ineggura yettwajemɛen. Isallen n tɣamsa s AI, ilaq asenqed n umdan. Igzul s tefransist. Ulac ilɣa azayez.",

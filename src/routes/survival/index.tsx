@@ -4,7 +4,6 @@ import {
   CheckCircle2,
   Clock,
   Flame,
-  Haze,
   MapPin,
   Phone,
   ShieldCheck,
@@ -13,30 +12,25 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import {
+  deviceStorage,
+  persistSurvivalFlag,
+  readSurvivalFlag,
+} from "@/lib/survival-pack";
 import { useSurvival } from "@/components/survival/survival-context";
 import type { Locale } from "@/i18n";
+
 import {
-  SMOKE_TINT,
-  WHO_PM25_24H,
-  airQualityQuery,
-  smokeLevel,
-  type AirQualityReading,
-} from "@/lib/air-quality";
-import {
-  adminUnitsQuery,
   bearingLabel,
   clustersQuery,
   haversineKm,
   relativeTime,
-  settlementsQuery,
 } from "@/lib/nadhir";
-import { hazardReportsQuery, openAreasQuery } from "@/lib/open-areas";
+import { hazardReportsQuery } from "@/lib/open-areas";
 import {
   SURVIVAL_ACTIVE_KEY,
   SURVIVAL_LAST_CHECK_KEY,
-  entryStatusKey,
   nearestThreat,
-  positionCard,
 } from "@/lib/survival";
 
 export const Route = createFileRoute("/survival/")({
@@ -57,34 +51,34 @@ function dirWord(t: (k: string) => string, deg: number) {
 function SurvivalHub() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language as Locale;
-  const { online, position, positionDenied, pack, setPack } = useSurvival();
+  const { online, position, positionDenied, pack } = useSurvival();
 
   const [active, setActive] = useState(
-    () => localStorage.getItem(SURVIVAL_ACTIVE_KEY) !== null,
+    () => readSurvivalFlag(deviceStorage, SURVIVAL_ACTIVE_KEY) !== null,
   );
   const [lastCheck] = useState(() =>
-    localStorage.getItem(SURVIVAL_LAST_CHECK_KEY),
+    readSurvivalFlag(deviceStorage, SURVIVAL_LAST_CHECK_KEY),
   );
+  const [storageFailed, setStorageFailed] = useState(false);
 
-  const clusters = useQuery({ ...clustersQuery, retry: online ? 3 : false });
-  const units = useQuery({ ...adminUnitsQuery, retry: online ? 3 : false });
-  const settlements = useQuery({
-    ...settlementsQuery,
+  const clusters = useQuery({
+    ...clustersQuery,
+    enabled: online,
     retry: online ? 3 : false,
   });
-  const openAreas = useQuery({ ...openAreasQuery, retry: online ? 3 : false });
   const hazards = useQuery({
     ...hazardReportsQuery,
-    retry: online ? 3 : false,
-  });
-  const air = useQuery({
-    ...airQualityQuery(position),
+    enabled: online,
     retry: online ? 3 : false,
   });
 
   useEffect(() => {
     if (active)
-      localStorage.setItem(SURVIVAL_LAST_CHECK_KEY, new Date().toISOString());
+      persistSurvivalFlag(
+        deviceStorage,
+        SURVIVAL_LAST_CHECK_KEY,
+        new Date().toISOString(),
+      );
   }, [active]);
 
   const threat = useMemo(
@@ -94,38 +88,6 @@ function SurvivalHub() {
         : null,
     [position, clusters.data],
   );
-
-  useEffect(() => {
-    if (!position || !units.data || !settlements.data || !clusters.data) return;
-    const card = positionCard(
-      position.lat,
-      position.lon,
-      units.data,
-      settlements.data,
-      locale,
-    );
-    setPack({
-      saved_at: new Date().toISOString(),
-      lat: position.lat,
-      lon: position.lon,
-      commune: card.commune,
-      wilaya: card.wilaya,
-      nearest: card.nearest,
-      coords: card.coords,
-      openAreas: openAreas.data ?? [],
-      threats: threat
-        ? [
-            {
-              km: threat.km,
-              bearing: threat.bearing,
-              last_detected_at: threat.cluster.last_detected_at,
-            },
-          ]
-        : [],
-    });
-    // setPack is stable enough per layout render; re-saving on data change is the point.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [position, units.data, settlements.data, clusters.data, openAreas.data]);
 
   const changes = useMemo(() => {
     if (!lastCheck) return null;
@@ -143,7 +105,7 @@ function SurvivalHub() {
   // is unavailable and the user has not moved away from where it was measured.
   const offlineThreat = useMemo(() => {
     const saved = pack?.threats[0];
-    if (threat || !saved || clusters.data) return null;
+    if (threat || !saved || clusters.data || !position) return null;
     if (
       position &&
       pack &&
@@ -158,10 +120,16 @@ function SurvivalHub() {
       <EnterSheet
         hasPosition={!!position}
         denied={positionDenied}
-        hasPack={!!pack}
+        hasPack={!!pack?.shell_ready}
         onEnter={() => {
-          localStorage.setItem(SURVIVAL_ACTIVE_KEY, new Date().toISOString());
           setActive(true);
+          setStorageFailed(
+            !persistSurvivalFlag(
+              deviceStorage,
+              SURVIVAL_ACTIVE_KEY,
+              new Date().toISOString(),
+            ),
+          );
         }}
       />
     );
@@ -169,6 +137,11 @@ function SurvivalHub() {
 
   return (
     <>
+      {storageFailed ? (
+        <p role="status" className="rounded bg-muted p-3 text-sm">
+          {t("survival.packStorageFailed")}
+        </p>
+      ) : null}
       <section className="card-raised flex flex-col gap-2.5 p-4">
         <span className="flex items-center gap-1.5 text-[11px] font-bold tracking-wider text-muted-foreground">
           <ShieldCheck aria-hidden className="size-3.5" />
@@ -272,7 +245,9 @@ function SurvivalHub() {
           </FactRow>
         ) : null}
 
-        {air.data ? <SmokeRow reading={air.data} locale={locale} /> : null}
+        <p className="text-xs text-muted-foreground">
+          {t("survival.smokeUnavailable")}
+        </p>
 
         {changes && lastCheck ? (
           <p className="flex items-center gap-2 rounded-lg bg-muted px-3 py-2 text-xs text-muted-foreground">
@@ -338,53 +313,6 @@ function SurvivalHub() {
   );
 }
 
-function SmokeRow({
-  reading,
-  locale,
-}: {
-  reading: AirQualityReading;
-  locale: Locale;
-}) {
-  const { t } = useTranslation();
-  const level = smokeLevel(reading.pm2_5);
-  const tint = SMOKE_TINT[level];
-  return (
-    <FactRow
-      icon={<Haze aria-hidden className="size-4.5" />}
-      title={t("survival.smoke", { value: reading.pm2_5.toFixed(1) })}
-    >
-      <span
-        className="rounded-full px-2 py-0.5 text-[11px] font-semibold"
-        style={{
-          backgroundColor: `var(--risk-tint-${tint})`,
-          color: `var(--risk-ink-${tint})`,
-        }}
-      >
-        {t(`survival.smokeLevel.${level}`)}
-      </span>
-      <span className="tabular text-[11px] text-muted-foreground">
-        {t("survival.smokeWho", {
-          ratio: (reading.pm2_5 / WHO_PM25_24H).toFixed(1),
-        })}
-        {reading.peakPm25 > reading.pm2_5
-          ? ` · ${t("survival.smokePeak", { value: reading.peakPm25.toFixed(1) })}`
-          : ""}
-      </span>
-      <span className="tabular text-[11px] text-muted-foreground">
-        {t("survival.dust", { value: reading.dust.toFixed(0) })}
-      </span>
-      <span className="text-[11px] text-muted-foreground">
-        {t("survival.smokeSource", {
-          time: relativeTime(reading.observedAt, locale),
-        })}
-      </span>
-      <span className="basis-full text-[12px] leading-relaxed">
-        {t(`survival.smokeGuidance.${level}`)}
-      </span>
-    </FactRow>
-  );
-}
-
 function FactRow({
   icon,
   title,
@@ -441,7 +369,15 @@ function EnterSheet({
         </p>
         <p className="mt-3 flex items-center gap-2 rounded-lg bg-muted px-3 py-2 text-xs text-muted-foreground">
           <MapPin aria-hidden className="size-3.5 shrink-0" />
-          {t(entryStatusKey(hasPosition, denied, hasPack))}
+          {t(
+            denied
+              ? "survival.enterDenied"
+              : !hasPosition
+                ? "survival.enterFetching"
+                : hasPack
+                  ? "survival.enterReady"
+                  : "survival.packMissing",
+          )}
         </p>
         <button
           type="button"

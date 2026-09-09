@@ -37,7 +37,7 @@ import {
   officialIncidentsQuery,
   sourceHealthQuery,
   relativeTime,
-  riskForecastsQuery,
+  todayRiskForecastsQuery,
   settlementsQuery,
   placeLabel,
   unitName,
@@ -60,7 +60,7 @@ export const Route = createFileRoute("/")({
     await Promise.all([
       context.queryClient.ensureQueryData(clustersQuery),
       context.queryClient.ensureQueryData(adminUnitsQuery),
-      context.queryClient.ensureQueryData(riskForecastsQuery),
+      context.queryClient.ensureQueryData(todayRiskForecastsQuery),
     ]);
     return { renderedAt: Date.now() };
   },
@@ -84,7 +84,7 @@ function LiveMapPage() {
 
   const clusters = useQuery(clustersQuery);
   const units = useQuery(adminUnitsQuery);
-  const risk = useQuery(riskForecastsQuery);
+  const risk = useQuery(todayRiskForecastsQuery);
   const official = useQuery({ ...officialIncidentsQuery, retry: false });
   const officialCommuneIds = useMemo(
     () =>
