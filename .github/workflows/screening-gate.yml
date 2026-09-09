@@ -10,6 +10,7 @@ on:
       - "src/lib/ingest/persistent.server.ts"
       - "scripts/build-persistent-sources.ts"
       - "scripts/evaluate-persistent-sources.ts"
+      - ".github/workflows/screening-gate.yml"
       - "data/flares/**"
 
 permissions: {}
@@ -52,10 +53,24 @@ jobs:
       # Cold cache pulls ~733 windows paced at 2s; the pacing is deliberate because
       # FIRMS meters transactions per key and the deployed ingest shares this one.
       - if: steps.key.outputs.present == 'true'
+        uses: supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520 # v3.0.0
+        with:
+          version: 2.116.0
+
+      - if: steps.key.outputs.present == 'true'
+        name: Start isolated source archive
+        run: supabase start -x studio,imgproxy,inbucket,mailpit,logflare,vector,realtime,edge-runtime,supavisor
+
+      - if: steps.key.outputs.present == 'true'
         name: Rebuild the registry from the labelled archive
         env:
           FIRMS_MAP_KEY: ${{ secrets.FIRMS_MAP_KEY }}
-        run: bun run build:sources
+        run: |
+          archive_config="$(supabase status -o json)"
+          export SUPABASE_URL="$(jq -r '.API_URL' <<< "$archive_config")"
+          export SUPABASE_SERVICE_ROLE_KEY="$(jq -r '.SERVICE_ROLE_KEY' <<< "$archive_config")"
+          echo "::add-mask::$SUPABASE_SERVICE_ROLE_KEY"
+          bun run build:sources
 
       # Fails the check if real-event loss or false-event removal breach their bounds.
       - if: steps.key.outputs.present == 'true'
