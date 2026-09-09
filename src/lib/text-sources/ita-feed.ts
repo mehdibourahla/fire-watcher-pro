@@ -30,7 +30,7 @@ export async function fetchItaFeed(
         ...(etag ? { "If-None-Match": etag } : {}),
       },
       signal: AbortSignal.timeout(20_000),
-      redirect: "error",
+      redirect: "manual",
     },
   );
   if (response.status === 304)
