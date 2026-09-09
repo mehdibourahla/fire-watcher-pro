@@ -202,6 +202,7 @@ export const ar: Translation = {
       "يتطلب التحضير دون اتصال وجود اتصال ودعم عامل الخدمة في المتصفح.",
   },
   nav: {
+    accountMenu: "الحساب",
     admin: "الإدارة",
     menu: "القائمة",
     contribute: "المساهمة",

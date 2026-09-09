@@ -390,13 +390,12 @@ function EnterSheet({
         >
           {t("survival.enterYes")}
         </button>
-        <button
-          type="button"
-          onClick={() => window.history.back()}
+        <Link
+          to="/"
           className="mt-2.5 flex h-12 w-full items-center justify-center rounded-xl border border-border text-sm font-semibold text-muted-foreground"
         >
           {t("survival.enterCancel")}
-        </button>
+        </Link>
         <p className="mt-3 text-center text-xs text-muted-foreground">
           {t("survival.enterFootnote")}
         </p>
