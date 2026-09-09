@@ -33,3 +33,5 @@ Email alerts are not wired to an authorized sender; remove the misleading editab
 Baseline release and audit reproduction evidence verified before dispatch. Each package appends its files, regression commands/outcomes and behavioral limits here or in a linked report. No package is closed solely because a unit suite is green.
 
 Validation: full 828 application tests, 722 fresh-stack SQL assertions, TypeScript, lint (zero errors), production build and both concurrent delivery harnesses pass. Integrated spec and quality reviews PASS. See `docs/audits/2026-09-09-platform-audit.md` for behavioral evidence and limits. S6 hosted password configuration awaits owner dashboard login; S7 awaits PR/CI.
+
+PR #129 follow-up: obsolete-cache/selected-pack preservation, headline-free ONM completion, truthful public progress, explicit unknown-position check-in and staged FK validation are verified. Latest application suite: 843 tests; spec and quality PASS. Hosted password setting still awaits owner sign-in; merge is not authorized yet.

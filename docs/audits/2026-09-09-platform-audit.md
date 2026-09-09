@@ -118,3 +118,12 @@ Wind persistence/fetch failures, partial ONM/FIRMS results, DGPC lease loss and 
 Same-machine development SSR samples against the same live, anonymous public dataset (1,536 communes / six forecast horizons): forecast 12,284,992 → 3,091,869 decoded bytes, gzip 1,276,241 → 633,638; homepage 5,897,979 → 1,041,360 decoded bytes, gzip 1,206,928 → 226,171. Homepage sample time fell from 6.62s to 1.53s; forecast remained about 6.6s. These are samples, not Core Web Vitals measurements.
 
 Regression budgets for this dataset: forecast ≤3.3 MB decoded / 700 KB gzip, homepage ≤1.2 MB / 300 KB. Recheck these with commune expansion/search and all six days visible when changing initial loaders; latency remains network- and database-dependent.
+
+
+### PR #129 review follow-up
+
+The automated review was verified against the implementation. Nine findings were addressed: owned obsolete-cache cleanup; preservation of manually selected packs; one valid summary element; removal of unsupported language-review progress; explicit completion of valid ONM CAP details without headlines; preservation of failed broadcast health; named saved-zone hints; manual check-in with explicit unknown position; and foreign-key validation in a separate migration transaction. No check-in was sent during browser verification.
+
+The proposed array conversion in TextRecovery was rejected: the query follows the source document's foreign key to one text source. The generated relationship's `isOneToOne: false` describes non-unique child references; it does not turn the referenced parent into an array. The existing object access passes TypeScript.
+
+Follow-up validation: 100 application files / 843 tests, TypeScript, lint (zero errors), production build and targeted SQL pass. Seven ONM SQL assertions cover completion without a fabricated headline and denial of client metadata changes. The fresh CI run validates the complete six-migration change. Specification and quality review pass again. ONM rollback, if needed after removing its caller: drop `onm_vigilance_pending_detail_idx`, then `cap_detail_fetched_at`; this removes completion metadata only.

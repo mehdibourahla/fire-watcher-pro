@@ -1822,6 +1822,7 @@ export type Database = {
       };
       onm_vigilance: {
         Row: {
+          cap_detail_fetched_at: string | null;
           area_desc: string;
           cap_id: string;
           cap_url: string | null;
@@ -1841,6 +1842,7 @@ export type Database = {
           wilaya_id: string | null;
         };
         Insert: {
+          cap_detail_fetched_at?: string | null;
           area_desc: string;
           cap_id: string;
           cap_url?: string | null;
@@ -1860,6 +1862,7 @@ export type Database = {
           wilaya_id?: string | null;
         };
         Update: {
+          cap_detail_fetched_at?: string | null;
           area_desc?: string;
           cap_id?: string;
           cap_url?: string | null;

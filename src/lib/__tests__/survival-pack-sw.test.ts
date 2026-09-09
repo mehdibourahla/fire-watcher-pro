@@ -14,10 +14,15 @@ function setup() {
   let serial = 0;
   let storageBlocked = false;
   let cleanupBlocked = false;
+  let claims = 0;
   const key = (value: string | { url: string }) =>
     new URL(typeof value === "string" ? value : value.url, "https://app.test")
       .href;
   const caches = {
+    keys: async () => {
+      if (storageBlocked) throw new Error("storage blocked");
+      return [...stores.keys()];
+    },
     open: async (name: string) => {
       if (storageBlocked) throw new Error("storage blocked");
       if (!stores.has(name)) stores.set(name, new Map());
@@ -37,6 +42,11 @@ function setup() {
   };
   runInNewContext(worker, {
     self: {
+      clients: {
+        claim: async () => {
+          claims++;
+        },
+      },
       addEventListener: (
         name: string,
         handler: (e: Record<string, unknown>) => void,
@@ -70,6 +80,16 @@ function setup() {
   });
   return {
     stores,
+    claimCount: () => claims,
+    activate: async () => {
+      let work: Promise<unknown> | undefined;
+      handlers.get("activate")!({
+        waitUntil: (p: Promise<unknown>) => {
+          work = p;
+        },
+      });
+      await work;
+    },
     blockStorage: () => {
       storageBlocked = true;
     },
@@ -167,4 +187,78 @@ it("returns online assets and the offline unavailable fallback with blocked cach
   expect(await sw.prepare()).toEqual({ ok: false });
   sw.offline();
   expect((await sw.navigate("/survival")).status).toBe(503);
+});
+
+it("activation removes only obsolete and orphaned owned caches, preserving the selected pack", async () => {
+  const sw = setup();
+  await sw.prepare();
+  for (const name of [
+    "nadhir-sw-v1-assets",
+    "nadhir-sw-v1-pages",
+    "nadhir-sw-v2-pack-999",
+    "nadhir-sw-v2-assets",
+    "another-app-cache",
+  ])
+    sw.stores.set(name, new Map());
+  await sw.activate();
+  expect([...sw.stores.keys()].sort()).toEqual(
+    [
+      "another-app-cache",
+      "nadhir-survival-control",
+      "nadhir-sw-v2-assets",
+      "nadhir-sw-v2-pack-1",
+    ].sort(),
+  );
+  expect(sw.claimCount()).toBe(1);
+  sw.offline();
+  expect((await sw.navigate("/survival")).status).toBe(200);
+});
+it("activation claims clients without deleting any pack if storage or marker reads fail", async () => {
+  const sw = setup();
+  await sw.prepare();
+  sw.stores.set("nadhir-sw-v1-pages", new Map());
+  const original = [...sw.stores.keys()];
+  sw.blockStorage();
+  await sw.activate();
+  expect([...sw.stores.keys()]).toEqual(original);
+  expect(sw.claimCount()).toBe(1);
+});
+it("activation preserves packs when the active marker is malformed", async () => {
+  const sw = setup();
+  await sw.prepare();
+  sw.stores
+    .get("nadhir-survival-control")!
+    .set("https://app.test/__survival-cache", new Response("broken"));
+  sw.stores.set("nadhir-sw-v2-pack-999", new Map());
+  await sw.activate();
+  expect(sw.stores.has("nadhir-sw-v2-pack-1")).toBe(true);
+  expect(sw.stores.has("nadhir-sw-v2-pack-999")).toBe(true);
+  expect(sw.claimCount()).toBe(1);
+});
+it("activation still claims clients if stale-cache deletion fails", async () => {
+  const sw = setup();
+  await sw.prepare();
+  sw.stores.set("nadhir-sw-v1-pages", new Map());
+  sw.blockCleanup();
+  await sw.activate();
+  expect(sw.claimCount()).toBe(1);
+  sw.offline();
+  expect((await sw.navigate("/survival")).status).toBe(200);
+});
+
+it("activation preserves the selected pack even when it belongs to an older worker version", async () => {
+  const sw = setup();
+  await sw.prepare();
+  sw.stores.set("nadhir-sw-v1-pack-7", sw.stores.get("nadhir-sw-v2-pack-1")!);
+  sw.stores
+    .get("nadhir-survival-control")!
+    .set(
+      "https://app.test/__survival-cache",
+      Response.json({ name: "nadhir-sw-v1-pack-7" }),
+    );
+  await sw.activate();
+  expect(sw.stores.has("nadhir-sw-v1-pack-7")).toBe(true);
+  expect(sw.stores.has("nadhir-sw-v2-pack-1")).toBe(false);
+  sw.offline();
+  expect((await sw.navigate("/survival/areas")).status).toBe(200);
 });

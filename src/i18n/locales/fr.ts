@@ -40,6 +40,7 @@ export const fr: Translation = {
     body: "Un problème est survenu de notre côté. Vous pouvez actualiser ou revenir à l'accueil.",
   },
   survival: {
+    positionUnknown: "Position indisponible",
     smokeUnavailable:
       "Les données locales sur la qualité de l’air sont indisponibles ici. La position de votre appareil n’est pas envoyée à un fournisseur de qualité de l’air.",
     mode: "Mode survie",

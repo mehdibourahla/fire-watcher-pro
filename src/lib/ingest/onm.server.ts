@@ -120,7 +120,7 @@ export async function backfillCapDetails(): Promise<{
   const { data, error } = await supabaseAdmin
     .from("onm_vigilance")
     .select("id, cap_url")
-    .is("headline_fr", null)
+    .is("cap_detail_fetched_at", null)
     .not("cap_url", "is", null)
     .order("sent", { ascending: false })
     .limit(DETAIL_BATCH);
@@ -149,7 +149,7 @@ export async function backfillCapDetails(): Promise<{
       continue;
     }
     const detail = parseCapDetail(await res.text());
-    if (!detail?.headline_fr) {
+    if (!detail) {
       failed++;
       continue;
     }
@@ -159,6 +159,7 @@ export async function backfillCapDetails(): Promise<{
         headline_fr: detail.headline_fr,
         instruction_fr: detail.instruction_fr,
         polygon: detail.polygon,
+        cap_detail_fetched_at: new Date().toISOString(),
       })
       .eq("id", row.id);
     if (!upErr) filled += 1;

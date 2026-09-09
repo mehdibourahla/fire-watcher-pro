@@ -25,6 +25,28 @@ export const deviceStorage = {
     window.localStorage.setItem(key, value),
 };
 
+export function shouldAutoPreparePack(
+  pack: SurvivalPack | null,
+  zone: { lat: number; lon: number; name: string },
+  now = Date.now(),
+): boolean {
+  if (!pack) return true;
+  // Visiting zone setup must preserve a pack the user selected elsewhere.
+  if (
+    pack.lat !== zone.lat ||
+    pack.lon !== zone.lon ||
+    (pack.zone_name !== undefined && pack.zone_name !== zone.name)
+  )
+    return false;
+  const age = now - Date.parse(pack.saved_at);
+  return (
+    !pack.shell_ready ||
+    !pack.area_map ||
+    !Number.isFinite(age) ||
+    age >= 86400_000
+  );
+}
+
 export function savePack(storage: PackStorage, pack: SurvivalPack) {
   const serialized = JSON.stringify(pack);
   if (serialized.length > 1_000_000) throw new Error("survival.packFailed");

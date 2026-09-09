@@ -322,3 +322,29 @@ describe("independent webhook delivery recovery", () => {
     expect(result.publicReasonCode).toBe("delivery_failed");
   });
 });
+
+it.each(["failed", "skipped"])(
+  "preserves combined delivery health when broadcasts are %s",
+  async (outcome) => {
+    const deps = dependencies();
+    deps.deliverBroadcasts.mockResolvedValue({
+      rows: 0,
+      sent: 0,
+      telegramRows: 0,
+      telegramSent: 0,
+      telegramChannels: 0,
+      fcmConfigured: false,
+      telegramConfigured: false,
+      disabled: outcome === "skipped",
+    });
+    deps.drainWebhookDeliveries.mockResolvedValue({ sent: 0, failed: 1 });
+    const result = await createSourceRunners(deps).broadcast_delivery(
+      job("broadcast_delivery"),
+    );
+    expect(result.outcome).toBe(outcome === "failed" ? "failed" : "partial");
+    expect(result.publicReasonCode).toBe(
+      outcome === "failed" ? "credentials_missing" : "delivery_failed",
+    );
+    expect(result.qualityChecks).toMatchObject({ webhook_failed: 1 });
+  },
+);

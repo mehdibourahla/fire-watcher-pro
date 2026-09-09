@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   loadPack,
+  shouldAutoPreparePack,
   savePack,
   preparePack,
   persistSurvivalFlag,
@@ -160,4 +161,46 @@ it("rejects empty geometry before requesting shell preparation", async () => {
     ),
   ).rejects.toThrow("survival.packFailed");
   expect(shellCalled).toBe(false);
+});
+
+it("preserves a manually selected zone when another zone mounts for automatic preparation", () => {
+  const selected = { ...pack, zone_name: "Selected", shell_ready: true };
+  const other = { lat: pack.lat + 1, lon: pack.lon, name: "Newest" };
+  expect(shouldAutoPreparePack(selected, other)).toBe(false);
+  expect(
+    shouldAutoPreparePack({ ...selected, shell_ready: false }, other),
+  ).toBe(false);
+  expect(
+    shouldAutoPreparePack(selected, {
+      lat: pack.lat,
+      lon: pack.lon,
+      name: "Another zone at the same centre",
+    }),
+  ).toBe(false);
+});
+it("automatically prepares only an absent pack or a stale/incomplete pack for the same zone", () => {
+  const zone = { lat: pack.lat, lon: pack.lon, name: "Selected" };
+  const now = Date.parse(pack.saved_at);
+  const selected = {
+    ...pack,
+    zone_name: zone.name,
+    shell_ready: true,
+    area_map: {
+      type: "Polygon" as const,
+      coordinates: [
+        [
+          [3, 36],
+          [4, 36],
+          [3, 37],
+          [3, 36],
+        ],
+      ],
+    },
+  };
+  expect(shouldAutoPreparePack(null, zone, now)).toBe(true);
+  expect(shouldAutoPreparePack(selected, zone, now + 1000)).toBe(false);
+  expect(shouldAutoPreparePack(selected, zone, now + 86400_000)).toBe(true);
+  expect(
+    shouldAutoPreparePack({ ...selected, shell_ready: false }, zone, now),
+  ).toBe(true);
 });

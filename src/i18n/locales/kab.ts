@@ -40,6 +40,7 @@ export const kab: Translation = {
     body: "Tella-d tuccḍa ɣer idis-nneɣ. Tzemreḍ ad tsmireḍ neɣ ad tuɣaleḍ ɣer usebter agejdan.",
   },
   survival: {
+    positionUnknown: "Amkan ur yelli ara",
     smokeUnavailable:
       "Isefka n tɣara n waḍu n temnaḍt ur llan ara dagi. Amkan n yibenk-ik ur yettwazen ara ɣer win i d-yettakken isefka n waḍu.",
     mode: "Askar n leslak",

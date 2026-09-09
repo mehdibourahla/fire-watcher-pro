@@ -38,6 +38,7 @@ export const en = {
     body: "Something went wrong on our end. You can try refreshing or head back home.",
   },
   survival: {
+    positionUnknown: "Position unavailable",
     smokeUnavailable:
       "Local air-quality data is unavailable here. Your device position is not sent to an air-quality provider.",
     mode: "Survival Mode",

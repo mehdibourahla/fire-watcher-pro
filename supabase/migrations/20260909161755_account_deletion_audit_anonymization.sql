@@ -1,5 +1,5 @@
 alter table public.citizen_reports drop constraint citizen_reports_reviewed_by_fkey;
-alter table public.citizen_reports add constraint citizen_reports_reviewed_by_fkey foreign key (reviewed_by) references auth.users(id) on delete set null;
+alter table public.citizen_reports add constraint citizen_reports_reviewed_by_fkey foreign key (reviewed_by) references auth.users(id) on delete set null not valid;
 
 create function public.anonymize_deleted_account_audit()
 returns trigger language plpgsql security definer set search_path = '' as $$

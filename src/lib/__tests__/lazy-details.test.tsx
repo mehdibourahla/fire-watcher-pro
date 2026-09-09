@@ -9,5 +9,6 @@ it("keeps collapsed rows out of initial HTML", () => {
     </LazyDetails>,
   );
   expect(html).toContain("Wilaya");
+  expect(html).toContain("<summary><span>Wilaya</span></summary>");
   expect(html).not.toContain("Expensive commune rows");
 });

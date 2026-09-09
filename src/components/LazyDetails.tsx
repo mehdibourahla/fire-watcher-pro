@@ -4,10 +4,12 @@ export function LazyDetails({
   summary,
   children,
   className,
+  summaryClassName,
 }: {
   summary: ReactNode;
   children: ReactNode;
   className?: string;
+  summaryClassName?: string;
 }) {
   const [open, setOpen] = useState(false);
   return (
@@ -15,7 +17,7 @@ export function LazyDetails({
       className={className}
       onToggle={(event) => setOpen(event.currentTarget.open)}
     >
-      {summary}
+      <summary className={summaryClassName}>{summary}</summary>
       {open ? children : null}
     </details>
   );

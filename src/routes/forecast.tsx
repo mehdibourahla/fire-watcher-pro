@@ -279,8 +279,9 @@ function ForecastPage() {
             <LazyDetails
               key={wilaya.id}
               className="card"
+              summaryClassName="flex cursor-pointer list-none flex-wrap items-center gap-x-4 gap-y-2 p-3 [&::-webkit-details-marker]:hidden"
               summary={
-                <summary className="flex cursor-pointer list-none flex-wrap items-center gap-x-4 gap-y-2 p-3 [&::-webkit-details-marker]:hidden">
+                <>
                   <ChevronDown
                     aria-hidden
                     className="size-4 shrink-0 text-muted-foreground"
@@ -294,7 +295,7 @@ function ForecastPage() {
                   <span title={t("risk.groupWorst")}>
                     <RiskChip level={maxLevel} />
                   </span>
-                </summary>
+                </>
               }
             >
               <ul className="divide-y divide-border border-t border-border">

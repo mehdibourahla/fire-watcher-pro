@@ -78,7 +78,6 @@ export async function readDeficits(): Promise<Deficits> {
         ? UNKNOWN
         : broadcastReceipts + webhookReceipts,
     localesShipped: LOCALES.length,
-    localesReviewed: LOCALES.length,
     measuredAt: new Date().toISOString(),
   };
 }

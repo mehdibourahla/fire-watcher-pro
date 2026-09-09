@@ -363,14 +363,15 @@ export function createSourceRunners(
       if (webhooks.status === "rejected") throw webhooks.reason;
       const run = broadcasts.value;
       const webhookRun = webhooks.value;
+      const broadcastHealth = deliveryRunOutcome(run);
       const health =
-        webhookRun.failed > 0
+        webhookRun.failed > 0 && broadcastHealth.outcome !== "failed"
           ? ({
               outcome: "partial",
               coverageStatus: "partial",
               publicReasonCode: "delivery_failed",
             } as const)
-          : deliveryRunOutcome(run);
+          : broadcastHealth;
       return {
         ...baseReport(job),
         ...health,

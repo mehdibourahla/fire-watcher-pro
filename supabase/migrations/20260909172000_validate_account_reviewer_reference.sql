@@ -1,0 +1,1 @@
+alter table public.citizen_reports validate constraint citizen_reports_reviewed_by_fkey;

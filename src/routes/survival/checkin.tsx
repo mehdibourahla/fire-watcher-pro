@@ -34,7 +34,6 @@ function CheckInPage() {
 
   // Built at render AND at send time, so a page left open never sends a stale timestamp.
   const composeMessage = () => {
-    if (!card) return null;
     const time = new Intl.DateTimeFormat("fr-DZ", {
       timeZone: "Africa/Algiers",
       hour: "2-digit",
@@ -53,7 +52,6 @@ function CheckInPage() {
 
   const onSend = () => {
     const fresh = composeMessage();
-    if (!fresh) return;
     if (navigator.share) {
       void navigator.share({ text: fresh }).catch(() => undefined);
     } else {
@@ -160,7 +158,7 @@ function CheckInPage() {
           {t("survival.checkinPreview").toUpperCase()}
         </h2>
         <p className="rounded-lg bg-muted px-3.5 py-3 text-sm leading-relaxed">
-          {message ?? t("survival.noPosition")}
+          {message}
         </p>
       </section>
 
@@ -168,7 +166,6 @@ function CheckInPage() {
         <button
           type="button"
           onClick={onSend}
-          disabled={!message}
           className="flex h-14 items-center justify-center gap-2.5 rounded-xl bg-primary text-base font-bold text-primary-foreground disabled:opacity-50"
         >
           <Share2 aria-hidden className="size-5" />

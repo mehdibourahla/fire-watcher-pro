@@ -13,8 +13,36 @@ const MAX_FILES = 250;
 
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", (event) =>
-  event.waitUntil(self.clients.claim()),
+  event.waitUntil(cleanupOwnedCaches().finally(() => self.clients.claim())),
 );
+
+async function cleanupOwnedCaches() {
+  try {
+    const control = await caches.open(CONTROL_CACHE);
+    const entry = await control.match(ACTIVE_KEY);
+    const marker = entry ? await entry.json() : null;
+    // An unreadable marker must never make an active pack look orphaned.
+    if (
+      entry &&
+      (typeof marker?.name !== "string" ||
+        !/^nadhir-sw-v\d+-pack-\d+$/.test(marker.name))
+    )
+      return;
+    const keep = new Set([ASSET_CACHE, CONTROL_CACHE, marker?.name]);
+    const names = await caches.keys();
+    await Promise.allSettled(
+      names
+        .filter(
+          (name) =>
+            /^nadhir-sw-v\d+-(?:assets|pages|pack-\d+)$/.test(name) &&
+            !keep.has(name),
+        )
+        .map((name) => caches.delete(name)),
+    );
+  } catch {
+    // Storage denial or corrupt metadata must not prevent taking control of clients.
+  }
+}
 
 async function activeCache() {
   const control = await caches.open(CONTROL_CACHE);

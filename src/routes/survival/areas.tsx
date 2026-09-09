@@ -60,7 +60,7 @@ function OpenAreasPage() {
       {pack ? <OfflineAreaMap pack={pack} /> : null}
       {!position && origin ? (
         <p className="text-xs text-muted-foreground">
-          {t("survival.packOrigin")}
+          {t("survival.packOrigin")}: {pack?.zone_name ?? pack?.commune}
         </p>
       ) : null}
       {rows === null ? (

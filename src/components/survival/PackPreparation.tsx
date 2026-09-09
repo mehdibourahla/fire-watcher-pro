@@ -2,7 +2,11 @@ import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import type { Locale } from "@/i18n";
-import { deviceStorage, loadPack } from "@/lib/survival-pack";
+import {
+  deviceStorage,
+  loadPack,
+  shouldAutoPreparePack,
+} from "@/lib/survival-pack";
 import { prepareZonePack, type PackZone } from "@/lib/survival-pack-prepare";
 
 export function PackPreparation({
@@ -31,7 +35,7 @@ export function PackPreparation({
     }
   }
   useEffect(() => {
-    if (auto && (!ready || Date.now() - Date.parse(pack.saved_at) > 86400_000))
+    if (auto && shouldAutoPreparePack(loadPack(deviceStorage), zone))
       void prepare();
     // One attempt per mounted zone; failures wait for an explicit retry.
     // eslint-disable-next-line react-hooks/exhaustive-deps
