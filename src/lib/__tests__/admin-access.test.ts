@@ -4,6 +4,20 @@ import { ADMIN_SECTIONS, canReachPanel, sectionsFor } from "@/lib/admin-access";
 import { adminEn } from "@/i18n/admin/en";
 
 describe("admin access", () => {
+  it.each([
+    "admin",
+    "operator",
+    "report_moderator",
+    "translator",
+    "incident_editor",
+  ])("exposes the panel entry to %s", (role) => {
+    expect(canReachPanel([role])).toBe(true);
+  });
+
+  it("rejects unknown and obsolete roles", () => {
+    expect(canReachPanel(["moderator", "unknown"])).toBe(false);
+  });
+
   it("gives a translator the queues and nothing operational", () => {
     expect(sectionsFor(["translator"]).map((s) => s.key)).toEqual([
       "triage",

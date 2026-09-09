@@ -205,6 +205,7 @@ export const kab: Translation = {
       "Aheggi war aẓeṭṭa yesra tuqqna d usefrek n service worker.",
   },
   nav: {
+    accountMenu: "Amiḍan",
     admin: "Tadbelt",
     menu: "Umuɣ",
     contribute: "Ttekki",
