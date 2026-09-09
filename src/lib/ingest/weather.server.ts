@@ -1,3 +1,4 @@
+import { archivedFetch, ArchiveFailure } from "@/lib/source-archive.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { fetchAllPages } from "@/lib/paginate";
 
@@ -79,7 +80,13 @@ async function fetchDaily(
   let lastStatus = 0;
   let unreadable = false;
   for (let attempt = 0; attempt < RETRY_LIMIT; attempt += 1) {
-    const res = await fetch(url);
+    const res = await archivedFetch(
+      "local_fwi",
+      "hourly_forecast",
+      url,
+      undefined,
+      { requestParams: Object.fromEntries(url.searchParams) },
+    );
     if (res.ok) {
       // Open-Meteo answers its own streaming timeouts with a 200 and a plain-text body
       let json: OpenMeteoResponse | null = null;
@@ -399,6 +406,10 @@ export async function refreshRiskForecasts({
         );
         requests += 1;
       } catch (e) {
+        if (e instanceof ArchiveFailure) {
+          await discard();
+          throw e;
+        }
         return fail(e);
       }
       const rows: Row[] = [];
@@ -543,7 +554,13 @@ export async function enrichClusterWinds(): Promise<number> {
     "current",
     "wind_speed_10m,wind_direction_10m,wind_gusts_10m,vapour_pressure_deficit,soil_moisture_0_to_1cm",
   );
-  const res = await fetch(url);
+  const res = await archivedFetch(
+    "openmeteo_wind",
+    "current_weather",
+    url,
+    undefined,
+    { requestParams: Object.fromEntries(url.searchParams) },
+  );
   // returning 0 here made a failed fetch indistinguishable from "no live fires"
   if (!res.ok) throw new Error(`open-meteo wind ${res.status}`);
   const json = (await res.json()) as

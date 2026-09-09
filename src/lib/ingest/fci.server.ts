@@ -1,3 +1,4 @@
+import { archivedFetch, ArchiveFailure } from "@/lib/source-archive.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import type { SourceReplayInterval } from "@/lib/source-jobs";
 
@@ -157,9 +158,15 @@ export function ingestS3(interval?: SourceReplayInterval): Promise<FciRun> {
 async function fetchLayer(
   url: URL,
   layer: string,
+  source: string,
 ): Promise<FciFeatureCollection> {
   url.searchParams.set("typeNames", layer);
-  const res = await fetch(url);
+  const res = await archivedFetch(source, "wfs_features", url, undefined, {
+    requestParams: {
+      product: layer,
+      filter: url.searchParams.get("cql_filter"),
+    },
+  });
   if (!res.ok) throw new Error(`${layer} WFS ${res.status}`);
   return (await res.json()) as FciFeatureCollection;
 }
@@ -200,10 +207,17 @@ export async function ingestWfsFire(
   let json: FciFeatureCollection;
   try {
     const pages = await Promise.all(
-      layer.layers.map((name) => fetchLayer(new URL(url), name)),
+      layer.layers.map((name) =>
+        fetchLayer(
+          new URL(url),
+          name,
+          layer.source === "s3" ? "s3_slstr" : "fci",
+        ),
+      ),
     );
     json = { features: pages.flatMap((page) => page.features ?? []) };
   } catch (error) {
+    if (error instanceof ArchiveFailure) throw error;
     return {
       ...empty,
       error: error instanceof Error ? error.message : "WFS fetch failed",

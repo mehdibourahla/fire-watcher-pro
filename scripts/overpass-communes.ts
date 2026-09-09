@@ -1,3 +1,4 @@
+import { archivedFetch } from "../src/lib/source-archive.server";
 import {
   assembleRings,
   buildMultiPolygon,
@@ -33,15 +34,21 @@ export async function fetchCommunePolygons(): Promise<{
   noRef: number;
   unclosed: number;
 }> {
-  const res = await fetch(OVERPASS, {
-    method: "POST",
-    body: `data=${encodeURIComponent(QUERY)}`,
-    headers: {
-      "content-type": "application/x-www-form-urlencoded",
-      "user-agent":
-        "nadhir-seed/1.0 (https://nadhir.app; open source wildfire warning)",
+  const res = await archivedFetch(
+    "osm_commune_boundaries",
+    "overpass_interpreter",
+    OVERPASS,
+    {
+      method: "POST",
+      body: `data=${encodeURIComponent(QUERY)}`,
+      headers: {
+        "content-type": "application/x-www-form-urlencoded",
+        "user-agent":
+          "nadhir-seed/1.0 (https://nadhir.app; open source wildfire warning)",
+      },
     },
-  });
+    { requestParams: { query: QUERY } },
+  );
   if (!res.ok) throw new Error(`Overpass returned ${res.status}`);
   const payload = (await res.json()) as { elements: Relation[] };
 

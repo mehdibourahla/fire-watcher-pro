@@ -1,3 +1,4 @@
+import { archivedFetch } from "../src/lib/source-archive.server";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
 import {
@@ -59,7 +60,13 @@ async function fetchWindow(day: string): Promise<string> {
   const url = `https://firms.modaps.eosdis.nasa.gov/api/area/csv/${key}/${SOURCE}/${BBOX}/5/${day}`;
   for (let attempt = 0; attempt < 20; attempt += 1) {
     await throttle();
-    const res = await fetch(url);
+    const res = await archivedFetch(
+      "firms",
+      "persistent_science_csv",
+      url,
+      undefined,
+      { requestParams: { product: SOURCE, bounds: BBOX, days: 5, date: day } },
+    );
     const body = await res.text();
     if (res.ok && body.startsWith("latitude")) {
       writeFileSync(path, body);

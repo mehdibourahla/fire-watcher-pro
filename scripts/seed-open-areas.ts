@@ -1,3 +1,4 @@
+import { archivedFetch } from "../src/lib/source-archive.server";
 import { createClient } from "@supabase/supabase-js";
 
 const url = process.env["SUPABASE_URL"];
@@ -88,16 +89,22 @@ function nearestCommune(
   return best && best.d < 0.09 ? best.id : null;
 }
 
-const res = await fetch(OVERPASS, {
-  method: "POST",
-  body: `data=${encodeURIComponent(QUERY)}`,
-  headers: {
-    "content-type": "application/x-www-form-urlencoded",
-    // Overpass usage policy: requests must carry an identifying user agent.
-    "user-agent":
-      "nadhir-seed/1.0 (https://nadhir.app; open source wildfire warning)",
+const res = await archivedFetch(
+  "osm_open_areas",
+  "overpass_interpreter",
+  OVERPASS,
+  {
+    method: "POST",
+    body: `data=${encodeURIComponent(QUERY)}`,
+    headers: {
+      "content-type": "application/x-www-form-urlencoded",
+      // Overpass usage policy: requests must carry an identifying user agent.
+      "user-agent":
+        "nadhir-seed/1.0 (https://nadhir.app; open source wildfire warning)",
+    },
   },
-});
+  { requestParams: { query: QUERY } },
+);
 if (!res.ok) {
   console.error(`Overpass returned ${res.status}`);
   process.exit(1);

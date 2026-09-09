@@ -1,4 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+vi.mock("@/lib/source-archive.server", () => ({
+  ArchiveFailure: class ArchiveFailure extends Error {},
+  archivedFetch: (
+    _source: string,
+    _endpoint: string,
+    input: RequestInfo | URL,
+    init?: RequestInit,
+  ) => fetch(input, init),
+}));
 
 const { fromMock, rpcMock, dailyFromHourlyMock } = vi.hoisted(() => ({
   fromMock: vi.fn(),
