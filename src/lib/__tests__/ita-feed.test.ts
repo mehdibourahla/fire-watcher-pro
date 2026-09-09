@@ -24,7 +24,7 @@ describe("ITA feed", () => {
     expect(result.etag).toBe('"v1"');
     expect(fetcher).toHaveBeenCalledWith(
       "https://infotraficalgerie.com/api/facebook/",
-      expect.any(Object),
+      expect.objectContaining({ redirect: "manual" }),
     );
   });
   it("sends ETag and accepts empty 304", async () => {
@@ -59,6 +59,26 @@ describe("ITA feed", () => {
       ),
     ).rejects.toThrow("429");
   });
+  it.each([301, 302, 303, 307, 308])(
+    "rejects redirect %i without following it",
+    async (status) => {
+      const fetcher = vi.fn(
+        async () =>
+          new Response(null, {
+            status,
+            headers: { location: "https://example.com/other-feed" },
+          }),
+      );
+      await expect(fetchItaFeed(null, fetcher)).rejects.toThrow(
+        `ITA feed HTTP ${status}`,
+      );
+      expect(fetcher).toHaveBeenCalledTimes(1);
+      expect(fetcher).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({ redirect: "manual" }),
+      );
+    },
+  );
   it("rejects oversized payloads", async () => {
     await expect(
       fetchItaFeed(null, async () => new Response(" ".repeat(2_000_001))),
