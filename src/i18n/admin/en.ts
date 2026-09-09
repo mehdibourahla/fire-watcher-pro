@@ -144,6 +144,18 @@ export const adminEn = {
     reason_other: "Other",
   },
   sources: {
+    archive: {
+      title: "Raw source archive",
+      description:
+        "Latest 50 collection attempts. Original payloads are retained for analysis and reprocessing, with no automatic expiry. Times are UTC. Administrator access only.",
+      source: "Source key (blank for all)",
+      filter: "Filter",
+      empty: "No archived collections in this view.",
+      captured: "Payload archived",
+      not_modified: "Source unchanged (304)",
+      failed: "Collection failed",
+      download: "Download verified payload",
+    },
     ita: {
       title: "Info Trafic Algérie reports",
       description:

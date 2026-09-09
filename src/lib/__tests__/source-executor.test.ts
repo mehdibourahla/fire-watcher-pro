@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { getSourceArchiveContext } from "../source-archive-context.server";
 
 import type { ClaimedSourceJob, SourceJobResult } from "@/lib/source-jobs";
 import { executeNextSourceJob } from "@/lib/ingest/source-executor.server";
@@ -74,7 +75,14 @@ describe("executeNextSourceJob", () => {
   it("runs and completes exactly the claimed contract", async () => {
     const job = claimed();
     const result = success(job);
-    const run = vi.fn().mockResolvedValue(result);
+    const run = vi.fn(async () => {
+      expect(getSourceArchiveContext()).toMatchObject({
+        jobId: job.id,
+        attempt: job.attempt_count,
+        contractVersion: job.contract_version,
+      });
+      return result;
+    });
     const complete = vi
       .fn()
       .mockResolvedValue({ ...job, state: "succeeded", finished_at: "done" });

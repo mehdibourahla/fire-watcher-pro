@@ -148,6 +148,18 @@ export const adminFr: AdminTranslation = {
     reason_other: "Autre",
   },
   sources: {
+    archive: {
+      title: "Archives brutes des sources",
+      description:
+        "50 dernières tentatives de collecte. Les données originales sont conservées pour analyse et retraitement, sans expiration automatique. Horaires UTC. Accès administrateur uniquement.",
+      source: "Clé de source (vide pour toutes)",
+      filter: "Filtrer",
+      empty: "Aucune collecte archivée dans cette vue.",
+      captured: "Données archivées",
+      not_modified: "Source inchangée (304)",
+      failed: "Échec de collecte",
+      download: "Télécharger les données vérifiées",
+    },
     ita: {
       title: "Signalements Info Trafic Algérie",
       description:

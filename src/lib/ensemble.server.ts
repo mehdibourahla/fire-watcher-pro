@@ -1,3 +1,4 @@
+import { archivedFetch, ArchiveFailure } from "@/lib/source-archive.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { parseEnsemble, type EnsemblePreview } from "@/lib/ensemble";
 
@@ -85,10 +86,16 @@ export async function handleEnsemblePreview(
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 10_000);
     try {
-      const response = await fetch(url, {
-        signal: controller.signal,
-        redirect: "error",
-      });
+      const response = await archivedFetch(
+        "ensemble_preview",
+        "ensemble_forecast",
+        url,
+        {
+          signal: controller.signal,
+          redirect: "manual",
+        },
+        { requestParams: Object.fromEntries(url.searchParams) },
+      );
       if (!response.ok || !response.body)
         throw new Error("Ensemble upstream unavailable");
       const reader = response.body.getReader();
@@ -119,7 +126,9 @@ export async function handleEnsemblePreview(
         model_run_at: null,
       };
       return json(preview);
-    } catch {
+    } catch (error) {
+      if (error instanceof ArchiveFailure)
+        return json({ error: "Source archive unavailable" }, 503);
       return json(
         {
           error: controller.signal.aborted

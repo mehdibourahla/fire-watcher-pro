@@ -1,3 +1,4 @@
+import { archivedFetch } from "@/lib/source-archive.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import type { Json } from "@/integrations/supabase/types";
 import type { ClaimedSourceJob } from "@/lib/source-jobs";
@@ -166,7 +167,10 @@ export async function runItaSource(job: ClaimedSourceJob): Promise<ItaRun> {
   };
   return runItaSourceWith({
     store,
-    fetchFeed: fetchItaFeed,
+    fetchFeed: (etag) =>
+      fetchItaFeed(etag, (input, init) =>
+        archivedFetch("ita_website", "facebook_feed", input, init),
+      ),
     extract: extractItaReport,
   });
 }

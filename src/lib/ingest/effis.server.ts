@@ -1,3 +1,4 @@
+import { archivedFetch } from "@/lib/source-archive.server";
 import { PNG } from "pngjs";
 
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
@@ -111,7 +112,20 @@ export async function ingestEffis(day?: string): Promise<EffisRun> {
   const runDate = day ?? algiersToday();
   const month = Number(runDate.slice(5, 7));
 
-  const res = await fetch(effisMapUrl(runDate));
+  const res = await archivedFetch(
+    "effis",
+    "danger_wms",
+    effisMapUrl(runDate),
+    undefined,
+    {
+      requestParams: {
+        date: runDate,
+        bounds: EFFIS_BBOX,
+        width: EFFIS_WIDTH,
+        height: EFFIS_HEIGHT,
+      },
+    },
+  );
   if (!res.ok)
     return { communes: 0, classified: 0, error: `EFFIS WMS ${res.status}` };
   const body = new Uint8Array(await res.arrayBuffer());

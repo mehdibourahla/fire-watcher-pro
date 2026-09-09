@@ -62,7 +62,12 @@ export default defineConfig(({ command }) => ({
                 compatibility_date: "2026-08-31",
                 compatibility_flags: ["global_fetch_strictly_public"],
                 triggers: { crons: ["* * * * *"] },
-                vars: { NADHIR_APP_URL: "https://nadhir.app" },
+                vars: {
+                  NADHIR_APP_URL: "https://nadhir.app",
+                  ...(process.env["GITHUB_SHA"]
+                    ? { NADHIR_CODE_REVISION: process.env["GITHUB_SHA"] }
+                    : {}),
+                },
                 // paid default is 50ms, which React SSR over 1536 communes exceeds
                 limits: { cpu_ms: 30000 },
                 // SSR makes several Supabase round-trips, so run near the database

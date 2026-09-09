@@ -34,6 +34,78 @@ export type Database = {
   };
   public: {
     Tables: {
+      source_captures: {
+        Row: {
+          attempt: number | null;
+          byte_length: number | null;
+          code_revision: string | null;
+          contract_version: number | null;
+          endpoint: string;
+          error_code: string | null;
+          fetched_at: string;
+          http_status: number | null;
+          id: string;
+          job_id: string | null;
+          media_type: string | null;
+          parser_version: string | null;
+          recorded_at: string;
+          request_params: Json;
+          requested_at: string;
+          response_headers: Json;
+          sha256: string | null;
+          source_key: string;
+          source_origin: string;
+          status: string;
+          storage_path: string | null;
+        };
+        Insert: {
+          attempt?: number | null;
+          byte_length?: number | null;
+          code_revision?: string | null;
+          contract_version?: number | null;
+          endpoint: string;
+          error_code?: string | null;
+          fetched_at: string;
+          http_status?: number | null;
+          id?: string;
+          job_id?: string | null;
+          media_type?: string | null;
+          parser_version?: string | null;
+          recorded_at?: string;
+          request_params?: Json;
+          requested_at: string;
+          response_headers?: Json;
+          sha256?: string | null;
+          source_key: string;
+          source_origin: string;
+          status: string;
+          storage_path?: string | null;
+        };
+        Update: {
+          attempt?: number | null;
+          byte_length?: number | null;
+          code_revision?: string | null;
+          contract_version?: number | null;
+          endpoint?: string;
+          error_code?: string | null;
+          fetched_at?: string;
+          http_status?: number | null;
+          id?: string;
+          job_id?: string | null;
+          media_type?: string | null;
+          parser_version?: string | null;
+          recorded_at?: string;
+          request_params?: Json;
+          requested_at?: string;
+          response_headers?: Json;
+          sha256?: string | null;
+          source_key?: string;
+          source_origin?: string;
+          status?: string;
+          storage_path?: string | null;
+        };
+        Relationships: [];
+      };
       ita_feed_state: {
         Row: {
           checked_at: string | null;

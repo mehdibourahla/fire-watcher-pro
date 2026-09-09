@@ -1,3 +1,4 @@
+import { archivedFetch, ArchiveFailure } from "@/lib/source-archive.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { fetchAllPages } from "@/lib/paginate";
 
@@ -124,7 +125,20 @@ async function backfillCapDetails(): Promise<number> {
 
   let filled = 0;
   for (const row of data) {
-    const res = await fetch(row.cap_url!).catch(() => null);
+    const res = await archivedFetch(
+      "onm",
+      "cap_detail",
+      row.cap_url!,
+      undefined,
+      {
+        requestParams: {
+          document: new URL(row.cap_url!).pathname.split("/").at(-1) ?? "",
+        },
+      },
+    ).catch((error) => {
+      if (error instanceof ArchiveFailure) throw error;
+      return null;
+    });
     if (!res?.ok) continue;
     const detail = parseCapDetail(await res.text());
     if (!detail?.headline_fr) continue;
@@ -152,7 +166,7 @@ export type OnmRun = {
 export async function ingestOnm(): Promise<OnmRun> {
   let xml: string;
   try {
-    const res = await fetch(FEED_URL, {
+    const res = await archivedFetch("onm", "atom_feed", FEED_URL, {
       headers: { accept: "application/atom+xml" },
     });
     if (!res.ok)
@@ -164,6 +178,7 @@ export async function ingestOnm(): Promise<OnmRun> {
       };
     xml = await res.text();
   } catch (error) {
+    if (error instanceof ArchiveFailure) throw error;
     return {
       fetched: 0,
       stored: 0,

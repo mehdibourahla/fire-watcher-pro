@@ -1,3 +1,4 @@
+import { archivedFetch, ArchiveFailure } from "@/lib/source-archive.server";
 import { isInWatchArea } from "./geo";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import type { SourceReplayInterval } from "@/lib/source-jobs";
@@ -127,7 +128,16 @@ export async function ingestFirms(
   for (const feed of FEEDS) {
     const url = `https://firms.modaps.eosdis.nasa.gov/api/area/csv/${key}/${feed.api}/${AREA}/${dayRange}`;
     try {
-      const res = await fetch(url);
+      const res = await archivedFetch("firms", "area_csv", url, undefined, {
+        requestParams: {
+          product: feed.api,
+          bounds: AREA,
+          days: dayRange,
+          ...(interval
+            ? { dataFrom: interval.dataFrom, dataThrough: interval.dataThrough }
+            : {}),
+        },
+      });
       const text = await res.text();
       if (!res.ok || text.startsWith("Invalid")) continue;
       const mapped = mapFirmsRows(parseCsv(text), feed.sensor).filter((row) => {
@@ -137,7 +147,8 @@ export async function ingestFirms(
       });
       all.push(...mapped);
       feeds.push(`${feed.sensor}:${mapped.length}`);
-    } catch {
+    } catch (error) {
+      if (error instanceof ArchiveFailure) throw error;
       // feed-level failure should not abort the whole run
     }
   }

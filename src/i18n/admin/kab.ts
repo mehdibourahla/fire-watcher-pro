@@ -1,5 +1,17 @@
 export const adminKab = {
   sources: {
+    archive: {
+      title: "Aɣbar n yisefka n yiɣbula",
+      description:
+        "50 n tikkal n ugmar tineggura. Isefka izwura ttwaḥerzen i tesleḍt d useqdec tikkelt nniḍen, ulac tukksa tawurmant. Akud UTC. I yinedbalen kan.",
+      source: "Tasarut n uɣbalu (ilem i meṛṛa)",
+      filter: "Sizdeg",
+      empty: "Ulac agmar yettwaḥerzen dagi.",
+      captured: "Isefka ttwaḥerzen",
+      not_modified: "Aɣbalu ur ibeddel ara (304)",
+      failed: "Agmar ur yeddi ara",
+      download: "Sider isefka yettwasenqden",
+    },
     ita: {
       title: "Info Trafic Algérie",
       description:

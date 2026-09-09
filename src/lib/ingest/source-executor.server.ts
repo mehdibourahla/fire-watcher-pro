@@ -1,5 +1,6 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { completeSourceJob, claimSourceJob } from "@/lib/source-jobs.server";
+import { withSourceArchiveContext } from "@/lib/source-archive-context.server";
 import type {
   ClaimedSourceJob,
   SourceExecutionTarget,
@@ -31,6 +32,7 @@ export type SourceExecutorDependencies = {
   ) => Promise<SourceJob>;
   runners: SourceRunnerRegistry;
   textRunner: (contractKey: string) => Promise<SourceRunner | null>;
+  parserVersion?: (job: ClaimedSourceJob) => Promise<string | null>;
 };
 
 const sourceExecutorDependencies: SourceExecutorDependencies = {
@@ -47,6 +49,16 @@ const sourceExecutorDependencies: SourceExecutorDependencies = {
     completeSourceJob(supabaseAdmin, job, workerId, result),
   runners: SOURCE_RUNNERS,
   textRunner: textSourceRunner,
+  parserVersion: async (job) => {
+    const { data, error } = await supabaseAdmin
+      .from("source_contracts")
+      .select("parser_version")
+      .eq("key", job.contract_key)
+      .eq("version", job.contract_version)
+      .maybeSingle();
+    if (error) throw new Error(`Source parser provenance: ${error.message}`);
+    return data?.parser_version ?? null;
+  },
 };
 
 function runnerFailure(job: ClaimedSourceJob, error: unknown): SourceJobResult {
@@ -81,7 +93,16 @@ export async function executeNextSourceJob(
       : await dependencies.textRunner(job.contract_key);
     if (!runner)
       throw new Error("No runner is registered for the claimed contract");
-    result = await runner(job);
+    const parserVersion = await dependencies.parserVersion?.(job);
+    result = await withSourceArchiveContext(
+      {
+        jobId: job.id,
+        attempt: job.attempt_count,
+        contractVersion: job.contract_version,
+        ...(parserVersion ? { parserVersion } : {}),
+      },
+      () => runner(job),
+    );
   } catch (error) {
     result = runnerFailure(job, error);
   }

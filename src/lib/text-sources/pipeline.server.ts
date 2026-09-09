@@ -1,3 +1,4 @@
+import { archivedFetch } from "@/lib/source-archive.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { fetchAllPages } from "@/lib/paginate";
 
@@ -772,7 +773,14 @@ const supabaseStore: TextSourceStore = {
 export function runTextSource(key: string): Promise<TextSourceRun> {
   return runTextSourceWith(key, {
     store: supabaseStore,
-    fetchPosts: (source, known) => fetchNewTelegramPosts(source.url, known),
+    fetchPosts: (source, known) =>
+      fetchNewTelegramPosts(source.url, known, (input, init) =>
+        archivedFetch(source.key, "public_preview", input, init, {
+          requestParams: {
+            before: new URL(String(input)).searchParams.get("before"),
+          },
+        }),
+      ),
     extractLlm: extractMentionsWithLlm,
   });
 }
