@@ -21,8 +21,8 @@
 - [x] S3 Offline readiness and Survival entry: prepare during zone setup; bounded commune pack with an offline area map and required routes/assets/guidance, readiness/error state, previous useful pack retained on failure. Verify cold offline entry and no-position Survival/SOS behavior; avoid bulk third-party tile crawling.
 - [x] S4 Personal preferences and account lifecycle: auth-reactive browser notifications respecting saved push preference; explicit unavailable email capability; self-service authenticated account deletion with confirmation and local identity/ownership tests.
 - [x] S5 Performance and public truth: project only needed public fields, remove excess geometry/data from initial loaders, preserve map/forecast behavior; counts from real delivery evidence and current source/language capability; update stale domain text.
-- [ ] S6 Dependency/password hardening: minimally upgrade vulnerable packages, audit lockfile, enable leaked-password protection if supported without changing plan, verify actual configuration.
-- [ ] S7 Integration: full CI-derived gates, local DB migrations/access checks, real browser workflows, source/delivery failure replay, independent review, durable closure ledger, clean commit/push/PR and CI.
+- [x] S6 Dependency/password hardening: minimally upgrade vulnerable packages, audit lockfile, enable leaked-password protection if supported without changing plan, verify actual configuration.
+- [x] S7 Integration: full CI-derived gates, local DB migrations/access checks, real browser workflows, source/delivery failure replay, independent review, durable closure ledger, clean commit/push/PR and CI.
 
 ## Decisions
 
@@ -32,6 +32,6 @@ Email alerts are not wired to an authorized sender; remove the misleading editab
 
 Baseline release and audit reproduction evidence verified before dispatch. Each package appends its files, regression commands/outcomes and behavioral limits here or in a linked report. No package is closed solely because a unit suite is green.
 
-Validation: full 828 application tests, 722 fresh-stack SQL assertions, TypeScript, lint (zero errors), production build and both concurrent delivery harnesses pass. Integrated spec and quality reviews PASS. See `docs/audits/2026-09-09-platform-audit.md` for behavioral evidence and limits. S6 hosted password configuration awaits owner dashboard login; S7 awaits PR/CI.
+Validation: 843 application tests, 729 fresh-stack SQL assertions, TypeScript, lint (zero errors), production build, CodeQL and both concurrent delivery harnesses pass. Integrated spec and quality reviews PASS. See `docs/audits/2026-09-09-platform-audit.md` for behavioral evidence and limits. PR #129 is open; no merge or application deployment has occurred.
 
-PR #129 follow-up: obsolete-cache/selected-pack preservation, headline-free ONM completion, truthful public progress, explicit unknown-position check-in and staged FK validation are verified. Latest application suite: 843 tests; spec and quality PASS. Hosted password setting still awaits owner sign-in; merge is not authorized yet.
+PR #129 follow-up: obsolete-cache/selected-pack preservation, headline-free ONM completion, truthful public progress, explicit unknown-position check-in and staged FK validation are verified. Hosted leaked-password protection was enabled and independently read back through the management API using existing CLI access, without a plan change. Merge is not authorized yet.
