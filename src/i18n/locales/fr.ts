@@ -206,6 +206,7 @@ export const fr: Translation = {
       "La préparation hors ligne nécessite une connexion et la prise en charge des service workers.",
   },
   nav: {
+    accountMenu: "Compte",
     admin: "Administration",
     menu: "Menu",
     contribute: "Contribuer",

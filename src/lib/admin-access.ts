@@ -63,12 +63,12 @@ export const ADMIN_SECTIONS: AdminSection[] = [
   { key: "audit", path: "/admin/audit", roles: PANEL_ROLES, ready: true },
 ];
 
-export function sectionsFor(roles: AppRole[]): AdminSection[] {
+export function sectionsFor(roles: readonly string[]): AdminSection[] {
   return ADMIN_SECTIONS.filter((section) =>
     section.roles.some((role) => roles.includes(role)),
   );
 }
 
-export function canReachPanel(roles: AppRole[]): boolean {
+export function canReachPanel(roles: readonly string[]): boolean {
   return sectionsFor(roles).length > 0;
 }

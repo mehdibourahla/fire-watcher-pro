@@ -40,6 +40,13 @@ import {
 } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { canReachPanel } from "@/lib/admin-access";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 
 const PRIMARY_NAV = [
   { to: "/", key: "nav.map" },
@@ -51,6 +58,11 @@ const PRIMARY_NAV = [
 ] as const;
 
 const ADMIN_NAV = { to: "/admin", key: "nav.admin" } as const;
+const ACCOUNT_NAV = [
+  { to: "/zones", key: "nav.account" },
+  { to: "/alerts", key: "nav.alerts" },
+  { to: "/settings", key: "nav.settings" },
+] as const;
 
 const TABS = [
   { to: "/", key: "nav.map", Icon: MapPin },
@@ -144,7 +156,7 @@ export function SubscribeBell() {
 
 /** Below lg the inline nav is hidden, so without this the only way to any page
  * that is not a bottom tab is the footer. */
-function MobileNav({ isAdmin }: { isAdmin: boolean }) {
+function MobileNav({ hasPanelAccess }: { hasPanelAccess: boolean }) {
   const { t, i18n } = useTranslation();
   const [open, setOpen] = useState(false);
   // the sheet has no logical side, so it must follow the locale or it opens from
@@ -169,7 +181,11 @@ function MobileNav({ isAdmin }: { isAdmin: boolean }) {
           </SheetTitle>
         </SheetHeader>
         <nav className="flex flex-col p-2" aria-label={t("nav.menu")}>
-          {(isAdmin ? [...PRIMARY_NAV, ADMIN_NAV] : PRIMARY_NAV).map((item) => (
+          {[
+            ...PRIMARY_NAV,
+            ...ACCOUNT_NAV,
+            ...(hasPanelAccess ? [ADMIN_NAV] : []),
+          ].map((item) => (
             <Link
               key={item.to}
               to={item.to}
@@ -208,12 +224,12 @@ export function SiteHeader() {
       return data.map((row) => row.role);
     },
   });
-  const isAdmin =
-    userId !== null && !roles.isError && !!roles.data?.includes("admin");
+  const hasPanelAccess =
+    userId !== null && !roles.isError && canReachPanel(roles.data ?? []);
   return (
     <header className="sticky top-0 z-20 border-b border-border bg-surface/95 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-[1600px] items-center gap-2 px-3 sm:gap-4 sm:px-4">
-        <MobileNav isAdmin={isAdmin} />
+        <MobileNav hasPanelAccess={hasPanelAccess} />
         <Link to="/" className="flex min-w-0 items-center gap-2">
           <BrandMark className="h-7 w-7 shrink-0 rounded-[7px]" />
           {/* below 360px the wordmark plus the controls no longer fit; the logo carries it */}
@@ -229,28 +245,36 @@ export function SiteHeader() {
           className="ms-4 hidden items-center gap-1 lg:flex"
           aria-label={t("nav.map")}
         >
-          {(isAdmin ? [...PRIMARY_NAV, ADMIN_NAV] : PRIMARY_NAV).map((item) => (
-            <Link
-              key={item.to}
-              to={item.to}
-              activeOptions={{ exact: item.to === "/" }}
-              className="rounded-md px-2.5 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground [&.active]:bg-muted [&.active]:font-medium [&.active]:text-foreground"
-            >
-              {t(item.key)}
-            </Link>
-          ))}
+          {(hasPanelAccess ? [...PRIMARY_NAV, ADMIN_NAV] : PRIMARY_NAV).map(
+            (item) => (
+              <Link
+                key={item.to}
+                to={item.to}
+                activeOptions={{ exact: item.to === "/" }}
+                className="rounded-md px-2.5 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground [&.active]:bg-muted [&.active]:font-medium [&.active]:text-foreground"
+              >
+                {t(item.key)}
+              </Link>
+            ),
+          )}
         </nav>
 
         <div className="ms-auto flex items-center gap-1 sm:gap-2">
           <LanguageSwitcher />
           <SubscribeBell />
           <ThemeToggle />
-          <Link
-            to="/zones"
-            className="shrink-0 whitespace-nowrap rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground"
-          >
-            {t("nav.account")}
-          </Link>
+          <DropdownMenu>
+            <DropdownMenuTrigger className="shrink-0 whitespace-nowrap rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground">
+              {t("nav.accountMenu")}
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {ACCOUNT_NAV.map((item) => (
+                <DropdownMenuItem key={item.to} asChild>
+                  <Link to={item.to}>{t(item.key)}</Link>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </header>

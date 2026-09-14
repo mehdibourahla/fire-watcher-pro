@@ -203,6 +203,7 @@ export const en = {
       "Offline preparation requires an online connection and service-worker support.",
   },
   nav: {
+    accountMenu: "Account",
     admin: "Admin",
     menu: "Menu",
     contribute: "Contribute",

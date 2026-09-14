@@ -1,12 +1,20 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  useNavigate,
+  useLocation,
+} from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { supabase } from "@/integrations/supabase/client";
 import { authErrorKey } from "@/lib/auth-errors";
+import { authDestination } from "@/lib/auth-destination";
 import { titledMeta } from "@/lib/page-meta";
 
 export const Route = createFileRoute("/auth")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    returnTo: authDestination(search["returnTo"]),
+  }),
   head: () => ({
     meta: titledMeta("account.authMetaTitle", "account.authSubtitle"),
   }),
@@ -16,6 +24,12 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const search = Route.useSearch();
+  const hash = useLocation({ select: (location) => location.hash });
+  const returnTo = authDestination(
+    search.returnTo +
+      (hash && !search.returnTo.includes("#") ? `#${hash}` : ""),
+  );
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -25,17 +39,14 @@ function AuthPage() {
 
   useEffect(() => {
     let cancelled = false;
-    void supabase.auth.getSession().then(({ data }) => {
-      if (!cancelled && data.session) void navigate({ to: "/zones" });
-    });
-    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_IN" && session) void navigate({ to: "/zones" });
+    void supabase.auth.getUser().then(({ data, error }) => {
+      if (!cancelled && !error && data.user)
+        void navigate({ href: returnTo, replace: true });
     });
     return () => {
       cancelled = true;
-      sub.subscription.unsubscribe();
     };
-  }, [navigate]);
+  }, [navigate, returnTo]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -44,12 +55,15 @@ function AuthPage() {
     setMessage(null);
     try {
       if (mode === "signup") {
-        const { error: signUpError } = await supabase.auth.signUp({
+        const { data, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: `${window.location.origin}/auth` },
+          options: {
+            emailRedirectTo: `${window.location.origin}/auth?${new URLSearchParams({ returnTo })}`,
+          },
         });
         if (signUpError) throw signUpError;
+        if (data.session) void navigate({ href: returnTo, replace: true });
         setMessage(t("account.checkEmail"));
       } else {
         const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -57,6 +71,7 @@ function AuthPage() {
           password,
         });
         if (signInError) throw signInError;
+        void navigate({ href: returnTo, replace: true });
       }
     } catch (err) {
       console.error(err);
