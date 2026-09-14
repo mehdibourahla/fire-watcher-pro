@@ -5,7 +5,7 @@ import {
   useNavigate,
   useLocation,
 } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { hasSessionCookie } from "@/integrations/supabase/session-cookie";
@@ -29,18 +29,33 @@ export const Route = createFileRoute("/_authenticated")({
 function AuthenticatedLayout() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [valid, setValid] = useState<boolean | null>(null);
+  const [validUser, setValidUser] = useState<string | null>(null);
+  const [sessionUser, setSessionUser] = useState<string | null>();
+  const previousUser = useRef<string | null | undefined>(undefined);
+
+  useEffect(() => {
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      const nextUser = session?.user.id ?? null;
+      if (previousUser.current !== nextUser) {
+        previousUser.current = nextUser;
+        setValidUser(null);
+        setSessionUser(nextUser);
+      }
+    });
+    return () => data.subscription.unsubscribe();
+  }, []);
 
   // A dehydrated data-only match does not re-run beforeLoad on the client, and the
   // cookie check cannot see a revoked or expired session — so validate here, and
   // hold the subtree back until it resolves rather than rendering doomed queries.
   useEffect(() => {
     if (authDestination(location.href) !== location.href) return;
+    if (sessionUser === undefined) return;
     let cancelled = false;
     void supabase.auth.getUser().then(({ data, error }) => {
       if (cancelled) return;
       const ok = !error && !!data.user;
-      setValid(ok);
+      setValidUser(ok ? data.user!.id : null);
       if (!ok)
         void navigate({
           to: "/auth",
@@ -51,8 +66,8 @@ function AuthenticatedLayout() {
     return () => {
       cancelled = true;
     };
-  }, [navigate, location.href]);
+  }, [navigate, location.href, sessionUser]);
 
-  if (!valid) return null;
-  return <Outlet />;
+  if (!validUser || validUser !== sessionUser) return null;
+  return <Outlet key={validUser} />;
 }

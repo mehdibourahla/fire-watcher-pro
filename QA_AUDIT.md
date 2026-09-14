@@ -789,3 +789,27 @@ Not started.
 ## 9 September bounded platform repair
 
 The separate [platform audit](docs/audits/2026-09-09-platform-audit.md#authorized-repair-pass--9-september-2026) now records A-01–A-10 repairs, fresh schema/application/concurrency validation and browser evidence. This does not close historical findings or claim completion of the exhaustive two-cycle audit. Hosted password protection still requires owner dashboard access; implementation awaits merge/deployment.
+# Authentication milestone — 2026-09-14
+
+Branch: `codex/authentication-kit`, based on merged navigation PR #130.
+
+| Journey | Observed result |
+| --- | --- |
+| Sign in with a private destination | Real local account reached `/alerts`; menu displayed its name and email. |
+| Signup and confirmation | Real signup stayed signed out with a 60-second resend cooldown; local Mailpit confirmation link completed PKCE and reached `/settings`. Entered name persisted in the profile and header. |
+| Settings to password recovery | Email prefilled; real recovery email received by isolated local Mailpit. |
+| Recovery callback and password replacement | Actual emailed link opened the new-password form; mismatch was rejected; matching password saved successfully; callback credentials removed from URL. |
+| Replayed recovery link | Existing valid session did not bypass the invalid-link screen; no password inputs rendered. |
+| Cross-tab signout | Signing out in a second tab removed the first tab's account panel and email and redirected it to sign-in. |
+| Email-sent screen to header Sign in | Navigation cleared the old sent state and displayed the sign-in form. |
+| Keyboard and RTL | Escape closed account menu and restored trigger focus. Arabic rendered RTL; settings had no horizontal overflow at 320, 390, 768 and 1440px. |
+| Google unavailable | Disabled local provider produced a localized actionable error instead of navigating to a broken provider endpoint. |
+| Local Auth integration harness | Ten server checks passed twice with fixture deletion verified: signup, confirmation, recovery, invalid/replayed tokens, weak-password rejection, password replacement and signout. |
+
+879 application tests passed. The first reviews found and prompted fixes for signup metadata, a duplicate JSX attribute, stale account identity and stale auth-mode state. Final typecheck, build and review outcomes are tracked in the implementation plan.
+
+Local QA used the existing local database, an isolated GoTrue replica and Mailpit; it did not send external email. Local Realtime was intentionally absent (503 websocket errors). An initial test-proxy CORS omission blocked profile reads; corrected it and verified persisted profile name through the actual settings UI. No production readiness is inferred from local tests.
+
+Production follow-up on 2026-09-14: Google OAuth is configured and its authorization redirect verified. Resend verified nadhir.app at 21:50 UTC; Supabase now uses the domain-scoped SMTP key and branded templates. Both a direct SMTP test and a real Supabase recovery email show Delivered to the owner's test account in Resend. Full Google sign-in and the deployed reset UI still require PR #132 to ship. Provider details are recorded in the authentication implementation plan.
+
+Additional authentication checks: public-page → account switch in another tab → Settings via client-side menu navigation showed only the new identity; root-level cache cleanup and its real QueryClient regression test passed. Local database suite failed in source_execution.test.sql because existing source_runs references prevent fixture source_jobs deletion (658 checks ran). No source/archive data was removed; fresh-database CI will validate the full suite.

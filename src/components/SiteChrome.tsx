@@ -12,9 +12,11 @@ import {
   TriangleAlert,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import type { User } from "@supabase/supabase-js";
 import { useTranslation } from "react-i18next";
 
 import { BrandMark } from "@/components/BrandMark";
+import { AccountMenu } from "@/components/AccountMenu";
 import { SubscribeSheet } from "@/components/nadhir/SubscribeSheet";
 import { RISK_LEVELS, riskSolid } from "@/components/nadhir/risk-visuals";
 import {
@@ -41,12 +43,6 @@ import {
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { canReachPanel } from "@/lib/admin-access";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
 
 const PRIMARY_NAV = [
   { to: "/", key: "nav.map" },
@@ -204,10 +200,11 @@ function MobileNav({ hasPanelAccess }: { hasPanelAccess: boolean }) {
 
 export function SiteHeader() {
   const { t } = useTranslation();
-  const [userId, setUserId] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null | undefined>(undefined);
+  const userId = user?.id ?? null;
   useEffect(() => {
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUserId(session?.user.id ?? null);
+      setUser(session?.user ?? null);
     });
     return () => data.subscription.unsubscribe();
   }, []);
@@ -263,18 +260,7 @@ export function SiteHeader() {
           <LanguageSwitcher />
           <SubscribeBell />
           <ThemeToggle />
-          <DropdownMenu>
-            <DropdownMenuTrigger className="shrink-0 whitespace-nowrap rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground">
-              {t("nav.accountMenu")}
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {ACCOUNT_NAV.map((item) => (
-                <DropdownMenuItem key={item.to} asChild>
-                  <Link to={item.to}>{t(item.key)}</Link>
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <AccountMenu user={user} hasPanelAccess={hasPanelAccess} />
         </div>
       </div>
     </header>

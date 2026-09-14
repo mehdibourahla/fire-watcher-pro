@@ -1,6 +1,7 @@
 import { createBrowserClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "./types";
+import { recoveryProof } from "@/lib/auth-flow";
 
 function isNewSupabaseApiKey(value: string): boolean {
   return value.startsWith("sb_publishable_") || value.startsWith("sb_secret_");
@@ -63,12 +64,41 @@ function createSupabaseClient() {
     });
   }
 
-  return createBrowserClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-    global,
+  const client = createBrowserClient<Database>(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY,
+    {
+      global,
+    },
+  );
+  client.auth.onAuthStateChange((event, session) => {
+    recoveryProof.observe(event, session?.user.id ?? null);
   });
+  return client;
 }
 
 let _supabase: ReturnType<typeof createSupabaseClient> | undefined;
+
+export async function googleSignInAvailable(): Promise<boolean> {
+  const url = import.meta.env["VITE_SUPABASE_URL"];
+  const key = import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"];
+  if (!url || !key) return false;
+  const response = await fetch(`${url}/auth/v1/settings`, {
+    headers: { apikey: key },
+    signal: AbortSignal.timeout(8000),
+  });
+  if (!response.ok) return false;
+  const settings: unknown = await response.json();
+  return Boolean(
+    settings &&
+    typeof settings === "object" &&
+    "external" in settings &&
+    settings.external &&
+    typeof settings.external === "object" &&
+    "google" in settings.external &&
+    settings.external.google === true,
+  );
+}
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";

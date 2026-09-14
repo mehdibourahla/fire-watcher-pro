@@ -1,6 +1,77 @@
 import type { Translation } from "./en";
 
 export const kab: Translation = {
+  authKit: {
+    localSignedOut:
+      "Déconnecté sur cet appareil. D’autres sessions peuvent rester actives.",
+    signinTitle: "Bon retour",
+    signinBody: "Connectez-vous pour gérer vos zones, alertes et compte.",
+    signupTitle: "Créez votre compte",
+    signupBody: "Retrouvez vos préférences et les zones que vous suivez.",
+    forgotTitle: "Mot de passe oublié ?",
+    forgotBody:
+      "Saisissez votre adresse e-mail pour recevoir un lien de réinitialisation.",
+    resetTitle: "Choisissez un nouveau mot de passe",
+    resetBody: "Utilisez un mot de passe fort et unique.",
+    verifyTitle: "Vérifiez votre adresse e-mail",
+    verifyBody:
+      "Saisissez votre adresse pour demander un nouveau lien de confirmation.",
+    signinAction: "Se connecter",
+    signupAction: "Créer mon compte",
+    forgotAction: "Envoyer le lien",
+    resetAction: "Enregistrer le mot de passe",
+    verifyAction: "Envoyer la confirmation",
+    passwordUpdated: "Mot de passe modifié",
+    passwordUpdatedBody:
+      "Votre nouveau mot de passe est enregistré. Vous pouvez accéder à votre compte.",
+    checkEmail: "Consultez votre boîte mail",
+    checkEmailBody:
+      "Si cette adresse est éligible, vous recevrez un e-mail indiquant la prochaine étape.",
+    emailHint:
+      "Vérifiez aussi les courriers indésirables. Ouvrez le lien dans ce navigateur.",
+    backHome: "Retour à la carte",
+    checking: "Vérification de votre session…",
+    continue: "Accéder à mon compte",
+    resendCountdown: "Renvoyer dans {{count}} secondes",
+    resend: "Renvoyer l’e-mail",
+    changeEmail: "Utiliser une autre adresse",
+    backSignin: "Retour à la connexion",
+    requestNewLink: "Demander un nouveau lien",
+    google: "Continuer avec Google",
+    googleUnavailable:
+      "La connexion Google est indisponible. Utilisez votre e-mail ou réessayez plus tard.",
+    emailDivider: "ou continuer avec un e-mail",
+    name: "Nom (facultatif)",
+    newPassword: "Nouveau mot de passe",
+    confirmPassword: "Confirmer le mot de passe",
+    passwordHint:
+      "Au moins 8 caractères. Privilégiez une phrase de passe unique.",
+    forgotLink: "Mot de passe oublié ?",
+    working: "Veuillez patienter…",
+    createAccount: "Nouveau sur Nadhir ? Créer un compte",
+    verifyLink: "Besoin d’un nouvel e-mail de confirmation ?",
+    publicAccess:
+      "La carte et le guide de survie restent accessibles sans compte.",
+    showPassword: "Afficher le mot de passe",
+    hidePassword: "Masquer le mot de passe",
+    passwordShort: "Utilisez au moins 8 caractères.",
+    passwordMismatch: "Les mots de passe ne correspondent pas.",
+    linkInvalid:
+      "Ce lien est invalide, expiré ou déjà utilisé. Demandez un nouveau lien et ouvrez-le dans le même navigateur.",
+    signedIn: "Connecté",
+    signedOut: "Vous êtes déconnecté.",
+    signingOut: "Déconnexion…",
+    signOutFailed: "La déconnexion a échoué. Réessayez.",
+    accountMenuLabel: "Menu du compte de {{name}}",
+    securityTitle: "Compte et sécurité",
+    emailVerified: "Adresse e-mail vérifiée",
+    emailUnverified: "Adresse e-mail non vérifiée",
+    signInMethods: "Méthodes de connexion",
+    emailMethod: "E-mail",
+    passwordSecurityHint:
+      "Pour définir ou modifier votre mot de passe, demandez un lien sécurisé par e-mail.",
+    changePassword: "Définir ou modifier le mot de passe",
+  },
   common: {
     close: "Belaɛ",
     dismiss: "Ffer",
@@ -987,7 +1058,7 @@ export const kab: Translation = {
       "Tzemreḍ ad tekkseḍ ilɣa seg usuddem-ik d umiḍan-ik deg yiɣewwaren. Tukksa n umiḍan tekkes isefka udmawanen, timnaḍin, ilɣa, webhooks d tugniwin n yineqqisen. Iɣmisen n usenqed n tmahelt qqimen war isulayen udmawanen.",
     privacy_sharing_title: "Beṭṭu",
     privacy_sharing_body:
-      "Ulac isefka udmawanen i yettwabḍan. API tazayezt tesken kan times d usmenyef.",
+      "Des prestataires traitent les données nécessaires au fonctionnement de Nadhir : Supabase gère les comptes et l’authentification, Resend transmet les e-mails liés au compte et Google assure la connexion si vous choisissez cette méthode. L’API et la carte publiques n’exposent ni vos zones, ni vos alertes, ni votre identité. Les signalements approuvés sont affichés sans votre nom.",
     privacy_rights_title: "Izerfan-ik",
     privacy_rights_body:
       "Tzemreḍ ad twaliḍ, ad tseggmeḍ, ad tekkseḍ isefka-k seg usebter n yiɣewwaren.",
