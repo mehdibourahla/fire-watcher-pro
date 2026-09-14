@@ -26,6 +26,6 @@ Public maps and Survival remain available. No tokens in logs or return destinati
 
 ## Verification outcome
 
-879 application tests and TypeScript passed; ESLint has zero errors (65 existing warnings). Spec and security/quality reviews passed after fixes. The final production build passed. Local database tests hit an existing source_runs foreign-key dependency in source_execution.test.sql; fresh-database CI remains the authoritative check.
+879 application tests and TypeScript passed; ESLint has zero errors (65 existing warnings). Spec and security/quality reviews passed after fixes. The final production build passed. Local database tests hit a source_runs foreign-key dependency in the reused QA database; fresh-database CI passed on PR #132, alongside application checks and CodeQL.
 
-Google branding was created by the owner. OAuth client configuration is prepared and awaits credential-creation approval. Resend remains on its sign-in screen. No production auth settings have been changed. Google client credential creation is awaiting approval.
+Google branding was created by the owner. OAuth client configuration is prepared and awaits credential-creation approval. Resend is signed in and nadhir.app was added; its DKIM and send-subdomain SPF/MX records still need publishing. Cloudflare requires sign-in. Resend's sending-only key selector currently offers only the existing verified domain, so the Nadhir key must wait for verification. No production Supabase Auth settings have been changed. PR #132 remains draft until provider setup and live validation are complete.
