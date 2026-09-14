@@ -5,11 +5,13 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { requestNotificationPermission } from "@/components/AlertNotifier";
+import { AccountSecurity } from "@/components/AccountSecurity";
 
 import { supabase } from "@/integrations/supabase/client";
 import { LOCALES, LOCALE_LABELS, applyLocale, type Locale } from "@/i18n";
 import { profileQuery, saveProfileSettings } from "@/lib/account";
 import { titledMeta } from "@/lib/page-meta";
+import { signOutAccount } from "@/lib/sign-out";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({
@@ -33,6 +35,7 @@ function SettingsPage() {
     quiet_hours_end: "",
   });
   const [saved, setSaved] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
   const removeAccount = useMutation({
     mutationFn: async () => {
@@ -108,9 +111,19 @@ function SettingsPage() {
   });
 
   async function signOut() {
-    await supabase.auth.signOut();
-    qc.clear();
-    void navigate({ to: "/" });
+    setSigningOut(true);
+    try {
+      const scope = await signOutAccount();
+      await qc.cancelQueries();
+      qc.clear();
+      if (scope === "local") toast.warning(t("authKit.localSignedOut"));
+      else toast.success(t("authKit.signedOut"));
+      void navigate({ to: "/", replace: true });
+    } catch {
+      toast.error(t("account.errorUnavailable"));
+    } finally {
+      setSigningOut(false);
+    }
   }
 
   return (
@@ -119,6 +132,8 @@ function SettingsPage() {
       <p className="mt-1 text-sm text-muted-foreground">
         {t("account.settingsSubtitle")}
       </p>
+
+      <AccountSecurity />
 
       <form
         className="panel mt-5 space-y-4 p-5 text-sm"
@@ -276,6 +291,7 @@ function SettingsPage() {
           <button
             type="button"
             onClick={signOut}
+            disabled={signingOut}
             className="rounded-md border border-border px-4 py-2 hover:bg-secondary"
           >
             {t("account.signOut")}

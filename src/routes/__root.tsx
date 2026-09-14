@@ -25,6 +25,7 @@ import {
 import { THEME_BOOT_SCRIPT, applyTheme, readThemeCookie } from "../lib/theme";
 import { SiteHeader, SiteFooter, BottomTabs } from "../components/SiteChrome";
 import { AlertNotifier } from "../components/AlertNotifier";
+import { watchAuthCache } from "@/lib/auth-cache";
 
 function NotFoundComponent() {
   const { t } = useTranslation();
@@ -164,6 +165,7 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient, locale } = Route.useRouteContext();
   const i18nInstance = useMemo(() => localeInstance(locale), [locale]);
+  useEffect(() => watchAuthCache(queryClient), [queryClient]);
   // Survival Mode owns the whole screen: no header, tabs or footer competing for it.
   const survival = useRouterState({
     select: (s) =>
