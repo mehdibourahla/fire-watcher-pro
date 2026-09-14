@@ -1058,7 +1058,7 @@ export const kab: Translation = {
       "Tzemreḍ ad tekkseḍ ilɣa seg usuddem-ik d umiḍan-ik deg yiɣewwaren. Tukksa n umiḍan tekkes isefka udmawanen, timnaḍin, ilɣa, webhooks d tugniwin n yineqqisen. Iɣmisen n usenqed n tmahelt qqimen war isulayen udmawanen.",
     privacy_sharing_title: "Beṭṭu",
     privacy_sharing_body:
-      "Ulac isefka udmawanen i yettwabḍan. API tazayezt tesken kan times d usmenyef.",
+      "Des prestataires traitent les données nécessaires au fonctionnement de Nadhir : Supabase gère les comptes et l’authentification, Resend transmet les e-mails liés au compte et Google assure la connexion si vous choisissez cette méthode. L’API et la carte publiques n’exposent ni vos zones, ni vos alertes, ni votre identité. Les signalements approuvés sont affichés sans votre nom.",
     privacy_rights_title: "Izerfan-ik",
     privacy_rights_body:
       "Tzemreḍ ad twaliḍ, ad tseggmeḍ, ad tekkseḍ isefka-k seg usebter n yiɣewwaren.",

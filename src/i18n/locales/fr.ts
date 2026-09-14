@@ -1084,7 +1084,7 @@ export const fr: Translation = {
       "Vous pouvez supprimer les alertes de votre fil et votre compte dans les paramètres. La suppression du compte retire les données personnelles, zones, alertes, webhooks et photos de signalement. Les journaux opérationnels sont conservés sans identifiants personnels.",
     privacy_sharing_title: "Partage",
     privacy_sharing_body:
-      "Aucune donnée personnelle n'est partagée. L'API publique n'expose que les feux et les prévisions, jamais vos zones ni votre identité.",
+      "Des prestataires traitent les données nécessaires au fonctionnement de Nadhir : Supabase gère les comptes et l’authentification, Resend transmet les e-mails liés au compte et Google assure la connexion si vous choisissez cette méthode. L’API et la carte publiques n’exposent ni vos zones, ni vos alertes, ni votre identité. Les signalements approuvés sont affichés sans votre nom.",
     privacy_rights_title: "Vos droits",
     privacy_rights_body:
       "Vous pouvez consulter, corriger et supprimer vos données depuis la page Réglages.",

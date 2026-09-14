@@ -1063,7 +1063,7 @@ export const en = {
       "You can delete alerts from your feed and delete your account in Settings. Account deletion removes personal data, zones, alerts, webhook endpoints and uploaded report photos. Operational audit records are retained with personal identifiers removed.",
     privacy_sharing_title: "Sharing",
     privacy_sharing_body:
-      "Nothing personal is shared with third parties. The public API and public map expose fire and forecast data only — never your zones, your alerts or your identity. Approved citizen reports are shown without your name.",
+      "Service providers process the data needed to operate Nadhir: Supabase handles accounts and authentication, Resend delivers account emails, and Google handles sign-in when you choose that method. The public API and map do not expose your zones, alerts or identity. Approved citizen reports are shown without your name.",
     privacy_rights_title: "Your rights",
     privacy_rights_body:
       "You can view, correct and delete your data from your settings page at any time.",
