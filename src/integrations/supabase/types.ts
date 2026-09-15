@@ -34,6 +34,48 @@ export type Database = {
   };
   public: {
     Tables: {
+      weather_snapshots: {
+        Row: {
+          id: string;
+          commune_id: string;
+          scheduled_at: string;
+          fetched_at: string;
+          job_id: string | null;
+          evidence: Json;
+        };
+        Insert: {
+          id?: string;
+          commune_id: string;
+          scheduled_at: string;
+          fetched_at: string;
+          job_id?: string | null;
+          evidence: Json;
+        };
+        Update: {
+          id?: string;
+          commune_id?: string;
+          scheduled_at?: string;
+          fetched_at?: string;
+          job_id?: string | null;
+          evidence?: Json;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "weather_snapshots_commune_id_fkey";
+            columns: ["commune_id"];
+            isOneToOne: false;
+            referencedRelation: "admin_units";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "weather_snapshots_job_id_fkey";
+            columns: ["job_id"];
+            isOneToOne: false;
+            referencedRelation: "source_jobs";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       webhook_outbox: {
         Row: {
           alert_id: string;
@@ -3205,6 +3247,14 @@ export type Database = {
     };
     Functions: {
       retry_text_document: { Args: { _id: string }; Returns: undefined };
+      current_weather_snapshot: {
+        Args: { _commune_id: string };
+        Returns: Json;
+      };
+      save_weather_snapshots: {
+        Args: { _job: string; _attempt: number; _snapshots: Json };
+        Returns: number;
+      };
       write_text_source: {
         Args: {
           _attempt?: number | null;

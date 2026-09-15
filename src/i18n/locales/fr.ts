@@ -51,7 +51,7 @@ export const fr: Translation = {
     createAccount: "Nouveau sur Nadhir ? Créer un compte",
     verifyLink: "Besoin d’un nouvel e-mail de confirmation ?",
     publicAccess:
-      "La carte et le guide de survie restent accessibles sans compte.",
+      "La carte, les prévisions et le guide de survie face aux incendies restent accessibles sans compte.",
     showPassword: "Afficher le mot de passe",
     hidePassword: "Masquer le mot de passe",
     passwordShort: "Utilisez au moins 8 caractères.",
@@ -77,7 +77,7 @@ export const fr: Translation = {
     dismiss: "Masquer",
     delete: "Supprimer",
     appName: "Nadhir",
-    tagline: "Alerte précoce aux feux de forêt en Algérie",
+    tagline: "Risques locaux et alertes en Algérie",
     loading: "Chargement",
     error: "Une erreur est survenue",
     retry: "Réessayer",
@@ -97,7 +97,7 @@ export const fr: Translation = {
       "Les flux satellites en direct ne sont pas encore connectés. Les chiffres affichés proviennent d'un scénario de démonstration.",
   },
   meta: {
-    defaultTitle: "Nadhir — Alerte précoce aux feux de forêt en Algérie",
+    defaultTitle: "Nadhir — Risques locaux et alertes en Algérie",
     titleTemplate: "{{page}} — Nadhir",
   },
   notFound: {
@@ -114,10 +114,10 @@ export const fr: Translation = {
     positionUnknown: "Position indisponible",
     smokeUnavailable:
       "Les données locales sur la qualité de l’air sont indisponibles ici. La position de votre appareil n’est pas envoyée à un fournisseur de qualité de l’air.",
-    mode: "Mode survie",
+    mode: "Survie face aux incendies",
     online: "En ligne",
     offline: "Hors ligne",
-    pill: "En danger ?",
+    pill: "Près d’un incendie ?",
     enterTitle: "Êtes-vous près d'un feu en ce moment ?",
     enterBody:
       "Le mode survie présente une action à la fois et utilise le dossier hors ligne déjà préparé dans vos zones. Si la localisation est disponible, il affiche votre position pour appeler la Protection civile au 14.",
@@ -135,9 +135,9 @@ export const fr: Translation = {
     exitTitle: "Quitter le mode survie ?",
     exitBody: "Votre pack hors ligne reste enregistré sur ce téléphone.",
     exitYes: "Quitter",
-    interTitle: "Feu confirmé près de votre position",
+    interTitle: "Incendie détecté près de vous",
     interBody:
-      "Un feu confirmé par satellite se trouve à environ {{km}} km de ce téléphone. Nadhir peut passer en mode survie : une seule chose à faire à la fois, fonctionne sans réseau.",
+      "Un incendie a été détecté à environ {{km}} km de ce téléphone. Une détection ne vaut pas confirmation officielle. Nadhir peut passer en mode survie face aux incendies : une chose à faire à la fois, même sans réseau.",
     interBasedOn: "Basé sur",
     interPosition: "la position de votre appareil",
     interObservation: "Observation",
@@ -549,7 +549,7 @@ export const fr: Translation = {
       "{{count}} sources de données affectées — la capacité actuelle peut être réduite.",
     metaTitle: "État des sources de données — Nadhir",
     metaDescription:
-      "État en direct des flux satellites, météo et géodonnées qui alimentent les alertes Nadhir.",
+      "État des sources satellitaires, météo, d’avertissements officiels et géographiques utilisées par Nadhir.",
     title: "Sources de données",
     recallTitle: "Signalements officiels et satellites",
     recallBody:
@@ -596,22 +596,23 @@ export const fr: Translation = {
     contributeBody:
       "Des lieux vérifiés, une langue relue par quelqu’un qui la parle, une mise en relation avec une direction de wilaya. Voici ce qui manque.",
     contributeCta: "Voir ce qui manque",
-    attribution: "Données : NASA FIRMS, Open-Meteo, OpenStreetMap — CC-BY 4.0",
+    attribution:
+      "Sources : NASA FIRMS · EUMETSAT · Copernicus · Open-Meteo · ONM · DGPC · OpenStreetMap",
     metaTitle: "À propos de Nadhir — méthodologie et données",
     metaDescription:
-      "Comment Nadhir détecte les feux, calcule le danger et quelles sources ouvertes et licences il utilise.",
+      "Comment Nadhir rassemble prévisions météo, observations satellitaires des incendies et avertissements officiels attribués pour l’Algérie.",
     title: "À propos de Nadhir",
     missionTitle: "Mission",
     mission:
-      "Détecter les feux en Algérie aussi tôt que les satellites le permettent, prévoir le danger quotidien et diffuser des alertes claires en arabe, français, anglais et tamazight — libre et gratuit.",
-    howTitle: "Comment fonctionne la détection",
-    how: "Les points chauds de NASA FIRMS (VIIRS/MODIS), d'EUMETSAT Meteosat MTG FCI et de Copernicus Sentinel-3 SLSTR sont dédupliqués et regroupés dans l'espace et le temps. Une observation reste une détection unique ; deux observations indépendantes en font une détection satellite. Nadhir ne déclare jamais un incendie confirmé : seule la Protection civile le fait, et ses mots et son horodatage sont repris tels quels.",
-    dangerTitle: "Comment le danger est évalué",
+      "Aider les personnes en Algérie à comprendre les risques près des lieux qu’elles suivent grâce aux prévisions météo, aux observations satellitaires et aux avertissements officiels clairement attribués. Gratuit et open source, disponible en arabe, français et anglais.",
+    howTitle: "Comment les informations sont rassemblées",
+    how: "Open-Meteo fournit les prévisions météo horaires. Les avertissements de l’ONM restent distincts et attribués à leur source officielle, même si le modèle est indisponible ou diverge. NASA FIRMS, EUMETSAT MTG FCI et Sentinel-3 SLSTR fournissent les observations satellitaires des incendies, regroupées dans l’espace et le temps. Une détection est un indice ; seule une source officielle confirme un incendie.",
+    dangerTitle: "Danger d’incendie et prévisions météo",
     danger:
-      "Le danger utilise l'indice forêt-météo canadien, calculé à partir de la température, l'humidité, le vent et la pluie, recoupé avec EFFIS/GWIS, puis ajusté selon le couvert forestier et le vent.",
+      "Le danger d’incendie utilise l’indice canadien FWI, les données météo d’Open-Meteo et une comparaison EFFIS. Les prévisions horaires présentent séparément précipitations, probabilité, rafales et conditions orageuses prévues. Les codes météo du modèle sont des prévisions, pas des observations de foudre ni des seuils automatiques d’urgence.",
     limitsTitle: "Limites",
     limits:
-      "Nadhir ne prédit pas les départs de feu et ne remplace pas la Protection Civile. Les passages satellites ont une latence, les petits feux sous couvert peuvent échapper à la détection et les surfaces sont des estimations.",
+      "Nadhir ne remplace pas la Protection civile et ne garantit ni couverture complète ni réception des notifications. Les prévisions peuvent être erronées ou indisponibles ; un point de grille calme ne réfute pas un avertissement officiel à l’échelle d’une wilaya. Les satellites peuvent manquer des incendies et les observations arrivent avec retard. Le mode survie contient des consignes propres aux incendies, pas aux inondations.",
     dataTitle: "Données et licences",
     data: "Le code est en AGPL-3.0. Les données produites sont en CC-BY 4.0 avec attribution aux sources ci-dessous.",
   },
@@ -625,7 +626,7 @@ export const fr: Translation = {
     markUnread: "Marquer comme non lu",
     unread: "{{count}} non lues",
     empty:
-      "Aucune alerte pour l'instant. Ajoutez une zone et Nadhir vous préviendra.",
+      "Aucune alerte pour le moment. Ajoutez une zone pour suivre les alertes disponibles.",
     manageZones: "Gérer mes zones",
     kindFire: "Incendie",
     kindRisk: "Danger",
@@ -640,7 +641,8 @@ export const fr: Translation = {
       "{{count}} incendies actifs dans cette zone — le plus proche à {{km}} km.",
     authTitle: "Se connecter à Nadhir",
     authMetaTitle: "Se connecter",
-    authSubtitle: "Enregistrez les lieux qui comptent et soyez alerté tôt.",
+    authSubtitle:
+      "Enregistrez les lieux qui comptent et gérez vos préférences d’alerte.",
     email: "E-mail",
     password: "Mot de passe",
     signIn: "Se connecter",
@@ -660,7 +662,7 @@ export const fr: Translation = {
       "La connexion est momentanément indisponible. Réessayez dans un instant.",
     zonesTitle: "Mes zones surveillées",
     zonesSubtitle:
-      "Nadhir surveille ces lieux et vous alerte quand le feu ou le danger s'en approche.",
+      "Gérez les lieux suivis et leurs alertes disponibles sur les incendies et le danger.",
     newZone: "Ajouter une zone",
     zoneCommune: "Commune",
     zoneCustom: "Point personnalisé",
@@ -784,7 +786,7 @@ export const fr: Translation = {
       "Ce qui manque à Nadhir aujourd’hui, et comment aider — vérifier des lieux, relire le kabyle, enregistrer les consignes, ouvrir des portes institutionnelles, et le code.",
     eyebrow: "Contribuer",
     title: "Nadhir a besoin de bien plus que de code.",
-    lede: "Les compteurs en direct montrent une partie des progrès de Nadhir. Vérifications sur le terrain, révision linguistique, validation scientifique et coordination officielle restent essentielles.",
+    lede: "Contribuez à l’information sur les risques locaux en Algérie. Vérifications de terrain, révision linguistique, validation scientifique et coordination officielle restent essentielles aux côtés du code.",
     measuredAt: "Lu dans la base de données en direct · {{date}}",
     unavailable: "Compte indisponible",
     statPlaces: "Lieux vérifiés",
@@ -1025,6 +1027,8 @@ export const fr: Translation = {
       "Chaque requête porte un en-tête X-Nadhir-Signature : sha256= suivi du HMAC-SHA256 du corps brut, calculé avec votre clé de signature. Vérifiez-le avant de traiter la charge utile.",
   },
   dev: {
+    weatherDesc:
+      "Dernière prévision Open-Meteo sur 48 heures et fraîcheur, actualisée toutes les six heures. Une prévision, pas une alerte officielle.",
     title: "API publique",
     subtitle:
       "Accès JSON libre et en lecture seule aux foyers et aux prévisions de danger de Nadhir.",
@@ -1049,14 +1053,14 @@ export const fr: Translation = {
     privacy: "Confidentialité",
     termsMetaTitle: "Conditions d'utilisation et avertissement — Nadhir",
     termsMetaDescription:
-      "Nadhir est un service d'information et d'alerte précoce aux feux de forêt en Algérie. Consultez les conditions d'utilisation, les limites et l'avertissement de sécurité.",
+      "Nadhir fournit des informations sur les risques locaux et des alertes en Algérie. Consultez ses conditions et limites.",
     privacyMetaTitle: "Politique de confidentialité — Nadhir",
     privacyMetaDescription:
-      "Quelles données personnelles Nadhir conserve pour les alertes, pendant combien de temps, et comment supprimer les données de votre compte.",
+      "Les données personnelles conservées par Nadhir pour les alertes locales, leur durée de conservation et leur suppression.",
     termsTitle: "Conditions d'utilisation et avertissement",
     terms_purpose_title: "Ce qu'est Nadhir",
     terms_purpose_body:
-      "Nadhir est un service d'information libre et open source qui affiche les détections satellitaires de feux et le danger calculé pour l'Algérie. Ce n'est pas un système d'alerte officiel.",
+      "Nadhir est un service d’information gratuit et open source pour l’Algérie, rassemblant prévisions météo, observations satellitaires des incendies, danger d’incendie et avertissements officiels attribués. Ce n’est pas un système officiel d’alerte et aucun organisme gouvernemental ne l’exploite.",
     terms_noGuarantee_title: "Aucune garantie",
     terms_noGuarantee_body:
       "Les passages satellites sont périodiques, les nuages masquent les foyers et des fausses détections existent. L'absence de feu sur la carte ne signifie jamais l'absence de feu sur le terrain.",
@@ -1137,36 +1141,37 @@ export const fr: Translation = {
     bannerOnm: "Avertissement officiel ONM",
     bannerOpen: "Ouvrir les détails de l'incendie",
     bell: "Alertes de votre zone",
-    inviteTitle: "Alerte immédiate si un feu approche",
+    inviteTitle: "Alertes pour les lieux que vous suivez",
     inviteBody:
-      "Choisissez vos communes pour être notifié dès qu'un incendie y est confirmé — gratuit, sans compte, désactivable à tout moment.",
+      "Choisissez vos communes pour les alertes incendie disponibles et les avertissements météo officiels — gratuit, sans compte, désactivable à tout moment.",
     inviteCta: "Activer les alertes de ma zone",
     inviteLater: "Plus tard",
     inviteOnce:
       "Affiché une seule fois — la cloche en haut reste toujours disponible.",
     sheetTitle: "Alertes de votre zone",
     sheetBody:
-      "Reçues dès qu'un incendie est confirmé près de vos communes — sans compte, sans e-mail. Votre abonnement est anonyme et reste sur cet appareil.",
+      "Alertes incendie et avertissements météo officiels pour vos communes. Aucun compte ni e-mail requis. La réception dépend des sources, de votre connexion et des réglages de l’appareil.",
     yourCommunes: "Vos communes",
     addCommune: "Ajouter une commune",
     searchCommune: "Rechercher une commune…",
     maxCommunes: "Jusqu'à {{max}} communes.",
     lang: "Langue des alertes",
     whatTitle: "Ce que vous recevez",
-    whatFires: "Incendies confirmés près de vos communes",
+    whatFires:
+      "Incendies détectés ou confirmés officiellement près de vos communes",
     whatFiresAlways: "toujours",
     whatOnm: "Avertissements météo officiels (ONM)",
     noDanger:
-      "Nous n'envoyons jamais les niveaux de danger quotidiens — uniquement les incendies confirmés et les avertissements officiels.",
+      "Les niveaux quotidiens de danger d’incendie et les prévisions météo du modèle ne déclenchent pas ces notifications.",
     activate: "Activer les alertes",
     update: "Mettre à jour l'abonnement",
     disable: "Désactiver les alertes",
     permissionTitle:
       "Pour vous joindre, Nadhir a besoin de l'autorisation de notification",
     permissionBody:
-      "Quand un satellite confirme un incendie près d'une de vos communes, une notification vous parvient en quelques minutes — même application fermée.",
+      "Autorisez cet appareil à recevoir les alertes incendie disponibles et les avertissements météo officiels. Les satellites détectent les incendies ; seules les sources officielles les confirment. La réception et le délai des notifications ne sont pas garantis.",
     permissionPoint1:
-      "Incendies confirmés et avertissements officiels uniquement — aucun message quotidien.",
+      "Alertes incendie et avertissements officiels, sans messages de prévisions quotidiens.",
     permissionPoint2:
       "Sans compte : nous ne connaissons ni votre nom, ni votre numéro, ni votre position précise.",
     permissionPoint3: "Désactivable à tout moment depuis cet écran.",

@@ -47,7 +47,7 @@ export const en = {
     createAccount: "New to Nadhir? Create an account",
     verifyLink: "Need another confirmation email?",
     publicAccess:
-      "The map and Survival guide remain available without an account.",
+      "The map, forecasts and fire Survival guide remain available without an account.",
     showPassword: "Show password",
     hidePassword: "Hide password",
     passwordShort: "Use at least 8 characters.",
@@ -73,7 +73,7 @@ export const en = {
     dismiss: "Dismiss",
     delete: "Delete",
     appName: "Nadhir",
-    tagline: "Wildfire early warning for Algeria",
+    tagline: "Local hazards and alerts for Algeria",
     loading: "Loading",
     error: "Something went wrong",
     retry: "Try again",
@@ -93,7 +93,7 @@ export const en = {
       "Live satellite feeds are not connected yet. Figures shown come from a seeded demonstration scenario.",
   },
   meta: {
-    defaultTitle: "Nadhir — Wildfire early warning for Algeria",
+    defaultTitle: "Nadhir — Local hazards and alerts for Algeria",
     titleTemplate: "{{page}} — Nadhir",
   },
   notFound: {
@@ -110,10 +110,10 @@ export const en = {
     positionUnknown: "Position unavailable",
     smokeUnavailable:
       "Local air-quality data is unavailable here. Your device position is not sent to an air-quality provider.",
-    mode: "Survival Mode",
+    mode: "Fire Survival Mode",
     online: "Online",
     offline: "Offline",
-    pill: "In danger?",
+    pill: "Near a fire?",
     enterTitle: "Are you near a fire right now?",
     enterBody:
       "Survival Mode shows one thing to do at a time and uses any offline pack already prepared in your zones. With location available, it shows your position for a call to Civil Protection 14.",
@@ -131,9 +131,9 @@ export const en = {
     exitTitle: "Leave Survival Mode?",
     exitBody: "Your offline pack stays saved on this phone.",
     exitYes: "Leave",
-    interTitle: "Fire confirmed near your position",
+    interTitle: "Fire detected near you",
     interBody:
-      "A satellite-confirmed fire is about {{km}} km from where this phone is now. Nadhir can switch to Survival Mode: one thing to do at a time, works without network.",
+      "A fire has been detected about {{km}} km from where this phone is now. Detection is not official confirmation. Nadhir can switch to fire Survival Mode: one thing to do at a time, works without network.",
     interBasedOn: "Based on",
     interPosition: "your device position",
     interObservation: "Observation",
@@ -540,7 +540,7 @@ export const en = {
       "{{count}} data sources affected — current capability may be reduced.",
     metaTitle: "Data source health — Nadhir",
     metaDescription:
-      "Live health of the satellite, weather and geodata feeds that power Nadhir's fire warnings.",
+      "Health of the satellite, weather, official warning and geodata sources used by Nadhir.",
     title: "Data sources",
     recallTitle: "Official reports vs satellites",
     recallBody:
@@ -583,22 +583,23 @@ export const en = {
     contributeBody:
       "Verified places, a language reviewed by someone who speaks it, one introduction to a wilaya directorate. Here is what is missing.",
     contributeCta: "See what is missing",
-    attribution: "Data: NASA FIRMS, Open-Meteo, OpenStreetMap — CC-BY 4.0",
+    attribution:
+      "Sources: NASA FIRMS · EUMETSAT · Copernicus · Open-Meteo · ONM · DGPC · OpenStreetMap",
     metaTitle: "About Nadhir — methodology & data",
     metaDescription:
-      "How Nadhir detects wildfires, computes fire danger, and which open data sources and licences it relies on.",
+      "How Nadhir brings together weather forecasts, satellite fire observations and attributed official warnings for Algeria.",
     title: "About Nadhir",
     missionTitle: "Mission",
     mission:
-      "Detect wildfires in Algeria as early as satellite data allows, forecast daily fire danger, and deliver clear alerts in Arabic, French, English and Tamazight — free and open source.",
-    howTitle: "How detection works",
-    how: "Satellite hotspots from NASA FIRMS (VIIRS/MODIS), EUMETSAT Meteosat MTG FCI and Copernicus Sentinel-3 SLSTR are de-duplicated and clustered in space and time. One look is a single detection; two independent looks make it a satellite detection. Nadhir never calls a fire confirmed — only Protection Civile does, and its wording and timestamp are shown as they were published.",
-    dangerTitle: "How danger is rated",
+      "Help people in Algeria understand hazards near their chosen locations through weather forecasts, satellite observations and clearly attributed official warnings. Free and open source, available in Arabic, French and English.",
+    howTitle: "How the information is assembled",
+    how: "Open-Meteo provides hourly weather forecasts. ONM warnings remain separate and retain their official attribution even when model data is unavailable or differs. NASA FIRMS, EUMETSAT MTG FCI and Sentinel-3 SLSTR provide satellite fire observations, grouped in space and time. Satellite detection is evidence; only an official source confirms a fire.",
+    dangerTitle: "Fire danger and weather forecasts",
     danger:
-      "Fire danger uses the Canadian Fire Weather Index, computed from temperature, humidity, wind and rainfall, cross-checked against EFFIS/GWIS forecasts, then adjusted for forest cover and wind.",
+      "Fire danger uses the Canadian Fire Weather Index with weather inputs from Open-Meteo and an EFFIS comparison. Hourly weather forecasts show precipitation, probability, gusts and predicted storm conditions separately. Model weather codes are forecasts, not lightning observations or automatic emergency thresholds.",
     limitsTitle: "Limits",
     limits:
-      "Nadhir cannot predict individual ignitions and does not replace Civil Protection. Satellite passes have latency, small fires under tree canopy can go undetected, and area figures are estimates.",
+      "Nadhir does not replace Civil Protection or guarantee complete coverage or notification delivery. Forecasts can be wrong or unavailable; a quiet model grid point does not disprove a wilaya-wide official warning. Satellites can miss fires and observations arrive with delay. Survival Mode contains fire-specific guidance, not flood guidance.",
     dataTitle: "Data & licences",
     data: "Platform code is AGPL-3.0. Data outputs are CC-BY 4.0 with attribution to the upstream sources below.",
   },
@@ -611,7 +612,7 @@ export const en = {
     markRead: "Mark as read",
     markUnread: "Mark as unread",
     unread: "{{count}} unread",
-    empty: "No alerts yet. Add a watch zone and Nadhir will warn you.",
+    empty: "No alerts yet. Add a watch zone to follow available alerts.",
     manageZones: "Manage my zones",
     kindFire: "Fire",
     kindRisk: "Danger",
@@ -626,7 +627,8 @@ export const en = {
     authTitle: "Sign in to Nadhir",
     // authTitle carries the brand for the heading; the head template adds its own
     authMetaTitle: "Sign in",
-    authSubtitle: "Save the places you care about and get warned early.",
+    authSubtitle:
+      "Save the places you care about and manage your alert preferences.",
     email: "Email",
     password: "Password",
     signIn: "Sign in",
@@ -645,7 +647,7 @@ export const en = {
       "Sign-in is temporarily unavailable. Please try again in a moment.",
     zonesTitle: "My watch zones",
     zonesSubtitle:
-      "Nadhir watches these places and warns you when fire or danger reaches them.",
+      "Manage the places you follow and their available fire and danger alerts.",
     newZone: "Add a zone",
     zoneCommune: "Commune",
     zoneCustom: "Custom point",
@@ -766,7 +768,7 @@ export const en = {
       "What is missing from Nadhir today, and how to help — verifying places, reviewing Kabyle, recording guidance, opening institutional doors, and code.",
     eyebrow: "Contribute",
     title: "Nadhir needs more than code.",
-    lede: "Live counts show part of Nadhir’s progress. Field checks, language review, scientific validation and official coordination remain essential work.",
+    lede: "Help build local hazard information for Algeria. Field checks, language review, scientific validation and official coordination remain essential alongside code.",
     measuredAt: "Read from the live database · {{date}}",
     unavailable: "Count unavailable",
     statPlaces: "Places verified",
@@ -1004,6 +1006,8 @@ export const en = {
       "Each request carries an X-Nadhir-Signature header: sha256= followed by the HMAC-SHA256 of the raw body, keyed with your signing secret. Verify it before trusting the payload.",
   },
   dev: {
+    weatherDesc:
+      "Latest stored 48-hour Open-Meteo forecast and freshness, refreshed every six hours. Forecast evidence, not an official warning.",
     title: "Public API",
     subtitle:
       "Free, read-only JSON access to Nadhir's fire clusters and danger forecasts.",
@@ -1028,14 +1032,14 @@ export const en = {
     privacy: "Privacy",
     termsMetaTitle: "Terms of use & disclaimer — Nadhir",
     termsMetaDescription:
-      "Nadhir is an informational wildfire early-warning service for Algeria. Read the terms of use, limitations and safety disclaimer.",
+      "Nadhir provides local hazard information and alerts for Algeria. Read its terms, limitations and safety disclaimer.",
     privacyMetaTitle: "Privacy policy — Nadhir",
     privacyMetaDescription:
-      "What personal data Nadhir stores for wildfire alerts, how long it is kept, and how to delete your account data.",
+      "What personal data Nadhir stores for local alerts, how long it is kept, and how to delete your account data.",
     termsTitle: "Terms of use & disclaimer",
     terms_purpose_title: "What Nadhir is",
     terms_purpose_body:
-      "Nadhir is a free, open-source information service that shows satellite fire detections and computed fire danger for Algeria. It is not an official warning system and is not operated by any government body.",
+      "Nadhir is a free, open-source information service for Algeria, bringing together weather forecasts, satellite fire observations, fire danger and attributed official warnings. It is not an official warning system and is not operated by any government body.",
     terms_noGuarantee_title: "No guarantee",
     terms_noGuarantee_body:
       "Satellite passes are periodic, clouds hide fires, and detections can be false positives. Absence of a fire on the map never means absence of fire on the ground. The service is provided as is, with no warranty.",
@@ -1115,34 +1119,34 @@ export const en = {
     bannerOnm: "Official ONM warning",
     bannerOpen: "Open fire details",
     bell: "Area alerts",
-    inviteTitle: "Instant alert if a fire comes close",
+    inviteTitle: "Alerts for the places you follow",
     inviteBody:
-      "Pick your communes to get a notification the moment a fire is confirmed near them — free, no account, switch off anytime.",
+      "Choose communes for available fire alerts and official weather warnings — free, no account, switch off anytime.",
     inviteCta: "Enable area alerts",
     inviteLater: "Later",
     inviteOnce: "Shown once — the bell above stays available.",
     sheetTitle: "Area alerts",
     sheetBody:
-      "Delivered the moment a fire is confirmed near your communes — no account, no email. Your subscription is anonymous and stays on this device.",
+      "Fire alerts and official weather warnings for your communes. No account or email is required. Delivery depends on source availability, your connection and device settings.",
     yourCommunes: "Your communes",
     addCommune: "Add a commune",
     searchCommune: "Search for a commune…",
     maxCommunes: "Up to {{max}} communes.",
     lang: "Alert language",
     whatTitle: "What you receive",
-    whatFires: "Confirmed fires near your communes",
+    whatFires: "Detected or officially confirmed fires near your communes",
     whatFiresAlways: "always",
     whatOnm: "Official weather warnings (ONM)",
     noDanger:
-      "We never send daily danger levels — only confirmed fires and official warnings.",
+      "Daily fire danger levels and model weather forecasts do not trigger these notifications.",
     activate: "Enable alerts",
     update: "Update subscription",
     disable: "Turn off alerts",
     permissionTitle: "Nadhir needs notification permission to reach you",
     permissionBody:
-      "When a satellite confirms a fire near one of your communes, a notification reaches you within minutes — even with the app closed.",
+      "Allow this device to receive available fire alerts and official weather warnings. Satellites detect fires; only official sources confirm them. Notification delivery and timing are not guaranteed.",
     permissionPoint1:
-      "Confirmed fires and official warnings only — no daily messages.",
+      "Fire alerts and official warnings, without daily forecast messages.",
     permissionPoint2:
       "No account: we don't know your name, number or precise location.",
     permissionPoint3: "You can switch it off anytime from this screen.",

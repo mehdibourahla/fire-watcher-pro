@@ -54,6 +54,12 @@ function DevelopersPage() {
         <h2 className="text-base">{t("dev.endpoints")}</h2>
         <Endpoint
           method="GET"
+          path="/api/public/v1/weather"
+          desc={t("dev.weatherDesc")}
+          params={["commune=<commune code>"]}
+        />
+        <Endpoint
+          method="GET"
           path="/api/public/v1/fires"
           desc={t("dev.firesDesc")}
           params={[

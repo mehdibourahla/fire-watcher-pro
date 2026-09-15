@@ -22,6 +22,13 @@ export const Route = createFileRoute("/api/public/v1/")({
             "Read-only. Responses are cached for 60 seconds. Please stay under 60 requests per minute.",
           endpoints: [
             {
+              path: "/api/public/v1/weather",
+              params: { commune: "required commune code" },
+              example: `${base}/api/public/v1/weather?commune=1701`,
+              notes:
+                "Latest stored 48-hour forecast and freshness; hourly values, refreshed every six hours. Open-Meteo forecast evidence, not an official warning.",
+            },
+            {
               path: "/api/public/v1/fires",
               params: {
                 state: "optional",

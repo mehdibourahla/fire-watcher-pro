@@ -3,7 +3,7 @@
   "short_name": "Nadhir",
   "lang": "ar",
   "dir": "rtl",
-  "description": "Wildfire early warning for Algeria — satellite detections, fire-weather risk and zone alerts.",
+  "description": "الأخطار المحلية والتنبيهات في الجزائر — توقعات الطقس ورصد الأقمار الاصطناعية والتحذيرات الرسمية المنسوبة إلى مصادرها.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#03332c",
@@ -14,7 +14,7 @@
   ],
   "shortcuts": [
     {
-      "name": "وضع النجاة",
+      "name": "النجاة من الحرائق",
       "short_name": "SOS",
       "url": "/survival",
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]

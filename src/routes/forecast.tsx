@@ -8,6 +8,7 @@ import { DangerScale } from "@/components/nadhir/DangerScale";
 import { LazyDetails } from "@/components/LazyDetails";
 import { Explain } from "@/components/nadhir/Explain";
 import { RiskChip } from "@/components/nadhir/RiskChip";
+import { WeatherForecast } from "@/components/nadhir/WeatherForecast";
 import { EmptyState, SkeletonList } from "@/components/nadhir/states";
 import { RiskLegend } from "@/components/SiteChrome";
 import type { Locale } from "@/i18n";
@@ -26,13 +27,8 @@ import { pageMeta } from "@/lib/page-meta";
 
 export const Route = createFileRoute("/forecast")({
   head: () => ({
-    meta: pageMeta("risk.metaTitle", "risk.metaDescription"),
+    meta: pageMeta("weather:metaTitle", "weather:metaDescription"),
   }),
-  loader: ({ context }) =>
-    Promise.all([
-      context.queryClient.ensureQueryData(riskForecastsQuery),
-      context.queryClient.ensureQueryData(adminUnitsQuery),
-    ]),
   component: ForecastPage,
 });
 
@@ -120,201 +116,209 @@ function ForecastPage() {
 
   return (
     <div className="mx-auto max-w-[1200px] px-4 py-6">
-      <h1 className="text-2xl">{t("risk.title")}</h1>
-      <p className="mt-1 text-sm text-muted-foreground">{t("risk.sixDay")}</p>
+      <h1 className="text-2xl">{t("weather:pageTitle")}</h1>
+      <WeatherForecast />
+      <section aria-labelledby="fire-forecast-title" className="mt-8">
+        <h2 id="fire-forecast-title" className="text-xl">
+          {t("risk.title")}
+        </h2>
+        <p className="mt-1 text-sm text-muted-foreground">{t("risk.sixDay")}</p>
 
-      {forecasts.isLoading ? (
-        <SkeletonList rows={2} className="mt-5" />
-      ) : featured ? (
-        <section className="card mt-5 p-5">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <p className="font-display text-xl">
-                {unitName(featured.commune, locale)}
-              </p>
-              <p className="text-xs text-muted-foreground">{t("risk.today")}</p>
+        {forecasts.isLoading ? (
+          <SkeletonList rows={2} className="mt-5" />
+        ) : featured ? (
+          <section className="card mt-5 p-5">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <p className="font-display text-xl">
+                  {unitName(featured.commune, locale)}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {t("risk.today")}
+                </p>
+              </div>
+              <RiskLegend className="max-w-xs" />
             </div>
-            <RiskLegend className="max-w-xs" />
-          </div>
 
-          <DangerScale
-            level={featured.days[0]?.level ?? 1}
-            fwi={featured.days[0]?.fwi ?? 0}
-            percentile={featured.days[0]?.percentile ?? null}
-            staleCaption={
-              featured.days[0] && isStaleForecastDate(featured.days[0].date)
-                ? t("risk.staleAsOf", {
-                    time: relativeTime(
-                      `${featured.days[0].date}T00:00:00Z`,
-                      locale,
-                    ),
-                  })
-                : null
+            <DangerScale
+              level={featured.days[0]?.level ?? 1}
+              fwi={featured.days[0]?.fwi ?? 0}
+              percentile={featured.days[0]?.percentile ?? null}
+              staleCaption={
+                featured.days[0] && isStaleForecastDate(featured.days[0].date)
+                  ? t("risk.staleAsOf", {
+                      time: relativeTime(
+                        `${featured.days[0].date}T00:00:00Z`,
+                        locale,
+                      ),
+                    })
+                  : null
+              }
+              size="lg"
+              guidance
+              className="mt-4"
+            />
+
+            {featured.days[0]?.fuelLimited ? (
+              <p className="mt-2 text-sm text-muted-foreground">
+                {t("risk.fuelLimited")}
+              </p>
+            ) : null}
+
+            {(onm.data ?? [])
+              .filter((w) => w.wilaya_id === featured.commune.parent_id)
+              .slice(0, 3)
+              .map((w) => (
+                <p
+                  key={w.cap_id}
+                  className="mt-3 border-t border-border pt-3 text-sm"
+                >
+                  <span className="font-medium">{t("risk.onmLabel")}:</span>{" "}
+                  {locale === "fr" && w.headline_fr ? w.headline_fr : w.title}{" "}
+                  <span className="tabular text-xs text-muted-foreground">
+                    ({relativeTime(w.sent, locale)})
+                  </span>
+                </p>
+              ))}
+
+            {(() => {
+              const row = effis.data?.get(featured.commune.id);
+              return (
+                <p className="mt-3 border-t border-border pt-3 text-sm text-muted-foreground">
+                  {row ? (
+                    <>
+                      {row.danger_class === "masked"
+                        ? t("risk.effisMasked")
+                        : t("risk.effis", {
+                            class: t(`risk.effisClass.${row.danger_class}`),
+                          })}{" "}
+                      <span className="tabular text-xs">
+                        ({relativeTime(row.created_at, locale)})
+                      </span>
+                    </>
+                  ) : (
+                    t("risk.effisNone")
+                  )}
+                </p>
+              );
+            })()}
+
+            <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-6">
+              {HORIZONS.map((h) => {
+                const day = featured.days[h];
+                return (
+                  <div key={h} className="card flex flex-col gap-2 p-2.5">
+                    <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                      {h === 0 ? t("risk.today") : t("risk.dayLabel", { n: h })}
+                    </span>
+                    {day ? (
+                      <DangerScale
+                        level={day.level}
+                        fwi={day.fwi}
+                        percentile={day.percentile}
+                        size="sm"
+                      />
+                    ) : (
+                      <span className="text-sm text-muted-foreground">
+                        {t("common.none")}
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        ) : null}
+
+        <div className="mt-6 flex items-center gap-2">
+          <div className="relative w-full max-w-xs">
+            <Search
+              aria-hidden
+              className="pointer-events-none absolute inset-inline-start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+              style={{ insetInlineStart: "0.75rem" }}
+            />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={t("risk.searchCommune")}
+              aria-label={t("risk.searchCommune")}
+              className="w-full rounded-lg border border-border bg-surface py-2 pe-3 ps-9 text-sm outline-none focus:ring-2 focus:ring-ring"
+            />
+          </div>
+        </div>
+
+        {rows.length === 0 ? (
+          <EmptyState
+            title={t("risk.unavailableTitle")}
+            body={t("risk.unavailableBody")}
+            action={
+              <Link
+                to="/status"
+                className="text-sm font-medium text-primary underline"
+              >
+                {t("nav.status")}
+              </Link>
             }
-            size="lg"
-            guidance
             className="mt-4"
           />
-
-          {featured.days[0]?.fuelLimited ? (
-            <p className="mt-2 text-sm text-muted-foreground">
-              {t("risk.fuelLimited")}
-            </p>
-          ) : null}
-
-          {(onm.data ?? [])
-            .filter((w) => w.wilaya_id === featured.commune.parent_id)
-            .slice(0, 3)
-            .map((w) => (
-              <p
-                key={w.cap_id}
-                className="mt-3 border-t border-border pt-3 text-sm"
-              >
-                <span className="font-medium">{t("risk.onmLabel")}:</span>{" "}
-                {locale === "fr" && w.headline_fr ? w.headline_fr : w.title}{" "}
-                <span className="tabular text-xs text-muted-foreground">
-                  ({relativeTime(w.sent, locale)})
-                </span>
-              </p>
+        ) : filtered.length === 0 ? (
+          <EmptyState title={t("risk.noResults")} className="mt-4" />
+        ) : searching ? (
+          <ul className="mt-4 flex flex-col gap-2">
+            {filtered.map((row) => (
+              <li key={row.commune.id}>
+                <CommuneRow
+                  row={row}
+                  active={featured?.commune.id === row.commune.id}
+                  onPick={() => setPinned(row.commune.id)}
+                  locale={locale}
+                />
+              </li>
             ))}
-
-          {(() => {
-            const row = effis.data?.get(featured.commune.id);
-            return (
-              <p className="mt-3 border-t border-border pt-3 text-sm text-muted-foreground">
-                {row ? (
+          </ul>
+        ) : (
+          <div className="mt-4 flex flex-col gap-2">
+            {grouped.map(({ wilaya, rows: wRows, maxLevel }) => (
+              <LazyDetails
+                key={wilaya.id}
+                className="card"
+                summaryClassName="flex cursor-pointer list-none flex-wrap items-center gap-x-4 gap-y-2 p-3 [&::-webkit-details-marker]:hidden"
+                summary={
                   <>
-                    {row.danger_class === "masked"
-                      ? t("risk.effisMasked")
-                      : t("risk.effis", {
-                          class: t(`risk.effisClass.${row.danger_class}`),
-                        })}{" "}
-                    <span className="tabular text-xs">
-                      ({relativeTime(row.created_at, locale)})
+                    <ChevronDown
+                      aria-hidden
+                      className="size-4 shrink-0 text-muted-foreground"
+                    />
+                    <span className="min-w-40 flex-1 font-medium">
+                      {unitName(wilaya, locale)}
+                    </span>
+                    <span className="tabular text-xs text-muted-foreground">
+                      {t("risk.communeCount", { count: wRows.length })}
+                    </span>
+                    <span title={t("risk.groupWorst")}>
+                      <RiskChip level={maxLevel} />
                     </span>
                   </>
-                ) : (
-                  t("risk.effisNone")
-                )}
-              </p>
-            );
-          })()}
-
-          <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-6">
-            {HORIZONS.map((h) => {
-              const day = featured.days[h];
-              return (
-                <div key={h} className="card flex flex-col gap-2 p-2.5">
-                  <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-                    {h === 0 ? t("risk.today") : t("risk.dayLabel", { n: h })}
-                  </span>
-                  {day ? (
-                    <DangerScale
-                      level={day.level}
-                      fwi={day.fwi}
-                      percentile={day.percentile}
-                      size="sm"
-                    />
-                  ) : (
-                    <span className="text-sm text-muted-foreground">
-                      {t("common.none")}
-                    </span>
-                  )}
-                </div>
-              );
-            })}
+                }
+              >
+                <ul className="divide-y divide-border border-t border-border">
+                  {wRows.map((row) => (
+                    <li key={row.commune.id}>
+                      <CommuneRow
+                        row={row}
+                        active={featured?.commune.id === row.commune.id}
+                        onPick={() => setPinned(row.commune.id)}
+                        locale={locale}
+                        flat
+                      />
+                    </li>
+                  ))}
+                </ul>
+              </LazyDetails>
+            ))}
           </div>
-        </section>
-      ) : null}
-
-      <div className="mt-6 flex items-center gap-2">
-        <div className="relative w-full max-w-xs">
-          <Search
-            aria-hidden
-            className="pointer-events-none absolute inset-inline-start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-            style={{ insetInlineStart: "0.75rem" }}
-          />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={t("risk.searchCommune")}
-            aria-label={t("risk.searchCommune")}
-            className="w-full rounded-lg border border-border bg-surface py-2 pe-3 ps-9 text-sm outline-none focus:ring-2 focus:ring-ring"
-          />
-        </div>
-      </div>
-
-      {rows.length === 0 ? (
-        <EmptyState
-          title={t("risk.unavailableTitle")}
-          body={t("risk.unavailableBody")}
-          action={
-            <Link
-              to="/status"
-              className="text-sm font-medium text-primary underline"
-            >
-              {t("nav.status")}
-            </Link>
-          }
-          className="mt-4"
-        />
-      ) : filtered.length === 0 ? (
-        <EmptyState title={t("risk.noResults")} className="mt-4" />
-      ) : searching ? (
-        <ul className="mt-4 flex flex-col gap-2">
-          {filtered.map((row) => (
-            <li key={row.commune.id}>
-              <CommuneRow
-                row={row}
-                active={featured?.commune.id === row.commune.id}
-                onPick={() => setPinned(row.commune.id)}
-                locale={locale}
-              />
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <div className="mt-4 flex flex-col gap-2">
-          {grouped.map(({ wilaya, rows: wRows, maxLevel }) => (
-            <LazyDetails
-              key={wilaya.id}
-              className="card"
-              summaryClassName="flex cursor-pointer list-none flex-wrap items-center gap-x-4 gap-y-2 p-3 [&::-webkit-details-marker]:hidden"
-              summary={
-                <>
-                  <ChevronDown
-                    aria-hidden
-                    className="size-4 shrink-0 text-muted-foreground"
-                  />
-                  <span className="min-w-40 flex-1 font-medium">
-                    {unitName(wilaya, locale)}
-                  </span>
-                  <span className="tabular text-xs text-muted-foreground">
-                    {t("risk.communeCount", { count: wRows.length })}
-                  </span>
-                  <span title={t("risk.groupWorst")}>
-                    <RiskChip level={maxLevel} />
-                  </span>
-                </>
-              }
-            >
-              <ul className="divide-y divide-border border-t border-border">
-                {wRows.map((row) => (
-                  <li key={row.commune.id}>
-                    <CommuneRow
-                      row={row}
-                      active={featured?.commune.id === row.commune.id}
-                      onPick={() => setPinned(row.commune.id)}
-                      locale={locale}
-                      flat
-                    />
-                  </li>
-                ))}
-              </ul>
-            </LazyDetails>
-          ))}
-        </div>
-      )}
+        )}
+      </section>
     </div>
   );
 }

@@ -1,7 +1,22 @@
 # Nadhir
 
-Wildfire early-warning service for Algeria. Arabic-first, open source (AGPL-3.0).
+Local hazards and alerts for Algeria. Arabic-first, open source (AGPL-3.0).
 This glossary is the project's canonical language; code and UI copy follow it.
+
+Weather forecasts, satellite observations and attributed official warnings help people
+understand hazards near chosen locations. Coverage and delivery are not guaranteed.
+
+### Weather evidence
+
+Open-Meteo snapshots refresh every six hours at hourly resolution over 48 hours, with source,
+retrieval time, validity, units and grid coordinates. Missing values remain unknown.
+Precipitation and gusts describe the preceding hour; total precipitation remains distinct
+from liquid rain plus showers. Weather codes predict conditions, not observed lightning;
+CAPE is supporting evidence, not proof of a thunderstorm.
+
+ONM warnings retain their authority, geography and validity independently of model data.
+A quiet grid point does not refute a wilaya-wide warning. These forecasts introduce no
+automatic emergency thresholds or new broadcast eligibility.
 
 ## Language
 
@@ -21,10 +36,11 @@ _Avoid_: recommendation, guidance (see Standing Guidance)
 ### Modes
 
 **Survival Mode**:
-The app state for a person in immediate danger: one primary card, minimal chrome. Entered
+The app state for a person facing immediate fire danger: one primary card, minimal chrome. Entered
 by user self-activation (always available), a Detected or Confirmed Fire near the user's
 zone, or a relayed official declaration — never by the FWI danger level. Must be fully useful
 with zero fresh data: no screen in it may assume a recent observation exists.
+Its standing guidance is fire-specific and must never be presented as flood guidance.
 _Avoid_: emergency mode, Guardian (internal/docs name for the survival layer — never
 user-facing; the app transforms without introducing a second brand)
 

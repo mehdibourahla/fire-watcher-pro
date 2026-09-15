@@ -58,6 +58,7 @@ import { Route as ApiPublicV1SourcesRouteImport } from './routes/api/public/v1/s
 import { Route as ApiPublicV1StatsRouteImport } from './routes/api/public/v1/stats'
 import { Route as ApiPublicV1StatusRouteImport } from './routes/api/public/v1/status'
 import { Route as ApiPublicV1SubscribeRouteImport } from './routes/api/public/v1/subscribe'
+import { Route as ApiPublicV1WeatherRouteImport } from './routes/api/public/v1/weather'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -313,6 +314,11 @@ const ApiPublicV1SubscribeRoute = ApiPublicV1SubscribeRouteImport.update({
   path: '/api/public/v1/subscribe',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicV1WeatherRoute = ApiPublicV1WeatherRouteImport.update({
+  id: '/api/public/v1/weather',
+  path: '/api/public/v1/weather',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -362,6 +368,7 @@ export interface FileRoutesByFullPath {
   '/api/public/v1/stats': typeof ApiPublicV1StatsRoute
   '/api/public/v1/status': typeof ApiPublicV1StatusRoute
   '/api/public/v1/subscribe': typeof ApiPublicV1SubscribeRoute
+  '/api/public/v1/weather': typeof ApiPublicV1WeatherRoute
   '/api/public/v1/': typeof ApiPublicV1IndexRoute
 }
 export interface FileRoutesByTo {
@@ -410,6 +417,7 @@ export interface FileRoutesByTo {
   '/api/public/v1/stats': typeof ApiPublicV1StatsRoute
   '/api/public/v1/status': typeof ApiPublicV1StatusRoute
   '/api/public/v1/subscribe': typeof ApiPublicV1SubscribeRoute
+  '/api/public/v1/weather': typeof ApiPublicV1WeatherRoute
   '/api/public/v1': typeof ApiPublicV1IndexRoute
 }
 export interface FileRoutesById {
@@ -462,6 +470,7 @@ export interface FileRoutesById {
   '/api/public/v1/stats': typeof ApiPublicV1StatsRoute
   '/api/public/v1/status': typeof ApiPublicV1StatusRoute
   '/api/public/v1/subscribe': typeof ApiPublicV1SubscribeRoute
+  '/api/public/v1/weather': typeof ApiPublicV1WeatherRoute
   '/api/public/v1/': typeof ApiPublicV1IndexRoute
 }
 export interface FileRouteTypes {
@@ -514,6 +523,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/stats'
     | '/api/public/v1/status'
     | '/api/public/v1/subscribe'
+    | '/api/public/v1/weather'
     | '/api/public/v1/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -562,6 +572,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/stats'
     | '/api/public/v1/status'
     | '/api/public/v1/subscribe'
+    | '/api/public/v1/weather'
     | '/api/public/v1'
   id:
     | '__root__'
@@ -613,6 +624,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/stats'
     | '/api/public/v1/status'
     | '/api/public/v1/subscribe'
+    | '/api/public/v1/weather'
     | '/api/public/v1/'
   fileRoutesById: FileRoutesById
 }
@@ -645,6 +657,7 @@ export interface RootRouteChildren {
   ApiPublicV1StatsRoute: typeof ApiPublicV1StatsRoute
   ApiPublicV1StatusRoute: typeof ApiPublicV1StatusRoute
   ApiPublicV1SubscribeRoute: typeof ApiPublicV1SubscribeRoute
+  ApiPublicV1WeatherRoute: typeof ApiPublicV1WeatherRoute
   ApiPublicV1IndexRoute: typeof ApiPublicV1IndexRoute
 }
 
@@ -993,6 +1006,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicV1SubscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/v1/weather': {
+      id: '/api/public/v1/weather'
+      path: '/api/public/v1/weather'
+      fullPath: '/api/public/v1/weather'
+      preLoaderRoute: typeof ApiPublicV1WeatherRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -1097,6 +1117,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicV1StatsRoute: ApiPublicV1StatsRoute,
   ApiPublicV1StatusRoute: ApiPublicV1StatusRoute,
   ApiPublicV1SubscribeRoute: ApiPublicV1SubscribeRoute,
+  ApiPublicV1WeatherRoute: ApiPublicV1WeatherRoute,
   ApiPublicV1IndexRoute: ApiPublicV1IndexRoute,
 }
 export const routeTree = rootRouteImport
