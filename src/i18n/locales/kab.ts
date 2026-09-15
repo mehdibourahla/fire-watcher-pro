@@ -51,7 +51,7 @@ export const kab: Translation = {
     createAccount: "Nouveau sur Nadhir ? Créer un compte",
     verifyLink: "Besoin d’un nouvel e-mail de confirmation ?",
     publicAccess:
-      "La carte et le guide de survie restent accessibles sans compte.",
+      "La carte, les prévisions et le guide de survie face aux incendies restent accessibles sans compte.",
     showPassword: "Afficher le mot de passe",
     hidePassword: "Masquer le mot de passe",
     passwordShort: "Utilisez au moins 8 caractères.",
@@ -77,7 +77,7 @@ export const kab: Translation = {
     dismiss: "Ffer",
     delete: "Kkes",
     appName: "Nadhir",
-    tagline: "Alɣu zik ɣef tmessi n teẓgi di Lezzayer",
+    tagline: "Risques locaux et alertes en Algérie",
     loading: "Yessalay",
     error: "Tella-d tuccḍa",
     retry: "Ɛiwed tikkelt-nniḍen",
@@ -97,7 +97,7 @@ export const kab: Translation = {
       "Isaduf n usaṭelit ur qqinen ara akka tura. Izwilen d wid n uskan.",
   },
   meta: {
-    defaultTitle: "Nadhir — Alɣu azawar n tmess n teẓgi di Lezzayer",
+    defaultTitle: "Nadhir — Risques locaux et alertes en Algérie",
     titleTemplate: "{{page}} — Nadhir",
   },
   notFound: {
@@ -114,10 +114,10 @@ export const kab: Translation = {
     positionUnknown: "Amkan ur yelli ara",
     smokeUnavailable:
       "Isefka n tɣara n waḍu n temnaḍt ur llan ara dagi. Amkan n yibenk-ik ur yettwazen ara ɣer win i d-yettakken isefka n waḍu.",
-    mode: "Askar n leslak",
+    mode: "Survie face aux incendies",
     online: "Yeqqen",
     offline: "Ur yeqqin ara",
-    pill: "Di lxaṭer?",
+    pill: "Près d’un incendie ?",
     enterTitle: "Aql-ak tura ɣer tama n tmess?",
     enterBody:
       "Askar n leslak yeskan yiwet n tigawt yal tikkelt, yesseqdac takemmust i theggaḍ yakan deg temnaḍin-ik. Ma yella asideg, yeskan amkan-ik i usiwel ɣer Wemmesten Aɣarim ɣef 14.",
@@ -135,9 +135,9 @@ export const kab: Translation = {
     exitTitle: "Tuffɣa seg uskar n leslak?",
     exitBody: "Takemmust war aẓeṭṭa ad teqqim teḥrez deg utilifun-a.",
     exitYes: "Ffeɣ",
-    interTitle: "Timess tettwasentem ɣer tama n wemkan-ik",
+    interTitle: "Incendie détecté près de vous",
     interBody:
-      "Timess yettwasentmen s usaṭelit tella ɣef azal n {{km}} km seg utilifun-a. Nadhir yezmer ad yuɣal ɣer uskar n leslak: yiwet n tɣawsa yal tikkelt, iteddu war aẓeṭṭa.",
+      "Un incendie a été détecté à environ {{km}} km de ce téléphone. Une détection ne vaut pas confirmation officielle. Nadhir peut passer en mode survie face aux incendies : une chose à faire à la fois, même sans réseau.",
     interBasedOn: "Yers ɣef",
     interPosition: "amkan n yibenk-ik",
     interObservation: "Tifin",
@@ -540,7 +540,7 @@ export const kab: Translation = {
       "{{count}} n yiɣbula n yisefka ttwaseḥbes — tazmert tamirant tezmer ad tenqes.",
     metaTitle: "Addad n yiɣbula n isefka — Nadhir",
     metaDescription:
-      "Addad srid n yisaduf n usaṭelit, n tignewt d isefka igiwanen n Nadhir.",
+      "État des sources satellitaires, météo, d’avertissements officiels et géographiques utilisées par Nadhir.",
     title: "Iɣbula n isefka",
     recallTitle: "Ineɣmisen unṣiben d isatilliten",
     recallBody:
@@ -583,22 +583,23 @@ export const kab: Translation = {
     contributeBody:
       "Imukan yettwasenqden, tutlayt teɣra-tt tin i tt-yessnen, yiwen umyagar d tenmehla n twilayt. Atan wayen ixuṣṣen.",
     contributeCta: "Wali ayen ixuṣṣen",
-    attribution: "Isefka: NASA FIRMS, Open-Meteo, OpenStreetMap — CC-BY 4.0",
+    attribution:
+      "Sources : NASA FIRMS · EUMETSAT · Copernicus · Open-Meteo · ONM · DGPC · OpenStreetMap",
     metaTitle: "Ɣef Nadhir — tarrayt d isefka",
     metaDescription:
-      "Amek i d-yettaf Nadhir timessi, amek i yessefrak aɣilif d iɣbula yeldin i yessexdam.",
+      "Comment Nadhir rassemble prévisions météo, observations satellitaires des incendies et avertissements officiels attribués pour l’Algérie.",
     title: "Ɣef Nadhir",
     missionTitle: "Tiegzi",
     mission:
-      "Af timessi di Lezzayer zik akken zemren isaṭeliten, smenyef aɣilif n wass, tazneḍ alɣuten ibanen s taɛrabt, tafransist, taglizit d teqbaylit — baṭel yerna d aɣbalu yeldin.",
-    howTitle: "Amek tettili tifin",
-    how: "Tinqiḍin tiḥmayin n NASA FIRMS, EUMETSAT MTG FCI d Copernicus Sentinel-3 SLSTR ttwasemlent, ttwasegrurdent deg wakud d wemkan. Yiwen uḍfar d yiwen uḍfar kan; sin yeḍfaren imyellelen ttarran-t d aḍfar n igenwan. Naḍir werǧin ad yini belli times tettwasentem: d Tɣellist Tagdudant kan i t-ixeddmen, awalen-is d wakud-is ttwaskanen akken llan.",
-    dangerTitle: "Amek yettwaktal uɣilif",
+      "Aider les personnes en Algérie à comprendre les risques près des lieux qu’elles suivent grâce aux prévisions météo, aux observations satellitaires et aux avertissements officiels clairement attribués. Gratuit et open source, disponible en arabe, français et anglais.",
+    howTitle: "Comment les informations sont rassemblées",
+    how: "Open-Meteo fournit les prévisions météo horaires. Les avertissements de l’ONM restent distincts et attribués à leur source officielle, même si le modèle est indisponible ou diverge. NASA FIRMS, EUMETSAT MTG FCI et Sentinel-3 SLSTR fournissent les observations satellitaires des incendies, regroupées dans l’espace et le temps. Une détection est un indice ; seule une source officielle confirme un incendie.",
+    dangerTitle: "Danger d’incendie et prévisions météo",
     danger:
-      "Aɣilif yettwaseqdec s FWI akanadi i d-yettwasefrak si tafuka, tikawt, aḍu d ugeffur, syen yettwasenqed s EFFIS/GWIS.",
+      "Le danger d’incendie utilise l’indice canadien FWI, les données météo d’Open-Meteo et une comparaison EFFIS. Les prévisions horaires présentent séparément précipitations, probabilité, rafales et conditions orageuses prévues. Les codes météo du modèle sont des prévisions, pas des observations de foudre ni des seuils automatiques d’urgence.",
     limitsTitle: "Tilisa",
     limits:
-      "Nadhir ur yezmir ara ad d-yessefru anida ara d-tekker times, yerna ur yettbeddil ara Ammesten Aɣarim. Isaṭeliten sɛan aɛeṭṭel, timessi timeẓyanin zemrent ad ffrent.",
+      "Nadhir ne remplace pas la Protection civile et ne garantit ni couverture complète ni réception des notifications. Les prévisions peuvent être erronées ou indisponibles ; un point de grille calme ne réfute pas un avertissement officiel à l’échelle d’une wilaya. Les satellites peuvent manquer des incendies et les observations arrivent avec retard. Le mode survie contient des consignes propres aux incendies, pas aux inondations.",
     dataTitle: "Isefka d turagin",
     data: "Tangalt n uɣawas d AGPL-3.0, isefka d CC-BY 4.0 s usmel n yiɣbula.",
   },
@@ -611,7 +612,8 @@ export const kab: Translation = {
     markRead: "Creḍ d imeɣri",
     markUnread: "Creḍ d war taɣuri",
     unread: "{{count}} ur nettwaɣra ara",
-    empty: "Ulac ilɣa akka tura. Rnu tamnaḍt, Nadhir a k-yesɛeddi alɣu.",
+    empty:
+      "Aucune alerte pour le moment. Ajoutez une zone pour suivre les alertes disponibles.",
     manageZones: "Sefrek temnaḍin-iw",
     kindFire: "Times",
     kindRisk: "Aɣilif",
@@ -626,7 +628,8 @@ export const kab: Translation = {
       "{{count}} n times yeddren deg temnaḍt-a — tamezwarut ɣef {{km}} km.",
     authTitle: "Kcem ɣer Nadhir",
     authMetaTitle: "Kcem",
-    authSubtitle: "Sekles imukan i k-yecqan, tesɛuḍ alɣu zik.",
+    authSubtitle:
+      "Enregistrez les lieux qui comptent et gérez vos préférences d’alerte.",
     email: "Imayl",
     password: "Awal uffir",
     signIn: "Kcem",
@@ -644,7 +647,7 @@ export const kab: Translation = {
       "Anekcum ur yelli ara akka tura. Ɛreḍ tikkelt-nniḍen ticki.",
     zonesTitle: "Temnaḍin-iw yettwaɛussen",
     zonesSubtitle:
-      "Nadhir yettɛassa imukan-a, yessalɣay-ik ticki times neɣ ayhil qerben.",
+      "Gérez les lieux suivis et leurs alertes disponibles sur les incendies et le danger.",
     newZone: "Rnu tamnaḍt",
     zoneCommune: "Taɣiwant",
     zoneCustom: "Tanqiḍt tudmawant",
@@ -764,7 +767,7 @@ export const kab: Translation = {
       "Ayen ixuṣṣen Nadhir ass-a, d wamek ara tallteḍ — asenqed n yimukan, taɣuri n teqbaylit, asekles n wawal, tildin n tewwura n tuddsiwin, d tangalt.",
     eyebrow: "Ttekki",
     title: "Nadhir yeḥwaǧ ugar n tengalt.",
-    lede: "Imiḍanen imiranen skanen kra n usnerni n Nadhir. Asenqed deg wannar, asenqed n tutlayt, azraw ussnan d umtawa unṣib mazal llan d leqdic agejdan.",
+    lede: "Contribuez à l’information sur les risques locaux en Algérie. Vérifications de terrain, révision linguistique, validation scientifique et coordination officielle restent essentielles aux côtés du code.",
     measuredAt: "Yettwaɣra seg taffa n yisefka tamiranit · {{date}}",
     unavailable: "Amḍan ur yellin ara",
     statPlaces: "Imukan yettwasenqden",
@@ -1002,6 +1005,8 @@ export const kab: Translation = {
       "Yal asuter yesɛa X-Nadhir-Signature: sha256= d HMAC-SHA256 n wammud s tsarut-ik. Senqed-it uqbel.",
   },
   dev: {
+    weatherDesc:
+      "Dernière prévision Open-Meteo sur 48 heures et fraîcheur, actualisée toutes les six heures. Une prévision, pas une alerte officielle.",
     title: "API tazayezt",
     subtitle:
       "Anekcum ilelli i tɣuri kan ɣer isefka n tmessi d usmenyef n uɣilif.",
@@ -1023,14 +1028,14 @@ export const kab: Translation = {
     privacy: "Tabaḍnit",
     termsMetaTitle: "Tiwtilin n useqdec d ulɣu — Nadhir",
     termsMetaDescription:
-      "Nadhir d ameẓlu n telɣut d ulɣu azawar ɣef tmessi n teẓgi di Lezzayer. Ẓer tiwtilin n useqdec, tilisa-ines d ulɣu n tɣellist.",
+      "Nadhir fournit des informations sur les risques locaux et des alertes en Algérie. Consultez ses conditions et limites.",
     privacyMetaTitle: "Tasertit n tbaḍnit — Nadhir",
     privacyMetaDescription:
-      "Anwa isefka udmawanen i yeṭṭef Nadhir i yilɣa, acḥal ara qqimen, d wamek ara tekkseḍ isefka n umiḍan-inek.",
+      "Les données personnelles conservées par Nadhir pour les alertes locales, leur durée de conservation et leur suppression.",
     termsTitle: "Tiwtilin n useqdec d ulɣu",
     terms_purpose_title: "D acu-t Nadhir",
     terms_purpose_body:
-      "Nadhir d ameẓlu n telɣut ilelli i d-yeskanayen times yettwafen s usaṭelit d uɣilif yettwasneqden deg Lezzayer. Mačči d anagraw unṣib n ulɣu.",
+      "Nadhir est un service d’information gratuit et open source pour l’Algérie, rassemblant prévisions météo, observations satellitaires des incendies, danger d’incendie et avertissements officiels attribués. Ce n’est pas un système officiel d’alerte et aucun organisme gouvernemental ne l’exploite.",
     terms_noGuarantee_title: "Ulac aḍman",
     terms_noGuarantee_body:
       "Isaṭeliten ttɛeddin s tikkal, asigna yetteffer times, llan daɣen ilɣa n ẓẓur. Ulac times ɣef tkarḍa ur imal ara ulac times ɣef wakal.",
@@ -1106,34 +1111,35 @@ export const kab: Translation = {
     bannerOnm: "Alɣu unṣib n ONM",
     bannerOpen: "Ldi talqayt n tmes",
     bell: "Ilɣa n temnaḍt-ik",
-    inviteTitle: "Alɣu imiren ma tqerreb times",
+    inviteTitle: "Alertes pour les lieux que vous suivez",
     inviteBody:
-      "Fren tiɣiwanin-ik akken ad ak-yaweḍ ulɣu imir kan ara tettwatebbet times ɣer tama-nsent — baṭel, war amiḍan, tzemreḍ ad t-tsenseḍ melmi tebɣiḍ.",
+      "Choisissez vos communes pour les alertes incendie disponibles et les avertissements météo officiels — gratuit, sans compte, désactivable à tout moment.",
     inviteCta: "Sermed ilɣa n temnaḍt-ik",
     inviteLater: "Ticki",
     inviteOnce: "Yettban yiwet n tikkelt — ajres nnig yeqqim yella yal ass.",
     sheetTitle: "Ilɣa n temnaḍt-ik",
     sheetBody:
-      "Ttawḍen-d imir kan ara tettwatebbet times ɣer tiɣiwanin-ik — war amiḍan, war imayl. Ajerred-ik d udrig, yeqqim deg ubenk-a.",
+      "Alertes incendie et avertissements météo officiels pour vos communes. Aucun compte ni e-mail requis. La réception dépend des sources, de votre connexion et des réglages de l’appareil.",
     yourCommunes: "Tiɣiwanin-ik",
     addCommune: "Rnu taɣiwant",
     searchCommune: "Nadi taɣiwant…",
     maxCommunes: "Alamma d {{max}} n tɣiwanin.",
     lang: "Tutlayt n yilɣa",
     whatTitle: "D acu i ak-d-yettawḍen",
-    whatFires: "Times yettwatebbten ɣer tiɣiwanin-ik",
+    whatFires:
+      "Incendies détectés ou confirmés officiellement près de vos communes",
     whatFiresAlways: "yal ass",
     whatOnm: "Ilɣa unṣiben n tegnawt (ONM)",
     noDanger:
-      "Ur nettazen ara iswiren n uɣilif n yal ass — ala times yettwatebbten d yilɣa unṣiben.",
+      "Les niveaux quotidiens de danger d’incendie et les prévisions météo du modèle ne déclenchent pas ces notifications.",
     activate: "Sermed ilɣa",
     update: "Leqqem ajerred",
     disable: "Sens ilɣa",
     permissionTitle: "Iwakken ad ak-yaweḍ, Nadhir yesra tasiregt n yilɣa",
     permissionBody:
-      "Mi tettwatebbet times s uḍfar n igenwan ɣer yiwet n tɣiwant-ik, ad ak-yaweḍ ulɣu deg kra n tesdatin — ula ma yemdel usnas.",
+      "Autorisez cet appareil à recevoir les alertes incendie disponibles et les avertissements météo officiels. Les satellites détectent les incendies ; seules les sources officielles les confirment. La réception et le délai des notifications ne sont pas garantis.",
     permissionPoint1:
-      "Ala times yettwatebbten d yilɣa unṣiben — ulac iznan n yal ass.",
+      "Alertes incendie et avertissements officiels, sans messages de prévisions quotidiens.",
     permissionPoint2:
       "War amiḍan: ur nessin isem-ik, uṭṭun-ik neɣ adig-ik aẓẓif.",
     permissionPoint3: "Tzemreḍ ad t-tsenseḍ melmi tebɣiḍ seg ugdil-a.",

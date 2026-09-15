@@ -11,7 +11,6 @@ export const Route = createFileRoute("/about")({
   component: AboutPage,
 });
 
-// Only sources the system actually contacts are credited; EFFIS/GWIS is not yet wired up.
 const SOURCES = [
   {
     name: "NASA FIRMS (VIIRS / MODIS)",
@@ -24,9 +23,25 @@ const SOURCES = [
     url: "https://www.eumetsat.int/",
   },
   {
+    name: "Copernicus Sentinel-3 SLSTR",
+    url: "https://view.eumetsat.int/",
+  },
+  {
     name: "Open-Meteo weather",
     licence: "CC-BY 4.0",
     url: "https://open-meteo.com/",
+  },
+  {
+    name: "Copernicus EFFIS / GWIS",
+    url: "https://effis.emergency.copernicus.eu/",
+  },
+  {
+    name: "ONM — الديوان الوطني للأرصاد الجوية",
+    url: "https://ametvigilance.meteo.dz/",
+  },
+  {
+    name: "Protection Civile (DGPC) — الحماية المدنية",
+    url: "https://t.me/s/DGPCDZ",
   },
   {
     name: "OpenStreetMap",
@@ -71,7 +86,9 @@ function AboutPage() {
             >
               {s.name}
             </a>
-            <span className="text-xs text-muted-foreground">{s.licence}</span>
+            {s.licence && (
+              <span className="text-xs text-muted-foreground">{s.licence}</span>
+            )}
           </li>
         ))}
       </ul>

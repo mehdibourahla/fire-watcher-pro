@@ -9,6 +9,7 @@ import { ar } from "@/i18n/locales/ar";
 import { en } from "@/i18n/locales/en";
 import { fr } from "@/i18n/locales/fr";
 import { kab } from "@/i18n/locales/kab";
+import { weatherAr, weatherEn, weatherFr } from "@/i18n/weather";
 
 type Tree = { [k: string]: string | Tree };
 
@@ -30,8 +31,26 @@ function walk(dir: string): string[] {
 
 const KEYS = new Set(flatten(en as unknown as Tree));
 const ADMIN_KEYS = new Set(flatten(adminEn as unknown as Tree));
+const WEATHER_KEYS = new Set(flatten(weatherEn));
+const NAMESPACES = {
+  translation: KEYS,
+  admin: ADMIN_KEYS,
+  weather: WEATHER_KEYS,
+};
+const QUALIFIED_KEYS = new Set(
+  Object.entries(NAMESPACES).flatMap(([namespace, keys]) =>
+    [...keys].map((key) => `${namespace}:${key}`),
+  ),
+);
 
 describe("locale parity", () => {
+  it("weather translations cover each enabled language with French Kabyle fallback", () => {
+    expect(Object.keys(weatherAr).sort()).toEqual([...WEATHER_KEYS].sort());
+    expect(Object.keys(weatherFr).sort()).toEqual([...WEATHER_KEYS].sort());
+    expect(i18n.getFixedT("kab", "weather")("pageTitle")).toBe(
+      weatherFr.pageTitle,
+    );
+  });
   const locales = { ar, fr, kab } as unknown as Record<string, Tree>;
   for (const [name, table] of Object.entries(locales)) {
     it(`${name} has exactly the same keys as en`, () => {
@@ -109,14 +128,18 @@ describe("every referenced key exists", () => {
     const missing: string[] = [];
     for (const file of walk("src")) {
       const src = readFileSync(file, "utf8");
-      const usesAdmin = src.includes('useTranslation("admin")');
-      const usesDefault = /useTranslation\(\s*\)/.test(src);
-      const known = !usesAdmin
-        ? KEYS
-        : usesDefault
-          ? new Set([...KEYS, ...ADMIN_KEYS])
-          : ADMIN_KEYS;
-      for (const m of src.matchAll(/\bt\(\s*"([a-zA-Z0-9_.]+)"/g)) {
+      const namespaces = [
+        ...src.matchAll(/useTranslation\(\s*"([a-z]+)"\s*\)/g),
+      ].map((match) => match[1]);
+      if (/useTranslation\(\s*\)/.test(src) || !namespaces.length)
+        namespaces.push("translation");
+      const known = new Set([
+        ...QUALIFIED_KEYS,
+        ...namespaces.flatMap((namespace) => [
+          ...(NAMESPACES[namespace as keyof typeof NAMESPACES] ?? []),
+        ]),
+      ]);
+      for (const m of src.matchAll(/\bt\(\s*"([a-zA-Z0-9_.:]+)"/g)) {
         const key = m[1]!;
         if (!known.has(key)) missing.push(`${file}: ${key}`);
       }
@@ -129,10 +152,11 @@ describe("every referenced key exists", () => {
     for (const file of walk("src")) {
       const src = readFileSync(file, "utf8");
       for (const m of src.matchAll(
-        /\b(?:pageMeta|titledMeta)\(\s*"([a-zA-Z0-9_.]+)"(?:\s*,\s*"([a-zA-Z0-9_.]+)")?/g,
+        /\b(?:pageMeta|titledMeta)\(\s*"([a-zA-Z0-9_.:]+)"(?:\s*,\s*"([a-zA-Z0-9_.:]+)")?/g,
       )) {
         for (const key of [m[1], m[2]]) {
-          if (key && !KEYS.has(key)) missing.push(`${file}: ${key}`);
+          if (key && !KEYS.has(key) && !QUALIFIED_KEYS.has(key))
+            missing.push(`${file}: ${key}`);
         }
       }
     }

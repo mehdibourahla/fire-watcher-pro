@@ -34,8 +34,10 @@ import {
   screenPersistentSources,
 } from "./persistent.server";
 import { enrichClusterWinds, refreshRiskForecasts } from "./weather.server";
+import { collectWeatherEvidence } from "./weather-evidence.server";
 
 export const RUNTIME_CONTRACT_KEYS = [
+  "openmeteo_weather",
   "ita_website",
   "firms",
   "fci",
@@ -56,6 +58,7 @@ export type SourceRunner = (job: ClaimedSourceJob) => Promise<SourceJobResult>;
 export type SourceRunnerRegistry = Record<RuntimeContractKey, SourceRunner>;
 
 export type SourceRunnerDependencies = {
+  collectWeatherEvidence: typeof collectWeatherEvidence;
   runItaSource: typeof runItaSource;
   ingestFirms: typeof ingestFirms;
   ingestFci: typeof ingestFci;
@@ -159,6 +162,24 @@ export function createSourceRunners(
   dependencies: SourceRunnerDependencies,
 ): SourceRunnerRegistry {
   return {
+    openmeteo_weather: async (job) => {
+      const run = await dependencies.collectWeatherEvidence(job);
+      const health = adapterHealth({
+        accepted: run.accepted,
+        expected: run.expected,
+        error: run.error,
+      });
+      return {
+        ...baseReport(job),
+        ...health,
+        ...coveredInterval(job, health.outcome === "succeeded"),
+        recordsSeen: run.accepted + run.rejected,
+        recordsInserted: run.inserted,
+        recordsRejected: run.rejected,
+        recordsExpected: run.expected,
+        qualityChecks: { complete_communes: run.accepted, horizon_hours: 48 },
+      };
+    },
     ita_website: async (job) => {
       const run = await dependencies.runItaSource(job);
       const health = adapterHealth({
@@ -396,6 +417,7 @@ export function createSourceRunners(
 }
 
 const sourceRunnerDependencies: SourceRunnerDependencies = {
+  collectWeatherEvidence,
   runItaSource,
   ingestFirms,
   ingestFci,

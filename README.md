@@ -1,10 +1,13 @@
 # Nadhir (نذير)
 
-Wildfire early-warning platform for Algeria. _Nadhir_ is Arabic for "the one who warns".
+Local hazards and alerts for Algeria. _Nadhir_ is Arabic for "the one who warns".
 
-Nadhir ingests satellite hotspot detections, groups them into probable fires, computes a
-daily fire-weather index for every commune, and notifies people who have subscribed to a
-zone. The interface ships in Arabic (default, RTL), French, English and Kabyle.
+Nadhir brings together weather forecasts, satellite fire observations, fire danger and
+clearly attributed official warnings near chosen locations. The interface is available
+in Arabic (default, RTL), French and English; Kabyle remains withheld pending speaker review.
+Hourly Open-Meteo evidence covers a 48-hour horizon independently of ONM warnings and FWI.
+Model forecasts do not trigger new emergency broadcasts. Fire maps, reporting and Survival
+Mode remain fire-specific; Survival Mode is not flood guidance.
 
 > **Nadhir is not an official source.** It is not a government warning system and must not
 > be presented as one. Detections are satellite estimates with real false-positive and
@@ -20,6 +23,9 @@ zone. The interface ships in Arabic (default, RTL), French, English and Kabyle.
 | OpenStreetMap (admin boundaries, settlements)   | seeded from `data/geo/`, ODbL                                                                                  |
 | EUMETSAT MTG FCI                                | connected — fire-radiative-power points from EUMETSAT's public WFS ingest every 10 minutes                     |
 | EFFIS / GWIS                                    | connected — daily danger-class comparison sampled from the EFFIS WMS                                           |
+| Copernicus Sentinel-3 SLSTR                     | ingested through EUMETSAT's public WFS                                                                         |
+| ONM                                            | official weather warnings from its vigilance RSS feed, attributed separately from model forecasts              |
+| Protection Civile (DGPC)                        | official incidents from its public Telegram bulletins, preserving source attribution                           |
 
 Geography is 69 wilayas, 1536 communes and 10257 settlements, taken from OpenStreetMap via
 Overpass rather than geoBoundaries or GADM — those have incomplete Algerian ADM2 coverage.
@@ -86,7 +92,8 @@ bun run seed:geo            # add --prune to drop units no longer in data/geo/
 Detections arrive from FIRMS and FCI, then independent jobs screen persistent heat sources,
 cluster accepted points into `fire_clusters`, enrich wind, publish broadcasts, deliver them,
 and evaluate alert rules. Separately, daily jobs pull weather per commune, advance the Canadian
-Forest Fire Weather Index, and ingest the EFFIS comparator. Dependencies are explicit in the
+Forest Fire Weather Index, and ingest the EFFIS comparator. A separate collector refreshes
+48-hour Open-Meteo weather forecasts every six hours. Dependencies are explicit in the
 queue, so an optional-source failure does not consume another contract's lease or retry budget.
 
 The FWI codes are **stateful**: yesterday's fuel-moisture codes are persisted in `fwi_state`

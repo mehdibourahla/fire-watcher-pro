@@ -9,6 +9,7 @@ import { ar } from "./locales/ar";
 import { en } from "./locales/en";
 import { fr } from "./locales/fr";
 import { kab } from "./locales/kab";
+import { weatherAr, weatherEn, weatherFr } from "./weather";
 
 export {
   LOCALES,
@@ -51,10 +52,10 @@ export const STORAGE_KEY = "nadhir.locale";
 if (!i18n.isInitialized) {
   void i18n.use(initReactI18next).init({
     resources: {
-      ar: { translation: ar, admin: adminAr },
-      fr: { translation: fr, admin: adminFr },
-      en: { translation: en, admin: adminEn },
-      kab: { translation: kab, admin: adminKab },
+      ar: { translation: ar, admin: adminAr, weather: weatherAr },
+      fr: { translation: fr, admin: adminFr, weather: weatherFr },
+      en: { translation: en, admin: adminEn, weather: weatherEn },
+      kab: { translation: kab, admin: adminKab, weather: weatherFr },
     },
     lng: "ar",
     fallbackLng: "en",

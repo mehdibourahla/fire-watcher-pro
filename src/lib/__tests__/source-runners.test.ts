@@ -36,6 +36,13 @@ const job = (contractKey: string): ClaimedSourceJob => ({
 
 function dependencies() {
   return {
+    collectWeatherEvidence: vi.fn().mockResolvedValue({
+      expected: 2,
+      accepted: 2,
+      inserted: 2,
+      rejected: 0,
+      error: undefined,
+    }),
     runItaSource: vi.fn().mockResolvedValue({
       fetched: 3,
       stored: 3,
