@@ -55,12 +55,23 @@ export async function collectWeatherEvidence(
   ) {
     throw new Error("weather scheduled slot expired");
   }
-  const locations = await deps.locations();
-  if (!locations.length) throw new Error("weather locations unavailable");
+  const targets = await deps.locations();
+  if (!targets.length) throw new Error("weather locations unavailable");
+  const locations = targets.filter(
+    ({ lat, lon }) =>
+      Number.isFinite(lat) &&
+      lat >= -90 &&
+      lat <= 90 &&
+      Number.isFinite(lon) &&
+      lon >= -180 &&
+      lon <= 180,
+  );
   let accepted = 0;
   let inserted = 0;
-  let rejected = 0;
-  let failure: string | undefined;
+  let rejected = targets.length - locations.length;
+  let failure: string | undefined = rejected
+    ? "weather location coordinates invalid"
+    : undefined;
   for (let offset = 0; offset < locations.length; offset += 25) {
     const batch = locations.slice(offset, offset + 25);
     const url = new URL("https://api.open-meteo.com/v1/forecast");
@@ -83,7 +94,7 @@ export async function collectWeatherEvidence(
     );
     if (!response.ok) {
       failure = `open-meteo weather HTTP ${response.status}`;
-      rejected += locations.length - offset;
+      rejected += batch.length;
       break;
     }
     const raw: unknown = await response.json();
@@ -115,7 +126,7 @@ export async function collectWeatherEvidence(
     if (offset + 25 < locations.length) await deps.pause(4000);
   }
   return {
-    expected: locations.length,
+    expected: targets.length,
     accepted,
     inserted,
     rejected,

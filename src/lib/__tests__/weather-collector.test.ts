@@ -100,11 +100,33 @@ it("keeps complete locations when a later batch is rate limited and stops upstre
   });
   expect(result).toMatchObject({
     accepted: 25,
-    rejected: 35,
+    rejected: 25,
     expected: 60,
     error: "open-meteo weather HTTP 429",
   });
   expect(fetch).toHaveBeenCalledTimes(2);
+  expect(save).toHaveBeenCalledTimes(1);
+});
+
+it("skips invalid coordinates while collecting the remaining valid communes", async () => {
+  const fetch = vi.fn().mockResolvedValue(Response.json(fixture));
+  const save = vi.fn().mockResolvedValue(1);
+  const result = await collectWeatherEvidence(job, {
+    locations: async () => [
+      { ...location, lat: 91 },
+      { ...location, lon: -181 },
+      { ...location, lat: NaN },
+      location,
+    ],
+    fetch,
+    save,
+    pause: async () => {},
+    now: () => now,
+  });
+  expect(result).toMatchObject({ expected: 4, accepted: 1, rejected: 3 });
+  const url = new URL(String(fetch.mock.calls[0]![2]));
+  expect(url.searchParams.get("latitude")).toBe("34.67");
+  expect(url.searchParams.get("longitude")).toBe("3.25");
   expect(save).toHaveBeenCalledTimes(1);
 });
 

@@ -92,7 +92,8 @@ bun run seed:geo            # add --prune to drop units no longer in data/geo/
 Detections arrive from FIRMS and FCI, then independent jobs screen persistent heat sources,
 cluster accepted points into `fire_clusters`, enrich wind, publish broadcasts, deliver them,
 and evaluate alert rules. Separately, daily jobs pull weather per commune, advance the Canadian
-Forest Fire Weather Index, and ingest the EFFIS comparator. Dependencies are explicit in the
+Forest Fire Weather Index, and ingest the EFFIS comparator. A separate collector refreshes
+48-hour Open-Meteo weather forecasts every six hours. Dependencies are explicit in the
 queue, so an optional-source failure does not consume another contract's lease or retry budget.
 
 The FWI codes are **stateful**: yesterday's fuel-moisture codes are persisted in `fwi_state`
