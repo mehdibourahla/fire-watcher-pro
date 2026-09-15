@@ -120,6 +120,7 @@ it("archives DGPC preview HTML before the pure parser filters it", async () => {
       select: () => query,
       eq: () => query,
       lt: () => query,
+      lte: () => query,
       order: () => query,
       limit: () => query,
       range: () => query,
@@ -203,7 +204,11 @@ it("archives an ITA 304 before checkpointing or claiming pending extraction", as
       headers: expect.objectContaining({ "If-None-Match": '"old"' }),
     }),
   );
-  expect(archivedFetch.mock.invocationCallOrder[0]).toBeLessThan(
-    rpc.mock.invocationCallOrder[0]!,
-  );
+  for (const operation of ["save_ita_feed", "claim_ita_extractions"]) {
+    const index = rpc.mock.calls.findIndex(([name]) => name === operation);
+    expect(index).toBeGreaterThanOrEqual(0);
+    expect(archivedFetch.mock.invocationCallOrder[0]).toBeLessThan(
+      rpc.mock.invocationCallOrder[index]!,
+    );
+  }
 });

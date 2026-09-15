@@ -33,6 +33,7 @@ describe("ITA feed", () => {
       notModified: true,
       etag: '"v1"',
       posts: [],
+      rejectedPosts: 0,
     });
     expect(fetcher).toHaveBeenCalledWith(
       expect.any(String),
@@ -44,9 +45,38 @@ describe("ITA feed", () => {
   it.each([
     { posts: [{ ...post, uri: "../../private" }] },
     { posts: [{ ...post, created_time: "yesterday" }] },
-    { posts: [post, post] },
     { posts: [{ ...post, message: "" }] },
-  ])("rejects invalid batches before checkpointing", async (body) => {
+  ])("isolates invalid records and retains valid posts", async (body) => {
+    const result = await fetchItaFeed(null, async () =>
+      Response.json({
+        posts: [
+          ...body.posts.map((p) => ({
+            ...p,
+            id: "808412572528916_1511278197712052",
+          })),
+          post,
+        ],
+      }),
+    );
+    expect(result.posts).toEqual([post]);
+    expect(result.rejectedPosts).toBe(1);
+  });
+  it.each([null, undefined])(
+    "accepts unknown category metadata %s",
+    async (type) => {
+      const result = await fetchItaFeed(null, async () =>
+        Response.json({ posts: [{ ...post, type }] }),
+      );
+      expect(result.posts[0]?.type).toEqual([]);
+      expect(result.rejectedPosts).toBe(0);
+    },
+  );
+  it.each([
+    { posts: [post, post] },
+    { posts: [post, { ...post, message: "" }] },
+    { posts: Array(2001).fill(post) },
+    { posts: null },
+  ])("rejects ambiguous identities and invalid envelopes", async (body) => {
     await expect(
       fetchItaFeed(null, async () => Response.json(body)),
     ).rejects.toThrow();

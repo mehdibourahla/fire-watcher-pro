@@ -532,6 +532,9 @@ export const en = {
       "Area figures are satellite estimates, not surveyed measurements.",
   },
   status: {
+    collectionAt: "Last successful collection: {{time}}",
+    processingBacklog:
+      "Processing: {{pending}} queued · {{quarantined}} need review",
     degradedCount:
       "{{count}} data sources affected — current capability may be reduced.",
     degradedCount_one:

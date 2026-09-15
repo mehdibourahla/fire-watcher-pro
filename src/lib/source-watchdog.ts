@@ -7,6 +7,7 @@ export const SOURCE_WATCHDOG_ISSUE_CODES = [
   "run_delayed",
   "delivery_backlog",
   "delivery_expired",
+  "processing_quarantined",
 ] as const;
 
 export type SourceWatchdogIssueCode =

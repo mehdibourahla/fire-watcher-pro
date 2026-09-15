@@ -52,6 +52,82 @@ it("rejects invented evidence", async () => {
     ),
   ).rejects.toThrow("evidence");
 });
+it("repairs joined status quotes with one grounded LLM correction", async () => {
+  const message =
+    "🚨🚨 متابعة : يتم رفع وازاحة الشاحنتين محل الحادث بالطريق السيار شرق غرب قبل محطة الخدمات بابور سطيف اتجاه الجزائر حركة السير بطيئة في القطاع.";
+  const incident = {
+    ...output.incidents[0],
+    evidence: "يتم رفع وازاحة الشاحنتين محل الحادث",
+    location_text: "قبل محطة الخدمات بابور سطيف",
+    location_evidence: "قبل محطة الخدمات بابور سطيف",
+    current_status: "ongoing",
+    status_evidence:
+      "يتم رفع وازاحة الشاحنتين محل الحادث ... حركة السير بطيئة في القطاع.",
+  };
+  const corrected = {
+    ...output,
+    incidents: [
+      { ...incident, status_evidence: "حركة السير بطيئة في القطاع." },
+    ],
+  };
+  const d = deps({ ...output, incidents: [incident] });
+  d.complete
+    .mockResolvedValueOnce(JSON.stringify({ ...output, incidents: [incident] }))
+    .mockResolvedValueOnce(JSON.stringify(corrected));
+  expect(await extractItaReport({ ...post, message }, d)).toEqual(corrected);
+  expect(d.complete).toHaveBeenCalledTimes(2);
+  expect(d.complete).toHaveBeenNthCalledWith(
+    2,
+    expect.objectContaining({
+      messages: expect.arrayContaining([
+        expect.objectContaining({
+          role: "user",
+          content: expect.stringContaining("unsupported status evidence"),
+        }),
+      ]),
+    }),
+  );
+});
+it("stops after one failed repair instead of accepting unsupported evidence", async () => {
+  const d = deps({
+    ...output,
+    incidents: [{ ...output.incidents[0], evidence: "invented" }],
+  });
+  await expect(extractItaReport(post, d)).rejects.toThrow(
+    "unsupported event evidence",
+  );
+  expect(d.complete).toHaveBeenCalledTimes(2);
+});
+it("shares the report deadline with its repair request", async () => {
+  const invalid = {
+    ...output,
+    incidents: [{ ...output.incidents[0], evidence: "invented" }],
+  };
+  const request = vi
+    .fn()
+    .mockResolvedValueOnce(
+      Response.json({
+        choices: [{ message: { content: JSON.stringify(invalid) } }],
+      }),
+    )
+    .mockResolvedValueOnce(
+      Response.json({
+        choices: [{ message: { content: JSON.stringify(output) } }],
+      }),
+    );
+  vi.stubEnv("OPENROUTER_API_KEY", "test");
+  vi.stubGlobal("fetch", request);
+  try {
+    expect(await extractItaReport(post)).toEqual(output);
+    expect(request.mock.calls[0]?.[1].signal).toBeInstanceOf(AbortSignal);
+    expect(request.mock.calls[1]?.[1].signal).toBe(
+      request.mock.calls[0]?.[1].signal,
+    );
+  } finally {
+    vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
+  }
+});
 it("requires evidence for a claimed current status", async () => {
   await expect(
     extractItaReport(

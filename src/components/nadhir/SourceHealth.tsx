@@ -67,6 +67,20 @@ export function SourceHealth({
           ? ` · ${t(`status.reason.${source.public_reason_code}`)}`
           : ""}
       </span>
+      {source.processing && (
+        <span className="w-full text-sm text-muted-foreground">
+          {t("status.collectionAt", {
+            time: source.processing.collection_at
+              ? relativeTime(source.processing.collection_at, locale)
+              : t("status.noValidData"),
+          })}
+          {" · "}
+          {t("status.processingBacklog", {
+            pending: source.processing.pending,
+            quarantined: source.processing.quarantined,
+          })}
+        </span>
+      )}
     </li>
   );
 }

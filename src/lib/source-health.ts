@@ -15,6 +15,7 @@ export type SourceFreshnessBasis =
   "last_success_at" | "upstream_published_at" | "data_through" | "published_at";
 
 export type SourceHealth = {
+  processing?: SourceProcessingHealth;
   key: string;
   label: string;
   family: string;
@@ -34,6 +35,33 @@ export type SourceHealth = {
   fallback_contract_key: string | null;
   public_reason_code: PublicSourceReason | null;
 };
+
+export type SourceProcessingHealth = {
+  key: string;
+  collection_at: string | null;
+  pending: number;
+  quarantined: number;
+};
+
+export function withProcessingHealth(
+  rows: SourceHealth[],
+  processing: SourceProcessingHealth[],
+): SourceHealth[] {
+  return rows.map((row) => {
+    const status = processing.find((item) => item.key === row.key);
+    return status
+      ? {
+          ...row,
+          processing: status,
+          state:
+            row.state === "healthy" &&
+            (status.pending > 0 || status.quarantined > 0)
+              ? "degraded"
+              : row.state,
+        }
+      : row;
+  });
+}
 
 export function summariseSourceHealth(rows: SourceHealth[]) {
   const affected = rows.filter((source) => source.state !== "healthy");

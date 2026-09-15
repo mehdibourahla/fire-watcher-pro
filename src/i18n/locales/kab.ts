@@ -532,6 +532,9 @@ export const kab: Translation = {
     methodology: "Tijumma d usmenyef n usaṭelit, mačči d aktal n wakal.",
   },
   status: {
+    collectionAt: "Dernière collecte réussie : {{time}}",
+    processingBacklog:
+      "Traitement : {{pending}} en attente · {{quarantined}} à examiner",
     degradedCount:
       "{{count}} n yiɣbula n yisefka ttwaseḥbes — tazmert tamirant tezmer ad tenqes.",
     degradedCount_one:

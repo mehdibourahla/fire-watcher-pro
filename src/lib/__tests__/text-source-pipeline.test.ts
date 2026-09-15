@@ -9,6 +9,7 @@ import {
 import type { LlmMention } from "@/lib/text-sources/extract-llm.server";
 import type { OpenIncident } from "@/lib/text-sources/merge";
 import type { TelegramPost } from "@/lib/text-sources/telegram-public";
+import recoveryPosts from "./fixtures/dgpc-recovery-posts.json";
 
 const SKIKDA = "w-skikda";
 const OTHER = "w-other";
@@ -512,6 +513,7 @@ describe("distribution gate", () => {
       ),
     );
     expect(result).toMatchObject({ mentions: 2, gated: 0 });
+    expect(result.error).toBeUndefined();
     expect(mentions.every((m) => m["commune_id"] !== null)).toBe(true);
   });
 
@@ -925,6 +927,53 @@ describe("extraction retry", () => {
 });
 
 describe("durable interpretation completion", () => {
+  it("reports exhausted processing separately from a successful collection", async () => {
+    const f = memoryStore();
+    f.store.pendingCount = async () => 6;
+    f.store.retryableDocuments = async () => [];
+    const result = await runTextSourceWith(
+      "dgpc_telegram",
+      deps([], f.store, llmWith()),
+    );
+    expect(result).toMatchObject({ pending: 6, fetched: 0, retried: 0 });
+    expect(result.error).toBeUndefined();
+  });
+  it("accepts official wilaya-only evidence without inventing communes or declaring absence", async () => {
+    const f = memoryStore();
+    const captured = recoveryPosts.find(
+      (p) => p.external_id === "DGPCDZ/6876",
+    )!;
+    const original = f.store.loadGazetteer;
+    f.store.loadGazetteer = async () => ({
+      ...(await original()),
+      wilayas: ["سكيكدة", "سطيف", "المدية"].map((name_ar) => ({
+        id: name_ar,
+        name_ar,
+      })),
+    });
+    const result = await runTextSourceWith(
+      "dgpc_telegram",
+      deps(
+        [post(captured.external_id, captured.published_at, captured.body)],
+        f.store,
+        llmWith(
+          ...["سكيكدة", "سطيف", "المدية"].map((wilaya) =>
+            mention({
+              wilaya,
+              commune: null,
+              evidence: `⏮️⏮️ ولاية #${wilaya} 01`,
+            }),
+          ),
+        ),
+      ),
+    );
+    expect(result.error).toBeUndefined();
+    expect(result).toMatchObject({ mentions: 3, unresolved: 0 });
+    expect(f.retry.size).toBe(0);
+    expect(f.confirmed).toHaveLength(0);
+    expect(f.unlisted.size).toBe(0);
+    expect(f.mentions.every((m) => m["commune_id"] === null)).toBe(true);
+  });
   it("retains incomplete bulletin interpretation instead of declaring success", async () => {
     const f = memoryStore();
     const result = await runTextSourceWith(
