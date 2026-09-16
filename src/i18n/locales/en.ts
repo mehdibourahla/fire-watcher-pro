@@ -301,6 +301,12 @@ export const en = {
     general: "General emergency",
   },
   civilMap: {
+    officialGroup: "Official warnings and reports",
+    observationsGroup: "Observations and citizen reports",
+    reportedBoundary:
+      "The shaded boundary, when available, is the reported administrative area, not the hazard footprint.",
+    boundaryUnavailable:
+      "Area boundary unavailable. The marker identifies the reported area centre.",
     severity: "Severity (source)",
     certainty: "Certainty (source)",
     urgency: "Urgency (source)",

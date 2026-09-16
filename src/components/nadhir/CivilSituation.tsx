@@ -94,6 +94,7 @@ export function SituationCard({
   const Icon = hazardIcons[item.category];
   return (
     <button
+      data-situation-id={item.id}
       type="button"
       aria-pressed={selected}
       onClick={onSelect}

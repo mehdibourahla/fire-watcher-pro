@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import type { FeatureCollection } from "geojson";
 
-import type { MapLayers } from "./FireMap";
+import type { MapLayers, MapPadding } from "./FireMap";
 import type { FireCluster } from "@/lib/nadhir";
 
 const FireMap = lazy(() => import("./FireMap"));
@@ -17,10 +17,13 @@ type Props = {
   selectedOfficialId?: string | null;
   onSelectOfficial?: (id: string) => void;
   reports?: FeatureCollection;
+  selectedReportId?: string | null;
   onSelectReport?: (id: string) => void;
   warnings?: FeatureCollection;
+  selectedWarningId?: string | null;
   onSelectWarning?: (id: string) => void;
   focus?: { lat: number; lon: number; zoom: number };
+  padding?: MapPadding;
   onError?: () => void;
   onReady?: () => void;
   center?: [number, number];

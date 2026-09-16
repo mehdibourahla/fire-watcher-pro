@@ -9,11 +9,14 @@ import { useTranslation } from "react-i18next";
 import {
   Bell,
   Bookmark,
-  ChevronDown,
+  ArrowLeft,
+  PanelLeftClose,
+  PanelLeftOpen,
+  CloudSun,
+  Info,
   Crosshair,
   Layers,
   LoaderCircle,
-  MapPin,
   RefreshCw,
   Search,
   Share2,
@@ -21,9 +24,8 @@ import {
   TriangleAlert,
   X,
 } from "lucide-react";
-import type { FeatureCollection } from "geojson";
 import { MapCanvas } from "@/components/MapCanvas";
-import { DetailSheet } from "@/components/nadhir/DetailSheet";
+import { MapWorkspacePanel } from "@/components/nadhir/MapWorkspacePanel";
 import {
   SituationCard,
   SituationDetails,
@@ -34,10 +36,12 @@ import { MapSurvivalPrompt } from "@/components/nadhir/MapSurvivalPrompt";
 import { WeatherForecast } from "@/components/nadhir/WeatherForecast";
 import { SubscribeSheet } from "@/components/nadhir/SubscribeSheet";
 import { BroadcastBanner } from "@/components/nadhir/BroadcastBanner";
+import { SourceHealth } from "@/components/nadhir/SourceHealth";
 import { EmergencyNumbers } from "@/components/SiteChrome";
 import {
   adminUnitsQuery,
   clustersQuery,
+  communeGeomsQuery,
   officialIncidentsQuery,
   onmVigilanceQuery,
   sourceHealthQuery,
@@ -45,7 +49,8 @@ import {
   relativeTime,
   type AdminUnit,
 } from "@/lib/nadhir";
-import { hazardReportsGeoJSON, hazardReportsQuery } from "@/lib/open-areas";
+import { hazardReportsQuery } from "@/lib/open-areas";
+import { civilMapGeoJSON, situationAreaId } from "@/lib/civil-map-geometry";
 import {
   buildSituations,
   filterSituations,
@@ -53,7 +58,6 @@ import {
   nearestPlace,
   CITIZEN_NEARBY_RADIUS_KM,
   type HazardCategory,
-  type Situation,
 } from "@/lib/civil-map";
 import { parseMapSearch, type MapSearch } from "@/lib/civil-map-search";
 import { readSubscription } from "@/lib/push";
@@ -81,26 +85,6 @@ const categories: HazardCategory[] = [
   "road",
   "other",
 ];
-const pointCollection = (items: Situation[]): FeatureCollection => ({
-  type: "FeatureCollection",
-  features: items.flatMap((item) =>
-    item.lat === null || item.lon === null
-      ? []
-      : [
-          {
-            type: "Feature" as const,
-            geometry: {
-              type: "Point" as const,
-              coordinates: [item.lon, item.lat],
-            },
-            properties: {
-              id: item.id.split(":").slice(1).join(":"),
-              status: item.source === "official" ? item.data.status : "unknown",
-            },
-          },
-        ],
-  ),
-});
 
 function LiveMapPage() {
   const { t, i18n } = useTranslation();
@@ -123,17 +107,99 @@ function LiveMapPage() {
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
-  const [options, setOptions] = useState(false);
+  const [panel, setPanel] = useState<
+    "list" | "layers" | "sources" | "forecast" | "help"
+  >("list");
+  const [panelHidden, setPanelHidden] = useState(false);
+  const [desktop, setDesktop] = useState(false);
+  const [mapHeight, setMapHeight] = useState(600);
+  const workspaceRef = useRef<HTMLDivElement>(null);
   const [saved, setSaved] = useState<string[]>([]);
   const [message, setMessage] = useState("");
   const [locating, setLocating] = useState(false);
   const [offline, setOffline] = useState(false);
   const [mapFailed, setMapFailed] = useState(false);
   const [subscriptionOpen, setSubscriptionOpen] = useState(false);
-  const [forecastOpen, setForecastOpen] = useState(false);
-  const [helpOpen, setHelpOpen] = useState(false);
   const [subscribed, setSubscribed] = useState<string[]>([]);
   const searchRef = useRef<HTMLInputElement>(null);
+  const backRef = useRef<HTMLButtonElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const listOffset = useRef(0);
+  const lastSelection = useRef<string | undefined>(undefined);
+  const panelView = search.event ? "detail" : panel;
+  useEffect(() => {
+    const element = workspaceRef.current;
+    if (!element) return;
+    const observer = new ResizeObserver(() =>
+      setMapHeight(element.clientHeight),
+    );
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+  useEffect(() => {
+    const media = window.matchMedia(
+      "(min-width: 1024px), (min-width: 640px) and (max-height: 500px)",
+    );
+    const sync = () => {
+      setDesktop(media.matches);
+      if (!media.matches) setPanelHidden(false);
+    };
+    sync();
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
+  }, []);
+  useEffect(() => {
+    if (search.event) {
+      setExpanded(true);
+      setPanelHidden(false);
+    }
+  }, [search.event]);
+  useEffect(() => {
+    if (searchOpen && panelView === "list" && expanded)
+      searchRef.current?.focus();
+  }, [searchOpen, panelView, expanded]);
+  useEffect(() => {
+    if (contentRef.current)
+      contentRef.current.scrollTop =
+        panelView === "list" ? listOffset.current : 0;
+    if (panelView !== "list") backRef.current?.focus({ preventScroll: true });
+    else if (lastSelection.current) {
+      document
+        .querySelector<HTMLButtonElement>(
+          `[data-situation-id="${CSS.escape(lastSelection.current)}"]`,
+        )
+        ?.focus({ preventScroll: true });
+      lastSelection.current = undefined;
+    }
+  }, [panelView]);
+  const openPanel = (next: typeof panel) => {
+    if (panelView === "list")
+      listOffset.current = contentRef.current?.scrollTop ?? 0;
+    update({ event: undefined }, true);
+    setPanel(next);
+    setPanelHidden(false);
+    setExpanded(true);
+    setSearchOpen(false);
+  };
+  const backToList = () => {
+    lastSelection.current = search.event;
+    update({ event: undefined }, true);
+    setPanel("list");
+  };
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (
+        event.key !== "Escape" ||
+        event.defaultPrevented ||
+        document.querySelector('[role="dialog"][data-state="open"]')
+      )
+        return;
+      if (searchOpen) setSearchOpen(false);
+      else if (panelView !== "list") backToList();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 30_000);
     const connection = () => setOffline(!navigator.onLine);
@@ -176,6 +242,11 @@ function LiveMapPage() {
       }),
     [fires.data, official.data, reports.data, warnings.data, allUnits, now],
   );
+  const survivalFires = useMemo(
+    () =>
+      items.flatMap((item) => (item.source === "satellite" ? [item.data] : [])),
+    [items],
+  );
   const visible = useMemo(
     () =>
       filterSituations(
@@ -191,24 +262,31 @@ function LiveMapPage() {
     [items, search.hazard, area, search.ended, search.candidates, allUnits],
   );
   const selected = visible.find((i) => i.id === search.event);
+  const officialItems = visible.filter(
+    (item) =>
+      item.source === "onm" ||
+      (item.source === "official" && item.data.authority_tier !== "media"),
+  );
+  const observedItems = visible.filter((item) => !officialItems.includes(item));
   const labels = useSituationLabels(allUnits, now);
   const mapFires = visible.flatMap((i) =>
     i.source === "satellite" && i.lat !== null && i.lon !== null
       ? [i.data]
       : [],
   );
-  const mapOfficial = pointCollection(
-    visible.filter((i) => i.source === "official"),
+  const selectedAreaId = selected ? situationAreaId(selected) : null;
+  const boundaries = useQuery(
+    communeGeomsQuery(selectedAreaId ? [selectedAreaId] : []),
   );
-  const mapWarnings = pointCollection(
-    visible.filter((i) => i.source === "onm"),
-  );
-  const mapReports = hazardReportsGeoJSON(
-    visible.flatMap((i) =>
-      i.source === "citizen" && i.lat !== null && i.lon !== null
-        ? [i.data]
-        : [],
-    ),
+  const {
+    official: mapOfficial,
+    warnings: mapWarnings,
+    reports: mapReports,
+  } = civilMapGeoJSON(
+    visible,
+    boundaries.data ?? new Map(),
+    labels.title,
+    selected?.id,
   );
   const queries = [fires, official, reports, warnings];
   const loading = queries.some((q) => q.isPending);
@@ -253,7 +331,7 @@ function LiveMapPage() {
     update({ area: unit?.id, event: undefined });
     setQuery("");
     setSearchOpen(false);
-    setForecastOpen(false);
+    setPanel("list");
   };
   const locate = () => {
     setMessage("");
@@ -295,7 +373,13 @@ function LiveMapPage() {
     }
   };
   const select = (id: string) => {
+    if (panelView === "list")
+      listOffset.current = contentRef.current?.scrollTop ?? 0;
     update({ event: id });
+    setPanel("list");
+    setPanelHidden(false);
+    setExpanded(true);
+    setSearchOpen(false);
   };
   const refresh = () => {
     for (const q of [...queries, health]) void q.refetch();
@@ -309,488 +393,643 @@ function LiveMapPage() {
     }
   };
 
+  const requestPlace = (feedback: string) => {
+    openPanel("list");
+    setMessage(feedback);
+    setSearchOpen(true);
+    requestAnimationFrame(() => searchRef.current?.focus());
+  };
+  const follow = () => {
+    if (area?.level === "commune") setSubscriptionOpen(true);
+    else requestPlace("civilMap.communeOnly");
+  };
+  const panelTitle =
+    panelView === "detail"
+      ? selected
+        ? labels.title(selected)
+        : t("civilMap.detailUnavailable")
+      : t(
+          (
+            {
+              list: "civilMap.title",
+              layers: "civilMap.filters",
+              sources: "civilMap.coverage",
+              forecast: "civilMap.forecast",
+              help: "civilMap.help",
+            } as const
+          )[panel],
+        );
+  const buttonStyle =
+    "flex size-11 items-center justify-center rounded-2xl border border-border bg-surface/95 text-foreground shadow-sm backdrop-blur hover:bg-muted focus-visible:outline-2 focus-visible:outline-primary";
+  const padding = desktop
+    ? {
+        top: 24,
+        bottom: 24,
+        left: !panelHidden && locale !== "ar" ? 412 : 24,
+        right: !panelHidden && locale === "ar" ? 412 : 80,
+      }
+    : {
+        top: expanded ? 12 : 64,
+        bottom: expanded ? Math.round(mapHeight * 0.76) + 24 : 140,
+        left: locale === "ar" ? 64 : 24,
+        right: locale === "ar" ? 24 : 64,
+      };
+
   return (
-    <div className="civil-map-page relative mx-auto flex h-full min-h-0 w-full max-w-[1600px] flex-col gap-3 overflow-hidden p-3 lg:p-5">
-      <div className="map-scroll min-h-0 max-h-[50%] shrink-0 overflow-x-hidden overflow-y-auto overscroll-contain pe-1">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            <p className="text-[11px] font-semibold uppercase tracking-[.16em] text-muted-foreground">
-              {t("civilMap.title")}
-            </p>
-            <h1 className="mt-1 flex items-center gap-2 text-lg font-semibold lg:text-2xl">
-              <MapPin aria-hidden className="size-5 text-primary" />
-              <span className="truncate">
-                {area ? unitName(area, locale) : t("civilMap.national")}
-              </span>
-            </h1>
-          </div>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => setHelpOpen(true)}
-              className="min-h-11 rounded-full border px-4 text-sm font-medium"
-            >
-              {t("civilMap.help")}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                if (area?.level === "commune") setSubscriptionOpen(true);
-                else {
-                  setMessage("civilMap.communeOnly");
-                  searchRef.current?.focus();
-                  setSearchOpen(true);
-                }
-              }}
-              className="flex min-h-11 items-center gap-2 rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground"
-            >
-              <Bell aria-hidden className="size-4" />
-              <span className="sr-only sm:not-sr-only">
-                {t(following ? "civilMap.following" : "civilMap.follow")}
-              </span>
-            </button>
-          </div>
-        </div>
-        <div className="relative z-20 mb-3 flex gap-2">
-          <div className="relative min-w-0 flex-1">
-            <Search
-              aria-hidden
-              className="pointer-events-none absolute start-4 top-3.5 size-5 text-muted-foreground"
-            />
-            <input
-              ref={searchRef}
-              type="search"
-              value={query}
-              onChange={(e) => {
-                setQuery(e.target.value);
-                setSearchOpen(true);
-              }}
-              onFocus={() => setSearchOpen(true)}
-              onKeyDown={(e) => {
-                if (e.key === "Escape") setSearchOpen(false);
-              }}
-              aria-label={t("civilMap.search")}
-              aria-expanded={searchOpen}
-              aria-controls="map-place-results"
-              placeholder={t("civilMap.search")}
-              className="h-12 w-full rounded-2xl border border-border bg-surface pe-4 ps-12 text-base shadow-sm focus:outline-2 focus:outline-primary"
-            />
-            {searchOpen && (
-              <div
-                id="map-place-results"
-                className="mt-2 rounded-2xl border bg-surface p-2 shadow-xl"
+    <div
+      ref={workspaceRef}
+      className="civil-map-page relative h-full min-h-0 w-full overflow-hidden bg-muted"
+    >
+      <section aria-label={t("civilMap.mapTitle")} className="absolute inset-0">
+        <MapCanvas
+          clusters={mapFires}
+          official={mapOfficial}
+          warnings={mapWarnings}
+          reports={mapReports}
+          focus={focus}
+          padding={padding}
+          layers={{
+            fires: true,
+            official: true,
+            reports: true,
+            industrialSources: false,
+            unverified: search.candidates,
+          }}
+          selectedShortId={
+            selected?.source === "satellite" ? selected.data.short_id : null
+          }
+          selectedOfficialId={
+            selected?.source === "official" ? selected.data.id : null
+          }
+          selectedWarningId={
+            selected?.source === "onm" ? selected.data.id : null
+          }
+          selectedReportId={
+            selected?.source === "citizen" ? selected.data.id : null
+          }
+          onSelect={(c) => select(`fire:${c.id}`)}
+          onSelectOfficial={(id) => select(`official:${id}`)}
+          onSelectReport={(id) => select(`report:${id}`)}
+          onSelectWarning={(id) => select(`weather:${id}`)}
+          onError={() => setMapFailed(true)}
+          onReady={() => setMapFailed(false)}
+        />
+      </section>
+
+      <div
+        className="civil-map-controls absolute end-3 top-3 z-10 flex flex-col gap-2 lg:end-4 lg:top-4"
+        aria-label={t("civilMap.filters")}
+      >
+        <button
+          type="button"
+          className={buttonStyle}
+          onClick={locate}
+          disabled={locating || !allUnits.length}
+          aria-label={t("civilMap.locate")}
+          title={t("civilMap.locate")}
+        >
+          {locating ? (
+            <LoaderCircle className="size-5 animate-spin" />
+          ) : (
+            <Crosshair className="size-5" />
+          )}
+        </button>
+        <button
+          type="button"
+          className={buttonStyle}
+          onClick={() => openPanel("layers")}
+          aria-label={t("civilMap.filters")}
+          title={t("civilMap.filters")}
+        >
+          <Layers className="size-5" />
+        </button>
+        <button
+          type="button"
+          className={buttonStyle}
+          onClick={() => openPanel("forecast")}
+          aria-label={t("civilMap.forecast")}
+          title={t("civilMap.forecast")}
+        >
+          <CloudSun className="size-5" />
+        </button>
+        <button
+          type="button"
+          className={buttonStyle}
+          onClick={() => openPanel("help")}
+          aria-label={t("civilMap.help")}
+          title={t("civilMap.help")}
+        >
+          <Info className="size-5" />
+        </button>
+      </div>
+
+      {!desktop && (
+        <button
+          type="button"
+          onClick={() => requestPlace("")}
+          className={`absolute start-3 top-3 z-10 ${buttonStyle} lg:hidden`}
+          aria-label={t("civilMap.search")}
+        >
+          <Search className="size-5" />
+        </button>
+      )}
+      {panelHidden && (
+        <button
+          type="button"
+          className={`absolute start-4 top-4 z-10 ${buttonStyle}`}
+          onClick={() => setPanelHidden(false)}
+          aria-label={t("civilMap.expand")}
+        >
+          <PanelLeftOpen className="size-5" />
+        </button>
+      )}
+
+      {!panelHidden && (
+        <MapWorkspacePanel expanded={expanded} onExpandedChange={setExpanded}>
+          <div
+            className={`flex shrink-0 items-center gap-2 px-4 pb-3 ${desktop ? "pt-4" : ""}`}
+          >
+            {panelView !== "list" && (
+              <button
+                ref={backRef}
+                type="button"
+                onClick={backToList}
+                aria-label={t("common.back")}
+                className="flex size-11 shrink-0 items-center justify-center rounded-xl hover:bg-muted"
               >
-                <div className="flex items-center justify-between">
-                  <button
-                    type="button"
-                    onClick={() => chooseArea(null)}
-                    className="min-h-11 px-3 text-sm font-semibold"
+                <ArrowLeft className="size-5 rtl:rotate-180" />
+              </button>
+            )}
+            <div className="min-w-0 flex-1">
+              <h1
+                className="truncate font-sans text-base font-semibold"
+                dir="auto"
+              >
+                {panelView === "list"
+                  ? area
+                    ? unitName(area, locale)
+                    : t("civilMap.national")
+                  : panelTitle}
+              </h1>
+              <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                {panelView === "list"
+                  ? t("civilMap.situations", { count: visible.length })
+                  : t("civilMap.title")}
+              </p>
+            </div>
+            {panelView === "list" && (
+              <button
+                type="button"
+                onClick={follow}
+                aria-label={t(
+                  following ? "civilMap.following" : "civilMap.follow",
+                )}
+                title={t(following ? "civilMap.following" : "civilMap.follow")}
+                className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground"
+              >
+                <Bell className="size-4" />
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => setPanelHidden(true)}
+              aria-label={t("civilMap.collapse")}
+              className={`${desktop ? "flex" : "hidden"} size-11 shrink-0 items-center justify-center rounded-xl hover:bg-muted`}
+            >
+              <PanelLeftClose className="size-5" />
+            </button>
+          </div>
+
+          <div
+            className={`${expanded || desktop ? "flex" : "hidden"} min-h-0 flex-1 flex-col`}
+          >
+            {panelView === "list" && (
+              <div className="shrink-0 border-b px-4 pb-3">
+                <div className="relative flex items-center gap-2">
+                  <Search
+                    aria-hidden
+                    className="pointer-events-none absolute start-3 top-3 size-5 text-muted-foreground"
+                  />
+                  <input
+                    ref={searchRef}
+                    type="search"
+                    value={query}
+                    onChange={(e) => {
+                      setQuery(e.target.value);
+                      setSearchOpen(true);
+                    }}
+                    onFocus={() => {
+                      setSearchOpen(true);
+                      setExpanded(true);
+                    }}
+                    aria-label={t("civilMap.search")}
+                    aria-expanded={searchOpen}
+                    aria-controls="map-place-results"
+                    placeholder={t("civilMap.search")}
+                    className="h-11 min-w-0 flex-1 rounded-xl border bg-muted/40 pe-3 ps-10 text-sm focus:outline-2 focus:outline-primary"
+                  />
+                  {area && (
+                    <button
+                      type="button"
+                      onClick={savePlace}
+                      aria-label={t(
+                        saved.includes(area.id)
+                          ? "civilMap.unsavePlace"
+                          : "civilMap.savePlace",
+                      )}
+                      aria-pressed={saved.includes(area.id)}
+                      className="flex size-11 shrink-0 items-center justify-center rounded-xl border"
+                    >
+                      <Bookmark
+                        className={`size-4 ${saved.includes(area.id) ? "fill-primary text-primary" : ""}`}
+                      />
+                    </button>
+                  )}
+                </div>
+                {!searchOpen && (
+                  <div
+                    className="map-scroll mt-3 flex gap-1.5 overflow-x-auto overflow-y-hidden py-1"
+                    aria-label={t("civilMap.filters")}
                   >
-                    {t("civilMap.allAreas")}
-                  </button>
+                    {categories.map((category) => {
+                      const Icon = hazardIcons[category];
+                      return (
+                        <button
+                          key={category}
+                          type="button"
+                          aria-pressed={search.hazard === category}
+                          onClick={() =>
+                            update({ hazard: category, event: undefined })
+                          }
+                          className={`flex min-h-10 shrink-0 items-center gap-1.5 rounded-xl px-3 text-xs font-medium ${search.hazard === category ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
+                        >
+                          <Icon className="size-4" />
+                          {t(`civilMap.${category}`)}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div
+              ref={contentRef}
+              className="map-scroll min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain px-4 py-3"
+            >
+              {message && (
+                <div
+                  role="status"
+                  className="mb-3 flex items-center gap-2 rounded-xl bg-muted p-2 text-xs"
+                >
+                  <span className="flex-1">{t(message)}</span>
                   <button
                     type="button"
-                    aria-label={t("civilMap.close")}
-                    onClick={() => setSearchOpen(false)}
-                    className="flex size-11 items-center justify-center"
+                    onClick={() => setMessage("")}
+                    aria-label={t("common.close")}
+                    className="flex size-11 shrink-0 items-center justify-center"
                   >
                     <X className="size-4" />
                   </button>
                 </div>
-                {!query && saved.length > 0 && (
-                  <>
-                    <p className="px-3 py-2 text-xs text-muted-foreground">
-                      {t("civilMap.savedPlaces")}
-                    </p>
-                    {allUnits
-                      .filter((u) => saved.includes(u.id))
-                      .map((u) => (
+              )}
+              {mapFailed && (
+                <p
+                  role="status"
+                  className="mb-3 rounded-xl bg-amber-500/10 p-3 text-sm"
+                >
+                  {t("civilMap.mapUnavailable")}
+                </p>
+              )}
+              {offline && (
+                <p
+                  role="status"
+                  className="mb-3 rounded-xl bg-amber-500/10 p-3 text-sm"
+                >
+                  {t("civilMap.offline")}
+                </p>
+              )}
+
+              {panelView === "list" &&
+                (searchOpen ? (
+                  <div id="map-place-results">
+                    <div className="flex items-center justify-between">
+                      <button
+                        type="button"
+                        onClick={() => chooseArea(null)}
+                        className="min-h-11 text-sm font-semibold"
+                      >
+                        {t("civilMap.allAreas")}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSearchOpen(false)}
+                        aria-label={t("common.close")}
+                        className="flex size-11 items-center justify-center"
+                      >
+                        <X className="size-4" />
+                      </button>
+                    </div>
+                    {!query && saved.length > 0 && (
+                      <>
+                        <p className="py-2 text-xs text-muted-foreground">
+                          {t("civilMap.savedPlaces")}
+                        </p>
+                        {allUnits
+                          .filter((u) => saved.includes(u.id))
+                          .map((u) => (
+                            <button
+                              type="button"
+                              key={u.id}
+                              onClick={() => chooseArea(u)}
+                              className="flex min-h-12 w-full items-center gap-2 rounded-xl px-3 text-start text-sm hover:bg-muted"
+                            >
+                              <Bookmark className="size-4" />
+                              {unitName(u, locale)}
+                            </button>
+                          ))}
+                      </>
+                    )}
+                    {units.isPending ? (
+                      <p>{t("civilMap.loading")}</p>
+                    ) : units.isError ? (
+                      <p role="status">{t("civilMap.error")}</p>
+                    ) : query && !places.length ? (
+                      <p className="py-4 text-sm">
+                        {t("civilMap.searchEmpty")}
+                      </p>
+                    ) : (
+                      places.map((u) => (
                         <button
                           type="button"
                           key={u.id}
                           onClick={() => chooseArea(u)}
-                          className="flex min-h-11 w-full items-center gap-2 rounded-lg px-3 text-start text-sm hover:bg-muted"
+                          className="flex min-h-12 w-full items-center justify-between gap-2 rounded-xl px-3 text-start text-sm hover:bg-muted"
                         >
-                          <Bookmark className="size-4" />
-                          {unitName(u, locale)}
+                          <span>{unitName(u, locale)}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {u.code}
+                          </span>
                         </button>
-                      ))}
-                  </>
-                )}
-                {units.isPending ? (
-                  <p className="p-3 text-sm">{t("civilMap.loading")}</p>
-                ) : units.isError ? (
-                  <p role="status" className="p-3 text-sm">
-                    {t("civilMap.error")}
-                  </p>
-                ) : query && places.length === 0 ? (
-                  <p className="p-3 text-sm">{t("civilMap.searchEmpty")}</p>
+                      ))
+                    )}
+                  </div>
                 ) : (
-                  places.map((u) => (
+                  <>
+                    {area && (
+                      <p className="mb-3 text-xs text-muted-foreground">
+                        {t("civilMap.nearbyScope", {
+                          km: CITIZEN_NEARBY_RADIUS_KM,
+                        })}
+                      </p>
+                    )}
+                    {loading && (
+                      <p
+                        role="status"
+                        className="mb-3 flex items-center gap-2 text-sm"
+                      >
+                        <LoaderCircle className="size-4 animate-spin" />
+                        {t("civilMap.loading")}
+                      </p>
+                    )}
+                    {!loading && !visible.length && (
+                      <div className="rounded-2xl bg-muted/40 p-5">
+                        <h2 className="font-sans text-sm font-medium">
+                          {t(
+                            queries.every((q) => q.isError)
+                              ? "civilMap.error"
+                              : "civilMap.noSituations",
+                          )}
+                        </h2>
+                        <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                          {t("civilMap.noSituationsBody")}
+                        </p>
+                      </div>
+                    )}
+                    <div className="space-y-5">
+                      {[
+                        { key: "officialGroup", items: officialItems },
+                        { key: "observationsGroup", items: observedItems },
+                      ]
+                        .filter((group) => group.items.length)
+                        .map((group) => (
+                          <section key={group.key}>
+                            <h2 className="mb-3 font-sans text-xs font-semibold text-muted-foreground">
+                              {t(`civilMap.${group.key}`)}
+                            </h2>
+                            <div className="space-y-3">
+                              {group.items.map((item) => (
+                                <SituationCard
+                                  key={item.id}
+                                  item={item}
+                                  units={allUnits}
+                                  now={now}
+                                  selected={item.id === search.event}
+                                  onSelect={() => select(item.id)}
+                                />
+                              ))}
+                            </div>
+                          </section>
+                        ))}
+                    </div>
+                    <div className="mt-4">
+                      <BroadcastBanner />
+                    </div>
+                  </>
+                ))}
+
+              {panelView === "detail" &&
+                (selected ? (
+                  <>
+                    {selectedAreaId && (
+                      <p className="mb-4 rounded-xl bg-muted p-3 text-xs leading-relaxed">
+                        {t(
+                          [
+                            ...mapOfficial.features,
+                            ...mapWarnings.features,
+                          ].some(
+                            (feature) => feature.properties?.["area"] === true,
+                          )
+                            ? "civilMap.reportedBoundary"
+                            : "civilMap.boundaryUnavailable",
+                        )}
+                      </p>
+                    )}
+                    <SituationDetails
+                      item={selected}
+                      units={allUnits}
+                      now={now}
+                    />
                     <button
-                      key={u.id}
                       type="button"
-                      onClick={() => chooseArea(u)}
-                      className="flex min-h-12 w-full items-center justify-between rounded-lg px-3 text-start text-sm hover:bg-muted"
+                      onClick={() => void share()}
+                      className="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border text-sm"
                     >
-                      <span>{unitName(u, locale)}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {u.code}
-                      </span>
+                      <Share2 className="size-4" />
+                      {t("civilMap.share")}
                     </button>
-                  ))
-                )}
-              </div>
-            )}
-          </div>
-          <button
-            type="button"
-            onClick={locate}
-            disabled={locating || !allUnits.length}
-            aria-label={t("civilMap.locate")}
-            title={t("civilMap.locate")}
-            className="flex size-12 shrink-0 items-center justify-center rounded-2xl border bg-surface disabled:opacity-50"
-          >
-            {locating ? (
-              <LoaderCircle className="size-5 animate-spin" />
-            ) : (
-              <Crosshair className="size-5" />
-            )}
-          </button>
-          {area && (
-            <button
-              type="button"
-              onClick={savePlace}
-              aria-label={t(
-                saved.includes(area.id)
-                  ? "civilMap.unsavePlace"
-                  : "civilMap.savePlace",
+                  </>
+                ) : (
+                  <p>
+                    {t(
+                      loading
+                        ? "civilMap.loading"
+                        : "civilMap.detailUnavailable",
+                    )}
+                  </p>
+                ))}
+
+              {panelView === "layers" && (
+                <div className="space-y-5">
+                  <div className="grid grid-cols-2 gap-2">
+                    {categories.map((category) => {
+                      const Icon = hazardIcons[category];
+                      return (
+                        <button
+                          type="button"
+                          key={category}
+                          aria-pressed={search.hazard === category}
+                          onClick={() =>
+                            update({ hazard: category, event: undefined })
+                          }
+                          className={`flex min-h-12 items-center gap-2 rounded-xl border px-3 text-sm ${search.hazard === category ? "border-primary bg-primary/10" : "bg-surface"}`}
+                        >
+                          <Icon className="size-4" />
+                          {t(`civilMap.${category}`)}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <label className="flex min-h-11 items-center gap-3 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={search.candidates}
+                      onChange={(e) => update({ candidates: e.target.checked })}
+                    />
+                    {t("civilMap.showCandidates")}
+                  </label>
+                  <label className="flex min-h-11 items-center gap-3 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={search.ended}
+                      onChange={(e) => update({ ended: e.target.checked })}
+                    />
+                    {t("civilMap.showEnded")}
+                  </label>
+                  <div className="space-y-3 border-t pt-4 text-xs leading-relaxed text-muted-foreground">
+                    {[
+                      "satelliteLegend",
+                      "officialLegend",
+                      "weatherLegend",
+                      "citizenLegend",
+                    ].map((key) => (
+                      <p key={key}>{t(`civilMap.${key}`)}</p>
+                    ))}
+                  </div>
+                </div>
               )}
-              aria-pressed={saved.includes(area.id)}
-              className="flex size-12 shrink-0 items-center justify-center rounded-2xl border bg-surface"
-            >
-              <Bookmark
-                className={`size-5 ${saved.includes(area.id) ? "fill-primary text-primary" : ""}`}
-              />
-            </button>
-          )}
-        </div>
-        {message && (
-          <p
-            role="status"
-            className="mb-3 flex items-center justify-between rounded-xl bg-muted px-3 text-sm"
-          >
-            {t(message)}
-            <button
-              type="button"
-              onClick={() => setMessage("")}
-              aria-label={t("civilMap.close")}
-              className="flex size-11 shrink-0 items-center justify-center"
-            >
-              <X className="size-4" />
-            </button>
-          </p>
-        )}
-        <div
-          className={`mb-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border px-3 py-2 text-xs ${limited ? "border-amber-500/25 bg-amber-500/10" : "border-border bg-surface"}`}
-          role="status"
-        >
-          <span className="flex items-center gap-2">
-            {limited ? (
-              <TriangleAlert
-                aria-hidden
-                className="size-4 shrink-0 text-amber-700"
-              />
-            ) : (
-              <ShieldCheck
-                aria-hidden
-                className="size-4 shrink-0 text-primary"
-              />
-            )}
-            <span>
-              {t(
-                offline
-                  ? "civilMap.offline"
-                  : limited
-                    ? "civilMap.limited"
-                    : "civilMap.sourceTime",
-              )}{" "}
-              {Number.isFinite(checkedAt) && (
-                <span className="text-muted-foreground">
-                  ·{" "}
-                  {t("civilMap.updated", {
-                    time: relativeTime(
-                      new Date(checkedAt).toISOString(),
-                      locale,
-                      now,
-                    ),
-                  })}
-                </span>
-              )}
-            </span>
-          </span>
-          <div className="flex items-center gap-2">
-            <Link
-              to="/status"
-              className="inline-flex min-h-9 items-center underline underline-offset-2"
-            >
-              {t("civilMap.coverage")}
-            </Link>
-            <button
-              type="button"
-              onClick={refresh}
-              disabled={refreshing}
-              aria-label={t("civilMap.refresh")}
-              className="flex size-11 items-center justify-center rounded-full hover:bg-muted"
-            >
-              <RefreshCw
-                className={`size-4 ${refreshing ? "animate-spin" : ""}`}
-              />
-            </button>
-          </div>
-        </div>
-        <div
-          className="map-scroll mb-3 flex items-center gap-2 overflow-x-auto overflow-y-hidden pb-1"
-          aria-label={t("civilMap.filters")}
-        >
-          {categories.map((category) => {
-            const Icon = hazardIcons[category];
-            return (
-              <button
-                type="button"
-                key={category}
-                aria-pressed={search.hazard === category}
-                onClick={() => update({ hazard: category, event: undefined })}
-                className={`flex min-h-11 shrink-0 items-center gap-2 rounded-full border px-4 text-sm font-medium ${search.hazard === category ? "border-primary bg-primary text-primary-foreground" : "border-border bg-surface hover:bg-muted"}`}
-              >
-                <Icon aria-hidden className="size-4" />
-                {t(`civilMap.${category}`)}
-              </button>
-            );
-          })}
-          <button
-            type="button"
-            aria-expanded={options}
-            onClick={() => setOptions(!options)}
-            className="flex min-h-11 shrink-0 items-center gap-2 rounded-full border bg-surface px-4 text-sm"
-          >
-            <Layers className="size-4" />
-            {t("civilMap.filters")}
-          </button>
-        </div>
-        {options && (
-          <div className="mb-3 flex flex-wrap gap-x-5 rounded-xl border bg-surface px-4 py-2 text-sm">
-            <label className="flex min-h-11 items-center gap-2">
-              <input
-                type="checkbox"
-                checked={search.candidates}
-                onChange={(e) =>
-                  update({ candidates: e.target.checked, event: undefined })
-                }
-              />
-              {t("civilMap.showCandidates")}
-            </label>
-            <label className="flex min-h-11 items-center gap-2">
-              <input
-                type="checkbox"
-                checked={search.ended}
-                onChange={(e) =>
-                  update({ ended: e.target.checked, event: undefined })
-                }
-              />
-              {t("civilMap.showEnded")}
-            </label>
-            <p className="w-full pb-2 text-xs text-muted-foreground">
-              {t("civilMap.satelliteLegend")} · {t("civilMap.officialLegend")} ·{" "}
-              {t("civilMap.weatherLegend")} · {t("civilMap.citizenLegend")}
-            </p>
-          </div>
-        )}
-      </div>
-      <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row lg:gap-4">
-        <section
-          aria-label={t("civilMap.mapTitle")}
-          className="relative h-full min-h-0 min-w-0 flex-1 overflow-hidden rounded-2xl border bg-muted lg:order-2"
-        >
-          <MapCanvas
-            clusters={mapFires}
-            official={mapOfficial}
-            warnings={mapWarnings}
-            reports={mapReports}
-            focus={focus}
-            layers={{
-              fires: true,
-              official: true,
-              reports: true,
-              industrialSources: false,
-              unverified: search.candidates,
-            }}
-            selectedShortId={
-              selected?.source === "satellite" ? selected.data.short_id : null
-            }
-            selectedOfficialId={
-              selected?.source === "official" ? selected.data.id : null
-            }
-            onSelect={(c) => select(`fire:${c.id}`)}
-            onSelectOfficial={(id) => select(`official:${id}`)}
-            onSelectReport={(id) => select(`report:${id}`)}
-            onSelectWarning={(id) => select(`weather:${id}`)}
-            onError={() => setMapFailed(true)}
-            onReady={() => setMapFailed(false)}
-          />
-          {mapFailed && (
-            <p
-              role="status"
-              className="absolute inset-x-3 top-3 rounded-xl bg-surface p-3 text-sm shadow"
-            >
-              {t("civilMap.mapUnavailable")}
-            </p>
-          )}
-          <DetailSheet
-            open={!!search.event}
-            title={
-              selected
-                ? labels.title(selected)
-                : t("civilMap.detailUnavailable")
-            }
-            onClose={() => update({ event: undefined }, true)}
-          >
-            {selected ? (
-              <>
-                <SituationDetails item={selected} units={allUnits} now={now} />
-                <button
-                  type="button"
-                  onClick={() => void share()}
-                  className="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border text-sm font-medium"
-                >
-                  <Share2 className="size-4" />
-                  {t("civilMap.share")}
-                </button>
-              </>
-            ) : (
-              <p>
-                {t(loading ? "civilMap.loading" : "civilMap.detailUnavailable")}
-              </p>
-            )}
-          </DetailSheet>
-        </section>
-        <section
-          aria-label={t("civilMap.list")}
-          className={`absolute inset-x-0 bottom-0 z-10 flex min-h-0 flex-col overflow-hidden rounded-t-3xl border border-border bg-surface px-4 pb-3 shadow-sm lg:static lg:order-1 lg:h-full lg:w-[370px] lg:shrink-0 lg:rounded-2xl lg:pt-4 ${expanded ? "h-[75%]" : ""}`}
-        >
-          <button
-            type="button"
-            onClick={() => setExpanded(!expanded)}
-            aria-expanded={expanded}
-            className="mx-auto flex h-11 w-full shrink-0 items-center justify-center lg:hidden"
-            aria-label={t(expanded ? "civilMap.collapse" : "civilMap.expand")}
-          >
-            <span className="h-1 w-10 rounded-full bg-border" />
-          </button>
-          <div className="mb-2 flex shrink-0 items-center justify-between">
-            <h2 className="text-sm font-semibold">
-              {t("civilMap.situations", { count: visible.length })}
-            </h2>
-            <span className="rounded-full bg-muted px-2.5 py-1 text-xs text-muted-foreground">
-              {t(`civilMap.${search.hazard}`)}
-            </span>
-          </div>
-          <div
-            className={`map-scroll ${expanded ? "" : "hidden"} min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain pe-1 lg:block`}
-          >
-            {area && (
-              <p className="mb-3 text-xs leading-relaxed text-muted-foreground">
-                {t("civilMap.nearbyScope", { km: CITIZEN_NEARBY_RADIUS_KM })}
-              </p>
-            )}
-            {loading && (
-              <p
-                role="status"
-                className="mb-3 flex items-center gap-2 text-sm text-muted-foreground"
-              >
-                <LoaderCircle className="size-4 animate-spin" />
-                {t("civilMap.loading")}
-              </p>
-            )}
-            {!loading && !visible.length && (
-              <div className="rounded-2xl bg-muted/50 px-4 py-8 text-center">
-                <ShieldCheck
-                  aria-hidden
-                  className="mx-auto mb-3 size-7 text-muted-foreground"
-                />
-                <h3 className="text-base font-medium">
-                  {t(
-                    queries.every((q) => q.isError)
-                      ? "civilMap.error"
-                      : "civilMap.noSituations",
+
+              {panelView === "sources" && (
+                <div className="space-y-4">
+                  <ul>
+                    {(health.data ?? [])
+                      .filter((source) => relevantKeys.has(source.key))
+                      .map((source) => (
+                        <SourceHealth
+                          key={source.key}
+                          source={source}
+                          locale={locale}
+                        />
+                      ))}
+                  </ul>
+                  <p className="text-sm">
+                    {t(limited ? "civilMap.limited" : "civilMap.sourceTime")}
+                  </p>
+                  {Number.isFinite(checkedAt) && (
+                    <p className="text-xs text-muted-foreground">
+                      {t("civilMap.updated", {
+                        time: relativeTime(
+                          new Date(checkedAt).toISOString(),
+                          locale,
+                          now,
+                        ),
+                      })}
+                    </p>
                   )}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  {t("civilMap.noSituationsBody")}
-                </p>
-              </div>
-            )}
-            <div className="space-y-3">
-              {visible.map((item) => (
-                <SituationCard
-                  key={item.id}
-                  item={item}
-                  units={allUnits}
-                  now={now}
-                  selected={item.id === search.event}
-                  onSelect={() => select(item.id)}
-                />
-              ))}
+                  <button
+                    type="button"
+                    onClick={refresh}
+                    disabled={refreshing}
+                    className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border text-sm"
+                  >
+                    <RefreshCw
+                      className={`size-4 ${refreshing ? "animate-spin" : ""}`}
+                    />
+                    {t("civilMap.refresh")}
+                  </button>
+                  <Link
+                    to="/status"
+                    className="flex min-h-11 items-center text-sm underline"
+                  >
+                    {t("civilMap.coverage")}
+                  </Link>
+                </div>
+              )}
+
+              {panelView === "forecast" && (
+                <>
+                  {area?.level === "commune" ? (
+                    <WeatherForecast communeId={area.id} />
+                  ) : (
+                    <>
+                      <p className="text-sm">
+                        {t("civilMap.selectCommuneWeather")}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          requestPlace("civilMap.selectCommuneWeather")
+                        }
+                        className="mt-4 min-h-11 w-full rounded-xl bg-primary px-3 text-sm text-primary-foreground"
+                      >
+                        {t("civilMap.search")}
+                      </button>
+                    </>
+                  )}
+                  <p className="mt-4 text-xs text-muted-foreground">
+                    {t("civilMap.forecastsNotWarnings")}
+                  </p>
+                </>
+              )}
+
+              {panelView === "help" && (
+                <>
+                  <EmergencyNumbers />
+                  <Link
+                    to="/survival"
+                    className="mt-4 flex min-h-11 items-center justify-center rounded-xl border border-red-500 px-4 text-sm font-semibold text-red-700"
+                  >
+                    {t("civilMap.fireHelp")}
+                  </Link>
+                </>
+              )}
             </div>
-            <div className="mt-4 border-t pt-4">
-              <button
-                type="button"
-                onClick={() => {
-                  if (area?.level === "commune") setForecastOpen(true);
-                  else {
-                    setMessage("civilMap.selectCommuneWeather");
-                    searchRef.current?.focus();
-                    setSearchOpen(true);
-                  }
-                }}
-                className="flex min-h-11 w-full items-center justify-between rounded-xl bg-muted px-3 text-sm font-medium"
-              >
-                {t("civilMap.forecast")}
-                <ChevronDown className="size-4" />
-              </button>
-              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                {t("civilMap.forecastsNotWarnings")}
-              </p>
-            </div>
-            <div className="mt-4">
-              <BroadcastBanner />
-            </div>
+            <button
+              type="button"
+              onClick={() => openPanel("sources")}
+              className="flex min-h-11 shrink-0 items-center gap-2 border-t px-4 py-2 text-start text-xs text-muted-foreground"
+            >
+              {limited ? (
+                <TriangleAlert className="size-4 shrink-0 text-amber-600" />
+              ) : (
+                <ShieldCheck className="size-4 shrink-0 text-primary" />
+              )}
+              <span className="truncate">
+                {t(limited ? "civilMap.limited" : "civilMap.coverage")}
+              </span>
+            </button>
           </div>
-        </section>
-      </div>
-      {forecastOpen && area?.level === "commune" && (
-        <DetailSheet
-          open
-          title={`${t("civilMap.forecast")} · ${unitName(area, locale)}`}
-          onClose={() => setForecastOpen(false)}
-        >
-          <WeatherForecast communeId={area.id} />
-        </DetailSheet>
-      )}
-      {helpOpen && (
-        <DetailSheet
-          open
-          title={t("civilMap.help")}
-          onClose={() => setHelpOpen(false)}
-        >
-          <EmergencyNumbers />
-          <Link
-            to="/survival"
-            className="mt-4 flex min-h-11 items-center justify-center rounded-xl border border-red-500 px-4 text-sm font-semibold text-red-700"
-          >
-            {t("civilMap.fireHelp")}
-          </Link>
-        </DetailSheet>
+        </MapWorkspacePanel>
       )}
       {subscriptionOpen && area?.level === "commune" && (
         <SubscribeSheet
@@ -803,7 +1042,7 @@ function LiveMapPage() {
           }}
         />
       )}
-      <MapSurvivalPrompt fires={fires.data ?? []} now={now} />
+      <MapSurvivalPrompt fires={survivalFires} now={now} />
     </div>
   );
 }

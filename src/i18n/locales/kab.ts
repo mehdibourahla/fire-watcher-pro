@@ -305,6 +305,12 @@ export const kab: Translation = {
     general: "Tuffɣa tamatut",
   },
   civilMap: {
+    officialGroup: "Alertes et signalements officiels",
+    observationsGroup: "Observations et signalements citoyens",
+    reportedBoundary:
+      "La zone délimitée, lorsqu’elle est disponible, correspond au territoire administratif signalé, pas à l’emprise du danger.",
+    boundaryUnavailable:
+      "Limite de zone indisponible. Le repère indique le centre du territoire signalé.",
     severity: "Gravité (source)",
     certainty: "Certitude (source)",
     urgency: "Urgence (source)",

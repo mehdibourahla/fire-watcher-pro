@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
   Bell,
+  Check,
   Flame,
   MapPin,
   Menu,
@@ -17,6 +18,11 @@ import { useTranslation } from "react-i18next";
 
 import { BrandMark } from "@/components/BrandMark";
 import { AccountMenu } from "@/components/AccountMenu";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { SubscribeSheet } from "@/components/nadhir/SubscribeSheet";
 import { RISK_LEVELS, riskSolid } from "@/components/nadhir/risk-visuals";
 import {
@@ -69,31 +75,56 @@ const TABS = [
 
 export function LanguageSwitcher() {
   const { t, i18n } = useTranslation();
+  const [open, setOpen] = useState(false);
+  const current =
+    LOCALES.find((locale) => locale === i18n.language) ?? LOCALES[0];
+  const rtl = RTL_LOCALES.includes(current);
   return (
-    <div
-      className="flex items-center gap-0.5"
-      role="group"
-      aria-label={t("nav.language")}
-    >
-      {LOCALES.map((locale) => (
-        <button
-          key={locale}
-          type="button"
-          lang={locale}
-          onClick={() => applyLocale(locale)}
-          aria-current={i18n.language === locale ? "true" : undefined}
-          className={cn(
-            "rounded-md px-1.5 py-1 text-xs font-medium transition-colors sm:px-2",
-            i18n.language === locale
-              ? "bg-[var(--accent-tint)] text-[var(--accent)]"
-              : "text-muted-foreground hover:bg-muted",
-          )}
-        >
-          <span className="sm:hidden">{LOCALE_SHORT_LABELS[locale]}</span>
-          <span className="hidden sm:inline">{LOCALE_LABELS[locale]}</span>
-        </button>
-      ))}
-    </div>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger
+        aria-label={`${t("nav.language")}: ${LOCALE_LABELS[current]}`}
+        className="flex size-11 shrink-0 items-center justify-center rounded-xl text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+      >
+        {LOCALE_SHORT_LABELS[current]}
+      </PopoverTrigger>
+      <PopoverContent
+        align={rtl ? "start" : "end"}
+        sideOffset={8}
+        collisionPadding={12}
+        className="w-56 rounded-2xl p-1.5"
+        aria-label={t("nav.language")}
+        aria-describedby={undefined}
+      >
+        <div className="space-y-1">
+          {LOCALES.map((locale) => (
+            <button
+              key={locale}
+              type="button"
+              lang={locale}
+              onClick={() => {
+                applyLocale(locale);
+                setOpen(false);
+              }}
+              aria-pressed={current === locale}
+              className={cn(
+                "flex min-h-11 w-full items-center gap-3 rounded-xl px-2 py-1.5 text-start text-sm transition-colors",
+                current === locale
+                  ? "bg-[var(--accent-tint)] text-[var(--accent)]"
+                  : "hover:bg-muted",
+              )}
+            >
+              <span className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-current/15 text-xs font-semibold">
+                {LOCALE_SHORT_LABELS[locale]}
+              </span>
+              <span dir="auto">{LOCALE_LABELS[locale]}</span>
+              {current === locale ? (
+                <Check aria-hidden className="ms-auto size-4" />
+              ) : null}
+            </button>
+          ))}
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }
 
@@ -233,7 +264,7 @@ export function SiteHeader() {
           <span className="truncate font-display text-lg font-semibold max-[359px]:hidden">
             {t("common.appName")}
           </span>
-          <span className="hidden text-xs text-muted-foreground sm:inline">
+          <span className="hidden text-xs text-muted-foreground xl:inline">
             {t("common.tagline")}
           </span>
         </Link>
