@@ -7,7 +7,7 @@ import { adminUnitsQuery, unitName, type OnmVigilance } from "@/lib/nadhir";
 import { weatherIsStale, type WeatherResponse } from "@/lib/weather-evidence";
 import { weatherOnmQuery } from "@/lib/weather-onm";
 
-export function WeatherForecast() {
+export function WeatherForecast({ communeId }: { communeId?: string } = {}) {
   const { t, i18n } = useTranslation("weather");
   const locale = i18n.language === "kab" ? "fr" : i18n.language;
   const [selectedId, setSelectedId] = useState("");
@@ -30,7 +30,9 @@ export function WeatherForecast() {
     [units.data, locale],
   );
   const selected =
-    communes.find((unit) => unit.id === selectedId) ?? communes[0];
+    communeId !== undefined
+      ? communes.find((unit) => unit.id === communeId)
+      : (communes.find((unit) => unit.id === selectedId) ?? communes[0]);
   const onm = useQuery(weatherOnmQuery(selected?.parent_id));
   const weather = useQuery({
     queryKey: ["weather", selected?.code],
@@ -190,26 +192,34 @@ export function WeatherForecast() {
       <h2 id="weather-title" className="text-xl">
         {t("title")}
       </h2>
-      <label
-        htmlFor="weather-commune"
-        className="mt-4 block text-sm font-medium"
-      >
-        {t("location")}
-      </label>
-      <select
-        id="weather-commune"
-        value={selected?.id ?? ""}
-        onChange={(event) => setSelectedId(event.target.value)}
-        disabled={!communes.length}
-        className="mt-2 min-h-11 w-full max-w-md rounded-lg border border-border bg-surface p-2 text-base focus:ring-2 focus:ring-ring"
-      >
-        {!communes.length && <option value="">{t("choose")}</option>}
-        {communes.map((commune) => (
-          <option key={commune.id} value={commune.id}>
-            {unitName(commune, locale as Locale)} · {commune.code}
-          </option>
-        ))}
-      </select>
+      {communeId === undefined ? (
+        <>
+          <label
+            htmlFor="weather-commune"
+            className="mt-4 block text-sm font-medium"
+          >
+            {t("location")}
+          </label>
+          <select
+            id="weather-commune"
+            value={selected?.id ?? ""}
+            onChange={(event) => setSelectedId(event.target.value)}
+            disabled={!communes.length}
+            className="mt-2 min-h-11 w-full max-w-md rounded-lg border border-border bg-surface p-2 text-base focus:ring-2 focus:ring-ring"
+          >
+            {!communes.length && <option value="">{t("choose")}</option>}
+            {communes.map((commune) => (
+              <option key={commune.id} value={commune.id}>
+                {unitName(commune, locale as Locale)} · {commune.code}
+              </option>
+            ))}
+          </select>
+        </>
+      ) : selected ? (
+        <p className="mt-4 text-sm font-medium">
+          {unitName(selected, locale as Locale)}
+        </p>
+      ) : null}
       <div
         className="mt-4"
         aria-live="polite"
@@ -224,6 +234,8 @@ export function WeatherForecast() {
           </>
         ) : !communes.length ? (
           <p>{t("locationsEmpty")}</p>
+        ) : communeId !== undefined && !selected ? (
+          <p>{t("unavailable")}</p>
         ) : null}
         {selected &&
           (weather.isPending ? (

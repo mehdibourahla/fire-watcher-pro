@@ -1,5 +1,6 @@
 import { ClientOnly } from "@tanstack/react-router";
-import { Suspense, lazy } from "react";
+import { Component, Suspense, lazy, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 
 import type { FeatureCollection } from "geojson";
 
@@ -17,6 +18,11 @@ type Props = {
   onSelectOfficial?: (id: string) => void;
   reports?: FeatureCollection;
   onSelectReport?: (id: string) => void;
+  warnings?: FeatureCollection;
+  onSelectWarning?: (id: string) => void;
+  focus?: { lat: number; lon: number; zoom: number };
+  onError?: () => void;
+  onReady?: () => void;
   center?: [number, number];
   zoom?: number;
   interactive?: boolean;
@@ -24,15 +30,52 @@ type Props = {
 };
 
 function MapSkeleton() {
-  return <div className="h-full w-full animate-pulse bg-muted" />;
+  const { t } = useTranslation();
+  return (
+    <div
+      role="status"
+      aria-label={t("common.loading")}
+      className="h-full w-full animate-pulse bg-muted"
+    />
+  );
+}
+
+class MapBoundary extends Component<
+  {
+    children: ReactNode;
+    fallback: ReactNode;
+    onError: (() => void) | undefined;
+  },
+  { failed: boolean }
+> {
+  override state = { failed: false };
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  override componentDidCatch() {
+    this.props.onError?.();
+  }
+  override render() {
+    return this.state.failed ? this.props.fallback : this.props.children;
+  }
 }
 
 export function MapCanvas(props: Props) {
+  const { t } = useTranslation();
   return (
-    <ClientOnly fallback={<MapSkeleton />}>
-      <Suspense fallback={<MapSkeleton />}>
-        <FireMap {...props} />
-      </Suspense>
-    </ClientOnly>
+    <MapBoundary
+      onError={props.onError}
+      fallback={
+        <p role="status" className="p-4">
+          {t("common.error")}
+        </p>
+      }
+    >
+      <ClientOnly fallback={<MapSkeleton />}>
+        <Suspense fallback={<MapSkeleton />}>
+          <FireMap {...props} />
+        </Suspense>
+      </ClientOnly>
+    </MapBoundary>
   );
 }

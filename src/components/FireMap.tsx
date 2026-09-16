@@ -1,5 +1,6 @@
 import * as maplibregl from "maplibre-gl";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import "maplibre-gl/dist/maplibre-gl.css";
 
 import type { FeatureCollection, Point } from "geojson";
@@ -7,6 +8,7 @@ import type { FeatureCollection, Point } from "geojson";
 import { fireStage, type FireCluster } from "@/lib/nadhir";
 
 import { DEFAULT_MAP_LAYERS, type MapLayers } from "./map-layers";
+import { visibleMapFires } from "./map-fire-filter";
 
 export type { MapLayers } from "./map-layers";
 
@@ -19,6 +21,11 @@ type Props = {
   onSelectOfficial?: (id: string) => void;
   reports?: FeatureCollection;
   onSelectReport?: (id: string) => void;
+  warnings?: FeatureCollection;
+  onSelectWarning?: (id: string) => void;
+  focus?: { lat: number; lon: number; zoom: number };
+  onError?: () => void;
+  onReady?: () => void;
   center?: [number, number];
   zoom?: number;
   interactive?: boolean;
@@ -28,6 +35,7 @@ type Props = {
 const SRC = "fires";
 const OFFICIAL_SRC = "official";
 const REPORTS_SRC = "reports";
+const WARNINGS_SRC = "warnings";
 const OFFICIAL_LAYERS = [
   "official-fill",
   "official-outline",
@@ -168,7 +176,7 @@ function addFireLayers(map: maplibregl.Map, data: FeatureCollection) {
     source: SRC,
     filter: ["has", "point_count"],
     paint: {
-      "circle-color": token("--risk-4", "#d40924"),
+      "circle-color": token("--accent", "#2171cc"),
       "circle-opacity": 0.92,
       "circle-stroke-width": 2,
       "circle-stroke-color": ring,
@@ -257,7 +265,6 @@ function addFireLayers(map: maplibregl.Map, data: FeatureCollection) {
     },
   });
 
-  // spec 12.3: unverified detections stay hidden until zoom 9 unless switched on
   map.addLayer({
     id: "fire-unverified",
     type: "circle",
@@ -274,6 +281,30 @@ function addFireLayers(map: maplibregl.Map, data: FeatureCollection) {
   });
 }
 
+function addWarningLayers(map: maplibregl.Map, data: FeatureCollection) {
+  if (map.getSource(WARNINGS_SRC)) return;
+  map.addSource(WARNINGS_SRC, { type: "geojson", data });
+  for (const [id, radius, opacity] of [
+    ["warning-area", 24, 0.4],
+    ["warning-ring", 19, 1],
+  ] as const) {
+    map.addLayer({
+      id,
+      type: "circle",
+      source: WARNINGS_SRC,
+      filter: ["==", ["geometry-type"], "Point"],
+      paint: {
+        "circle-radius": radius,
+        "circle-color": token("--accent", "#2171cc"),
+        "circle-opacity": 0.08,
+        "circle-stroke-color": token("--accent", "#2171cc"),
+        "circle-stroke-width": 2,
+        "circle-stroke-opacity": opacity,
+      },
+    });
+  }
+}
+
 export default function FireMap({
   clusters,
   selectedShortId,
@@ -283,16 +314,43 @@ export default function FireMap({
   onSelectOfficial,
   reports = EMPTY,
   onSelectReport,
+  warnings = EMPTY,
+  onSelectWarning,
+  focus,
+  onError,
+  onReady,
   center = [3.6, 35.8],
   zoom = 5.1,
   interactive = true,
   layers = DEFAULT_MAP_LAYERS,
 }: Props) {
+  const { t } = useTranslation();
+  const [failed, setFailed] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const visibleClusters = useMemo(
+    () => visibleMapFires(clusters, layers.unverified),
+    [clusters, layers.unverified],
+  );
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const readyRef = useRef(false);
-  const clustersRef = useRef(clusters);
-  clustersRef.current = clusters;
+  const clustersRef = useRef(visibleClusters);
+  clustersRef.current = visibleClusters;
+  const warningsRef = useRef(warnings);
+  warningsRef.current = warnings;
+  const onSelectWarningRef = useRef(onSelectWarning);
+  onSelectWarningRef.current = onSelectWarning;
+  const onErrorRef = useRef(onError);
+  onErrorRef.current = onError;
+  const onReadyRef = useRef(onReady);
+  onReadyRef.current = onReady;
+  const focusRef = useRef(focus);
+  focusRef.current = focus;
+  const displayRef = useRef({ layers, selectedShortId, selectedOfficialId });
+  displayRef.current = { layers, selectedShortId, selectedOfficialId };
+  const focusLat = focus?.lat;
+  const focusLon = focus?.lon;
+  const focusZoom = focus?.zoom;
   const officialRef = useRef(official);
   officialRef.current = official;
   const onSelectRef = useRef(onSelect);
@@ -313,14 +371,32 @@ export default function FireMap({
       interactive: isInteractive,
     } = initRef.current;
 
-    const map = new maplibregl.Map({
-      container: containerRef.current,
-      style: isDark() ? BASEMAP.dark : BASEMAP.light,
-      center: initialCenter,
-      zoom: initialZoom,
-      minZoom: 3.5,
-      interactive: isInteractive,
-      attributionControl: { compact: true },
+    const fail = () => {
+      setFailed(true);
+      onErrorRef.current?.();
+    };
+    let map: maplibregl.Map;
+    try {
+      map = new maplibregl.Map({
+        container: containerRef.current,
+        style: isDark() ? BASEMAP.dark : BASEMAP.light,
+        center: focusRef.current
+          ? [focusRef.current.lon, focusRef.current.lat]
+          : initialCenter,
+        zoom: focusRef.current?.zoom ?? initialZoom,
+        minZoom: 3.5,
+        interactive: isInteractive,
+        attributionControl: { compact: true },
+      });
+    } catch {
+      fail();
+      return;
+    }
+    const loadTimeout = window.setTimeout(() => {
+      if (!readyRef.current) fail();
+    }, 20000);
+    map.on("error", (event) => {
+      if (event.error?.message?.includes("WebGL")) fail();
     });
 
     // bottom-left: the layer toggle sits at the logical top-end, which mirrors to
@@ -365,10 +441,29 @@ export default function FireMap({
     };
 
     map.on("load", () => {
+      window.clearTimeout(loadTimeout);
+      setFailed(false);
+      setLoaded(true);
+      onReadyRef.current?.();
       addOfficialLayers(map, officialRef.current);
       addReportLayers(map, reportsRef.current);
+      addWarningLayers(map, warningsRef.current);
       addFireLayers(map, toGeoJSON(clustersRef.current));
       readyRef.current = true;
+      map.on("click", "warning-area", (event) => {
+        const id = event.features?.[0]?.properties?.["id"];
+        if (typeof id === "string") onSelectWarningRef.current?.(id);
+      });
+      map.on(
+        "mouseenter",
+        "warning-area",
+        () => (map.getCanvas().style.cursor = "pointer"),
+      );
+      map.on(
+        "mouseleave",
+        "warning-area",
+        () => (map.getCanvas().style.cursor = ""),
+      );
 
       for (const layer of OFFICIAL_LAYERS) map.on("click", layer, pickOfficial);
       map.on("click", "report-points", pickReport);
@@ -419,10 +514,54 @@ export default function FireMap({
         return;
       (map as never as { _nadhirStyle?: string })._nadhirStyle = next;
       map.setStyle(next);
-      map.once("styledata", () => {
-        addOfficialLayers(map, officialRef.current);
+      map.once("style.load", () => {
+        const current = displayRef.current;
+        addOfficialLayers(map, {
+          ...officialRef.current,
+          features: officialRef.current.features.map((feature) => ({
+            ...feature,
+            properties: {
+              ...feature.properties,
+              selected:
+                feature.properties?.["id"] === current.selectedOfficialId,
+            },
+          })),
+        });
         addReportLayers(map, reportsRef.current);
+        addWarningLayers(map, warningsRef.current);
         addFireLayers(map, toGeoJSON(clustersRef.current));
+        for (const id of OFFICIAL_LAYERS)
+          map.setLayoutProperty(
+            id,
+            "visibility",
+            current.layers.official ? "visible" : "none",
+          );
+        map.setLayoutProperty(
+          "report-points",
+          "visibility",
+          current.layers.reports ? "visible" : "none",
+        );
+        for (const id of [
+          "fire-points",
+          "fire-groups",
+          "fire-group-count",
+          "fire-selected",
+          "fire-unverified",
+        ]) {
+          map.setLayoutProperty(
+            id,
+            "visibility",
+            current.layers.fires &&
+              (id !== "fire-unverified" || current.layers.unverified)
+              ? "visible"
+              : "none",
+          );
+        }
+        map.setFilter("fire-selected", [
+          "==",
+          ["get", "short_id"],
+          current.selectedShortId ?? "__none__",
+        ]);
       });
     });
     themeObserver.observe(document.documentElement, {
@@ -434,6 +573,7 @@ export default function FireMap({
     ro.observe(containerRef.current);
 
     return () => {
+      window.clearTimeout(loadTimeout);
       themeObserver.disconnect();
       ro.disconnect();
       readyRef.current = false;
@@ -447,11 +587,40 @@ export default function FireMap({
     if (!map) return;
     const apply = () => {
       const src = map.getSource(SRC) as maplibregl.GeoJSONSource | undefined;
-      if (src) src.setData(toGeoJSON(clusters));
+      if (src) src.setData(toGeoJSON(visibleClusters));
     };
     if (readyRef.current) apply();
     else map.once("load", apply);
-  }, [clusters]);
+    return () => {
+      map.off("load", apply);
+    };
+  }, [visibleClusters]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (
+      map &&
+      focusLat !== undefined &&
+      focusLon !== undefined &&
+      focusZoom !== undefined
+    )
+      map.easeTo({ center: [focusLon, focusLat], zoom: focusZoom });
+  }, [focusLat, focusLon, focusZoom]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    const apply = () => {
+      (
+        map.getSource(WARNINGS_SRC) as maplibregl.GeoJSONSource | undefined
+      )?.setData(warnings);
+    };
+    if (readyRef.current) apply();
+    else map.once("load", apply);
+    return () => {
+      map.off("load", apply);
+    };
+  }, [warnings]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -505,7 +674,12 @@ export default function FireMap({
             layers.official ? "visible" : "none",
           );
       }
-      for (const id of ["fire-points", "fire-groups", "fire-group-count"]) {
+      for (const id of [
+        "fire-points",
+        "fire-groups",
+        "fire-group-count",
+        "fire-selected",
+      ]) {
         if (map.getLayer(id)) {
           map.setLayoutProperty(
             id,
@@ -520,7 +694,6 @@ export default function FireMap({
           "visibility",
           layers.fires && layers.unverified ? "visible" : "none",
         );
-        map.setLayerZoomRange("fire-unverified", layers.unverified ? 0 : 9, 24);
       }
     };
     if (readyRef.current) apply();
@@ -529,24 +702,60 @@ export default function FireMap({
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !readyRef.current || !map.getLayer("fire-selected")) return;
-    map.setFilter("fire-selected", [
-      "==",
-      ["get", "short_id"],
-      selectedShortId ?? "__none__",
-    ]);
-  }, [selectedShortId, clusters]);
+    if (!map) return;
+    const apply = () => {
+      if (!map.getLayer("fire-selected")) return;
+      map.setFilter("fire-selected", [
+        "==",
+        ["get", "short_id"],
+        selectedShortId ?? "__none__",
+      ]);
+    };
+    if (readyRef.current) apply();
+    else map.once("load", apply);
+    return () => {
+      map.off("load", apply);
+    };
+  }, [selectedShortId, visibleClusters]);
 
+  const selectedCluster = visibleClusters.find(
+    (c) => c.short_id === selectedShortId,
+  );
+  const selectedLat = selectedCluster?.lat;
+  const selectedLon = selectedCluster?.lon;
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !selectedShortId) return;
-    const target = clusters.find((c) => c.short_id === selectedShortId);
-    if (target)
-      map.easeTo({
-        center: [target.lon, target.lat],
-        zoom: Math.max(map.getZoom(), 9.5),
-      });
-  }, [selectedShortId, clusters]);
+    if (!map || selectedLat === undefined || selectedLon === undefined) return;
+    map.easeTo({
+      center: [selectedLon, selectedLat],
+      zoom: Math.max(map.getZoom(), 9.5),
+    });
+  }, [selectedLat, selectedLon]);
 
-  return <div ref={containerRef} className="h-full w-full" />;
+  return (
+    <div
+      className="relative h-full w-full"
+      role="region"
+      aria-label={t("nav.map")}
+    >
+      <div ref={containerRef} className="civil-map h-full w-full" />
+      {!loaded && !failed && (
+        <p
+          role="status"
+          className="absolute inset-x-3 top-3 rounded-xl bg-surface p-3 text-sm"
+        >
+          {t("common.loading")}
+        </p>
+      )}
+      {failed && (
+        <p
+          role="status"
+          className="absolute inset-x-3 top-3 rounded-xl bg-surface p-3 text-sm"
+        >
+          {t("common.error")}
+        </p>
+      )}
+      <style>{`.civil-map .maplibregl-ctrl-group button { width: 44px; height: 44px; }`}</style>
+    </div>
+  );
 }

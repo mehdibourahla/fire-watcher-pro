@@ -19,7 +19,6 @@ export type PushSubscriptionState = {
 };
 
 const STORAGE_KEY = "nadhir.push.v1";
-export const INVITE_SEEN_KEY = "nadhir.push.invited";
 export const MAX_COMMUNES = 10;
 
 export function pushConfigured(): boolean {

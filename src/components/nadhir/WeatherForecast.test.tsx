@@ -28,6 +28,13 @@ vi.mock("@tanstack/react-query", () => ({
             name_en: "Djelfa",
             parent_id: "wilaya",
           },
+          {
+            id: "second-commune",
+            code: "1702",
+            level: "commune",
+            name_en: "Moudjbara",
+            parent_id: "wilaya",
+          },
         ],
       };
     if (queryKey[0] === "onm")
@@ -52,6 +59,22 @@ describe("independent weather evidence", () => {
     state.weather = { data: { snapshot: null, stale: false } };
   });
   afterEach(() => vi.restoreAllMocks());
+
+  it("uses the provided commune instead of the default selection", () => {
+    const html = renderToStaticMarkup(
+      <WeatherForecast communeId="second-commune" />,
+    );
+    expect(html).toContain("Moudjbara");
+    expect(html).not.toContain("Djelfa");
+    expect(html).not.toContain("<select");
+  });
+
+  it("shows unavailable for an invalid provided commune without a fallback", () => {
+    const html = renderToStaticMarkup(<WeatherForecast communeId="missing" />);
+    expect(html).toContain("unavailable");
+    expect(html).not.toContain("Djelfa");
+    expect(html).not.toContain("warningsNone");
+  });
 
   it("offers communes without fire forecasts or ONM availability", () => {
     state.onm = { isError: true };

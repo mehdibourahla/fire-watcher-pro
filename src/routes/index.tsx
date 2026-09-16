@@ -1,778 +1,806 @@
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ChevronDown, Flame, LifeBuoy, Search } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import {
+  createFileRoute,
+  Link,
+  type SearchSchemaInput,
+} from "@tanstack/react-router";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-
-import { DEFAULT_MAP_LAYERS, type MapLayers } from "@/components/map-layers";
+import {
+  Bell,
+  Bookmark,
+  ChevronDown,
+  Crosshair,
+  Layers,
+  List,
+  LoaderCircle,
+  MapPin,
+  RefreshCw,
+  Search,
+  Share2,
+  ShieldCheck,
+  TriangleAlert,
+  X,
+} from "lucide-react";
+import type { FeatureCollection } from "geojson";
 import { MapCanvas } from "@/components/MapCanvas";
-import { DangerScale } from "@/components/nadhir/DangerScale";
-import { Explain } from "@/components/nadhir/Explain";
 import { DetailSheet } from "@/components/nadhir/DetailSheet";
-import { LayerToggle } from "@/components/nadhir/LayerToggle";
-import { HazardReportDetail } from "@/components/nadhir/HazardReportDetail";
-import { OfficialIncidentDetail } from "@/components/nadhir/OfficialIncidentDetail";
-import { riskSolid } from "@/components/nadhir/risk-visuals";
+import {
+  SituationCard,
+  SituationDetails,
+  hazardIcons,
+  useSituationLabels,
+} from "@/components/nadhir/CivilSituation";
+import { MapSurvivalPrompt } from "@/components/nadhir/MapSurvivalPrompt";
+import { WeatherForecast } from "@/components/nadhir/WeatherForecast";
+import { SubscribeSheet } from "@/components/nadhir/SubscribeSheet";
 import { BroadcastBanner } from "@/components/nadhir/BroadcastBanner";
-import { SubscribeInvite } from "@/components/nadhir/SubscribeSheet";
-import { EmptyState, SkeletonList } from "@/components/nadhir/states";
+import { EmergencyNumbers } from "@/components/SiteChrome";
 import {
-  DegradedBanner,
-  EmergencyNumbers,
-  RiskLegend,
-} from "@/components/SiteChrome";
-import type { Locale } from "@/i18n";
-import { alertsQuery } from "@/lib/alerts";
-import { hazardReportsGeoJSON, hazardReportsQuery } from "@/lib/open-areas";
-import { pageMeta } from "@/lib/page-meta";
-import {
-  LIVE_STATES,
   adminUnitsQuery,
   clustersQuery,
-  communeGeomsQuery,
-  dangerLevelKey,
-  isStaleForecastDate,
-  nationalMaximum,
-  officialIncidentsGeoJSON,
   officialIncidentsQuery,
+  onmVigilanceQuery,
   sourceHealthQuery,
-  relativeTime,
-  todayRiskForecastsQuery,
-  settlementsQuery,
-  placeLabel,
   unitName,
-  type FireCluster,
-  fireStage,
+  relativeTime,
+  type AdminUnit,
 } from "@/lib/nadhir";
-import { sourceHealthCapabilityAffected } from "@/lib/source-health";
+import { hazardReportsGeoJSON, hazardReportsQuery } from "@/lib/open-areas";
 import {
-  SURVIVAL_ACTIVE_KEY,
-  SURVIVAL_AUTO_KM,
-  SURVIVAL_DISMISS_KEY,
-  nearestThreat,
-} from "@/lib/survival";
+  buildSituations,
+  filterSituations,
+  findPlaces,
+  nearestPlace,
+  CITIZEN_NEARBY_RADIUS_KM,
+  type HazardCategory,
+  type Situation,
+} from "@/lib/civil-map";
+import { parseMapSearch, type MapSearch } from "@/lib/civil-map-search";
+import { readSubscription } from "@/lib/push";
+import { pageMeta } from "@/lib/page-meta";
+import type { Locale } from "@/i18n";
 
 export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: pageMeta("map.metaTitle", "map.metaDescription"),
-  }),
-  loader: async ({ context }) => {
-    await Promise.all([
-      context.queryClient.ensureQueryData(clustersQuery),
-      context.queryClient.ensureQueryData(adminUnitsQuery),
-      context.queryClient.ensureQueryData(todayRiskForecastsQuery),
-    ]);
-    return { renderedAt: Date.now() };
-  },
+  head: () => ({ meta: pageMeta("map.metaTitle", "map.metaDescription") }),
+  validateSearch: (search: SearchSchemaInput & Partial<MapSearch>) =>
+    parseMapSearch(search),
   component: LiveMapPage,
 });
 
-function stateRank(c: FireCluster) {
-  return c.state === "active" ? 0 : c.state === "contained_guess" ? 1 : 2;
-}
+const REFRESH = {
+  refetchInterval: 60_000,
+  refetchIntervalInBackground: false,
+  refetchOnReconnect: true,
+  retry: 1,
+} as const;
+const SAVED_KEY = "nadhir.map.saved-places";
+const categories: HazardCategory[] = [
+  "all",
+  "fire",
+  "weather",
+  "road",
+  "other",
+];
+const pointCollection = (items: Situation[]): FeatureCollection => ({
+  type: "FeatureCollection",
+  features: items.flatMap((item) =>
+    item.lat === null || item.lon === null
+      ? []
+      : [
+          {
+            type: "Feature" as const,
+            geometry: {
+              type: "Point" as const,
+              coordinates: [item.lon, item.lat],
+            },
+            properties: {
+              id: item.id.split(":").slice(1).join(":"),
+              status: item.source === "official" ? item.data.status : "unknown",
+            },
+          },
+        ],
+  ),
+});
 
 function LiveMapPage() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language as Locale;
-  const { renderedAt } = Route.useLoaderData();
-  const [now, setNow] = useState(renderedAt);
-  const [selected, setSelected] = useState<string | null>(null);
-  const [selectedOfficial, setSelectedOfficial] = useState<string | null>(null);
-  const [selectedReport, setSelectedReport] = useState<string | null>(null);
-  const [layers, setLayers] = useState<MapLayers>(DEFAULT_MAP_LAYERS);
-  const [railSearch, setRailSearch] = useState("");
-
-  const clusters = useQuery(clustersQuery);
-  const units = useQuery(adminUnitsQuery);
-  const risk = useQuery(todayRiskForecastsQuery);
-  const official = useQuery({ ...officialIncidentsQuery, retry: false });
-  const officialCommuneIds = useMemo(
-    () =>
-      (official.data ?? []).flatMap((i) =>
-        i.commune_id ? [i.commune_id] : [],
-      ),
-    [official.data],
-  );
-  const communeGeoms = useQuery(communeGeomsQuery(officialCommuneIds));
-  const officialGeoJSON = useMemo(
-    () =>
-      officialIncidentsGeoJSON(
-        official.data ?? [],
-        communeGeoms.data ?? new Map(),
-        now,
-      ),
-    [official.data, communeGeoms.data, now],
-  );
-  const selectedIncident =
-    (official.data ?? []).find((i) => i.id === selectedOfficial) ?? null;
-  const hazards = useQuery({ ...hazardReportsQuery, retry: false });
-  const hazardGeoJSON = useMemo(
-    () => hazardReportsGeoJSON(hazards.data ?? []),
-    [hazards.data],
-  );
-  const selectedHazard =
-    (hazards.data ?? []).find((r) => r.id === selectedReport) ?? null;
-  const settlements = useQuery(settlementsQuery);
-  const sources = useQuery(sourceHealthQuery);
-  const alerts = useQuery({ ...alertsQuery, retry: false });
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const refresh = () => setNow(Date.now());
-    refresh();
-    const interval = window.setInterval(refresh, 60_000);
-    return () => window.clearInterval(interval);
-  }, [renderedAt]);
-
-  const [interstitial, setInterstitial] = useState<{
-    km: number;
-    seen: string;
-  } | null>(null);
-
-  useEffect(() => {
-    const data = clusters.data;
-    if (!data || typeof navigator === "undefined") return;
-    if (!("permissions" in navigator) || !("geolocation" in navigator)) return;
-    if (localStorage.getItem(SURVIVAL_ACTIVE_KEY)) return;
-    if (sessionStorage.getItem(SURVIVAL_DISMISS_KEY)) return;
-    let cancelled = false;
-    // Only an already-granted permission is used: the map never prompts for location.
-    void navigator.permissions
-      .query({ name: "geolocation" })
-      .then((status) => {
-        if (cancelled || status.state !== "granted") return;
-        navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            if (cancelled) return;
-            const threat = nearestThreat(
-              pos.coords.latitude,
-              pos.coords.longitude,
-              data,
-            );
-            if (
-              threat &&
-              threat.cluster.state === "active" &&
-              threat.km <= SURVIVAL_AUTO_KM
-            )
-              setInterstitial({
-                km: threat.km,
-                seen: threat.cluster.last_detected_at,
-              });
-          },
-          () => undefined,
-          { timeout: 10000, maximumAge: 300000 },
-        );
-      })
-      .catch(() => undefined);
-    return () => {
-      cancelled = true;
-    };
-  }, [clusters.data]);
-
-  const zoneAlert = useMemo(
-    () =>
-      (alerts.data ?? []).find(
-        (a) =>
-          a.kind === "fire" &&
-          a.payload?.phase !== "observation_ended" &&
-          !a.read_at,
-      ) ?? null,
-    [alerts.data],
-  );
-
-  const live = useMemo(
-    () => (clusters.data ?? []).filter((c) => LIVE_STATES.includes(c.state)),
-    [clusters.data],
-  );
-  const activeCount = live.filter((c) => c.state === "active").length;
-
-  const settlementById = useMemo(
-    () => new Map((settlements.data ?? []).map((s) => [s.id, s])),
-    [settlements.data],
-  );
-
-  const national = useMemo(() => nationalMaximum(risk.data ?? []), [risk.data]);
-  const nationalStale =
-    national && isStaleForecastDate(national.forecastDate, now)
-      ? t("risk.staleAsOf", {
-          time: relativeTime(`${national.forecastDate}T00:00:00Z`, locale, now),
-        })
-      : null;
-
-  const degraded = sourceHealthCapabilityAffected(
-    sources.data ?? [],
-    sources.isError,
-  );
-
-  const sorted = useMemo(
-    () =>
-      [...live].sort((a, b) => {
-        if (stateRank(a) !== stateRank(b)) return stateRank(a) - stateRank(b);
-        return (
-          (a.nearest_settlement_km ?? 9999) - (b.nearest_settlement_km ?? 9999)
-        );
-      }),
-    [live],
-  );
-
-  const labelFor = (cluster: FireCluster) =>
-    placeLabel(cluster, units.data ?? [], settlements.data ?? [], locale);
-
-  const wilayaById = useMemo(
-    () =>
-      new Map(
-        (units.data ?? [])
-          .filter((u) => u.level === "wilaya")
-          .map((u) => [u.id, u]),
-      ),
-    [units.data],
-  );
-
-  const railQ = railSearch.trim().toLowerCase();
-
-  const searched = useMemo(() => {
-    if (!railQ) return sorted;
-    return sorted.filter((c) => {
-      const wilaya = c.wilaya_id ? wilayaById.get(c.wilaya_id) : undefined;
-      const settlement = c.nearest_settlement_id
-        ? settlementById.get(c.nearest_settlement_id)
-        : undefined;
-      return [
-        labelFor(c).name,
-        wilaya ? unitName(wilaya, locale) : null,
-        wilaya?.name_ar,
-        wilaya?.name_fr,
-        wilaya?.name_en,
-        settlement?.name,
-      ]
-        .filter(Boolean)
-        .some((n) => n!.toLowerCase().includes(railQ));
+  const search = Route.useSearch();
+  const navigate = Route.useNavigate();
+  const update = (next: Partial<MapSearch>, replace = false) =>
+    void navigate({
+      search: (prev) => ({ ...prev, ...next }),
+      replace,
+      resetScroll: false,
     });
-    // labelFor closes over the same query data listed here.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    sorted,
-    railQ,
-    wilayaById,
-    settlementById,
-    locale,
-    units.data,
-    settlements.data,
-  ]);
-
-  const fireGroups = useMemo(() => {
-    const byWilaya = new Map<string, FireCluster[]>();
-    const unassigned: FireCluster[] = [];
-    for (const c of sorted) {
-      const w = c.wilaya_id ? wilayaById.get(c.wilaya_id) : undefined;
-      if (!w) {
-        unassigned.push(c);
-        continue;
-      }
-      const list = byWilaya.get(w.id);
-      if (list) list.push(c);
-      else byWilaya.set(w.id, [c]);
+  const units = useQuery(adminUnitsQuery);
+  const fires = useQuery({ ...clustersQuery, ...REFRESH });
+  const official = useQuery({ ...officialIncidentsQuery, ...REFRESH });
+  const reports = useQuery({ ...hazardReportsQuery, ...REFRESH });
+  const warnings = useQuery({ ...onmVigilanceQuery, ...REFRESH });
+  const health = useQuery({ ...sourceHealthQuery, ...REFRESH });
+  const [now, setNow] = useState(() => Date.now());
+  const [query, setQuery] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const [options, setOptions] = useState(false);
+  const [saved, setSaved] = useState<string[]>([]);
+  const [message, setMessage] = useState("");
+  const [locating, setLocating] = useState(false);
+  const [offline, setOffline] = useState(false);
+  const [mapFailed, setMapFailed] = useState(false);
+  const [subscriptionOpen, setSubscriptionOpen] = useState(false);
+  const [forecastOpen, setForecastOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
+  const [subscribed, setSubscribed] = useState<string[]>([]);
+  const searchRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 30_000);
+    const connection = () => setOffline(!navigator.onLine);
+    connection();
+    window.addEventListener("online", connection);
+    window.addEventListener("offline", connection);
+    try {
+      const value: unknown = JSON.parse(
+        localStorage.getItem(SAVED_KEY) ?? "[]",
+      );
+      if (Array.isArray(value))
+        setSaved(
+          value.filter((s): s is string => typeof s === "string").slice(0, 12),
+        );
+    } catch {
+      setMessage("civilMap.savedUnavailable");
     }
-    const active = (fires: FireCluster[]) =>
-      fires.filter((f) => f.state === "active").length;
-    const groups = [...byWilaya.entries()].map(([id, fires]) => ({
-      wilaya: wilayaById.get(id)!,
-      fires,
-    }));
-    groups.sort(
-      (a, b) =>
-        active(b.fires) - active(a.fires) || b.fires.length - a.fires.length,
+    setSubscribed(readSubscription()?.communes ?? []);
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener("online", connection);
+      window.removeEventListener("offline", connection);
+    };
+  }, []);
+  const allUnits = useMemo(() => units.data ?? [], [units.data]);
+  const area = allUnits.find((u) => u.id === search.area) ?? null;
+  const places = useMemo(
+    () => findPlaces(allUnits, query, locale),
+    [allUnits, query, locale],
+  );
+  const items = useMemo(
+    () =>
+      buildSituations({
+        fires: fires.data ?? [],
+        official: official.data ?? [],
+        reports: reports.data ?? [],
+        warnings: warnings.data ?? [],
+        units: allUnits,
+        now,
+      }),
+    [fires.data, official.data, reports.data, warnings.data, allUnits, now],
+  );
+  const visible = useMemo(
+    () =>
+      filterSituations(
+        items,
+        {
+          category: search.hazard,
+          area,
+          showEnded: search.ended,
+          showCandidates: search.candidates,
+        },
+        allUnits,
+      ),
+    [items, search.hazard, area, search.ended, search.candidates, allUnits],
+  );
+  const selected = visible.find((i) => i.id === search.event);
+  const labels = useSituationLabels(allUnits, now);
+  const mapFires = visible.flatMap((i) =>
+    i.source === "satellite" && i.lat !== null && i.lon !== null
+      ? [i.data]
+      : [],
+  );
+  const mapOfficial = pointCollection(
+    visible.filter((i) => i.source === "official"),
+  );
+  const mapWarnings = pointCollection(
+    visible.filter((i) => i.source === "onm"),
+  );
+  const mapReports = hazardReportsGeoJSON(
+    visible.flatMap((i) =>
+      i.source === "citizen" && i.lat !== null && i.lon !== null
+        ? [i.data]
+        : [],
+    ),
+  );
+  const queries = [fires, official, reports, warnings];
+  const loading = queries.some((q) => q.isPending);
+  const refreshing = queries.some((q) => q.isFetching) || health.isFetching;
+  const relevantKeys = new Set([
+    "firms",
+    "fci",
+    "fusion",
+    "dgpc_telegram",
+    "onm",
+  ]);
+  const limited =
+    offline ||
+    queries.some((q) => q.isError) ||
+    health.isError ||
+    health.isPending ||
+    (health.data ?? []).some(
+      (s) => relevantKeys.has(s.key) && s.state !== "healthy",
     );
-    return { groups, unassigned };
-  }, [sorted, wilayaById]);
-
-  const selectedCluster = live.find((c) => c.short_id === selected) ?? null;
-
-  const renderFire = (cluster: FireCluster) => {
-    const place = labelFor(cluster);
-    const settlement = cluster.nearest_settlement_id
-      ? settlementById.get(cluster.nearest_settlement_id)
-      : undefined;
-    return (
-      <button
-        key={cluster.id}
-        type="button"
-        onClick={() => setSelected(cluster.short_id)}
-        aria-pressed={selected === cluster.short_id}
-        className={`flex w-full flex-col gap-1.5 p-3 text-start transition-colors hover:bg-muted ${
-          selected === cluster.short_id ? "bg-muted" : ""
-        }`}
-      >
-        <span className="flex items-center justify-between gap-2">
-          <span className="flex items-center gap-2 font-medium">
-            <span
-              aria-hidden
-              className="size-2.5 shrink-0 rounded-full"
-              style={{
-                backgroundColor: riskSolid(cluster.state === "active" ? 4 : 3),
-                boxShadow: "0 0 0 1.5px var(--mark-ring)",
-              }}
-            />
-            {place.approximate
-              ? t("map.nearPlace", { place: place.name })
-              : place.name}
-          </span>
-          <span className="text-xs text-muted-foreground">
-            {t(`state.${cluster.state}`)}
-          </span>
-        </span>
-        <span className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
-          <Explain text={t("explain.area")}>
-            <span className="tabular">
-              {cluster.est_area_ha == null
-                ? "—"
-                : `${Math.round(cluster.est_area_ha)} ${t("common.ha")}`}
-            </span>
-          </Explain>
-          <Explain text={t("explain.detections")}>
-            <span className="tabular">
-              {cluster.detection_count} {t("map.detections")}
-            </span>
-          </Explain>
-          {settlement && cluster.nearest_settlement_km !== null ? (
-            <span className="tabular">
-              {settlement.name} · {cluster.nearest_settlement_km.toFixed(1)}{" "}
-              {t("common.km")}
-            </span>
-          ) : null}
-        </span>
-        <span className="text-xs text-muted-foreground">
-          {t("map.lastPass", {
-            time: relativeTime(cluster.last_detected_at, locale, now),
-          })}
-        </span>
-      </button>
+  const checkedAt = Math.min(
+    ...queries.map((q) => q.dataUpdatedAt).filter(Boolean),
+  );
+  const focus = useMemo(() => {
+    if (selected && selected.lat !== null && selected.lon !== null)
+      return {
+        lat: selected.lat,
+        lon: selected.lon,
+        zoom:
+          selected.source === "onm" ||
+          (selected.source === "official" &&
+            (selected.data.precision === "wilaya" || !selected.data.commune_id))
+            ? 7
+            : 10,
+      };
+    return area
+      ? { lat: area.lat, lon: area.lon, zoom: area.level === "wilaya" ? 7 : 10 }
+      : { lat: 35.8, lon: 2.6, zoom: 5.1 };
+  }, [area, selected]);
+  const following = !!area && subscribed.includes(area.code);
+  const chooseArea = (unit: AdminUnit | null) => {
+    setMessage("");
+    update({ area: unit?.id, event: undefined });
+    setQuery("");
+    setSearchOpen(false);
+    setForecastOpen(false);
+  };
+  const locate = () => {
+    setMessage("");
+    if (!navigator.geolocation) {
+      setMessage("civilMap.locationDenied");
+      return;
+    }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setLocating(false);
+        const unit = nearestPlace(
+          allUnits,
+          position.coords.latitude,
+          position.coords.longitude,
+        );
+        if (unit) {
+          chooseArea(unit);
+          setMessage("civilMap.nearby");
+        } else setMessage("civilMap.outsideCoverage");
+      },
+      () => {
+        setLocating(false);
+        setMessage("civilMap.locationDenied");
+      },
+      { timeout: 10000, maximumAge: 60000 },
     );
+  };
+  const savePlace = () => {
+    if (!area) return;
+    const next = saved.includes(area.id)
+      ? saved.filter((id) => id !== area.id)
+      : [area.id, ...saved].slice(0, 12);
+    try {
+      localStorage.setItem(SAVED_KEY, JSON.stringify(next));
+      setSaved(next);
+    } catch {
+      setMessage("civilMap.savedUnavailable");
+    }
+  };
+  const select = (id: string) => {
+    update({ event: id });
+    setExpanded(false);
+  };
+  const refresh = () => {
+    for (const q of [...queries, health]) void q.refetch();
+  };
+  const share = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setMessage("civilMap.copied");
+    } catch {
+      setMessage("civilMap.shareFailed");
+    }
   };
 
   return (
-    <div className="mx-auto flex max-w-[1600px] flex-col gap-4 p-4 lg:h-[calc(100vh-3.5rem)] lg:flex-row">
-      <aside className="order-2 flex w-full shrink-0 flex-col gap-3 lg:order-1 lg:w-[360px] lg:overflow-y-auto">
-        <SubscribeInvite />
-        <BroadcastBanner />
-        {zoneAlert ? (
-          <section
-            className="flex flex-col gap-2 rounded-xl border p-3"
-            style={{
-              backgroundColor: "var(--emergency-surface)",
-              borderColor: "var(--emergency)",
-            }}
+    <div className="mx-auto max-w-[1600px] p-3 pb-20 lg:p-5">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[.16em] text-muted-foreground">
+            {t("civilMap.title")}
+          </p>
+          <h1 className="mt-1 flex items-center gap-2 text-xl font-semibold lg:text-2xl">
+            <MapPin aria-hidden className="size-5 text-primary" />
+            {area ? unitName(area, locale) : t("civilMap.national")}
+          </h1>
+        </div>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => setHelpOpen(true)}
+            className="min-h-11 rounded-full border px-4 text-sm font-medium"
           >
-            <p
-              className="text-sm font-semibold"
-              style={{ color: "var(--emergency)" }}
+            {t("civilMap.help")}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              if (area?.level === "commune") setSubscriptionOpen(true);
+              else {
+                setMessage("civilMap.communeOnly");
+                searchRef.current?.focus();
+                setSearchOpen(true);
+              }
+            }}
+            className="flex min-h-11 items-center gap-2 rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground"
+          >
+            <Bell aria-hidden className="size-4" />
+            {t(following ? "civilMap.following" : "civilMap.follow")}
+          </button>
+        </div>
+      </div>
+      <div className="relative z-20 mb-3 flex gap-2">
+        <div className="relative min-w-0 flex-1">
+          <Search
+            aria-hidden
+            className="pointer-events-none absolute start-4 top-3.5 size-5 text-muted-foreground"
+          />
+          <input
+            ref={searchRef}
+            type="search"
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setSearchOpen(true);
+            }}
+            onFocus={() => setSearchOpen(true)}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") setSearchOpen(false);
+            }}
+            aria-label={t("civilMap.search")}
+            aria-expanded={searchOpen}
+            aria-controls="map-place-results"
+            placeholder={t("civilMap.search")}
+            className="h-12 w-full rounded-2xl border border-border bg-surface pe-4 ps-12 text-base shadow-sm focus:outline-2 focus:outline-primary"
+          />
+          {searchOpen && (
+            <div
+              id="map-place-results"
+              className="absolute inset-x-0 top-14 max-h-80 overflow-auto rounded-2xl border bg-surface p-2 shadow-xl"
             >
-              {zoneAlert.title}
-            </p>
-            <p className="text-xs" style={{ color: "var(--emergency)" }}>
-              {t("survival.zoneElsewhere")}
-            </p>
-            <div className="flex gap-2">
-              {zoneAlert.payload?.short_id ? (
-                <Link
-                  to="/fire/$id"
-                  params={{ id: zoneAlert.payload.short_id }}
-                  className="flex-1 rounded-full py-1.5 text-center text-xs font-bold"
-                  style={{
-                    backgroundColor: "var(--emergency)",
-                    color: "var(--surface)",
-                  }}
+              <div className="flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() => chooseArea(null)}
+                  className="min-h-11 px-3 text-sm font-semibold"
                 >
-                  {t("survival.zoneView")}
-                </Link>
-              ) : null}
-              <Link
-                to="/survival"
-                className="flex-1 rounded-full border py-1.5 text-center text-xs font-bold"
-                style={{
-                  borderColor: "var(--emergency)",
-                  color: "var(--emergency)",
-                }}
-              >
-                {t("survival.zoneImHere")}
-              </Link>
-            </div>
-          </section>
-        ) : null}
-
-        <section className="card p-4">
-          <h1 className="text-base">{t("map.todayIn")}</h1>
-          <div className="mt-3 flex items-start justify-between gap-4">
-            {national ? (
-              <DangerScale
-                level={national.level}
-                fwi={national.fwi}
-                size="md"
-                caption={t("map.nationalMax")}
-                staleCaption={nationalStale}
-                className="flex-1"
-              />
-            ) : (
-              <div className="flex-1">
-                <p className="text-sm font-medium">
-                  {t("risk.unavailableTitle")}
+                  {t("civilMap.allAreas")}
+                </button>
+                <button
+                  type="button"
+                  aria-label={t("civilMap.close")}
+                  onClick={() => setSearchOpen(false)}
+                  className="flex size-11 items-center justify-center"
+                >
+                  <X className="size-4" />
+                </button>
+              </div>
+              {!query && saved.length > 0 && (
+                <>
+                  <p className="px-3 py-2 text-xs text-muted-foreground">
+                    {t("civilMap.savedPlaces")}
+                  </p>
+                  {allUnits
+                    .filter((u) => saved.includes(u.id))
+                    .map((u) => (
+                      <button
+                        type="button"
+                        key={u.id}
+                        onClick={() => chooseArea(u)}
+                        className="flex min-h-11 w-full items-center gap-2 rounded-lg px-3 text-start text-sm hover:bg-muted"
+                      >
+                        <Bookmark className="size-4" />
+                        {unitName(u, locale)}
+                      </button>
+                    ))}
+                </>
+              )}
+              {units.isPending ? (
+                <p className="p-3 text-sm">{t("civilMap.loading")}</p>
+              ) : units.isError ? (
+                <p role="status" className="p-3 text-sm">
+                  {t("civilMap.error")}
                 </p>
-                <Link
-                  to="/status"
-                  className="text-xs font-medium text-primary underline"
-                >
-                  {t("nav.status")}
-                </Link>
-              </div>
-            )}
-            <div className="text-end">
-              <p className="font-display tabular text-3xl leading-none">
-                {activeCount}
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                {activeCount === 0
-                  ? t("map.activeFires_zero")
-                  : t("map.activeFires")}
-              </p>
-            </div>
-          </div>
-          <RiskLegend className="mt-4 border-t border-border pt-3" />
-        </section>
-
-        {degraded ? <DegradedBanner /> : null}
-
-        {sorted.length > 0 ? (
-          <div className="relative">
-            <Search
-              aria-hidden
-              className="pointer-events-none absolute top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-              style={{ insetInlineStart: "0.75rem" }}
-            />
-            <input
-              value={railSearch}
-              onChange={(e) => setRailSearch(e.target.value)}
-              placeholder={t("map.searchFires")}
-              aria-label={t("map.searchFires")}
-              className="w-full rounded-lg border border-border bg-surface py-2 pe-3 ps-9 text-sm outline-none focus:ring-2 focus:ring-ring"
-            />
-          </div>
-        ) : null}
-
-        <section className="card">
-          {clusters.isLoading ? (
-            <SkeletonList rows={3} className="p-3" />
-          ) : sorted.length === 0 ? (
-            <EmptyState
-              title={t("map.activeFires_zero")}
-              {...(national
-                ? {
-                    body: t("map.empty", {
-                      level: t(`risk.${dangerLevelKey(national.level)}`),
-                    }),
-                  }
-                : {})}
-              className="border-0"
-            />
-          ) : railQ ? (
-            searched.length === 0 ? (
-              <EmptyState title={t("risk.noResults")} className="border-0" />
-            ) : (
-              <div className="divide-y divide-border">
-                {searched.map((cluster) => renderFire(cluster))}
-              </div>
-            )
-          ) : (
-            <div className="divide-y divide-border">
-              {fireGroups.groups.map(({ wilaya, fires }) => (
-                <details key={wilaya.id}>
-                  <summary className="flex cursor-pointer list-none items-center gap-2 bg-muted/50 px-3 py-2 [&::-webkit-details-marker]:hidden">
-                    <ChevronDown
-                      aria-hidden
-                      className="size-3.5 shrink-0 text-muted-foreground"
-                    />
-                    <span className="flex-1 text-sm font-semibold">
-                      {unitName(wilaya, locale)}
+              ) : query && places.length === 0 ? (
+                <p className="p-3 text-sm">{t("civilMap.searchEmpty")}</p>
+              ) : (
+                places.map((u) => (
+                  <button
+                    key={u.id}
+                    type="button"
+                    onClick={() => chooseArea(u)}
+                    className="flex min-h-12 w-full items-center justify-between rounded-lg px-3 text-start text-sm hover:bg-muted"
+                  >
+                    <span>{unitName(u, locale)}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {u.code}
                     </span>
-                    <span className="tabular text-xs text-muted-foreground">
-                      {t("map.fireCount", { count: fires.length })}
-                    </span>
-                  </summary>
-                  <div className="divide-y divide-border">
-                    {fires.map((cluster) => renderFire(cluster))}
-                  </div>
-                </details>
-              ))}
-              {fireGroups.unassigned.length > 0 ? (
-                <details>
-                  <summary className="flex cursor-pointer list-none items-center gap-2 bg-muted/50 px-3 py-2 [&::-webkit-details-marker]:hidden">
-                    <ChevronDown
-                      aria-hidden
-                      className="size-3.5 shrink-0 text-muted-foreground"
-                    />
-                    <span className="flex-1 text-sm font-semibold">
-                      {t("map.unassigned")}
-                    </span>
-                    <span className="tabular text-xs text-muted-foreground">
-                      {t("map.fireCount", {
-                        count: fireGroups.unassigned.length,
-                      })}
-                    </span>
-                  </summary>
-                  <div className="divide-y divide-border">
-                    {fireGroups.unassigned.map((cluster) =>
-                      renderFire(cluster),
-                    )}
-                  </div>
-                </details>
-              ) : null}
+                  </button>
+                ))
+              )}
             </div>
           )}
-        </section>
-
-        <EmergencyNumbers />
-      </aside>
-
-      <section className="relative order-1 h-[55vh] min-h-80 overflow-hidden rounded-xl border border-border lg:order-2 lg:h-full lg:flex-1">
-        <MapCanvas
-          clusters={clusters.data ?? []}
-          selectedShortId={selected}
-          onSelect={(c) => {
-            setSelectedOfficial(null);
-            setSelectedReport(null);
-            setSelected(c.short_id);
-          }}
-          official={officialGeoJSON}
-          selectedOfficialId={selectedOfficial}
-          onSelectOfficial={(id) => {
-            setSelected(null);
-            setSelectedReport(null);
-            setSelectedOfficial(id);
-          }}
-          reports={hazardGeoJSON}
-          onSelectReport={(id) => {
-            setSelected(null);
-            setSelectedOfficial(null);
-            setSelectedReport(id);
-          }}
-          layers={layers}
-        />
-        <LayerToggle layers={layers} onChange={setLayers} />
-        <Link
-          to="/survival"
-          className="absolute bottom-4 end-3 z-10 flex items-center gap-2 rounded-full border-2 bg-surface px-4 py-2.5 text-sm font-bold shadow-lg"
-          style={{ borderColor: "var(--emergency)", color: "var(--emergency)" }}
+        </div>
+        <button
+          type="button"
+          onClick={locate}
+          disabled={locating || !allUnits.length}
+          aria-label={t("civilMap.locate")}
+          title={t("civilMap.locate")}
+          className="flex size-12 shrink-0 items-center justify-center rounded-2xl border bg-surface disabled:opacity-50"
         >
-          <LifeBuoy aria-hidden className="size-4" />
-          {t("survival.pill")}
-        </Link>
-        <DetailSheet
-          open={!!selectedCluster || !!selectedIncident || !!selectedHazard}
-          onClose={() => {
-            setSelected(null);
-            setSelectedOfficial(null);
-            setSelectedReport(null);
-          }}
+          {locating ? (
+            <LoaderCircle className="size-5 animate-spin" />
+          ) : (
+            <Crosshair className="size-5" />
+          )}
+        </button>
+        {area && (
+          <button
+            type="button"
+            onClick={savePlace}
+            aria-label={t(
+              saved.includes(area.id)
+                ? "civilMap.unsavePlace"
+                : "civilMap.savePlace",
+            )}
+            aria-pressed={saved.includes(area.id)}
+            className="flex size-12 shrink-0 items-center justify-center rounded-2xl border bg-surface"
+          >
+            <Bookmark
+              className={`size-5 ${saved.includes(area.id) ? "fill-primary text-primary" : ""}`}
+            />
+          </button>
+        )}
+      </div>
+      {message && (
+        <p
+          role="status"
+          className="mb-3 flex items-center justify-between rounded-xl bg-muted px-3 text-sm"
         >
-          {selectedHazard ? (
-            <HazardReportDetail
-              report={selectedHazard}
-              locale={locale}
-              now={now}
+          {t(message)}
+          <button
+            type="button"
+            onClick={() => setMessage("")}
+            aria-label={t("civilMap.close")}
+            className="flex size-11 shrink-0 items-center justify-center"
+          >
+            <X className="size-4" />
+          </button>
+        </p>
+      )}
+      <div
+        className={`mb-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border px-3 py-2 text-xs ${limited ? "border-amber-500/25 bg-amber-500/10" : "border-border bg-surface"}`}
+        role="status"
+      >
+        <span className="flex items-center gap-2">
+          {limited ? (
+            <TriangleAlert
+              aria-hidden
+              className="size-4 shrink-0 text-amber-700"
             />
-          ) : null}
-          {selectedIncident ? (
-            <OfficialIncidentDetail
-              incident={selectedIncident}
-              locale={locale}
-              now={now}
+          ) : (
+            <ShieldCheck aria-hidden className="size-4 shrink-0 text-primary" />
+          )}
+          <span>
+            {t(
+              offline
+                ? "civilMap.offline"
+                : limited
+                  ? "civilMap.limited"
+                  : "civilMap.sourceTime",
+            )}{" "}
+            {Number.isFinite(checkedAt) && (
+              <span className="text-muted-foreground">
+                ·{" "}
+                {t("civilMap.updated", {
+                  time: relativeTime(
+                    new Date(checkedAt).toISOString(),
+                    locale,
+                    now,
+                  ),
+                })}
+              </span>
+            )}
+          </span>
+        </span>
+        <div className="flex items-center gap-2">
+          <Link
+            to="/status"
+            className="inline-flex min-h-9 items-center underline underline-offset-2"
+          >
+            {t("civilMap.coverage")}
+          </Link>
+          <button
+            type="button"
+            onClick={refresh}
+            disabled={refreshing}
+            aria-label={t("civilMap.refresh")}
+            className="flex size-11 items-center justify-center rounded-full hover:bg-muted"
+          >
+            <RefreshCw
+              className={`size-4 ${refreshing ? "animate-spin" : ""}`}
             />
-          ) : null}
-          {selectedCluster ? (
-            <ClusterDetail
-              cluster={selectedCluster}
-              locale={locale}
-              now={now}
-              placeName={(() => {
-                const p = labelFor(selectedCluster);
-                return p.approximate
-                  ? t("map.nearPlace", { place: p.name })
-                  : p.name;
-              })()}
-              settlementName={
-                selectedCluster.nearest_settlement_id
-                  ? (settlementById.get(selectedCluster.nearest_settlement_id)
-                      ?.name ?? null)
-                  : null
+          </button>
+        </div>
+      </div>
+      <div
+        className="mb-3 flex items-center gap-2 overflow-x-auto pb-1"
+        aria-label={t("civilMap.filters")}
+      >
+        {categories.map((category) => {
+          const Icon = hazardIcons[category];
+          return (
+            <button
+              type="button"
+              key={category}
+              aria-pressed={search.hazard === category}
+              onClick={() => update({ hazard: category, event: undefined })}
+              className={`flex min-h-11 shrink-0 items-center gap-2 rounded-full border px-4 text-sm font-medium ${search.hazard === category ? "border-primary bg-primary text-primary-foreground" : "border-border bg-surface hover:bg-muted"}`}
+            >
+              <Icon aria-hidden className="size-4" />
+              {t(`civilMap.${category}`)}
+            </button>
+          );
+        })}
+        <button
+          type="button"
+          aria-expanded={options}
+          onClick={() => setOptions(!options)}
+          className="flex min-h-11 shrink-0 items-center gap-2 rounded-full border bg-surface px-4 text-sm"
+        >
+          <Layers className="size-4" />
+          {t("civilMap.filters")}
+        </button>
+      </div>
+      {options && (
+        <div className="mb-3 flex flex-wrap gap-x-5 rounded-xl border bg-surface px-4 py-2 text-sm">
+          <label className="flex min-h-11 items-center gap-2">
+            <input
+              type="checkbox"
+              checked={search.candidates}
+              onChange={(e) =>
+                update({ candidates: e.target.checked, event: undefined })
               }
             />
-          ) : null}
-        </DetailSheet>
-      </section>
-
-      {interstitial ? (
-        <div className="fixed inset-0 z-50 flex flex-col bg-surface">
-          <div
-            className="h-1.5"
-            style={{ backgroundColor: "var(--emergency)" }}
-          />
-          <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center gap-4 px-6">
-            <span
-              className="flex size-16 items-center justify-center rounded-full"
-              style={{ backgroundColor: "var(--emergency-surface)" }}
-            >
-              <Flame
-                aria-hidden
-                className="size-8"
-                style={{ color: "var(--emergency)" }}
-              />
-            </span>
-            <h2 className="font-display text-3xl leading-tight">
-              {t("survival.interTitle")}
-            </h2>
-            <p className="text-[15px] leading-relaxed">
-              {t("survival.interBody", { km: interstitial.km.toFixed(1) })}
-            </p>
-            <dl className="card flex flex-col gap-1.5 p-3 text-xs">
-              <div className="flex justify-between">
-                <dt className="text-muted-foreground">
-                  {t("survival.interBasedOn")}
-                </dt>
-                <dd className="font-semibold">{t("survival.interPosition")}</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="text-muted-foreground">
-                  {t("survival.interObservation")}
-                </dt>
-                <dd className="font-semibold">
-                  {t("survival.interSatellite", {
-                    time: relativeTime(interstitial.seen, locale, now),
-                  })}
-                </dd>
-              </div>
-            </dl>
-          </div>
-          <div className="mx-auto flex w-full max-w-md flex-col gap-2.5 px-6 pb-8">
-            <button
-              type="button"
-              onClick={() => {
-                localStorage.setItem(
-                  SURVIVAL_ACTIVE_KEY,
-                  new Date().toISOString(),
-                );
-                void navigate({ to: "/survival" });
-              }}
-              className="flex h-14 items-center justify-center gap-2 rounded-xl text-base font-bold"
-              style={{
-                backgroundColor: "var(--emergency)",
-                color: "var(--surface)",
-              }}
-            >
-              {t("survival.interEnter")}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                sessionStorage.setItem(SURVIVAL_DISMISS_KEY, "1");
-                setInterstitial(null);
-              }}
-              className="flex h-12 items-center justify-center rounded-xl border border-border text-sm font-semibold text-muted-foreground"
-            >
-              {t("survival.interNotHere")}
-            </button>
-          </div>
+            {t("civilMap.showCandidates")}
+          </label>
+          <label className="flex min-h-11 items-center gap-2">
+            <input
+              type="checkbox"
+              checked={search.ended}
+              onChange={(e) =>
+                update({ ended: e.target.checked, event: undefined })
+              }
+            />
+            {t("civilMap.showEnded")}
+          </label>
+          <p className="w-full pb-2 text-xs text-muted-foreground">
+            {t("civilMap.satelliteLegend")} · {t("civilMap.officialLegend")} ·{" "}
+            {t("civilMap.weatherLegend")} · {t("civilMap.citizenLegend")}
+          </p>
         </div>
-      ) : null}
-    </div>
-  );
-}
-
-function ClusterDetail({
-  cluster,
-  locale,
-  now,
-  placeName,
-  settlementName,
-}: {
-  cluster: FireCluster;
-  locale: Locale;
-  now: number;
-  placeName: string;
-  settlementName: string | null;
-}) {
-  const { t } = useTranslation();
-  return (
-    <div className="flex flex-col gap-3">
-      <div>
-        <p className="font-display text-lg">{placeName}</p>
-        <p className="text-sm text-muted-foreground">
-          {t(`state.${cluster.state}`)} ·{" "}
-          {t("map.lastPass", {
-            time: relativeTime(cluster.last_detected_at, locale, now),
-          })}
-        </p>
-      </div>
-
-      {settlementName && cluster.nearest_settlement_km !== null ? (
-        <p
-          className="rounded-lg px-3 py-2 text-sm font-medium"
-          style={{
-            backgroundColor: "var(--emergency-surface)",
-            color: "var(--emergency)",
-          }}
+      )}
+      <div className="relative flex flex-col lg:h-[calc(100dvh-20rem)] lg:min-h-[520px] lg:flex-row lg:gap-4">
+        <section
+          aria-label={t("civilMap.mapTitle")}
+          className="relative h-[48dvh] min-h-72 overflow-hidden rounded-2xl border bg-muted lg:order-2 lg:h-full lg:min-w-0 lg:flex-1"
         >
-          {t("fire.nearSettlement", {
-            settlement: settlementName,
-            km: cluster.nearest_settlement_km.toFixed(1),
-          })}
-        </p>
-      ) : null}
-
-      <dl className="grid grid-cols-2 gap-2 text-sm">
-        <Explain text={t("explain.area")}>
-          <div className="card p-2.5">
-            <dt className="text-xs text-muted-foreground">{t("fire.area")}</dt>
-            <dd className="tabular font-medium">
-              {cluster.est_area_ha == null
-                ? "—"
-                : `${Math.round(cluster.est_area_ha)} ${t("common.ha")}`}
-            </dd>
+          <MapCanvas
+            clusters={mapFires}
+            official={mapOfficial}
+            warnings={mapWarnings}
+            reports={mapReports}
+            focus={focus}
+            layers={{
+              fires: true,
+              official: true,
+              reports: true,
+              industrialSources: false,
+              unverified: search.candidates,
+            }}
+            selectedShortId={
+              selected?.source === "satellite" ? selected.data.short_id : null
+            }
+            selectedOfficialId={
+              selected?.source === "official" ? selected.data.id : null
+            }
+            onSelect={(c) => select(`fire:${c.id}`)}
+            onSelectOfficial={(id) => select(`official:${id}`)}
+            onSelectReport={(id) => select(`report:${id}`)}
+            onSelectWarning={(id) => select(`weather:${id}`)}
+            onError={() => setMapFailed(true)}
+            onReady={() => setMapFailed(false)}
+          />
+          {mapFailed && (
+            <p
+              role="status"
+              className="absolute inset-x-3 top-3 rounded-xl bg-surface p-3 text-sm shadow"
+            >
+              {t("civilMap.mapUnavailable")}
+            </p>
+          )}
+          <button
+            type="button"
+            onClick={() => setExpanded(!expanded)}
+            className="absolute bottom-4 start-1/2 flex min-h-11 -translate-x-1/2 items-center gap-2 rounded-full bg-surface px-5 text-sm font-semibold shadow-lg rtl:translate-x-1/2 lg:hidden"
+          >
+            <List className="size-4" />
+            {t("civilMap.situations", { count: visible.length })}
+          </button>
+          <DetailSheet
+            open={!!search.event}
+            title={
+              selected
+                ? labels.title(selected)
+                : t("civilMap.detailUnavailable")
+            }
+            onClose={() => update({ event: undefined }, true)}
+          >
+            {selected ? (
+              <>
+                <SituationDetails item={selected} units={allUnits} now={now} />
+                <button
+                  type="button"
+                  onClick={() => void share()}
+                  className="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border text-sm font-medium"
+                >
+                  <Share2 className="size-4" />
+                  {t("civilMap.share")}
+                </button>
+              </>
+            ) : (
+              <p>
+                {t(loading ? "civilMap.loading" : "civilMap.detailUnavailable")}
+              </p>
+            )}
+          </DetailSheet>
+        </section>
+        <section
+          aria-label={t("civilMap.list")}
+          className={`z-10 -mt-3 rounded-t-3xl border border-border bg-surface p-4 shadow-sm lg:order-1 lg:m-0 lg:flex lg:w-[370px] lg:shrink-0 lg:flex-col lg:rounded-2xl ${expanded ? "fixed inset-x-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom))] max-h-[65dvh] overflow-y-auto" : "relative"} lg:static lg:max-h-none lg:overflow-y-auto`}
+        >
+          <button
+            type="button"
+            onClick={() => setExpanded(!expanded)}
+            aria-expanded={expanded}
+            className="mx-auto mb-2 flex h-11 w-full items-center justify-center lg:hidden"
+            aria-label={t(expanded ? "civilMap.collapse" : "civilMap.expand")}
+          >
+            <span className="h-1 w-10 rounded-full bg-border" />
+          </button>
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-sm font-semibold">
+              {t("civilMap.situations", { count: visible.length })}
+            </h2>
+            <span className="rounded-full bg-muted px-2.5 py-1 text-xs text-muted-foreground">
+              {t(`civilMap.${search.hazard}`)}
+            </span>
           </div>
-        </Explain>
-        <Explain text={t("explain.detections")}>
-          <div className="card p-2.5">
-            <dt className="text-xs text-muted-foreground">
-              {t("fire.detectionCount")}
-            </dt>
-            <dd className="tabular font-medium">{cluster.detection_count}</dd>
+          {area && (
+            <p className="mb-3 text-xs leading-relaxed text-muted-foreground">
+              {t("civilMap.nearbyScope", { km: CITIZEN_NEARBY_RADIUS_KM })}
+            </p>
+          )}
+          {loading && (
+            <p
+              role="status"
+              className="mb-3 flex items-center gap-2 text-sm text-muted-foreground"
+            >
+              <LoaderCircle className="size-4 animate-spin" />
+              {t("civilMap.loading")}
+            </p>
+          )}
+          {!loading && !visible.length && (
+            <div className="rounded-2xl bg-muted/50 px-4 py-8 text-center">
+              <ShieldCheck
+                aria-hidden
+                className="mx-auto mb-3 size-7 text-muted-foreground"
+              />
+              <h3 className="text-base font-medium">
+                {t(
+                  queries.every((q) => q.isError)
+                    ? "civilMap.error"
+                    : "civilMap.noSituations",
+                )}
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                {t("civilMap.noSituationsBody")}
+              </p>
+            </div>
+          )}
+          <div className="space-y-3">
+            {visible.map((item) => (
+              <SituationCard
+                key={item.id}
+                item={item}
+                units={allUnits}
+                now={now}
+                selected={item.id === search.event}
+                onSelect={() => select(item.id)}
+              />
+            ))}
           </div>
-        </Explain>
-        <Explain text={t("explain.frp")}>
-          <div className="card p-2.5">
-            <dt className="text-xs text-muted-foreground">
-              {t("fire.peakFrp")}
-            </dt>
-            <dd className="tabular font-medium">
-              {cluster.max_frp_mw == null
-                ? "—"
-                : `${Math.round(cluster.max_frp_mw)} ${t("common.mw")}`}
-            </dd>
+          <div className="mt-4 border-t pt-4">
+            <button
+              type="button"
+              onClick={() => {
+                if (area?.level === "commune") setForecastOpen(true);
+                else {
+                  setMessage("civilMap.selectCommuneWeather");
+                  searchRef.current?.focus();
+                  setSearchOpen(true);
+                }
+              }}
+              className="flex min-h-11 w-full items-center justify-between rounded-xl bg-muted px-3 text-sm font-medium"
+            >
+              {t("civilMap.forecast")}
+              <ChevronDown className="size-4" />
+            </button>
+            <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+              {t("civilMap.forecastsNotWarnings")}
+            </p>
           </div>
-        </Explain>
-        <Explain text={t("explain.stage")}>
-          <div className="card p-2.5">
-            <dt className="text-xs text-muted-foreground">{t("fire.stage")}</dt>
-            <dd className="font-medium">{t(`stage.${fireStage(cluster)}`)}</dd>
+          <div className="mt-4">
+            <BroadcastBanner />
           </div>
-        </Explain>
-      </dl>
-
-      <Link
-        to="/fire/$id"
-        params={{ id: cluster.short_id }}
-        className="rounded-md bg-primary px-3 py-2 text-center text-sm font-medium text-primary-foreground"
-      >
-        {t("map.openDetail")}
-      </Link>
+        </section>
+      </div>
+      {forecastOpen && area?.level === "commune" && (
+        <DetailSheet
+          open
+          title={`${t("civilMap.forecast")} · ${unitName(area, locale)}`}
+          onClose={() => setForecastOpen(false)}
+        >
+          <WeatherForecast communeId={area.id} />
+        </DetailSheet>
+      )}
+      {helpOpen && (
+        <DetailSheet
+          open
+          title={t("civilMap.help")}
+          onClose={() => setHelpOpen(false)}
+        >
+          <EmergencyNumbers />
+          <Link
+            to="/survival"
+            className="mt-4 flex min-h-11 items-center justify-center rounded-xl border border-red-500 px-4 text-sm font-semibold text-red-700"
+          >
+            {t("civilMap.fireHelp")}
+          </Link>
+        </DetailSheet>
+      )}
+      {subscriptionOpen && area?.level === "commune" && (
+        <SubscribeSheet
+          key={area.code}
+          open
+          initialCommuneCode={area.code}
+          onClose={() => {
+            setSubscriptionOpen(false);
+            setSubscribed(readSubscription()?.communes ?? []);
+          }}
+        />
+      )}
+      <MapSurvivalPrompt fires={fires.data ?? []} now={now} />
     </div>
   );
 }

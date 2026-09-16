@@ -180,6 +180,13 @@ function FireDetail() {
           <MapCanvas
             clusters={[cluster]}
             selectedShortId={cluster.short_id}
+            layers={{
+              fires: true,
+              official: false,
+              reports: false,
+              industrialSources: false,
+              unverified: true,
+            }}
             center={[cluster.lon, cluster.lat]}
             zoom={10}
           />

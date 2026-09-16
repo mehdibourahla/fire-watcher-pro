@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Bell, BellOff, Check, Plus, Search, X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -14,7 +14,6 @@ import { type Locale, isLocale } from "@/i18n";
 import { FCM_LANGS } from "@/lib/fcm";
 import { adminUnitsQuery, unitName, type AdminUnit } from "@/lib/nadhir";
 import {
-  INVITE_SEEN_KEY,
   MAX_COMMUNES,
   pushConfigured,
   pushSupported,
@@ -24,82 +23,29 @@ import {
 } from "@/lib/push";
 import { cn } from "@/lib/utils";
 
-type Props = { open: boolean; onClose: () => void };
+type Props = {
+  open: boolean;
+  onClose: () => void;
+  initialCommuneCode?: string;
+};
 
 type Step = "pick" | "permission";
 
-export function SubscribeInvite() {
-  const { t } = useTranslation();
-  const [visible, setVisible] = useState(false);
-  const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    try {
-      if (!localStorage.getItem(INVITE_SEEN_KEY) && !readSubscription())
-        setVisible(true);
-    } catch {
-      // no storage, no invite — the header bell remains
-    }
-  }, []);
-
-  const seen = () => {
-    try {
-      localStorage.setItem(INVITE_SEEN_KEY, "1");
-    } catch {
-      // ignored: worst case the invite shows again next visit
-    }
-    setVisible(false);
-  };
-
-  if (!visible) return null;
-  return (
-    <>
-      <section className="rounded-xl border border-[var(--accent)] bg-[var(--accent-tint)] p-3">
-        <p className="flex items-center gap-2 text-sm font-semibold">
-          <Bell aria-hidden className="size-4 text-[var(--accent)]" />
-          {t("push.inviteTitle")}
-        </p>
-        <p className="mt-1 text-xs text-muted-foreground">
-          {t("push.inviteBody")}
-        </p>
-        <div className="mt-2 flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => {
-              seen();
-              setOpen(true);
-            }}
-            className="rounded-full bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground"
-          >
-            {t("push.inviteCta")}
-          </button>
-          <button
-            type="button"
-            onClick={seen}
-            className="rounded-full px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted"
-          >
-            {t("push.inviteLater")}
-          </button>
-        </div>
-        <p className="mt-1.5 text-[11px] text-muted-foreground">
-          {t("push.inviteOnce")}
-        </p>
-      </section>
-      {open ? (
-        <SubscribeSheet open={open} onClose={() => setOpen(false)} />
-      ) : null}
-    </>
-  );
-}
-
-export function SubscribeSheet({ open, onClose }: Props) {
+export function SubscribeSheet({ open, onClose, initialCommuneCode }: Props) {
   const { t, i18n } = useTranslation();
   const locale: Locale = isLocale(i18n.language) ? i18n.language : "ar";
   const { data: units } = useQuery({ ...adminUnitsQuery, enabled: open });
 
   const existing = readSubscription();
   const [step, setStep] = useState<Step>("pick");
-  const [codes, setCodes] = useState<string[]>(existing?.communes ?? []);
+  const [codes, setCodes] = useState<string[]>(() =>
+    [
+      ...new Set([
+        ...(existing?.communes ?? []),
+        ...(initialCommuneCode ? [initialCommuneCode] : []),
+      ]),
+    ].slice(0, MAX_COMMUNES),
+  );
   const [lang, setLang] = useState<string>(existing?.lang ?? locale);
   const [search, setSearch] = useState("");
   const [busy, setBusy] = useState(false);
@@ -121,6 +67,10 @@ export function SubscribeSheet({ open, onClose }: Props) {
     () => new Map(communes.map((c) => [c.code, c])),
     [communes],
   );
+  const requestedCommune =
+    initialCommuneCode && !codes.includes(initialCommuneCode)
+      ? byCode.get(initialCommuneCode)
+      : undefined;
 
   const matches = useMemo(() => {
     const needle = search.trim().toLowerCase();
@@ -289,6 +239,20 @@ export function SubscribeSheet({ open, onClose }: Props) {
                     {t("push.yourCommunes")}
                   </h3>
                   <ul className="space-y-1.5">{codes.map(communeRow)}</ul>
+                  {requestedCommune ? (
+                    <button
+                      type="button"
+                      disabled={codes.length >= MAX_COMMUNES}
+                      onClick={() =>
+                        setCodes([...codes, requestedCommune.code])
+                      }
+                      className="mt-2 flex min-h-11 w-full items-center gap-2 rounded-lg border border-border px-3 py-2 text-start text-sm disabled:opacity-60"
+                    >
+                      <Plus aria-hidden className="size-4 shrink-0" />
+                      {t("push.addCommune")}:{" "}
+                      {unitName(requestedCommune, locale)}
+                    </button>
+                  ) : null}
                   {codes.length < MAX_COMMUNES ? (
                     <div className="relative mt-2">
                       <Search

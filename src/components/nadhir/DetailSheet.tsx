@@ -1,26 +1,38 @@
 import { X } from "lucide-react";
 import type { ReactNode } from "react";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 
 type Props = {
   open: boolean;
   onClose: () => void;
   children: ReactNode;
+  title?: string;
 };
 
 /** Bottom sheet under lg, docked side rail from lg up. */
-export function DetailSheet({ open, onClose, children }: Props) {
+export function DetailSheet({ open, onClose, children, title }: Props) {
   const { t } = useTranslation();
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   useEffect(() => {
     if (!open) return;
+    const previous =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
+    closeRef.current?.focus({ preventScroll: true });
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") onCloseRef.current();
     };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open, onClose]);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      if (previous?.isConnected) previous.focus({ preventScroll: true });
+    };
+  }, [open]);
 
   if (!open) return null;
 
@@ -28,8 +40,8 @@ export function DetailSheet({ open, onClose, children }: Props) {
     <aside
       role="dialog"
       aria-modal="false"
-      aria-label={t("fire.detail")}
-      className="sheet-in fixed inset-x-0 bottom-0 z-30 max-h-[70vh] overflow-y-auto rounded-t-2xl border-t border-border bg-surface shadow-[var(--shadow-sheet)] lg:absolute lg:inset-y-3 lg:end-3 lg:start-auto lg:max-h-none lg:w-[380px] lg:rounded-2xl lg:border"
+      aria-label={title ?? t("fire.detail")}
+      className="sheet-in fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-30 max-h-[65dvh] overflow-y-auto rounded-t-2xl border-t border-border bg-surface shadow-[var(--shadow-sheet)] lg:absolute lg:inset-y-3 lg:end-3 lg:start-auto lg:max-h-none lg:w-[380px] lg:rounded-2xl lg:border"
     >
       <div className="sticky top-0 flex items-center justify-between gap-3 border-b border-border bg-surface px-4 py-3">
         <span
@@ -37,10 +49,11 @@ export function DetailSheet({ open, onClose, children }: Props) {
           aria-hidden
         />
         <button
+          ref={closeRef}
           type="button"
           onClick={onClose}
           aria-label={t("common.close")}
-          className="ms-auto rounded-full p-1.5 hover:bg-muted"
+          className="ms-auto flex size-11 items-center justify-center rounded-full hover:bg-muted"
         >
           <X aria-hidden className="size-4" />
         </button>

@@ -1,0 +1,273 @@
+import type {
+  AdminUnit,
+  FireCluster,
+  OfficialIncident,
+  OnmVigilance,
+} from "./nadhir";
+import type { HazardReport } from "./open-areas";
+
+export type HazardCategory = "all" | "fire" | "weather" | "road" | "other";
+type SituationBase = {
+  id: string;
+  category: Exclude<HazardCategory, "all">;
+  at: string;
+  lat: number | null;
+  lon: number | null;
+  areaId: string | null;
+  wilayaId: string | null;
+  ended: boolean;
+  candidate: boolean;
+};
+export type Situation = SituationBase &
+  (
+    | { source: "satellite"; data: FireCluster }
+    | { source: "official"; data: OfficialIncident }
+    | { source: "citizen"; data: HazardReport }
+    | { source: "onm"; data: OnmVigilance }
+  );
+type SituationInput = {
+  fires: FireCluster[];
+  official: OfficialIncident[];
+  reports: HazardReport[];
+  warnings: OnmVigilance[];
+  units: AdminUnit[];
+  now: number;
+};
+type SituationFilters = {
+  category: HazardCategory;
+  area: AdminUnit | null;
+  showEnded: boolean;
+  showCandidates: boolean;
+};
+
+export const CITIZEN_NEARBY_RADIUS_KM = 20;
+
+function coordinates(point: { lat: number; lon: number } | null | undefined) {
+  return point &&
+    Number.isFinite(point.lat) &&
+    Number.isFinite(point.lon) &&
+    Math.abs(point.lat) <= 90 &&
+    Math.abs(point.lon) <= 180
+    ? { lat: point.lat, lon: point.lon }
+    : { lat: null, lon: null };
+}
+
+export function buildSituations({
+  fires,
+  official,
+  reports,
+  warnings,
+  units,
+  now,
+}: SituationInput): Situation[] {
+  const recent = (at: string, hours: number) => {
+    const time = Date.parse(at);
+    return time <= now && time >= now - hours * 3_600_000;
+  };
+  const byId = new Map(units.map((unit) => [unit.id, unit]));
+  const items: Situation[] = [];
+  for (const data of fires) {
+    if (data.state === "false_positive" || !recent(data.last_detected_at, 72))
+      continue;
+    items.push({
+      id: `fire:${data.id}`,
+      source: "satellite",
+      category: "fire",
+      at: data.last_detected_at,
+      ...coordinates(data),
+      areaId: data.commune_id ?? data.wilaya_id,
+      wilayaId:
+        data.wilaya_id ??
+        (data.commune_id
+          ? (byId.get(data.commune_id)?.parent_id ?? null)
+          : null),
+      ended: data.state === "extinguished",
+      candidate: data.state === "unconfirmed" && data.confirmed_at === null,
+      data,
+    });
+  }
+  for (const data of official) {
+    if (!recent(data.last_reported_at, 72)) continue;
+    const commune =
+      data.commune_id && data.precision !== "wilaya"
+        ? (data.commune ?? byId.get(data.commune_id))
+        : null;
+    items.push({
+      id: `official:${data.id}`,
+      source: "official",
+      category: "fire",
+      at: data.last_reported_at,
+      ...coordinates(commune ?? data.wilaya ?? byId.get(data.wilaya_id)),
+      areaId: commune ? data.commune_id : data.wilaya_id,
+      wilayaId: data.wilaya_id,
+      ended: data.status === "extinguished",
+      candidate: false,
+      data,
+    });
+  }
+  for (const data of reports) {
+    if (data.status === "rejected" || !recent(data.observed_at, 24)) continue;
+    const category =
+      data.kind === "road_blocked"
+        ? "road"
+        : data.kind === "person_trapped" || data.sighting === "other"
+          ? "other"
+          : "fire";
+    items.push({
+      id: `report:${data.id}`,
+      source: "citizen",
+      category,
+      at: data.observed_at,
+      ...coordinates(data),
+      areaId: null,
+      wilayaId: null,
+      ended: false,
+      candidate: false,
+      data,
+    });
+  }
+  for (const data of warnings) {
+    if (
+      !data.expires ||
+      !(Date.parse(data.expires) > now) ||
+      !(Date.parse(data.sent) <= now)
+    )
+      continue;
+    const area = data.wilaya_id ? byId.get(data.wilaya_id) : null;
+    items.push({
+      id: `weather:${data.id}`,
+      source: "onm",
+      category: "weather",
+      at: data.sent,
+      ...coordinates(area?.level === "wilaya" ? area : null),
+      areaId: data.wilaya_id,
+      wilayaId: data.wilaya_id,
+      ended: false,
+      candidate: false,
+      data,
+    });
+  }
+  return items.sort(
+    (a, b) => Date.parse(b.at) - Date.parse(a.at) || a.id.localeCompare(b.id),
+  );
+}
+
+function distanceKm(aLat: number, aLon: number, bLat: number, bLon: number) {
+  const rad = Math.PI / 180;
+  const arc =
+    Math.sin(((bLat - aLat) * rad) / 2) ** 2 +
+    Math.cos(aLat * rad) *
+      Math.cos(bLat * rad) *
+      Math.sin(((bLon - aLon) * rad) / 2) ** 2;
+  return 12742 * Math.asin(Math.sqrt(Math.min(1, arc)));
+}
+
+export function filterSituations(
+  items: Situation[],
+  filters: SituationFilters,
+  units: AdminUnit[],
+): Situation[] {
+  const { area } = filters;
+  // Citizen locations have no administrative membership: this is proximity, not a boundary claim.
+  const anchors = !area
+    ? []
+    : area.level === "commune"
+      ? [area]
+      : units.filter(
+          (unit) => unit.level === "commune" && unit.parent_id === area.id,
+        );
+  return items.filter((item) => {
+    if (
+      (filters.category !== "all" && item.category !== filters.category) ||
+      (!filters.showEnded && item.ended) ||
+      (!filters.showCandidates && item.candidate)
+    )
+      return false;
+    if (!area) return true;
+    if (item.source === "citizen")
+      return (
+        item.lat !== null &&
+        item.lon !== null &&
+        anchors.some(
+          (anchor) =>
+            distanceKm(item.lat!, item.lon!, anchor.lat, anchor.lon) <=
+            CITIZEN_NEARBY_RADIUS_KM,
+        )
+      );
+    if (area.level === "wilaya") return item.wilayaId === area.id;
+    return (
+      item.areaId === area.id ||
+      ((item.source === "official" || item.source === "onm") &&
+        item.areaId === area.parent_id)
+    );
+  });
+}
+
+function normalized(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .replace(/ـ/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+export function findPlaces(
+  units: AdminUnit[],
+  query: string,
+  locale: string,
+): AdminUnit[] {
+  const needle = normalized(query);
+  if (!needle) return [];
+  const localName = (unit: AdminUnit) =>
+    locale === "ar"
+      ? unit.name_ar
+      : locale === "en"
+        ? unit.name_en
+        : locale === "kab"
+          ? (unit.name_kab ?? unit.name_fr)
+          : unit.name_fr;
+  return units
+    .filter((unit) =>
+      [unit.name_ar, unit.name_fr, unit.name_en, unit.name_kab, unit.code].some(
+        (value) => value && normalized(value).includes(needle),
+      ),
+    )
+    .sort(
+      (a, b) =>
+        normalized(localName(a)).localeCompare(normalized(localName(b))) ||
+        a.code.localeCompare(b.code) ||
+        a.id.localeCompare(b.id),
+    )
+    .slice(0, 12);
+}
+
+export function nearestPlace(
+  units: AdminUnit[],
+  lat: number,
+  lon: number,
+): AdminUnit | null {
+  if (
+    !Number.isFinite(lat) ||
+    !Number.isFinite(lon) ||
+    lat < 18.9 ||
+    lat > 37.2 ||
+    lon < -8.7 ||
+    lon > 12
+  )
+    return null;
+  let nearest: AdminUnit | null = null;
+  let minimum = 50;
+  for (const unit of units) {
+    if (unit.level !== "commune" || coordinates(unit).lat === null) continue;
+    const distance = distanceKm(lat, lon, unit.lat, unit.lon);
+    if (
+      distance < minimum ||
+      (distance === minimum && nearest !== null && unit.id < nearest.id)
+    ) {
+      nearest = unit;
+      minimum = distance;
+    }
+  }
+  return nearest;
+}
