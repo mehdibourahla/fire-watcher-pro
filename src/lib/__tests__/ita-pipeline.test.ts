@@ -149,13 +149,30 @@ describe("ITA pipeline", () => {
     deps.store.finish.mockRejectedValue(new Error("lease expired"));
     await expect(runItaSourceWith(deps)).rejects.toThrow("lease expired");
   });
-  it("reports a backlog even when no retry is eligible", async () => {
+  it("reports a backlog without failing collection when no retry is eligible", async () => {
     const deps = setup();
     deps.store.claim.mockResolvedValue([]);
     deps.store.pendingCount.mockResolvedValue(8);
-    expect(await runItaSourceWith(deps)).toMatchObject({
-      pending: 8,
-      error: "ITA extraction backlog: 8 reports",
+    const result = await runItaSourceWith(deps);
+    expect(result.pending).toBe(8);
+    expect(result.error).toBeUndefined();
+  });
+  it("keeps the ETag unchanged while valid posts from a partial feed are processed", async () => {
+    const deps = setup();
+    deps.fetchFeed.mockResolvedValue({
+      notModified: false,
+      etag: '"new"',
+      posts: [post],
+      rejectedPosts: 1,
     });
+    const result = await runItaSourceWith(deps);
+    expect(result).toMatchObject({
+      stored: 1,
+      rejected: 1,
+      error: "ITA feed rejected 1 posts",
+    });
+    expect(deps.store.saveFeed).toHaveBeenCalledWith(
+      expect.objectContaining({ etag: '"old"' }),
+    );
   });
 });

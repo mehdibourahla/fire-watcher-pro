@@ -5,7 +5,11 @@ import { isInAlgeriaNorth } from "@/lib/ingest/geo";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchAllPages } from "@/lib/paginate";
 import type { AnyLocale, Locale } from "@/i18n";
-import type { SourceHealth } from "@/lib/source-health";
+import {
+  withProcessingHealth,
+  type SourceHealth,
+  type SourceProcessingHealth,
+} from "@/lib/source-health";
 
 export type ClusterState =
   | "unconfirmed"
@@ -417,15 +421,20 @@ export const effisDangerQuery = queryOptions({
 
 export const sourceHealthQuery = queryOptions({
   queryKey: ["source_health"],
-  queryFn: async () =>
-    must<SourceHealth[]>(
+  queryFn: async () => {
+    const rows = await must<SourceHealth[]>(
       await supabase
         .from("source_health")
         .select(
           "key, label, family, criticality, state, freshness_basis, valid_at, last_attempt_at, last_success_at, published_at, age_minutes, warning_after_minutes, stale_after_minutes, coverage_status, records_accepted, records_expected, fallback_contract_key, public_reason_code",
         )
         .order("key"),
-    ),
+    );
+    const processing = await must<SourceProcessingHealth[]>(
+      await supabase.rpc("source_processing_health"),
+    );
+    return withProcessingHealth(rows, processing ?? []);
+  },
 });
 
 export const HORIZON_DAYS = 6;

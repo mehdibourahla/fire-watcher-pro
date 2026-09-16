@@ -36,6 +36,7 @@ export type ItaRun = {
   failed: number;
   pending: number;
   notModified: boolean;
+  rejected: number;
   error?: string;
 };
 type Dependencies = {
@@ -86,6 +87,7 @@ export async function runItaSourceWith({
   const stored = feed
     ? await store.saveFeed({
         ...feed,
+        etag: feed.rejectedPosts ? etag : feed.etag,
         posts: await Promise.all(feed.posts.map(revision)),
       })
     : 0;
@@ -110,13 +112,15 @@ export async function runItaSourceWith({
     } else extracted++;
   }
   const remaining = await store.pendingCount();
-  if (remaining) error ??= `ITA extraction backlog: ${remaining} reports`;
+  if (feed?.rejectedPosts)
+    error ??= `ITA feed rejected ${feed.rejectedPosts} posts`;
   return {
     fetched: feed?.posts.length ?? 0,
     stored,
     extracted,
     failed,
     pending: remaining,
+    rejected: feed?.rejectedPosts ?? 0,
     notModified: feed?.notModified ?? false,
     ...(error ? { error } : {}),
   };
@@ -124,6 +128,12 @@ export async function runItaSourceWith({
 
 export async function runItaSource(job: ClaimedSourceJob): Promise<ItaRun> {
   const fence = { _job: job.id, _attempt: job.attempt_count };
+  const recovery = await supabaseAdmin.rpc("prepare_source_recovery", {
+    _key: "ita_website",
+    ...fence,
+  });
+  if (recovery.error)
+    throw new Error(`ITA recovery: ${recovery.error.message}`);
   const store: ItaStore = {
     async etag() {
       const { data, error } = await supabaseAdmin

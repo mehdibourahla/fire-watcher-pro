@@ -803,7 +803,8 @@ select is(
       'missing_job',
       'queue_delayed',
       'lease_expired',
-      'run_delayed'
+      'run_delayed',
+      'processing_quarantined'
     )
   ),
   0,

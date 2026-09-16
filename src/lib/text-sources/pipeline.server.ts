@@ -143,6 +143,7 @@ export type TextSourceRun = {
   retried: number;
   llmSkipped: boolean;
   llmFailed: number;
+  pending: number;
   error?: string;
 };
 
@@ -375,6 +376,7 @@ export async function runTextSourceWith(
     retried: 0,
     llmSkipped: false,
     llmFailed: 0,
+    pending: 0,
   };
   const now = (deps.now?.() ?? new Date()).getTime();
   let lastLlmError: string | null = null;
@@ -387,9 +389,7 @@ export async function runTextSourceWith(
   const retryable = await deps.store.retryableDocuments(source.id);
   run.retried = retryable.length;
   if (!posts.length && !retryable.length) {
-    const pending = await deps.store.pendingCount(source.id);
-    if (pending)
-      run.error = `text extraction backlog: ${pending} documents require recovery`;
+    run.pending = await deps.store.pendingCount(source.id);
     return run;
   }
 
@@ -461,10 +461,28 @@ export async function runTextSourceWith(
 
     let drafts: Draft[] = [];
     const unresolvedNames: string[] = [];
+    const interpretedAggregates = new Set<string>();
     for (const m of result.mentions) {
       // wilaya-only lines are the distribution, read deterministically by the template
       if (m.kind === "urban") continue;
       if (!m.commune) {
+        const wilayaId = m.wilaya
+          ? resolveWilaya(m.wilaya, gazetteer.wilayas)
+          : null;
+        const distribution = parsed?.wilayaCounts.find(
+          (c) =>
+            wilayaId !== null &&
+            resolveWilaya(c.wilaya, gazetteer.wilayas) === wilayaId,
+        );
+        if (
+          distribution &&
+          m.count === distribution.count &&
+          m.status !== "extinguished" &&
+          !m.place
+        ) {
+          interpretedAggregates.add(wilayaId!);
+          continue;
+        }
         unresolvedNames.push(m.wilaya ?? "unnamed location");
         run.unresolved++;
         continue;
@@ -492,7 +510,11 @@ export async function runTextSourceWith(
           parsed.totals.extinguished + parsed.totals.ongoing ||
         parsed.wilayaCounts.reduce((sum, row) => sum + row.count, 0) !==
           parsed.totals.ongoing ||
-        drafts.some((d) => d.extractor === "template") ||
+        drafts.some(
+          (d) =>
+            d.extractor === "template" &&
+            !interpretedAggregates.has(d.wilaya_id),
+        ) ||
         (parsed.totals?.ongoing != null &&
           drafts
             .filter((d) => d.status !== "extinguished")
@@ -568,8 +590,7 @@ export async function runTextSourceWith(
     run.incidentsUnlisted += dropped.length;
   }
   for (const id of retriedOk) await deps.store.clearExtractionFailure(id);
-  const pending = await deps.store.pendingCount(source.id);
-  if (pending) run.error ??= `text extraction backlog: ${pending} documents`;
+  run.pending = await deps.store.pendingCount(source.id);
   return run;
 }
 
@@ -721,8 +742,9 @@ function createSupabaseStore(key: string): TextSourceStore {
             "document_id, attempts, source_documents!inner(id, text_source_id, external_id, url, published_at, content_hash, body)",
           )
           .lt("attempts", 4)
+          .lte("next_attempt_at", new Date().toISOString())
           .eq("source_documents.text_source_id", sourceId)
-          .order("updated_at")
+          .order("next_attempt_at")
           .limit(5),
         "retryable documents",
       );

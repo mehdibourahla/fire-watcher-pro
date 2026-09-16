@@ -541,6 +541,9 @@ export const fr: Translation = {
       "Les surfaces sont des estimations satellitaires, pas des relevés de terrain.",
   },
   status: {
+    collectionAt: "Dernière collecte réussie : {{time}}",
+    processingBacklog:
+      "Traitement : {{pending}} en attente · {{quarantined}} à examiner",
     degradedCount:
       "{{count}} sources de données affectées — la capacité actuelle peut être réduite.",
     degradedCount_one:

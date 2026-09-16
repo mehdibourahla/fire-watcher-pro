@@ -193,9 +193,11 @@ export function createSourceRunners(
         recordsSeen: run.fetched,
         recordsInserted: run.stored,
         recordsUpdated: run.extracted,
+        recordsRejected: run.rejected,
         qualityChecks: {
           extraction_failed: run.failed,
           extraction_pending: run.pending,
+          feed_rejected: run.rejected,
           not_modified: run.notModified,
         },
       };
@@ -454,6 +456,13 @@ export async function textSourceRunner(
   if (error) throw new Error(`text source lookup failed: ${error.message}`);
   if (!data) return null;
   return async (job) => {
+    const recovery = await supabaseAdmin.rpc("prepare_source_recovery", {
+      _key: contractKey,
+      _job: job.id,
+      _attempt: job.attempt_count,
+    });
+    if (recovery.error)
+      throw new Error(`text recovery: ${recovery.error.message}`);
     const run = await runTextSource(contractKey).catch(
       (error: unknown): TextSourceRun => ({
         fetched: 0,
@@ -470,6 +479,7 @@ export async function textSourceRunner(
         retried: 0,
         llmSkipped: false,
         llmFailed: 0,
+        pending: 0,
         error: error instanceof Error ? error.message : "text source failed",
       }),
     );
@@ -496,6 +506,7 @@ export async function textSourceRunner(
         documents_retried: run.retried,
         llm_skipped: run.llmSkipped,
         llm_failed: run.llmFailed,
+        extraction_pending: run.pending,
       },
     };
   };

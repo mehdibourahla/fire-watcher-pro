@@ -524,6 +524,9 @@ export const ar: Translation = {
     methodology: "المساحات تقديرات فضائية وليست قياسات ميدانية.",
   },
   status: {
+    collectionAt: "آخر جلب ناجح: {{time}}",
+    processingBacklog:
+      "المعالجة: {{pending}} قيد الانتظار · {{quarantined}} تحتاج مراجعة",
     degradedCount:
       "{{count}} من مصادر البيانات متأثرة — قد تنخفض القدرة الحالية.",
     degradedCount_one: "مصدر بيانات واحد متأثر — قد تنخفض القدرة الحالية.",

@@ -31,9 +31,20 @@ export const Route = createFileRoute("/api/public/v1/status")({
           .order("key");
 
         if (error) return json({ error: "source status unavailable" }, 502);
+        const processing = await publicSupabase().rpc(
+          "source_processing_health",
+        );
+        if (processing.error)
+          return json({ error: "source processing status unavailable" }, 502);
+        const { withProcessingHealth } = await import("@/lib/source-health");
 
         return json(
-          serializePublicSourceStatus((data ?? []) as SourceHealth[]),
+          serializePublicSourceStatus(
+            withProcessingHealth(
+              (data ?? []) as SourceHealth[],
+              processing.data ?? [],
+            ),
+          ),
         );
       },
     },

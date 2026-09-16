@@ -13,9 +13,14 @@ const PostSchema = z.object({
     .max(50_000)
     .refine((v) => v.trim().length > 0),
   region: z.string().max(200),
-  type: z.array(z.string().max(100)).max(30),
+  type: z
+    .array(z.string().max(100))
+    .max(30)
+    .nullish()
+    .transform((value) => value ?? []),
 });
-const FeedSchema = z.object({ posts: z.array(PostSchema).max(2000) });
+const FeedSchema = z.object({ posts: z.array(z.unknown()).max(2000) });
+const IdentitySchema = PostSchema.pick({ id: true, uri: true });
 export type ItaFeedPost = z.infer<typeof PostSchema>;
 
 export async function fetchItaFeed(
@@ -34,7 +39,12 @@ export async function fetchItaFeed(
     },
   );
   if (response.status === 304)
-    return { notModified: true, etag, posts: [] as ItaFeedPost[] };
+    return {
+      notModified: true,
+      etag,
+      posts: [] as ItaFeedPost[],
+      rejectedPosts: 0,
+    };
   if (!response.ok) throw new Error(`ITA feed HTTP ${response.status}`);
   const reader = response.body?.getReader();
   if (!reader) throw new Error("ITA feed missing body");
@@ -54,8 +64,25 @@ export async function fetchItaFeed(
     await reader.cancel();
     reader.releaseLock();
   }
-  const { posts } = FeedSchema.parse(JSON.parse(text));
-  if (new Set(posts.map((p) => `${p.uri}/${p.id}`)).size !== posts.length)
-    throw new Error("ITA duplicate source IDs");
-  return { notModified: false, etag: response.headers.get("etag"), posts };
+  const feed = FeedSchema.parse(JSON.parse(text));
+  const identities = new Set<string>();
+  const posts: ItaFeedPost[] = [];
+  let rejectedPosts = 0;
+  for (const raw of feed.posts) {
+    const identity = IdentitySchema.safeParse(raw);
+    if (identity.success) {
+      const key = `${identity.data.uri}/${identity.data.id}`;
+      if (identities.has(key)) throw new Error("ITA duplicate source IDs");
+      identities.add(key);
+    }
+    const parsed = PostSchema.safeParse(raw);
+    if (parsed.success) posts.push(parsed.data);
+    else rejectedPosts++;
+  }
+  return {
+    notModified: false,
+    etag: response.headers.get("etag"),
+    posts,
+    rejectedPosts,
+  };
 }

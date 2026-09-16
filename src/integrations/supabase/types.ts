@@ -237,6 +237,7 @@ export type Database = {
           next_extraction_at: string;
           published_at: string;
           raw: Json;
+          recovery_version: string;
           source_page: string;
           source_post_id: string;
           source_url: string;
@@ -254,6 +255,7 @@ export type Database = {
           next_extraction_at?: string;
           published_at: string;
           raw: Json;
+          recovery_version?: string;
           source_page: string;
           source_post_id: string;
           source_url: string;
@@ -271,6 +273,7 @@ export type Database = {
           next_extraction_at?: string;
           published_at?: string;
           raw?: Json;
+          recovery_version?: string;
           source_page?: string;
           source_post_id?: string;
           source_url?: string;
@@ -1186,6 +1189,8 @@ export type Database = {
           attempts: number;
           document_id: string;
           last_error: string | null;
+          next_attempt_at: string;
+          recovery_version: string;
           requeued_at: string | null;
           updated_at: string;
         };
@@ -1193,6 +1198,8 @@ export type Database = {
           attempts?: number;
           document_id: string;
           last_error?: string | null;
+          next_attempt_at?: string;
+          recovery_version?: string;
           requeued_at?: string | null;
           updated_at?: string;
         };
@@ -1200,6 +1207,8 @@ export type Database = {
           attempts?: number;
           document_id?: string;
           last_error?: string | null;
+          next_attempt_at?: string;
+          recovery_version?: string;
           requeued_at?: string | null;
           updated_at?: string;
         };
@@ -2605,6 +2614,54 @@ export type Database = {
           },
         ];
       };
+      source_recovery_events: {
+        Row: {
+          contract_key: string;
+          created_at: string;
+          from_version: string;
+          id: string;
+          previous_attempts: number;
+          previous_error: string | null;
+          subject_id: string;
+          to_version: string;
+        };
+        Insert: {
+          contract_key: string;
+          created_at?: string;
+          from_version: string;
+          id?: string;
+          previous_attempts: number;
+          previous_error?: string | null;
+          subject_id: string;
+          to_version: string;
+        };
+        Update: {
+          contract_key?: string;
+          created_at?: string;
+          from_version?: string;
+          id?: string;
+          previous_attempts?: number;
+          previous_error?: string | null;
+          subject_id?: string;
+          to_version?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "source_recovery_events_contract_key_fkey";
+            columns: ["contract_key"];
+            isOneToOne: false;
+            referencedRelation: "source_contracts";
+            referencedColumns: ["key"];
+          },
+          {
+            foreignKeyName: "source_recovery_events_contract_key_fkey";
+            columns: ["contract_key"];
+            isOneToOne: false;
+            referencedRelation: "source_health";
+            referencedColumns: ["key"];
+          },
+        ];
+      };
       source_runs: {
         Row: {
           attempt: number | null;
@@ -3247,6 +3304,19 @@ export type Database = {
     };
     Functions: {
       retry_text_document: { Args: { _id: string }; Returns: undefined };
+      prepare_source_recovery: {
+        Args: { _attempt: number; _job: string; _key: string };
+        Returns: number;
+      };
+      source_processing_health: {
+        Args: never;
+        Returns: {
+          collection_at: string;
+          key: string;
+          pending: number;
+          quarantined: number;
+        }[];
+      };
       current_weather_snapshot: {
         Args: { _commune_id: string };
         Returns: Json;
@@ -3298,11 +3368,13 @@ export type Database = {
           extraction: Json | null;
           extraction_attempts: number;
           extraction_error: string | null;
+          extraction_requeued_at: string | null;
           fetched_at: string;
           id: string;
           next_extraction_at: string;
           published_at: string;
           raw: Json;
+          recovery_version: string;
           source_page: string;
           source_post_id: string;
           source_url: string;

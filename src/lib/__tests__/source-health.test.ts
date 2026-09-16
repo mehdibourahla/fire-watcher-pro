@@ -3,9 +3,30 @@ import { describe, expect, it } from "vitest";
 import {
   sourceHealthCapabilityAffected,
   summariseSourceHealth,
+  withProcessingHealth,
   type SourceHealth,
   type SourceHealthState,
 } from "@/lib/source-health";
+
+it("keeps fresh collection and unresolved processing distinct without masking stale sources", () => {
+  const processing = [
+    {
+      key: "ita",
+      collection_at: "2026-09-15T20:00:00Z",
+      pending: 0,
+      quarantined: 2,
+    },
+  ];
+  const rows = withProcessingHealth([source("ita", "healthy")], processing);
+  expect(rows[0]).toMatchObject({
+    state: "degraded",
+    processing: processing[0],
+  });
+  expect(summariseSourceHealth(rows).allHealthy).toBe(false);
+  expect(
+    withProcessingHealth([source("ita", "stale")], processing)[0]?.state,
+  ).toBe("stale");
+});
 
 function source(
   key: string,
