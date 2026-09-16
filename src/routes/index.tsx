@@ -311,7 +311,7 @@ function LiveMapPage() {
 
   return (
     <div className="civil-map-page relative mx-auto flex h-full min-h-0 w-full max-w-[1600px] flex-col gap-3 overflow-hidden p-3 lg:p-5">
-      <div className="min-h-0 max-h-[50%] shrink-0 overflow-y-auto overscroll-contain pe-1">
+      <div className="map-scroll min-h-0 max-h-[50%] shrink-0 overflow-x-hidden overflow-y-auto overscroll-contain pe-1">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div className="min-w-0 flex-1">
             <p className="text-[11px] font-semibold uppercase tracking-[.16em] text-muted-foreground">
@@ -550,7 +550,7 @@ function LiveMapPage() {
           </div>
         </div>
         <div
-          className="mb-3 flex items-center gap-2 overflow-x-auto pb-1"
+          className="map-scroll mb-3 flex items-center gap-2 overflow-x-auto overflow-y-hidden pb-1"
           aria-label={t("civilMap.filters")}
         >
           {categories.map((category) => {
@@ -696,7 +696,7 @@ function LiveMapPage() {
             </span>
           </div>
           <div
-            className={`${expanded ? "" : "hidden"} min-h-0 flex-1 overflow-y-auto overscroll-contain pe-1 lg:block`}
+            className={`map-scroll ${expanded ? "" : "hidden"} min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain pe-1 lg:block`}
           >
             {area && (
               <p className="mb-3 text-xs leading-relaxed text-muted-foreground">

@@ -41,7 +41,7 @@ export function DetailSheet({ open, onClose, children, title }: Props) {
       role="dialog"
       aria-modal="false"
       aria-label={title ?? t("fire.detail")}
-      className="sheet-in fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-30 max-h-[65dvh] overflow-y-auto overscroll-contain rounded-t-2xl border-t border-border bg-surface shadow-[var(--shadow-sheet)] lg:absolute lg:inset-y-3 lg:end-3 lg:start-auto lg:max-h-none lg:w-[380px] lg:rounded-2xl lg:border"
+      className="map-scroll sheet-in fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-30 max-h-[65dvh] overflow-x-hidden overflow-y-auto overscroll-contain rounded-t-2xl border-t border-border bg-surface shadow-[var(--shadow-sheet)] lg:absolute lg:inset-y-3 lg:end-3 lg:start-auto lg:max-h-none lg:w-[380px] lg:rounded-2xl lg:border"
     >
       <div className="sticky top-0 flex items-center justify-between gap-3 border-b border-border bg-surface px-4 py-3">
         <span
