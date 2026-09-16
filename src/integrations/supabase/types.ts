@@ -3368,11 +3368,13 @@ export type Database = {
           extraction: Json | null;
           extraction_attempts: number;
           extraction_error: string | null;
+          extraction_requeued_at: string | null;
           fetched_at: string;
           id: string;
           next_extraction_at: string;
           published_at: string;
           raw: Json;
+          recovery_version: string;
           source_page: string;
           source_post_id: string;
           source_url: string;
