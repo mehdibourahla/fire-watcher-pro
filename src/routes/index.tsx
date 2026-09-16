@@ -441,7 +441,7 @@ function LiveMapPage() {
       }
     : {
         top: expanded ? 12 : 64,
-        bottom: expanded ? Math.round(mapHeight * 0.76) + 24 : 140,
+        bottom: expanded ? Math.round(mapHeight * 0.76) + 24 : 124,
         left: locale === "ar" ? 64 : 24,
         right: locale === "ar" ? 24 : 64,
       };
@@ -558,7 +558,7 @@ function LiveMapPage() {
       {!panelHidden && (
         <MapWorkspacePanel expanded={expanded} onExpandedChange={setExpanded}>
           <div
-            className={`flex shrink-0 items-center gap-2 px-4 pb-3 ${desktop ? "pt-4" : ""}`}
+            className={`flex shrink-0 items-center gap-2 px-3 pb-2 lg:px-4 lg:pb-3 ${desktop ? "pt-4" : ""}`}
           >
             {panelView !== "list" && (
               <button
@@ -571,9 +571,11 @@ function LiveMapPage() {
                 <ArrowLeft className="size-5 rtl:rotate-180" />
               </button>
             )}
-            <div className="min-w-0 flex-1">
+            <div
+              className={`min-w-0 flex-1 ${!desktop && panelView === "list" ? "flex flex-wrap items-baseline gap-x-2" : ""}`}
+            >
               <h1
-                className="truncate font-sans text-base font-semibold"
+                className="max-w-full truncate font-sans text-sm font-semibold lg:text-base"
                 dir="auto"
               >
                 {panelView === "list"
@@ -582,7 +584,9 @@ function LiveMapPage() {
                     : t("civilMap.national")
                   : panelTitle}
               </h1>
-              <p className="mt-0.5 truncate text-xs text-muted-foreground">
+              <p
+                className={`truncate text-xs text-muted-foreground ${desktop ? "mt-0.5" : ""}`}
+              >
                 {panelView === "list"
                   ? t("civilMap.situations", { count: visible.length })
                   : t("civilMap.title")}
@@ -615,7 +619,7 @@ function LiveMapPage() {
             className={`${expanded || desktop ? "flex" : "hidden"} min-h-0 flex-1 flex-col`}
           >
             {panelView === "list" && (
-              <div className="shrink-0 border-b px-4 pb-3">
+              <div className="shrink-0 border-b px-3 pb-2 lg:px-4 lg:pb-3">
                 <div className="relative flex items-center gap-2">
                   <Search
                     aria-hidden
@@ -659,7 +663,7 @@ function LiveMapPage() {
                 </div>
                 {!searchOpen && (
                   <div
-                    className="map-scroll mt-3 flex gap-1.5 overflow-x-auto overflow-y-hidden py-1"
+                    className="map-scroll mt-1.5 flex gap-1.5 overflow-x-auto overflow-y-hidden lg:mt-3 lg:py-1"
                     aria-label={t("civilMap.filters")}
                   >
                     {categories.map((category) => {
@@ -686,7 +690,7 @@ function LiveMapPage() {
 
             <div
               ref={contentRef}
-              className="map-scroll min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain px-4 py-3"
+              className="map-scroll min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain px-3 py-2 lg:px-4 lg:py-3"
             >
               {message && (
                 <div
@@ -828,7 +832,7 @@ function LiveMapPage() {
                             <h2 className="mb-3 font-sans text-xs font-semibold text-muted-foreground">
                               {t(`civilMap.${group.key}`)}
                             </h2>
-                            <div className="space-y-3">
+                            <div className="space-y-2 lg:space-y-3">
                               {group.items.map((item) => (
                                 <SituationCard
                                   key={item.id}
@@ -1028,7 +1032,7 @@ function LiveMapPage() {
             <button
               type="button"
               onClick={() => openPanel("sources")}
-              className="flex min-h-11 shrink-0 items-center gap-2 border-t px-4 py-2 text-start text-xs text-muted-foreground"
+              className="flex min-h-11 shrink-0 items-center gap-2 border-t px-3 py-2 text-start text-xs text-muted-foreground lg:px-4"
             >
               {limited ? (
                 <TriangleAlert className="size-4 shrink-0 text-amber-600" />

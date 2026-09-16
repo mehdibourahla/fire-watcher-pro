@@ -16,7 +16,7 @@ export function MapWorkspacePanel({
   return (
     <section
       aria-label={t("civilMap.list")}
-      className={`map-workspace-panel absolute inset-x-3 bottom-3 z-10 flex min-h-0 flex-col overflow-hidden rounded-3xl border border-border bg-surface/95 shadow-xl backdrop-blur lg:inset-y-4 lg:start-4 lg:end-auto lg:h-auto lg:w-[380px] ${expanded ? "h-[76%]" : "h-[116px]"}`}
+      className={`map-workspace-panel absolute inset-x-3 bottom-3 z-10 flex min-h-0 flex-col overflow-hidden rounded-2xl border border-border bg-surface/95 shadow-xl backdrop-blur lg:inset-y-4 lg:start-4 lg:end-auto lg:h-auto lg:w-[380px] lg:rounded-3xl ${expanded ? "h-[76%]" : "h-[100px]"}`}
     >
       <button
         type="button"

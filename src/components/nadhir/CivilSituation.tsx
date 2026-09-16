@@ -98,27 +98,30 @@ export function SituationCard({
       type="button"
       aria-pressed={selected}
       onClick={onSelect}
-      className={`w-full rounded-2xl border p-4 text-start transition-colors focus-visible:outline-2 focus-visible:outline-primary ${selected ? "border-primary bg-primary/5" : "border-border bg-surface hover:bg-muted/50"}`}
+      className={`w-full rounded-xl border p-3 text-start transition-colors focus-visible:outline-2 focus-visible:outline-primary lg:rounded-2xl lg:p-4 ${selected ? "border-primary bg-primary/5" : "border-border bg-surface hover:bg-muted/50"}`}
     >
-      <span className="flex items-start gap-3">
+      <span className="flex items-start gap-2.5 lg:gap-3">
         <span
-          className={`rounded-xl p-2.5 ${item.source === "official" || item.source === "onm" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}
+          className={`shrink-0 rounded-lg p-2 lg:rounded-xl lg:p-2.5 ${item.source === "official" || item.source === "onm" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}
         >
-          <Icon aria-hidden className="size-5" />
+          <Icon aria-hidden className="size-4 lg:size-5" />
         </span>
         <span className="min-w-0 flex-1">
           <span className="block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
             {source(item)}
           </span>
-          <span dir="auto" className="mt-1 block font-semibold leading-snug">
+          <span
+            dir="auto"
+            className="mt-0.5 block text-sm font-semibold leading-snug lg:mt-1 lg:text-base"
+          >
             {title(item)}
           </span>
-          <span className="mt-1 block text-xs text-muted-foreground">
+          <span className="mt-0.5 block text-xs text-muted-foreground lg:mt-1">
             {status(item)}
           </span>
         </span>
       </span>
-      <span className="mt-3 flex flex-wrap justify-between gap-2 border-t border-border/60 pt-2.5 text-xs text-muted-foreground">
+      <span className="mt-2 flex flex-wrap justify-between gap-1 border-t border-border/60 pt-2 text-xs text-muted-foreground lg:mt-3 lg:gap-2 lg:pt-2.5">
         <span dir="auto">{place(item)}</span>
         <time dateTime={item.at}>{relativeTime(item.at, locale, now)}</time>
       </span>
