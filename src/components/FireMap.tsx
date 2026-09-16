@@ -501,10 +501,36 @@ export default function FireMap({
           {t(failed ? "common.error" : "common.loading")}
         </p>
       )}
-      <style>{`.civil-map .maplibregl-ctrl-group button { width: 44px; height: 44px; }
+      <style>{`.civil-map .maplibregl-ctrl-group {
+        overflow: hidden; border: 1px solid var(--border); border-radius: 16px;
+        background: color-mix(in srgb, var(--surface) 95%, transparent);
+        color: var(--ink); box-shadow: 0 1px 3px #00000014; backdrop-filter: blur(12px);
+      }
+      .civil-map .maplibregl-ctrl-group button {
+        width: 44px; height: 44px; background: transparent; color: inherit;
+      }
+      .civil-map .maplibregl-ctrl-group button + button { border-top: 1px solid var(--border); }
+      .civil-map .maplibregl-ctrl-group button:not(:disabled):hover { background: var(--raised); }
+      .civil-map .maplibregl-ctrl-group button:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
+      .civil-map .maplibregl-ctrl-group button:disabled { opacity: 0.35; cursor: default; }
+      .civil-map .maplibregl-ctrl-zoom-in .maplibregl-ctrl-icon,
+      .civil-map .maplibregl-ctrl-zoom-out .maplibregl-ctrl-icon { background-image: none; position: relative; }
+      .civil-map .maplibregl-ctrl-zoom-in .maplibregl-ctrl-icon::before,
+      .civil-map .maplibregl-ctrl-zoom-out .maplibregl-ctrl-icon::before {
+        content: ''; position: absolute; width: 14px; height: 2px; border-radius: 1px;
+        background: currentColor; top: calc(50% - 1px); left: calc(50% - 7px);
+      }
+      .civil-map .maplibregl-ctrl-zoom-in .maplibregl-ctrl-icon::after {
+        content: ''; position: absolute; width: 2px; height: 14px; border-radius: 1px;
+        background: currentColor; top: calc(50% - 7px); left: calc(50% - 1px);
+      }
       .civil-map-page .maplibregl-ctrl-bottom-left { top: 220px; bottom: auto; left: auto; right: 12px; }
       .civil-map-page .maplibregl-ctrl-bottom-left .maplibregl-ctrl { margin: 0; }
       [dir="rtl"] .civil-map-page .maplibregl-ctrl-bottom-left { right: auto; left: 12px; }
+      @media (min-width: 1024px) {
+        .civil-map-page .maplibregl-ctrl-bottom-left { top: 224px; right: 16px; }
+        [dir="rtl"] .civil-map-page .maplibregl-ctrl-bottom-left { right: auto; left: 16px; }
+      }
       @media (max-height: 500px) and (max-width: 1023px) {
         .civil-map-page .civil-map-controls { flex-direction: row; }
         .civil-map-page .maplibregl-ctrl-bottom-left { top: 64px; }
