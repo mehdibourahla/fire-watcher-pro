@@ -309,9 +309,13 @@ function LiveMapPage() {
   const checkedAt = Math.min(
     ...queries.map((q) => q.dataUpdatedAt).filter(Boolean),
   );
-  const focus = useMemo(() => {
+  const [focus, setFocus] = useState({ lat: 35.8, lon: 2.6, zoom: 5.1 });
+  const cameraArea = useRef<string | null | undefined>(undefined);
+  useEffect(() => {
+    const areaChanged = cameraArea.current !== (area?.id ?? null);
+    cameraArea.current = area?.id ?? null;
     if (selected && selected.lat !== null && selected.lon !== null)
-      return {
+      setFocus({
         lat: selected.lat,
         lon: selected.lon,
         zoom:
@@ -320,10 +324,17 @@ function LiveMapPage() {
             (selected.data.precision === "wilaya" || !selected.data.commune_id))
             ? 7
             : 10,
-      };
-    return area
-      ? { lat: area.lat, lon: area.lon, zoom: area.level === "wilaya" ? 7 : 10 }
-      : { lat: 35.8, lon: 2.6, zoom: 5.1 };
+      });
+    else if (areaChanged)
+      setFocus(
+        area
+          ? {
+              lat: area.lat,
+              lon: area.lon,
+              zoom: area.level === "wilaya" ? 7 : 10,
+            }
+          : { lat: 35.8, lon: 2.6, zoom: 5.1 },
+      );
   }, [area, selected]);
   const following = !!area && subscribed.includes(area.code);
   const chooseArea = (unit: AdminUnit | null) => {

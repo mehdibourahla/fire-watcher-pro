@@ -53,7 +53,17 @@ export function MapWorkspacePanel({
         <span className="h-1 w-10 rounded-full bg-border" />
       </button>
       {children}
-      <style>{`@media (min-width: 640px) and (max-height: 500px) {
+      <style>{`.map-workspace-panel {
+        transition: height 280ms cubic-bezier(.22, 1, .36, 1), box-shadow 280ms ease;
+        animation: map-panel-enter 220ms cubic-bezier(.22, 1, .36, 1);
+      }
+      .map-workspace-handle span { transition: width 180ms ease, background-color 180ms ease; }
+      .map-workspace-handle:hover span, .map-workspace-handle:focus-visible span { width: 48px; background: var(--ink-soft); }
+      @keyframes map-panel-enter { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+      @media (prefers-reduced-motion: reduce) {
+        .map-workspace-panel, .map-workspace-handle span { transition: none; animation: none; }
+      }
+      @media (min-width: 640px) and (max-height: 500px) {
         .map-workspace-panel { inset-block: 12px; inset-inline-start: 12px; inset-inline-end: auto; width: 380px; height: auto; }
         .map-workspace-handle { display: none; }
       }`}</style>

@@ -58,6 +58,14 @@ const POINT_LAYERS = [
 ];
 const AREA_LAYERS = ["official-fill", "warnings-fill"];
 const ZERO_PADDING: MapPadding = { top: 0, bottom: 0, left: 0, right: 0 };
+function cameraOffset({
+  top,
+  bottom,
+  left,
+  right,
+}: MapPadding): [number, number] {
+  return [(left - right) / 2, (top - bottom) / 2];
+}
 function currentStyle() {
   return document.documentElement.classList.contains("dark")
     ? "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
@@ -402,7 +410,7 @@ export default function FireMap({
                   number,
                 ],
                 zoom: nextZoom,
-                padding: latest.current.padding,
+                offset: cameraOffset(latest.current.padding),
               });
           })
           .catch((error: unknown) => {
@@ -455,10 +463,6 @@ export default function FireMap({
   useEffect(() => {
     syncRef.current();
   }, [data, layers]);
-  const { top, bottom, left, right } = padding;
-  useEffect(() => {
-    mapRef.current?.setPadding({ top, bottom, left, right });
-  }, [top, bottom, left, right]);
   const focusLat = focus?.lat;
   const focusLon = focus?.lon;
   const focusZoom = focus?.zoom;
@@ -471,10 +475,11 @@ export default function FireMap({
       mapRef.current?.easeTo({
         center: [focusLon, focusLat],
         zoom: focusZoom,
-        padding: latest.current.padding,
+        offset: cameraOffset(latest.current.padding),
       });
-  }, [focusLat, focusLon, focusZoom, top, bottom, left, right]);
+  }, [focusLat, focusLon, focusZoom]);
   useEffect(() => {
+    if (latest.current.focus) return;
     const map = mapRef.current;
     const target = latest.current.visibleClusters.find(
       (fire) => fire.short_id === selectedShortId,
@@ -483,9 +488,9 @@ export default function FireMap({
       map.easeTo({
         center: [target.lon, target.lat],
         zoom: Math.max(map.getZoom(), 8),
-        padding: latest.current.padding,
+        offset: cameraOffset(latest.current.padding),
       });
-  }, [selectedShortId, top, bottom, left, right]);
+  }, [selectedShortId]);
   return (
     <div
       className="relative h-full w-full"
