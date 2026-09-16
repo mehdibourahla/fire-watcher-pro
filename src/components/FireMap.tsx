@@ -755,7 +755,8 @@ export default function FireMap({
           {t("common.error")}
         </p>
       )}
-      <style>{`.civil-map .maplibregl-ctrl-group button { width: 44px; height: 44px; }`}</style>
+      <style>{`.civil-map .maplibregl-ctrl-group button { width: 44px; height: 44px; }
+        @media (max-width: 1023px) { .civil-map-page .maplibregl-ctrl-bottom-left { bottom: 94px; } }`}</style>
     </div>
   );
 }
