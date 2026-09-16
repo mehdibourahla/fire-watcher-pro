@@ -172,6 +172,9 @@ function RootComponent() {
       s.location.pathname === "/survival" ||
       s.location.pathname.startsWith("/survival/"),
   });
+  const liveMap = useRouterState({
+    select: (s) => s.location.pathname === "/",
+  });
 
   useEffect(() => {
     // Keeps <html lang/dir> aligned with the cookie locale after hydration.
@@ -209,16 +212,24 @@ function RootComponent() {
     <I18nextProvider i18n={i18nInstance}>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider delayDuration={200}>
-          <div className="flex min-h-screen flex-col">
+          <div
+            className={
+              liveMap
+                ? "flex h-dvh min-h-0 flex-col overflow-hidden [&>header]:shrink-0 [&>nav]:shrink-0"
+                : "flex min-h-screen flex-col"
+            }
+          >
             <AlertNotifier />
             {survival ? null : <SiteHeader />}
-            <main className="flex-1">
+            <main
+              className={liveMap ? "min-h-0 flex-1 overflow-hidden" : "flex-1"}
+            >
               {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
               <Outlet />
             </main>
             {survival ? null : (
               <>
-                <SiteFooter />
+                {liveMap ? null : <SiteFooter />}
                 <BottomTabs />
               </>
             )}

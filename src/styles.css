@@ -274,3 +274,11 @@
 .maplibregl-ctrl-attrib a {
   color: var(--ink-soft);
 }
+
+.map-scroll {
+  scrollbar-width: none;
+}
+
+.map-scroll::-webkit-scrollbar {
+  display: none;
+}
