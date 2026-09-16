@@ -435,7 +435,6 @@ export const kab: Translation = {
       "Ur yettwasenqed ara — yettwasken akken i d-yewweḍ, s leɛmer-is. Imḍebbren zemren ad t-sentmen neɣ ad t-kksen.",
     layerRisk: "Asmenyaf n uɣilif",
     layerUnverified: "Tifin ur nettwasenqed ara",
-    layerIndustrialSources: "Iɣbula n uzɣal n tenzagt",
     layerWind: "Ineẓẓafen n waḍu",
     unverified: "Ur yettwasenqed ara",
     selectHint: "Fren tamessi ɣef tkarḍa akken ad twaliḍ talqayt.",

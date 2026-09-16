@@ -184,7 +184,6 @@ function FireDetail() {
               fires: true,
               official: false,
               reports: false,
-              industrialSources: false,
               unverified: true,
             }}
             center={[cluster.lon, cluster.lat]}

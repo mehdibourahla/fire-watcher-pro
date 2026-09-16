@@ -437,7 +437,6 @@ export const fr: Translation = {
       "Non vérifié — affiché tel que reçu, avec son ancienneté. La modération peut le confirmer ou le retirer.",
     layerRisk: "Prévision de danger",
     layerUnverified: "Détections non vérifiées",
-    layerIndustrialSources: "Sources thermiques industrielles connues",
     layerWind: "Vecteurs de vent",
     unverified: "Non vérifié",
     selectHint: "Sélectionnez un feu sur la carte pour voir son détail.",

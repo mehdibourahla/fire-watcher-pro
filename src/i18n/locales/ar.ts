@@ -425,7 +425,6 @@ export const ar: Translation = {
       "غير مؤكد — يُعرض كما ورد مع عمره. يمكن للمشرفين تأكيده أو إزالته.",
     layerRisk: "توقع الخطر",
     layerUnverified: "رصد غير مؤكد",
-    layerIndustrialSources: "مصادر حرارية صناعية معروفة",
     layerWind: "اتجاه الرياح",
     unverified: "غير مؤكد",
     selectHint: "اختر حريقًا على الخريطة لعرض تفاصيله.",
