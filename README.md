@@ -6,8 +6,10 @@ Nadhir brings together weather forecasts, satellite fire observations, fire dang
 clearly attributed official warnings near chosen locations. The interface is available
 in Arabic (default, RTL), French and English; Kabyle remains withheld pending speaker review.
 Hourly Open-Meteo evidence covers a 48-hour horizon independently of ONM warnings and FWI.
-Model forecasts do not trigger new emergency broadcasts. Fire maps, reporting and Survival
-Mode remain fire-specific; Survival Mode is not flood guidance.
+The live map combines satellite fire observations, official incidents, ONM warnings and
+citizen hazard reports, with area search and attributed details. Model forecasts do not
+trigger new emergency broadcasts. Fire detail pages and Survival Mode remain fire-specific;
+Survival Mode is not flood guidance.
 
 > **Nadhir is not an official source.** It is not a government warning system and must not
 > be presented as one. Detections are satellite estimates with real false-positive and
@@ -191,8 +193,9 @@ want to contribute. The blockers that matter most:
 - **Gas flares are screened, not perfectly.** 77% of Algeria's satellite fire detections are
   permanent industrial heat sources. A registry learned from NASA's own labels removes 98.4%
   of alerting-size false fires, at the cost of 5.5% of real ones — almost all of them small
-  fires inside refinery grounds. Screened detections stay in the database and are shown on an
-  opt-in "known industrial heat sources" map layer and at `/api/public/v1/sources`.
+  fires inside refinery grounds. Screened detections stay in the database. The industrial
+  source registry remains available at `/api/public/v1/sources`; the live map does not
+  display an industrial heat-source layer.
 
 ## Contributing
 

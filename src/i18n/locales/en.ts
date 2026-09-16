@@ -429,7 +429,6 @@ export const en = {
       "Unverified — shown as received, with its age. Moderators can confirm or remove it.",
     layerRisk: "Danger forecast",
     layerUnverified: "Unverified detections",
-    layerIndustrialSources: "Known industrial heat sources",
     layerWind: "Wind vectors",
     unverified: "Unverified",
     selectHint: "Select a fire on the map to see its detail.",

@@ -463,7 +463,6 @@ function LiveMapPage() {
             fires: true,
             official: true,
             reports: true,
-            industrialSources: false,
             unverified: search.candidates,
           }}
           selectedShortId={
