@@ -70,7 +70,7 @@ update public.broadcast_delivery_queue set expires_at=now()+interval '24 hours'
   where broadcast_id in ('95000000-0000-4000-8000-000000000002','95000000-0000-4000-8000-000000000003');
 update public.broadcast_delivery_queue set state='pending',lease_token=null,lease_until=null,attempts=3
   where broadcast_id='95000000-0000-4000-8000-000000000002';
-\ir .migration-fixtures/onm_delivery_validity.sql
+\ir .migration-fixtures/onm_delivery_validity.inc
 select is((select count(*) from broadcast_delivery_queue where broadcast_id='95000000-0000-4000-8000-000000000002' and expires_at=now()-interval '1 minute' and attempts=3),2::bigint,'migration backfills existing pending jobs and preserves attempts');
 select is((select count(*) from broadcast_delivery_queue where broadcast_id='95000000-0000-4000-8000-000000000003' and expires_at=now()+interval '22 hours' and state='leased' and lease_token is not null and attempts=1),2::bigint,'migration backfills existing leases without discarding lease evidence');
 select is((select count(*) from claim_broadcast_delivery('fcm',100) where job->>'id'='95000000-0000-4000-8000-000000000002'),0::bigint,'backfilled expired queue cannot be claimed');
