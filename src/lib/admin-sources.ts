@@ -1,6 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
+import { withProcessingHealth } from "./source-health";
 
 export type SourceHealthRow = {
   key: string | null;
@@ -16,20 +17,22 @@ export type SourceHealthRow = {
 export const sourceHealthQuery = queryOptions({
   queryKey: ["admin", "sources", "health"],
   queryFn: async (): Promise<SourceHealthRow[]> => {
-    const [health, contracts] = await Promise.all([
+    const [health, contracts, processing] = await Promise.all([
       supabase
         .from("source_health")
         .select(
           "key, label, state, criticality, age_minutes, last_success_at, public_reason_code",
         ),
       supabase.from("source_contracts").select("key, enabled"),
+      supabase.rpc("source_processing_health"),
     ]);
     if (health.error) throw new Error(health.error.message);
     if (contracts.error) throw new Error(contracts.error.message);
+    if (processing.error) throw new Error(processing.error.message);
     const enabled = new Map(
       contracts.data.map((row) => [row.key, row.enabled]),
     );
-    return health.data.map((row) => {
+    return withProcessingHealth(health.data, processing.data).map((row) => {
       const state = row.key ? enabled.get(row.key) : undefined;
       if (state === undefined)
         throw new Error("Source configuration unavailable");
@@ -37,6 +40,7 @@ export const sourceHealthQuery = queryOptions({
     });
   },
   staleTime: 30_000,
+  refetchInterval: 30_000,
 });
 
 export async function setSourcePaused(key: string, paused: boolean) {

@@ -6,6 +6,41 @@ may finish. Resuming restores eligibility for the existing scheduler and replay 
 Every actual change is recorded in the admin audit. Operators can observe sources but
 only admins can change this control.
 
+## Automatic recovery
+
+Database scheduling and expired-lease recovery run independently of the Worker. The
+Worker bounds dispatch to 14 minutes and starts its watchdog independently of dispatch.
+Interval-capable sources replay gaps within their retention window, at most three times;
+paused sources and gaps with active work do not consume the replay batch. Exhausted or
+expired gaps become `unrecoverable`, retaining the original failure and history.
+
+ITA and DGPC interpretation retries are bounded. A new parser version grants one audited
+recovery cycle per quarantined document. The runtime must match the configured version,
+so an old deployment cannot spend the new parser's recovery cycle. An invalid extraction
+stays quarantined; automatic recovery never relaxes evidence or notification eligibility.
+Admin health includes interpretation failures even when collection is fresh.
+
+The external watchdog has two triggers: database dispatch every 15 minutes and GitHub's
+independent schedule. Overlapping runs are serialized. Inspect both completed workflow
+runs and `cron.job_run_details`; a queued HTTP request is not proof the watchdog ran.
+Provider outages, invalid credentials and genuinely ambiguous reports still require
+escalation after bounded retries. The system cannot reconstruct unavailable history.
+
+### Parser recovery release
+
+Before deployment, check active ITA/DGPC leases and allow existing work to finish. Apply
+the migrations, including the recovery function signature replacement, and deploy matching code through CI. During the schema/code
+window old parsers fail closed; queued jobs remain recoverable. Verify subsequent jobs,
+`source_recovery_events`, pending/quarantined counts and operational-incident resolution.
+Historical repairs must retain source timestamps and remain outside fresh-alert windows.
+Verify an `external-watchdog` repository-dispatch run after the next database tick.
+
+The September 21 audit found all 16 collection-health rows fresh, no database cron
+failures in the preceding 24 hours, five quarantined interpretations, and four exhausted
+open replay gaps. These are pre-deployment observations, not proof of recovery. GitHub's
+watchdog runs were hours apart despite its 30-minute schedule; the supplemental trigger
+addresses that observed gap. No synthetic public alerts were sent during verification.
+
 ## Retention
 
 Hourly maintenance processes at most 5,000 terminal source runs and 5,000 resolved
