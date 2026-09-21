@@ -2,7 +2,51 @@ import { expect, it, vi } from "vitest";
 import { QueryClient } from "@tanstack/react-query";
 const { from } = vi.hoisted(() => ({ from: vi.fn() }));
 vi.mock("@/integrations/supabase/client", () => ({ supabase: { from } }));
-import { civilAttentionQuery } from "../admin-ita";
+import { civilAttentionQuery, civilInvestigationsQuery } from "../admin-ita";
+
+it("reads immutable v1 decisions in both operator histories", async () => {
+  const decision = {
+    outcome: "review",
+    reason: "Ambiguous location",
+    area_id: null,
+    hazard: "fire",
+    summary: "Feu signalé",
+    location_evidence: null,
+    expires_at: null,
+    duplicate_id: null,
+  };
+  const record = {
+    id: "work",
+    incident_index: 0,
+    civil_decisions: [
+      { decision, attempt: 1, created_at: "2026-09-21T10:00:00Z", trace: [] },
+    ],
+    report: {
+      extraction: {
+        disposition: "general_information",
+        incidents: [],
+        review_reasons: [],
+      },
+    },
+  };
+  const query = {
+    select: () => query,
+    in: () => query,
+    order: () => query,
+    limit: async () => ({ data: [record], error: null }),
+    range: async () => ({ data: [record], error: null }),
+  };
+  from.mockReturnValue(query);
+  const client = new QueryClient();
+  expect(
+    (await client.fetchQuery(civilAttentionQuery()))[0]?.history[0]?.decision
+      .official_match,
+  ).toBeNull();
+  expect(
+    (await client.fetchQuery(civilInvestigationsQuery))[0]?.history[0]?.decision
+      .official_match,
+  ).toBeNull();
+});
 
 it("retrieves unresolved cases beyond the intake and recent-investigation cutoffs", async () => {
   const records = Array.from({ length: 125 }, (_, i) => ({

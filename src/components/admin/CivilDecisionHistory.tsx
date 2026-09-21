@@ -25,6 +25,23 @@ export function CivilDecisionHistory({
             </time>
           </p>
           <p dir="auto">{entry.decision.reason}</p>
+          {entry.decision.official_match && (
+            <div className="my-2 border-s-2 border-border ps-2" dir="auto">
+              <p className="font-medium">
+                {t(
+                  `publication.agent.official.${entry.decision.official_match.relationship}`,
+                )}
+              </p>
+              <p>{entry.decision.official_match.reason}</p>
+              <p>
+                ITA: <q>{entry.decision.official_match.source_quote}</q>
+              </p>
+              <p>
+                Protection Civile:{" "}
+                <q>{entry.decision.official_match.official_quote}</q>
+              </p>
+            </div>
+          )}
           <pre
             dir="ltr"
             className="mt-1 max-h-60 overflow-auto whitespace-pre-wrap break-words"

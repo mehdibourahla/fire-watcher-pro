@@ -62,6 +62,17 @@ export async function runCivilInvestigations(job: ClaimedSourceJob) {
           complete: civilAgentCompletion(signal),
           searchAreas: (query, parentId) =>
             searchAdministrativeAreas(query, parentId, signal),
+          async officialReports(query, areaId) {
+            const { data, error } = await supabaseAdmin
+              .rpc("search_civil_official_evidence", {
+                _query: query,
+                _area: areaId,
+              })
+              .abortSignal(signal);
+            if (error)
+              throw new Error(`Official evidence search: ${error.message}`);
+            return data;
+          },
           async recentPublications() {
             const { data, error } = await supabaseAdmin
               .from("civil_publications")
