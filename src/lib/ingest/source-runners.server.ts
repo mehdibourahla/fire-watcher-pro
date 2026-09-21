@@ -460,6 +460,9 @@ export async function textSourceRunner(
       _key: contractKey,
       _job: job.id,
       _attempt: job.attempt_count,
+      ...(contractKey === "dgpc_telegram"
+        ? { _parser_version: "dgpc-extract-v3" }
+        : {}),
     });
     if (recovery.error)
       throw new Error(`text recovery: ${recovery.error.message}`);

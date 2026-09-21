@@ -12,6 +12,96 @@ const env = {
 };
 
 describe("dispatchScheduledSources", () => {
+  it("allows long source jobs but aborts hung dispatch before the platform deadline", async () => {
+    vi.useFakeTimers();
+    try {
+      const signals: AbortSignal[] = [];
+      const fetchImpl = vi.fn(
+        (_url, init) =>
+          new Promise<Response>((_resolve, reject) => {
+            const signal = init.signal as AbortSignal;
+            signals.push(signal);
+            signal?.addEventListener("abort", () => reject(signal.reason), {
+              once: true,
+            });
+          }),
+      );
+      const finished = dispatchScheduledSources(
+        Date.now(),
+        env,
+        fetchImpl,
+        async () => 1,
+      );
+      const outcome = finished.catch((error) => error);
+      await vi.advanceTimersByTimeAsync(780_000);
+      expect(signals).toHaveLength(2);
+      expect(signals.every((signal) => signal && !signal.aborted)).toBe(true);
+      await vi.advanceTimersByTimeAsync(60_000);
+      expect(signals.every((signal) => signal.aborted)).toBe(true);
+      expect(await outcome).toEqual(
+        new Error("Source scheduler deadline exceeded"),
+      );
+      expect(fetchImpl).toHaveBeenCalledTimes(2);
+      expect(vi.getTimerCount()).toBe(0);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("bounds hung enqueue and never dispatches if enqueue completes after the deadline", async () => {
+    vi.useFakeTimers();
+    try {
+      let release!: (count: number) => void;
+      const fetchImpl = vi.fn();
+      const outcome = dispatchScheduledSources(
+        Date.now(),
+        env,
+        fetchImpl,
+        () =>
+          new Promise((resolve) => {
+            release = resolve;
+          }),
+      ).catch((error) => error);
+      await vi.advanceTimersByTimeAsync(840_000);
+      let result: unknown;
+      void outcome.then((value) => {
+        result = value;
+      });
+      await Promise.resolve();
+      expect(result).toEqual(new Error("Source scheduler deadline exceeded"));
+      release(1);
+      await Promise.resolve();
+      await Promise.resolve();
+      expect(fetchImpl).not.toHaveBeenCalled();
+      expect(vi.getTimerCount()).toBe(0);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("releases both successful and failed HTTP response bodies", async () => {
+    const released: number[] = [];
+    const fetchImpl = vi.fn(async () => {
+      const index = fetchImpl.mock.calls.length;
+      return new Response(
+        new ReadableStream({
+          cancel() {
+            released.push(index);
+          },
+        }),
+        { status: index % 2 ? 200 : 503 },
+      );
+    });
+    const result = await dispatchScheduledSources(
+      Date.now(),
+      env,
+      fetchImpl,
+      async () => 1,
+    );
+    expect(result).toEqual({ enqueued: 1, dispatched: 5, failed: 5 });
+    expect(released).toHaveLength(10);
+  });
+
   it("enqueues the controller timestamp and drains the chain in waves", async () => {
     const enqueue = vi.fn().mockResolvedValue(11);
     const fetchImpl = vi

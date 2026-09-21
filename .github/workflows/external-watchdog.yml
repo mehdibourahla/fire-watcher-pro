@@ -3,11 +3,17 @@ name: External watchdog
 # The in-Worker watchdog cannot report the Worker being dead. This one queries
 # Supabase directly and never touches the Worker, so a silent Worker is visible.
 on:
+  repository_dispatch:
+    types: [external-watchdog]
   schedule:
     - cron: "13,43 * * * *"
   workflow_dispatch: {}
 
 permissions: {}
+
+concurrency:
+  group: external-watchdog
+  cancel-in-progress: false
 
 jobs:
   watch:

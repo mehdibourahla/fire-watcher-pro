@@ -43,10 +43,12 @@ export type SourceProcessingHealth = {
   quarantined: number;
 };
 
-export function withProcessingHealth(
-  rows: SourceHealth[],
+export function withProcessingHealth<
+  T extends { key: string | null; state: string | null },
+>(
+  rows: T[],
   processing: SourceProcessingHealth[],
-): SourceHealth[] {
+): (T & { processing?: SourceProcessingHealth })[] {
   return rows.map((row) => {
     const status = processing.find((item) => item.key === row.key);
     return status

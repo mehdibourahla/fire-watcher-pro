@@ -93,7 +93,7 @@ Return only what the post states. Every mention must quote its evidence verbatim
 One mention per named fire location. Do not infer locations that are not written. Ignore urban, vehicle and industrial fires (kind "urban").
 Statuses: ongoing (operations continuing), contained (under control / regressing), extinguished (put out), monitoring (guarding, mopping up), unknown.
 Kinds: vegetation (forest, scrub, maquis), agricultural (crops, hay, orchards, palm groves), urban, unknown.
-Leave commune null when only a locality or a wilaya is named. Names stay in the post's language and spelling. count is the number of fires the sentence attributes to that location, at least 1.`;
+Leave commune null when only a locality or a wilaya is named. place is a named locality, never a generic setting or vegetation type: forest, palm grove (واحة نخيل), crops and hay are kinds, so leave place null unless an actual place name follows. A wilaya distribution line such as ولاية بسكرة 01 (حريق واحة نخيل) is one agricultural fire in that wilaya with commune and place null. Names stay in the post's language and spelling. count is the number of fires the sentence attributes to that location, at least 1.`;
 
 // cheaper models sometimes wrap the object in a markdown fence despite the schema
 function stripFence(content: string): string {

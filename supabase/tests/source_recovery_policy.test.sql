@@ -46,6 +46,9 @@ select ok((select next_attempt_at between now()+interval '119 seconds' and now()
 update document_extractions set attempts=2 where document_id='18000000-0000-4000-8000-000000000011';
 select ok((select next_attempt_at between now()+interval '239 seconds' and now()+interval '250 seconds' from document_extractions where document_id='18000000-0000-4000-8000-000000000011'),'second failed attempt doubles backoff');
 set local role service_role;
+select throws_ok($$select prepare_source_recovery('test.recovery-policy','18000000-0000-4000-8000-000000000020',2,'older-parser')$$,'P0001','source_recovery_version_mismatch','old runtime cannot consume a new recovery budget');
+select is((select attempts from document_extractions where document_id='18000000-0000-4000-8000-000000000010'),4,'version mismatch preserves exhausted budget');
+select is((select count(*) from source_recovery_events where subject_id='18000000-0000-4000-8000-000000000010'),0::bigint,'version mismatch creates no recovery audit');
 select is(prepare_source_recovery('test.recovery-policy','18000000-0000-4000-8000-000000000020',2),1,'new version recovers one exhausted document');
 select is((select attempts from document_extractions where document_id='18000000-0000-4000-8000-000000000010'),0,'exhausted document receives fresh budget');
 select is((select attempts from document_extractions where document_id='18000000-0000-4000-8000-000000000011'),2,'pending work keeps consumed attempts');
@@ -76,22 +79,24 @@ select ('18000000-0000-4000-8000-'||lpad(n::text,12,'0'))::uuid,n::text,'test-re
 from generate_series(30,31) n;
 update source_contracts set parser_version='version-A' where key='ita_website';
 set local role service_role;
-select lives_ok($$select prepare_source_recovery('ita_website','18000000-0000-4000-8000-000000000021',2)$$,'ITA recovery succeeds with its own lease');
+select throws_ok($$select prepare_source_recovery('ita_website','18000000-0000-4000-8000-000000000021',2)$$,'P0001','source_recovery_version_mismatch','legacy ITA runtime cannot consume a new recovery budget');
+select is((select extraction_attempts from ita_reports where id='18000000-0000-4000-8000-000000000030'),5,'legacy ITA call leaves quarantine intact');
+select lives_ok($$select prepare_source_recovery('ita_website','18000000-0000-4000-8000-000000000021',2,'version-A')$$,'ITA recovery succeeds with matching parser and own lease');
 select is((select extraction_attempts from ita_reports where id='18000000-0000-4000-8000-000000000030'),0,'ITA exhausted report is requeued');
 select is((select extraction_attempts from ita_reports where id='18000000-0000-4000-8000-000000000031'),5,'completed ITA report is not requeued');
 select is((select extraction_error from ita_reports where id='18000000-0000-4000-8000-000000000030'),'private ITA error','ITA error survives recovery');
 update ita_reports set extraction_attempts=5 where id='18000000-0000-4000-8000-000000000030';
-select lives_ok($$select prepare_source_recovery('ita_website','18000000-0000-4000-8000-000000000021',2)$$,'repeated ITA recovery is safe');
+select lives_ok($$select prepare_source_recovery('ita_website','18000000-0000-4000-8000-000000000021',2,'version-A')$$,'repeated ITA recovery is safe');
 select is((select extraction_attempts from ita_reports where id='18000000-0000-4000-8000-000000000030'),5,'same version cannot replenish ITA budget');
 reset role;
 update source_contracts set parser_version='version-B' where key='ita_website';
 set local role service_role;
-select lives_ok($$select prepare_source_recovery('ita_website','18000000-0000-4000-8000-000000000021',2)$$,'ITA receives new-version recovery');
+select lives_ok($$select prepare_source_recovery('ita_website','18000000-0000-4000-8000-000000000021',2,'version-B')$$,'ITA receives new-version recovery');
 update ita_reports set extraction_attempts=5 where id='18000000-0000-4000-8000-000000000030';
 reset role;
 update source_contracts set parser_version='version-A' where key='ita_website';
 set local role service_role;
-select lives_ok($$select prepare_source_recovery('ita_website','18000000-0000-4000-8000-000000000021',2)$$,'ITA version rollback is safe');
+select lives_ok($$select prepare_source_recovery('ita_website','18000000-0000-4000-8000-000000000021',2,'version-A')$$,'ITA version rollback is safe');
 select is((select extraction_attempts from ita_reports where id='18000000-0000-4000-8000-000000000030'),5,'ITA A to B to A cannot replenish budget');
 select is((select count(*) from source_recovery_events where subject_id='18000000-0000-4000-8000-000000000030'),2::bigint,'ITA recovery history retains one record per version');
 select ok(exists(select 1 from source_watchdog where contract_key='test.recovery-policy' and issue_code='processing_quarantined'),'watchdog exposes quarantined work');
@@ -107,6 +112,27 @@ select is((select quarantined from source_processing_health() where key='test.re
 select is((select collection_at from source_processing_health() where key='test.recovery-policy'),now()-interval '2 minutes','successful collection remains visible despite quarantined processing and later fetch failure');
 select is((select array_agg(k order by k) from source_processing_health() h cross join lateral jsonb_object_keys(to_jsonb(h)) k where h.key='test.recovery-policy'),array['collection_at','key','pending','quarantined'],'public health exposes only aggregate fields');
 select throws_ok($$select previous_error from source_recovery_events$$,'42501',null,'public health cannot expose private recovery errors');
+reset role;
+insert into source_documents(id,text_source_id,external_id,url,published_at,content_hash,body)
+select '18000000-0000-4000-8000-000000000040',id,'parser-version-guard','https://example.invalid/dgpc-version',now(),'fixture','private source text'
+from text_sources where key='dgpc_telegram';
+insert into document_extractions(document_id,attempts,last_error,recovery_version)
+values('18000000-0000-4000-8000-000000000040',4,'parser interpretation error','dgpc-extract-v2')
+on conflict(document_id) do update set attempts=4,recovery_version='dgpc-extract-v2';
+insert into source_jobs(id,contract_key,contract_version,trigger_kind,idempotency_key,scheduled_for,data_from,data_through,execution_target,state,attempt_count,max_attempts,retry_base_seconds,retry_until)
+values('18000000-0000-4000-8000-000000000041','dgpc_telegram',1,'manual','dgpc-parser-version-test',now(),now()-interval '1 hour',now(),'cloudflare','running',2,3,60,now()+interval '1 hour');
+delete from source_job_leases where contract_key='dgpc_telegram';
+insert into source_job_leases(contract_key,job_id,worker_id,attempt,leased_at,lease_expires_at)
+values('dgpc_telegram','18000000-0000-4000-8000-000000000041','test',2,now(),now()+interval '1 hour');
+set local role service_role;
+select throws_ok($$select prepare_source_recovery('dgpc_telegram','18000000-0000-4000-8000-000000000041',2)$$,'P0001','source_recovery_version_mismatch','legacy DGPC worker cannot spend v3 budget');
+select throws_ok($$select prepare_source_recovery('dgpc_telegram','18000000-0000-4000-8000-000000000041',2,'dgpc-extract-v2')$$,'P0001','source_recovery_version_mismatch','rolled-back DGPC worker fails closed');
+select is((select attempts from document_extractions where document_id='18000000-0000-4000-8000-000000000040'),4,'version mismatch preserves DGPC quarantine');
+select lives_ok($$select prepare_source_recovery('dgpc_telegram','18000000-0000-4000-8000-000000000041',2,'dgpc-extract-v3')$$,'deployed DGPC v3 worker can recover');
+select is((select attempts from document_extractions where document_id='18000000-0000-4000-8000-000000000040'),0,'deployed parser receives its new budget');
+update document_extractions set attempts=4 where document_id='18000000-0000-4000-8000-000000000040';
+select is(prepare_source_recovery('dgpc_telegram','18000000-0000-4000-8000-000000000041',2,'dgpc-extract-v3'),0,'same deployed parser never replenishes DGPC budget twice');
+select is((select count(*) from source_recovery_events where subject_id='18000000-0000-4000-8000-000000000040'),1::bigint,'DGPC recovery records exactly one v3 audit');
 reset role;
 select * from finish();
 rollback;
