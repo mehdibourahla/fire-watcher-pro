@@ -100,6 +100,32 @@ DGPC item failed place interpretation; ITA rejected unsupported location evidenc
 attempts. These remain bounded interpretation failures for evidence review, not grounds to
 reset retries or broadcast uncertain information. No production mutations were performed.
 
-The owner still needs to choose a production source and maintenance window for production fault injection. Local SQL operator acknowledgment and recovery are proven; a fresh browser exercise of the operator response flow and a controlled source transport outage through the complete application pipeline remain separate checks. These drills do not prove disaster restoration, an exactly-once external delivery guarantee or recipient receipt.
+The owner authorized the remaining operational work on 21 September. The bounded production exercise below targets ITA scheduling only. A source transport outage through the complete application pipeline remains a separate check. These drills do not prove disaster restoration, an exactly-once external delivery guarantee or recipient receipt.
 
 [Source operations](../source-operations.md) records owner-confirmed email/private Telegram receipt on 8 September. The owner also confirmed iPhone push receipt in this task. Those historical receipts were not repeated in this drill. No new public sends or notification eligibility expansion was introduced.
+
+## Quarantine evidence review — 21 September
+
+Read the five original reports, persisted interpretations, geographic records and linked incidents in production. Replayed extraction locally against the configured LLM without writing its output to production. The original failed model responses are not stored; replay evidence describes current reproduction, not the exact historical completion.
+
+| Report | Observed cause and disposition |
+| --- | --- |
+| ITA `57b38bfa-cd71-4efb-8730-47af45805868`, [17 September post](https://www.facebook.com/traficalg/posts/1519586020214602) | Reproduced rejection, including the corrective model call. Both location fields joined fragments, omitting `بين تيزي وزو` from the source; the purported exact span therefore does not exist. The French summary also substituted Azazga for `أدكار`. Keep quarantined; improve LLM correction and verify summary fidelity before a bounded retry. Do not weaken quote validation. |
+| DGPC `6318562b-5700-49cf-a1cb-623151d7d5bb`, [7069](https://t.me/DGPCDZ/7069) | Header/distribution agree: four fires, three extinguished, one ongoing in Biskra. Replay places generic `واحة نخيل` (palm grove) in `place`; the aggregate acceptance path requires a null place. One wilaya-level mention already persisted. Keep quarantined until the model distinguishes a generic setting from a named locality. |
+| DGPC `d5d94e83-00a2-4fb3-a4a9-6859474b49b2`, [6998](https://t.me/DGPCDZ/6998) | Source says `عين الفراج`; the Sétif gazetteer has `عين لقراج` / Aïn Legradj, not that spelling. A match is a hypothesis requiring corroboration, not a justified automatic alias. Keep the original report and existing wilaya-level mention. |
+| DGPC `76982252-549c-4ec1-86e8-e1cea4825127`, [6872](https://t.me/DGPCDZ/6872) | Header/distribution agree on two fires. `عزيل عبد القادر` resolves to Abdelkader Azil, whose stored parent is Barika; the bulletin counts it under Batna. The geographic fallback and distribution gate therefore disagree. Existing mentions preserve Batna aggregate and Babor detail. Keep quarantined pending explicit boundary-version/source-geography handling; do not rewrite the source or move the commune silently. |
+| DGPC `c58a71f8-8531-4438-afc3-f299102b42c9`, [7012](https://t.me/DGPCDZ/7012) | Source spells the commune `الصحاريج`; gazetteer uses `الصهاريج` / Saharidj, and has no alias for this report spelling. Keep quarantined until corroborated alias review; retain the existing Bouira aggregate. |
+
+All five linked DGPC incident rows were already unlisted (3, 9, 14 and 19 September), including both incidents linked to post 6872. No current all-clear was inferred. No extraction budgets, source text, geographic records or incident lifecycle values were altered. Review is complete; correction of the five interpretations is not. These are actionable extraction/geography follow-ups, not collection outages.
+
+## Production ITA scheduling drill — 21 September
+
+Preflight at 14:07:49 UTC: ITA enabled, no active lease; job `679edd55-ba89-49f9-b16d-64732126245a` for 14:05 succeeded on its first attempt at 14:05:27.881 UTC. Checkpoint matched that completion, with zero consecutive failures. The existing Google session restored the owner's admin account through normal sign-in.
+
+Paused ITA through the production admin control at 14:08:00.550062 UTC, targeting the 14:10 scheduling boundary; resume deadline 14:11 UTC. Production readback confirmed ITA disabled while DGPC and broadcast delivery remained enabled. At 14:10:33 UTC there were no ITA jobs scheduled for or after 14:10. Public status independently showed `paused` with its previous checkpoint retained.
+
+Resumed through the same control at 14:10:39.301988 UTC (159 seconds paused). The ordinary scheduler then created job `5934b6f5-5c79-4a8e-9ce7-9f4679ea985f` for the 14:10 slot. It started at 14:11:07.117195 and succeeded at 14:11:08.277 on attempt 1. Capture `a3090cf4-b293-437b-88fa-51d134e69ad9` records a real HTTP 304 at 14:11:07.272; run `ba59a970-6881-4c86-8746-38f5c67c4124` records zero inserted, updated and rejected records. The checkpoint advanced to that completion with zero consecutive failures. This proves scheduler resumption, transport access and unchanged-feed handling, not an upstream outage or new-payload catch-up.
+
+Audit rows `c3e05342-f86c-4278-b3c1-9eeb2e8e5958` and `3585a75a-9314-4f23-bdf3-f46e6cc9ab27` preserve pause/resume. After reviewing the ITA quarantine, acknowledged incident `94fea9dd-e83a-4143-ac65-905dc880e76f` through the operator UI at 14:09:05.529410; audit `eec8e494-e2ab-4d5d-ab00-e883b76fb1ab` persisted, and `resolved_at` remains null. DGPC was already acknowledged and was not changed.
+
+At 14:11:42 UTC, public status reported fresh ITA collection, zero pending and one quarantined item; DGPC remained at four quarantines and zero pending. Both delivery channels were unpaused with zero pending messages. No synthetic reports or sends were introduced, no retry budgets were reset, and no source remained paused. The browser returned the ITA action to Pause and showed its quarantine incident acknowledged. The admin Health table labels collection as healthy while public status includes processing degradation; aligning those labels is a UI follow-up, not evidence that quarantine cleared.

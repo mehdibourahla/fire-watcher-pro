@@ -34,5 +34,7 @@ Each nonempty maintenance batch records its counts in the admin audit.
 Production outage/recovery drills require a chosen source and maintenance window. Do not
 pause a real detection source merely to demonstrate the button, and do not send synthetic
 alerts to public subscriptions. Email receipt and private Telegram receipt were confirmed
-by the owner on 2026-09-08. iPhone push receipt remains a user-assisted check through the
-private admin device test; provider acceptance alone does not close it.
+by the owner on 2026-09-08. The owner also confirmed iPhone push receipt in the task.
+Future receipt checks use the private admin device test; provider acceptance alone does
+not establish receipt. Dated drill scope and limitations are recorded in the
+[operational readiness evidence](audits/2026-09-16-operational-readiness.md).
