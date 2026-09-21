@@ -298,8 +298,17 @@ export const ar: Translation = {
     general: "الطوارئ العامة",
   },
   civilMap: {
+    publicationactive: "معلومة منشورة",
+    publicationexpired: "انتهت مدة الصلاحية",
+    publicationwithdrawn: "سُحب المنشور",
+    publicationNotice:
+      "معلومة من Info Trafic Algérie راجعها نذير. ليست تحذيراً رسمياً أو تعليمات طوارئ.",
+    publicationHistorical:
+      "منشور سابق. انتهاء صلاحيته أو سحبه لا يعني انتهاء الحادث أو أن المنطقة آمنة.",
+    sourcePublishedAt: "تاريخ نشر المصدر",
+    publicationUpdatedAt: "آخر تحديث تمت مراجعته",
     officialGroup: "التحذيرات والبلاغات الرسمية",
-    observationsGroup: "الرصد وبلاغات المواطنين",
+    observationsGroup: "الإعلام والرصد وبلاغات المواطنين",
     reportedBoundary:
       "الحدود المظللة، عند توفرها، تمثل المنطقة الإدارية المذكورة في البلاغ، وليس نطاق الخطر.",
     boundaryUnavailable:
@@ -355,7 +364,7 @@ export const ar: Translation = {
     unknown: "الحالة غير معروفة",
     upcoming: "مرتقب",
     current: "جارٍ",
-    showEnded: "إظهار الحالات المنتهية",
+    showEnded: "إظهار الحالات المنتهية والمنشورات السابقة",
     showCandidates: "إظهار الأرصاد غير المتحقق منها",
     source: "المصدر",
     observedAt: "وقت الرصد",

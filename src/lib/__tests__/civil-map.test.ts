@@ -4,6 +4,7 @@ import {
   filterSituations,
   findPlaces,
   nearestPlace,
+  selectedSituation,
 } from "../civil-map";
 import type {
   AdminUnit,
@@ -138,6 +139,59 @@ const filters = {
 };
 
 describe("civil situations", () => {
+  it("keeps reviewed publications available for historical links but excludes inactive publications from current results", () => {
+    const publication = {
+      id: "p",
+      ita_report_id: "r",
+      incident_index: 0,
+      hazard: "flood" as const,
+      summary: "Route inondée",
+      area_id: "w1",
+      source_name: "Info Trafic Algérie",
+      source_url: "https://infotraficalgerie.com/home",
+      source_published_at: at(2),
+      published_at: at(1),
+      updated_at: at(1),
+      expires_at: at(-2),
+      state: "published" as const,
+      revision: 1,
+      area: wilaya,
+      cap_references: [],
+    };
+    const items = build({
+      publications: [
+        publication,
+        {
+          ...publication,
+          id: "expired",
+          updated_at: at(100),
+          expires_at: at(99),
+        },
+        { ...publication, id: "withdrawn", state: "withdrawn" },
+      ],
+    });
+    expect(items).toHaveLength(3);
+    expect(
+      filterSituations(items, { ...filters, area: commune }, units).map(
+        (i) => i.id,
+      ),
+    ).toEqual(["civil:p"]);
+    expect(items.find((i) => i.id === "civil:p")).toMatchObject({
+      source: "civil",
+      category: "weather",
+      areaId: "w1",
+      wilayaId: "w1",
+      lat: wilaya.lat,
+    });
+    expect(
+      filterSituations(items, { ...filters, showEnded: true }, units),
+    ).toHaveLength(3);
+    expect(selectedSituation(items, [], "civil:expired")?.id).toBe(
+      "civil:expired",
+    );
+    expect(selectedSituation(items, [], "civil:withdrawn")?.ended).toBe(true);
+    expect(selectedSituation(items, [], "civil:missing")).toBeUndefined();
+  });
   it("enforces source time windows and rejects invalid or future observations", () => {
     expect(
       build({

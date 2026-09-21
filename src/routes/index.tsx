@@ -50,12 +50,17 @@ import {
   type AdminUnit,
 } from "@/lib/nadhir";
 import { hazardReportsQuery } from "@/lib/open-areas";
+import {
+  civilPublicationsQuery,
+  civilPublicationQuery,
+} from "@/lib/civil-publication-client";
 import { civilMapGeoJSON, situationAreaId } from "@/lib/civil-map-geometry";
 import {
   buildSituations,
   filterSituations,
   findPlaces,
   nearestPlace,
+  selectedSituation,
   CITIZEN_NEARBY_RADIUS_KM,
   type HazardCategory,
 } from "@/lib/civil-map";
@@ -102,6 +107,18 @@ function LiveMapPage() {
   const official = useQuery({ ...officialIncidentsQuery, ...REFRESH });
   const reports = useQuery({ ...hazardReportsQuery, ...REFRESH });
   const warnings = useQuery({ ...onmVigilanceQuery, ...REFRESH });
+  const publications = useQuery({
+    ...civilPublicationsQuery(search.ended),
+    ...REFRESH,
+  });
+  const selectedCivilId = /^civil:[0-9a-f-]{36}$/i.test(search.event ?? "")
+    ? search.event!.slice(6)
+    : "";
+  const selectedPublication = useQuery({
+    ...civilPublicationQuery(selectedCivilId),
+    ...REFRESH,
+    enabled: !!selectedCivilId,
+  });
   const health = useQuery({ ...sourceHealthQuery, ...REFRESH });
   const [now, setNow] = useState(() => Date.now());
   const [query, setQuery] = useState("");
@@ -237,10 +254,27 @@ function LiveMapPage() {
         official: official.data ?? [],
         reports: reports.data ?? [],
         warnings: warnings.data ?? [],
+        publications: selectedPublication.data
+          ? [
+              ...(publications.data ?? []).filter(
+                (p) => p.id !== selectedPublication.data?.id,
+              ),
+              selectedPublication.data,
+            ]
+          : (publications.data ?? []),
         units: allUnits,
         now,
       }),
-    [fires.data, official.data, reports.data, warnings.data, allUnits, now],
+    [
+      fires.data,
+      official.data,
+      reports.data,
+      warnings.data,
+      publications.data,
+      selectedPublication.data,
+      allUnits,
+      now,
+    ],
   );
   const survivalFires = useMemo(
     () =>
@@ -261,7 +295,7 @@ function LiveMapPage() {
       ),
     [items, search.hazard, area, search.ended, search.candidates, allUnits],
   );
-  const selected = visible.find((i) => i.id === search.event);
+  const selected = selectedSituation(items, visible, search.event);
   const officialItems = visible.filter(
     (item) =>
       item.source === "onm" ||
@@ -288,7 +322,7 @@ function LiveMapPage() {
     labels.title,
     selected?.id,
   );
-  const queries = [fires, official, reports, warnings];
+  const queries = [fires, official, reports, warnings, publications];
   const loading = queries.some((q) => q.isPending);
   const refreshing = queries.some((q) => q.isFetching) || health.isFetching;
   const relevantKeys = new Set([
@@ -297,6 +331,7 @@ function LiveMapPage() {
     "fusion",
     "dgpc_telegram",
     "onm",
+    "ita_website",
   ]);
   const limited =
     offline ||
@@ -320,6 +355,8 @@ function LiveMapPage() {
         lon: selected.lon,
         zoom:
           selected.source === "onm" ||
+          (selected.source === "civil" &&
+            selected.data.area?.level === "wilaya") ||
           (selected.source === "official" &&
             (selected.data.precision === "wilaya" || !selected.data.commune_id))
             ? 7
@@ -394,6 +431,7 @@ function LiveMapPage() {
   };
   const refresh = () => {
     for (const q of [...queries, health]) void q.refetch();
+    if (selectedCivilId) void selectedPublication.refetch();
   };
   const share = async () => {
     try {
@@ -418,7 +456,11 @@ function LiveMapPage() {
     panelView === "detail"
       ? selected
         ? labels.title(selected)
-        : t("civilMap.detailUnavailable")
+        : t(
+            loading || (!!selectedCivilId && selectedPublication.isPending)
+              ? "civilMap.loading"
+              : "civilMap.detailUnavailable",
+          )
       : t(
           (
             {
@@ -475,11 +517,17 @@ function LiveMapPage() {
             selected?.source === "onm" ? selected.data.id : null
           }
           selectedReportId={
-            selected?.source === "citizen" ? selected.data.id : null
+            selected?.source === "civil"
+              ? selected.id
+              : selected?.source === "citizen"
+                ? selected.data.id
+                : null
           }
           onSelect={(c) => select(`fire:${c.id}`)}
           onSelectOfficial={(id) => select(`official:${id}`)}
-          onSelectReport={(id) => select(`report:${id}`)}
+          onSelectReport={(id) =>
+            select(id.startsWith("civil:") ? id : `report:${id}`)
+          }
           onSelectWarning={(id) => select(`weather:${id}`)}
           onError={() => setMapFailed(true)}
           onReady={() => setMapFailed(false)}
@@ -861,6 +909,7 @@ function LiveMapPage() {
                           [
                             ...mapOfficial.features,
                             ...mapWarnings.features,
+                            ...mapReports.features,
                           ].some(
                             (feature) => feature.properties?.["area"] === true,
                           )
@@ -886,9 +935,12 @@ function LiveMapPage() {
                 ) : (
                   <p>
                     {t(
-                      loading
+                      loading ||
+                        (!!selectedCivilId && selectedPublication.isPending)
                         ? "civilMap.loading"
-                        : "civilMap.detailUnavailable",
+                        : selectedCivilId && selectedPublication.isError
+                          ? "civilMap.error"
+                          : "civilMap.detailUnavailable",
                     )}
                   </p>
                 ))}
@@ -936,6 +988,7 @@ function LiveMapPage() {
                       "officialLegend",
                       "weatherLegend",
                       "citizenLegend",
+                      "publicationNotice",
                     ].map((key) => (
                       <p key={key}>{t(`civilMap.${key}`)}</p>
                     ))}

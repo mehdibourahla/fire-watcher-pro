@@ -42,6 +42,12 @@ export function symbolFor(
 ): MapSymbol {
   if (kind === "official") return "official";
   if (kind === "warnings") return "weather";
+  if (properties["source"] === "civil") {
+    const category = properties["category"];
+    return category === "fire" || category === "road" || category === "weather"
+      ? category
+      : "observation";
+  }
   const hazard = String(
     properties["kind"] ?? properties["hazard_type"] ?? properties["type"] ?? "",
   );

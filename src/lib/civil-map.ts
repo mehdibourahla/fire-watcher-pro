@@ -5,6 +5,10 @@ import type {
   OnmVigilance,
 } from "./nadhir";
 import type { HazardReport } from "./open-areas";
+import {
+  civilPublicationLifecycle,
+  type CivilPublication,
+} from "./civil-publication";
 
 export type HazardCategory = "all" | "fire" | "weather" | "road" | "other";
 type SituationBase = {
@@ -24,12 +28,14 @@ export type Situation = SituationBase &
     | { source: "official"; data: OfficialIncident }
     | { source: "citizen"; data: HazardReport }
     | { source: "onm"; data: OnmVigilance }
+    | { source: "civil"; data: CivilPublication }
   );
 type SituationInput = {
   fires: FireCluster[];
   official: OfficialIncident[];
   reports: HazardReport[];
   warnings: OnmVigilance[];
+  publications?: CivilPublication[];
   units: AdminUnit[];
   now: number;
 };
@@ -41,6 +47,16 @@ type SituationFilters = {
 };
 
 export const CITIZEN_NEARBY_RADIUS_KM = 20;
+
+export function selectedSituation(
+  items: Situation[],
+  visible: Situation[],
+  id?: string,
+) {
+  return (id?.startsWith("civil:") ? items : visible).find(
+    (item) => item.id === id,
+  );
+}
 
 function coordinates(point: { lat: number; lon: number } | null | undefined) {
   return point &&
@@ -57,6 +73,7 @@ export function buildSituations({
   official,
   reports,
   warnings,
+  publications = [],
   units,
   now,
 }: SituationInput): Situation[] {
@@ -66,6 +83,21 @@ export function buildSituations({
   };
   const byId = new Map(units.map((unit) => [unit.id, unit]));
   const items: Situation[] = [];
+  for (const data of publications) {
+    const area = data.area ?? byId.get(data.area_id);
+    items.push({
+      id: `civil:${data.id}`,
+      source: "civil",
+      category: data.hazard === "flood" ? "weather" : data.hazard,
+      at: data.updated_at,
+      ...coordinates(area),
+      areaId: data.area_id,
+      wilayaId: area?.level === "wilaya" ? area.id : (area?.parent_id ?? null),
+      ended: civilPublicationLifecycle(data, now) !== "active",
+      candidate: false,
+      data,
+    });
+  }
   for (const data of fires) {
     if (data.state === "false_positive" || !recent(data.last_detected_at, 72))
       continue;
@@ -197,7 +229,9 @@ export function filterSituations(
     if (area.level === "wilaya") return item.wilayaId === area.id;
     return (
       item.areaId === area.id ||
-      ((item.source === "official" || item.source === "onm") &&
+      ((item.source === "official" ||
+        item.source === "onm" ||
+        item.source === "civil") &&
         item.areaId === area.parent_id)
     );
   });

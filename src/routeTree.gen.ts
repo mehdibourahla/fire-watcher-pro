@@ -52,6 +52,7 @@ import { Route as ApiPublicContributeMyTranslationsRouteImport } from './routes/
 import { Route as ApiPublicContributeTranslationRouteImport } from './routes/api/public/contribute/translation'
 import { Route as ApiPublicContributeVoteRouteImport } from './routes/api/public/contribute/vote'
 import { Route as ApiPublicV1IndexRouteImport } from './routes/api/public/v1/index'
+import { Route as ApiPublicV1CivilRouteImport } from './routes/api/public/v1/civil'
 import { Route as ApiPublicV1FiresRouteImport } from './routes/api/public/v1/fires'
 import { Route as ApiPublicV1RiskRouteImport } from './routes/api/public/v1/risk'
 import { Route as ApiPublicV1SourcesRouteImport } from './routes/api/public/v1/sources'
@@ -284,6 +285,11 @@ const ApiPublicV1IndexRoute = ApiPublicV1IndexRouteImport.update({
   path: '/api/public/v1/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicV1CivilRoute = ApiPublicV1CivilRouteImport.update({
+  id: '/api/public/v1/civil',
+  path: '/api/public/v1/civil',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicV1FiresRoute = ApiPublicV1FiresRouteImport.update({
   id: '/api/public/v1/fires',
   path: '/api/public/v1/fires',
@@ -362,6 +368,7 @@ export interface FileRoutesByFullPath {
   '/api/public/contribute/my-translations': typeof ApiPublicContributeMyTranslationsRoute
   '/api/public/contribute/translation': typeof ApiPublicContributeTranslationRoute
   '/api/public/contribute/vote': typeof ApiPublicContributeVoteRoute
+  '/api/public/v1/civil': typeof ApiPublicV1CivilRoute
   '/api/public/v1/fires': typeof ApiPublicV1FiresRoute
   '/api/public/v1/risk': typeof ApiPublicV1RiskRoute
   '/api/public/v1/sources': typeof ApiPublicV1SourcesRoute
@@ -411,6 +418,7 @@ export interface FileRoutesByTo {
   '/api/public/contribute/my-translations': typeof ApiPublicContributeMyTranslationsRoute
   '/api/public/contribute/translation': typeof ApiPublicContributeTranslationRoute
   '/api/public/contribute/vote': typeof ApiPublicContributeVoteRoute
+  '/api/public/v1/civil': typeof ApiPublicV1CivilRoute
   '/api/public/v1/fires': typeof ApiPublicV1FiresRoute
   '/api/public/v1/risk': typeof ApiPublicV1RiskRoute
   '/api/public/v1/sources': typeof ApiPublicV1SourcesRoute
@@ -464,6 +472,7 @@ export interface FileRoutesById {
   '/api/public/contribute/my-translations': typeof ApiPublicContributeMyTranslationsRoute
   '/api/public/contribute/translation': typeof ApiPublicContributeTranslationRoute
   '/api/public/contribute/vote': typeof ApiPublicContributeVoteRoute
+  '/api/public/v1/civil': typeof ApiPublicV1CivilRoute
   '/api/public/v1/fires': typeof ApiPublicV1FiresRoute
   '/api/public/v1/risk': typeof ApiPublicV1RiskRoute
   '/api/public/v1/sources': typeof ApiPublicV1SourcesRoute
@@ -517,6 +526,7 @@ export interface FileRouteTypes {
     | '/api/public/contribute/my-translations'
     | '/api/public/contribute/translation'
     | '/api/public/contribute/vote'
+    | '/api/public/v1/civil'
     | '/api/public/v1/fires'
     | '/api/public/v1/risk'
     | '/api/public/v1/sources'
@@ -566,6 +576,7 @@ export interface FileRouteTypes {
     | '/api/public/contribute/my-translations'
     | '/api/public/contribute/translation'
     | '/api/public/contribute/vote'
+    | '/api/public/v1/civil'
     | '/api/public/v1/fires'
     | '/api/public/v1/risk'
     | '/api/public/v1/sources'
@@ -618,6 +629,7 @@ export interface FileRouteTypes {
     | '/api/public/contribute/my-translations'
     | '/api/public/contribute/translation'
     | '/api/public/contribute/vote'
+    | '/api/public/v1/civil'
     | '/api/public/v1/fires'
     | '/api/public/v1/risk'
     | '/api/public/v1/sources'
@@ -651,6 +663,7 @@ export interface RootRouteChildren {
   ApiPublicContributeMyTranslationsRoute: typeof ApiPublicContributeMyTranslationsRoute
   ApiPublicContributeTranslationRoute: typeof ApiPublicContributeTranslationRoute
   ApiPublicContributeVoteRoute: typeof ApiPublicContributeVoteRoute
+  ApiPublicV1CivilRoute: typeof ApiPublicV1CivilRoute
   ApiPublicV1FiresRoute: typeof ApiPublicV1FiresRoute
   ApiPublicV1RiskRoute: typeof ApiPublicV1RiskRoute
   ApiPublicV1SourcesRoute: typeof ApiPublicV1SourcesRoute
@@ -964,6 +977,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicV1IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/v1/civil': {
+      id: '/api/public/v1/civil'
+      path: '/api/public/v1/civil'
+      fullPath: '/api/public/v1/civil'
+      preLoaderRoute: typeof ApiPublicV1CivilRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/v1/fires': {
       id: '/api/public/v1/fires'
       path: '/api/public/v1/fires'
@@ -1111,6 +1131,7 @@ const rootRouteChildren: RootRouteChildren = {
     ApiPublicContributeMyTranslationsRoute,
   ApiPublicContributeTranslationRoute: ApiPublicContributeTranslationRoute,
   ApiPublicContributeVoteRoute: ApiPublicContributeVoteRoute,
+  ApiPublicV1CivilRoute: ApiPublicV1CivilRoute,
   ApiPublicV1FiresRoute: ApiPublicV1FiresRoute,
   ApiPublicV1RiskRoute: ApiPublicV1RiskRoute,
   ApiPublicV1SourcesRoute: ApiPublicV1SourcesRoute,

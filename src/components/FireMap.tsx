@@ -56,7 +56,7 @@ const POINT_LAYERS = [
   "reports-points",
   "warnings-points",
 ];
-const AREA_LAYERS = ["official-fill", "warnings-fill"];
+const AREA_LAYERS = ["official-fill", "warnings-fill", "reports-fill"];
 const ZERO_PADDING: MapPadding = { top: 0, bottom: 0, left: 0, right: 0 };
 function cameraOffset({
   top,
@@ -114,11 +114,16 @@ function installLayers(map: maplibregl.Map) {
         clusterMaxZoom: 7,
       });
   }
-  for (const source of ["official", "warnings"]) {
+  for (const source of ["official", "warnings", "reports"]) {
     if (!map.getSource(`${source}-areas`))
       map.addSource(`${source}-areas`, { type: "geojson", data: EMPTY });
     if (map.getLayer(`${source}-fill`)) continue;
-    const color = source === "official" ? "#a84422" : "#326eaa";
+    const color =
+      source === "official"
+        ? "#a84422"
+        : source === "warnings"
+          ? "#326eaa"
+          : "#536879";
     map.addLayer({
       id: `${source}-fill`,
       source: `${source}-areas`,

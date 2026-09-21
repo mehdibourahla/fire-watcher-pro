@@ -301,8 +301,17 @@ export const en = {
     general: "General emergency",
   },
   civilMap: {
+    publicationactive: "Published information",
+    publicationexpired: "Validity expired",
+    publicationwithdrawn: "Publication withdrawn",
+    publicationNotice:
+      "Information from Info Trafic Algérie, reviewed by Nadhir. This is not an official warning or emergency instruction.",
+    publicationHistorical:
+      "Historical publication. Expiry or withdrawal does not mean the incident is over or the area is safe.",
+    sourcePublishedAt: "Source publication",
+    publicationUpdatedAt: "Last reviewed update",
     officialGroup: "Official warnings and reports",
-    observationsGroup: "Observations and citizen reports",
+    observationsGroup: "Media, observations and citizen reports",
     reportedBoundary:
       "The shaded boundary, when available, is the reported administrative area, not the hazard footprint.",
     boundaryUnavailable:
@@ -359,7 +368,7 @@ export const en = {
     unknown: "Unknown status",
     upcoming: "Upcoming",
     current: "Current",
-    showEnded: "Include ended situations",
+    showEnded: "Include ended and historical situations",
     showCandidates: "Include unverified observations",
     source: "Source",
     observedAt: "Observed",

@@ -1,4 +1,44 @@
 export const adminEn = {
+  publication: {
+    previous: "Previous publications",
+    next: "Older publications",
+    published: "Reviewed publications",
+    manage: "Manage publication",
+    review: "Review for publication",
+    active: "Published",
+    expired: "Expired",
+    withdrawn: "Withdrawn",
+    withdrawnExplanation:
+      "This publication was withdrawn. This does not mean the incident is over.",
+    policy:
+      "Publish attributed information on the public map and API. No notifications are sent. Confirm the source, current status and administrative area. Do not add official instructions.",
+    view: "View public information",
+    summary: "Reviewed summary (French)",
+    hazard: "Hazard",
+    area: "Administrative area",
+    chooseArea: "Choose an area from the evidence",
+    expires: "Valid until (your local time)",
+    reason: "Review reason (private)",
+    reasonRequired: "Enter a review reason.",
+    refresh: "Reload the latest version",
+    saved: "Publication saved.",
+    save: "Save revision",
+    publish: "Publish information",
+    withdraw: "Withdraw publication",
+    withdrawConfirm:
+      "Remove this publication from current information? This is permanent and does not announce an all-clear. Enter the reason above.",
+    cancel: "Cancel",
+    tooOld:
+      "This source is more than 72 hours old and cannot be published or extended.",
+    hazards: {
+      fire: "Fire",
+      weather: "Weather",
+      flood: "Flooding",
+      road: "Traffic",
+      other: "Other",
+    },
+    reportedStatus: "Source status: {{status}}",
+  },
   nav: {
     triage: "Triage",
     sources: "Sources",

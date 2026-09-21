@@ -12,6 +12,7 @@ import type { Situation } from "@/lib/civil-map";
 import { relativeTime, unitName, type AdminUnit } from "@/lib/nadhir";
 import { OfficialIncidentDetail } from "./OfficialIncidentDetail";
 import { HazardReportDetail } from "./HazardReportDetail";
+import { civilPublicationLifecycle } from "@/lib/civil-publication";
 
 export const hazardIcons = {
   all: ShieldCheck,
@@ -31,14 +32,18 @@ export function useSituationLabels(units: AdminUnit[], now: number) {
       return item.data.area_desc || t("civilMap.unknownLocation");
     if (item.source === "official")
       return unitName(item.data.commune ?? item.data.wilaya, locale);
+    if (item.source === "civil" && item.data.area)
+      return unitName(item.data.area, locale);
     return item.lat !== null && item.lon !== null
       ? `${item.lat.toFixed(3)}, ${item.lon.toFixed(3)}`
       : t("civilMap.unknownLocation");
   };
   const title = (item: Situation) =>
-    item.source === "onm"
-      ? item.data.headline_fr || item.data.title
-      : `${t(`civilMap.${item.category}`)} · ${place(item)}`;
+    item.source === "civil"
+      ? item.data.summary
+      : item.source === "onm"
+        ? item.data.headline_fr || item.data.title
+        : `${t(`civilMap.${item.category}`)} · ${place(item)}`;
   const source = (item: Situation) =>
     t(
       item.source === "official" && item.data.authority_tier === "media"
@@ -49,10 +54,15 @@ export function useSituationLabels(units: AdminUnit[], now: number) {
               official: "civilMap.sourceOfficial",
               citizen: "civilMap.sourceCitizen",
               onm: "civilMap.sourceOnm",
+              civil: "civilMap.sourceMedia",
             } as const
           )[item.source],
     );
   const status = (item: Situation) => {
+    if (item.source === "civil")
+      return t(
+        `civilMap.publication${civilPublicationLifecycle(item.data, now)}`,
+      );
     if (item.ended) return t("civilMap.ended");
     if (item.source === "official")
       return t(`official.statuses.${item.data.status}`);
@@ -112,7 +122,8 @@ export function SituationCard({
           </span>
           <span
             dir="auto"
-            className="mt-0.5 block text-sm font-semibold leading-snug lg:mt-1 lg:text-base"
+            lang={item.source === "civil" ? "fr" : undefined}
+            className="mt-0.5 block break-words text-sm font-semibold leading-snug lg:mt-1 lg:text-base"
           >
             {title(item)}
           </span>
@@ -130,7 +141,9 @@ export function SituationCard({
           {t("civilMap.unknownLocation")}
         </span>
       )}
-      {(item.source === "onm" || item.source === "official") &&
+      {(item.source === "onm" ||
+        item.source === "official" ||
+        item.source === "civil") &&
         item.lat !== null && (
           <span className="mt-1 block text-xs text-muted-foreground">
             {t("civilMap.areaPrecision")}
@@ -172,6 +185,67 @@ export function SituationDetails({
     );
   if (item.source === "citizen")
     return <HazardReportDetail report={item.data} locale={locale} now={now} />;
+  if (item.source === "civil")
+    return (
+      <div className="space-y-4">
+        <div>
+          <p className="text-xs font-semibold text-muted-foreground">
+            {source(item)} · {item.data.source_name}
+          </p>
+          <h2
+            dir="auto"
+            lang="fr"
+            className="mt-2 break-words text-lg font-semibold"
+          >
+            {title(item)}
+          </h2>
+          <p className="mt-2 text-sm font-medium">{status(item)}</p>
+        </div>
+        <p className="rounded-xl bg-muted p-3 text-sm">
+          {t("civilMap.publicationNotice")}
+        </p>
+        {item.ended && (
+          <p className="rounded-xl border p-3 text-sm">
+            {t("civilMap.publicationHistorical")}
+          </p>
+        )}
+        <dl className="space-y-3 text-sm">
+          <div>
+            <dt className="text-muted-foreground">{t("civilMap.area")}</dt>
+            <dd dir="auto">{place(item)}</dd>
+          </div>
+          {(
+            [
+              ["sourcePublishedAt", item.data.source_published_at],
+              ["publicationUpdatedAt", item.data.updated_at],
+              ["validUntil", item.data.expires_at],
+            ] as const
+          ).map(([key, value]) => (
+            <div key={key}>
+              <dt className="text-muted-foreground">{t(`civilMap.${key}`)}</dt>
+              <dd>
+                <time dateTime={value}>
+                  {new Date(value).toLocaleString(locale)}
+                </time>
+              </dd>
+            </div>
+          ))}
+        </dl>
+        <p className="text-xs text-muted-foreground">
+          {t("civilMap.areaPrecision")}
+        </p>
+        {/^https?:\/\//.test(item.data.source_url) && (
+          <a
+            href={item.data.source_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex min-h-11 items-center justify-center rounded-xl border px-4 text-sm font-semibold"
+          >
+            {t("civilMap.openSource")}
+          </a>
+        )}
+      </div>
+    );
   return (
     <div className="space-y-5">
       <div>

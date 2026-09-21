@@ -22,6 +22,22 @@ Seed and ops credentials live in `~/.config/nadhir/`, never in this repo.
 
 ## Phases
 
+### Civil alerting milestones — 2026-09-16 branch status
+
+1. Operational readiness: isolated recovery/deduplication drills pass; production fault
+   injection still needs a maintenance window. DGPC quarantine requires investigation.
+   Evidence: [operational audit](docs/audits/2026-09-16-operational-readiness.md).
+2. Multi-hazard publication lifecycle: implemented on `codex/civil-alert-lifecycle`, pending
+   release. Reviewed fire/weather/flood/road/other information supports publish, revision,
+   expiry, withdrawal, public historical links and CAP revision references.
+3. ITA review-to-publication: implemented on the same branch, pending release. Operators
+   select an evidence-supported area and review summary/validity before map/API publication.
+   Raw extraction and review reasons remain private. Automatic notifications are unchanged.
+
+Next: official multi-hazard authority onboarding and delivery policy, citizen hazard/area
+preferences, then preparedness content and institutional interoperability. These are not
+provided by the informational ITA publication workflow.
+
 - [x] P1 Foundation: schema, design system, i18n (ar/fr/en/kab), app shell
 - [x] P2 Live map, cluster markers, today panel
 - [x] P3 Fire detail (timeline, wind, nearest settlements)

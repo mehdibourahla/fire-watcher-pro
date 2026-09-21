@@ -4,11 +4,16 @@ import { useTranslation } from "react-i18next";
 import { itaReportsQuery } from "@/lib/admin-ita";
 import { myRolesQuery } from "@/lib/reports";
 import { supabase } from "@/integrations/supabase/client";
+import { civilPublicationsQuery } from "@/lib/civil-publication-client";
+import { CivilPublicationReview } from "./CivilPublicationReview";
 
 export function ItaReports() {
   const { t } = useTranslation("admin");
   const [exhaustedOnly, setExhaustedOnly] = useState(false);
   const reports = useQuery(itaReportsQuery(exhaustedOnly));
+  const publications = useQuery(civilPublicationsQuery(true));
+  const [historyPage, setHistoryPage] = useState(0);
+  const history = useQuery(civilPublicationsQuery(true, historyPage));
   const roles = useQuery(myRolesQuery);
   const isAdmin = !roles.isError && (roles.data ?? []).includes("admin");
   const qc = useQueryClient();
@@ -28,6 +33,50 @@ export function ItaReports() {
       <p className="mt-1 text-sm text-muted-foreground">
         {t("sources.ita.description")}
       </p>
+      {publications.isError && (
+        <p role="alert" className="text-destructive">
+          {publications.error.message}
+        </p>
+      )}
+      <details className="mt-3">
+        <summary className="cursor-pointer text-sm font-medium">
+          {t("publication.published")}
+        </summary>
+        {history.isError && (
+          <p role="alert" className="text-destructive">
+            {history.error.message}
+          </p>
+        )}
+        {history.data?.map((publication) => (
+          <div key={publication.id} className="mt-3 text-sm">
+            <p lang="fr">{publication.summary}</p>
+            <CivilPublicationReview
+              reportId={publication.ita_report_id}
+              incidentIndex={publication.incident_index}
+              summary={publication.summary}
+              publishedAt={publication.source_published_at}
+              publication={publication}
+            />
+          </div>
+        ))}
+        <div className="mt-3 flex gap-3 text-sm">
+          <button
+            type="button"
+            disabled={historyPage === 0 || history.isPending}
+            onClick={() => setHistoryPage((page) => page - 1)}
+          >
+            {t("publication.previous")}
+          </button>
+          <span>{historyPage + 1}</span>
+          <button
+            type="button"
+            disabled={history.data?.length !== 500 || history.isPending}
+            onClick={() => setHistoryPage((page) => page + 1)}
+          >
+            {t("publication.next")}
+          </button>
+        </div>
+      </details>
       <label className="mt-2 flex gap-2 text-sm">
         <input
           type="checkbox"
@@ -110,6 +159,11 @@ export function ItaReports() {
             {report.extraction?.incidents.map((incident, index) => (
               <div key={index} className="mt-2 border-s-2 border-border ps-3">
                 <p lang="fr">{incident.summary_fr}</p>
+                <p className="mt-1 text-xs">
+                  {t("publication.reportedStatus", {
+                    status: incident.current_status,
+                  })}
+                </p>
                 <blockquote dir="auto" className="mt-1 text-muted-foreground">
                   {incident.evidence}
                 </blockquote>
@@ -118,6 +172,20 @@ export function ItaReports() {
                     {reason}
                   </p>
                 ))}
+                {report.extraction?.disposition === "incident_report" &&
+                  publications.isSuccess && (
+                    <CivilPublicationReview
+                      reportId={report.id}
+                      incidentIndex={index}
+                      summary={incident.summary_fr}
+                      publishedAt={report.published_at}
+                      publication={publications.data.find(
+                        (item) =>
+                          item.ita_report_id === report.id &&
+                          item.incident_index === index,
+                      )}
+                    />
+                  )}
               </div>
             ))}
             {report.extraction?.review_reasons.map((reason, index) => (
