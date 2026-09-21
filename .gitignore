@@ -18,3 +18,4 @@ dist
 
 # scratch fetches; never project files
 /*.html
+/supabase/tests/.migration-fixtures/
