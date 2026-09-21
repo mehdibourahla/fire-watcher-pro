@@ -8,6 +8,7 @@ import {
   reviseCivilPublication,
 } from "@/lib/civil-publication-client";
 import {
+  CIVIL_PUBLICATION_MAX_AGE_HOURS,
   civilPublicationLifecycle,
   type CivilPublication,
 } from "@/lib/civil-publication";
@@ -65,7 +66,8 @@ function PublicationForm({
     publication?.hazard ?? "road",
   );
   const [areaId, setAreaId] = useState(publication?.area_id ?? "");
-  const maximum = Date.parse(publishedAt) + 72 * 3_600_000;
+  const maximum =
+    Date.parse(publishedAt) + CIVIL_PUBLICATION_MAX_AGE_HOURS * 3_600_000;
   const [expires, setExpires] = useState(
     localDate(
       publication?.expires_at ??

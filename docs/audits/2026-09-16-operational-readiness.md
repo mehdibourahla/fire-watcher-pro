@@ -85,13 +85,20 @@ The mobile historical detail also passed at 390 CSS pixels without document hori
 The temporary checkout disappeared during the interruption. Its recorded patches were recovered
 into a durable managed worktree; generated types were rebuilt from the local database. The
 recovered branch passed 953 tests, TypeScript, the build and lint (zero errors, 66 existing
-warnings). Independent final quality review passed. Fresh ordered migration replay remains a CI gate.
+warnings). Independent final quality review passed. Fresh ordered migration replay and the
+database/concurrency CI job passed on PR #138 (run `35608558581`, commit `398de665`).
 
 Browser QA repeated publication and withdrawal, then exercised a concurrent edit: background
 refresh preserved the unsaved draft; saving its old revision returned a conflict; explicit
 reload adopted the other operator's revision. Local Telegram pause/resume also passed and
 returned to Running. The publication audit persisted three revisions and created no delivery
 jobs. Synthetic source/publication fixtures were removed before the complete SQL rerun.
+
+Production read-only refresh at 13:54 UTC on 21 September found fresh collection and zero
+pending items for both sources, with four DGPC quarantines and one ITA quarantine. The new
+DGPC item failed place interpretation; ITA rejected unsupported location evidence after five
+attempts. These remain bounded interpretation failures for evidence review, not grounds to
+reset retries or broadcast uncertain information. No production mutations were performed.
 
 The owner still needs to choose a production source and maintenance window for production fault injection. Local SQL operator acknowledgment and recovery are proven; a fresh browser exercise of the operator response flow and a controlled source transport outage through the complete application pipeline remain separate checks. These drills do not prove disaster restoration, an exactly-once external delivery guarantee or recipient receipt.
 

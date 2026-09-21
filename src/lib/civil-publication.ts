@@ -38,10 +38,3 @@ export function civilPublicationLifecycle(
   if (publication.state === "withdrawn") return "withdrawn";
   return Date.parse(publication.expires_at) > now ? "active" : "expired";
 }
-
-export function isCivilPublicationActive(
-  publication: Pick<CivilPublication, "state" | "expires_at">,
-  now = Date.now(),
-) {
-  return civilPublicationLifecycle(publication, now) === "active";
-}
