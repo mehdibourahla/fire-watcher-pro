@@ -631,6 +631,7 @@ export const ar: Translation = {
   },
   status: {
     collectionAt: "آخر جلب ناجح: {{time}}",
+    processingDegraded: "الجمع محدّث · المعالجة غير مكتملة",
     processingBacklog:
       "المعالجة: {{pending}} قيد الانتظار · {{quarantined}} تحتاج مراجعة",
     degradedCount:

@@ -642,6 +642,7 @@ export const kab: Translation = {
   },
   status: {
     collectionAt: "Dernière collecte réussie : {{time}}",
+    processingDegraded: "Aleqqem n yinefkan yemmed · usesfer ur yemmid ara",
     processingBacklog:
       "Traitement : {{pending}} en attente · {{quarantined}} à examiner",
     degradedCount:

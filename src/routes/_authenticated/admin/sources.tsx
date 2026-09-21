@@ -248,7 +248,9 @@ function SourcesPage() {
                 <td
                   className={`py-1.5 pr-3 ${STATE_TONE[row.state ?? ""] ?? ""}`}
                 >
-                  {row.state}
+                  {row.processing_only
+                    ? t("translation:status.processingDegraded")
+                    : row.state}
                 </td>
                 <td className="py-1.5 pr-3 text-muted-foreground">
                   {row.criticality}

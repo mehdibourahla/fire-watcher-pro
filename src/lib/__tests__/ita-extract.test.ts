@@ -146,8 +146,81 @@ it("identifies the omitted-word location quotes and supplies the source for corr
   await expect(
     extractItaReport({ ...post, message }, repeated),
   ).rejects.toThrow("incidents[0].location_text");
-  expect(repeated.complete).toHaveBeenCalledTimes(2);
+  expect(repeated.complete).toHaveBeenCalledTimes(3);
 });
+it("asks the LLM to preserve the report with an unknown location after repeated Arabic quote failure", async () => {
+  const message = "كان غالق الطريق ورام للفارماسي لي فالاستقلال";
+  const incident = {
+    ...output.incidents[0],
+    evidence: "كان غالق الطريق",
+    location_text: "الفارماسي لي فالاستقلال",
+    location_evidence: "الفارماسي لي فالاستقلال",
+    direction_text: null,
+    direction_evidence: null,
+  };
+  const uncertain = {
+    ...output,
+    incidents: [
+      {
+        ...incident,
+        summary_fr: "Un véhicule aurait bloqué la route. Lieu non confirmé.",
+        location_text: null,
+        location_evidence: null,
+        region_assessment: "unverified",
+        review_reasons: ["Lieu non confirmé par une citation exacte."],
+      },
+    ],
+  };
+  const d = deps({ ...output, incidents: [incident] });
+  d.complete
+    .mockResolvedValueOnce(JSON.stringify({ ...output, incidents: [incident] }))
+    .mockResolvedValueOnce(JSON.stringify({ ...output, incidents: [incident] }))
+    .mockResolvedValueOnce(JSON.stringify(uncertain));
+  expect(await extractItaReport({ ...post, message }, d)).toEqual(uncertain);
+  expect(d.complete).toHaveBeenCalledTimes(3);
+  expect(d.complete.mock.calls[2]?.[0].messages.at(-1)?.content).toContain(
+    "incidents[0].location",
+  );
+});
+it.each(["missing review", "claimed region", "lost incident"])(
+  "rejects uncertainty fallback with %s",
+  async (defect) => {
+    const rejected = {
+      ...output,
+      incidents: [
+        {
+          ...output.incidents[0],
+          location_text: "invented",
+          location_evidence: "invented",
+        },
+      ],
+    };
+    const uncertain = {
+      ...output,
+      incidents:
+        defect === "lost incident"
+          ? []
+          : [
+              {
+                ...output.incidents[0],
+                location_text: null,
+                location_evidence: null,
+                region_assessment:
+                  defect === "claimed region" ? "consistent" : "unverified",
+                review_reasons:
+                  defect === "missing review" ? [] : ["Lieu non confirmé."],
+              },
+            ],
+    };
+    const d = deps(rejected);
+    d.complete
+      .mockResolvedValueOnce(JSON.stringify(rejected))
+      .mockResolvedValueOnce(JSON.stringify(rejected))
+      .mockResolvedValueOnce(JSON.stringify(uncertain));
+    await expect(extractItaReport(post, d)).rejects.toThrow();
+    expect(d.complete).toHaveBeenCalledTimes(3);
+  },
+);
 it("shares the report deadline with its repair request", async () => {
   const invalid = {
     ...output,

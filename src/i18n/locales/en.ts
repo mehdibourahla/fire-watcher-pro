@@ -639,6 +639,7 @@ export const en = {
   },
   status: {
     collectionAt: "Last successful collection: {{time}}",
+    processingDegraded: "Collection up to date · processing incomplete",
     processingBacklog:
       "Processing: {{pending}} queued · {{quarantined}} need review",
     degradedCount:

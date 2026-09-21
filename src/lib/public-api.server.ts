@@ -229,7 +229,12 @@ export function serializePublicSourceStatus(
       },
       fallback: source.fallback_contract_key,
       reason: source.public_reason_code,
-      ...(source.processing ? { processing: source.processing } : {}),
+      ...(source.processing
+        ? {
+            processing: source.processing,
+            processing_only: source.processing_only ?? false,
+          }
+        : {}),
     })),
   };
 }

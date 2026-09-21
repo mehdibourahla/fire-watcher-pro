@@ -15,6 +15,7 @@ export type SourceFreshnessBasis =
   "last_success_at" | "upstream_published_at" | "data_through" | "published_at";
 
 export type SourceHealth = {
+  processing_only?: boolean;
   processing?: SourceProcessingHealth;
   key: string;
   label: string;
@@ -48,13 +49,16 @@ export function withProcessingHealth<
 >(
   rows: T[],
   processing: SourceProcessingHealth[],
-): (T & { processing?: SourceProcessingHealth })[] {
+): (T & { processing?: SourceProcessingHealth; processing_only?: boolean })[] {
   return rows.map((row) => {
     const status = processing.find((item) => item.key === row.key);
     return status
       ? {
           ...row,
           processing: status,
+          processing_only:
+            row.state === "healthy" &&
+            (status.pending > 0 || status.quarantined > 0),
           state:
             row.state === "healthy" &&
             (status.pending > 0 || status.quarantined > 0)

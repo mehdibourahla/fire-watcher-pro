@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { withProcessingHealth } from "./source-health";
 
 export type SourceHealthRow = {
+  processing_only?: boolean;
   key: string | null;
   label: string | null;
   state: string | null;
