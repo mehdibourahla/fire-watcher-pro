@@ -9,6 +9,7 @@ import {
   fireSeverity,
   insideCommunes,
   onmRelayPlan,
+  onmWarningIsCurrent,
   kmToMultiPolygon,
   planFireBroadcast,
   pointInMultiPolygon,
@@ -566,6 +567,35 @@ describe("onmRelayPlan", () => {
     );
     expect(plan.relay.map((w) => w.id)).toEqual(["a"]);
     expect(plan.suppressed.map((w) => w.id)).toEqual(["b", "c"]);
+  });
+
+  it("stops publishing missing-expiry warnings after their bounded validity", () => {
+    const open = warning("open", { expiresMs: null });
+    expect(onmWarningIsCurrent(open, t("2026-09-01T14:59:59Z"))).toBe(true);
+    expect(onmWarningIsCurrent(open, t("2026-09-01T15:00:00Z"))).toBe(false);
+    expect(
+      onmWarningIsCurrent(
+        warning("no-onset", { onsetMs: null, expiresMs: null }),
+        t("2026-09-01T09:31:19Z"),
+      ),
+    ).toBe(false);
+  });
+
+  it("allows advance official warnings but rejects expired or invalid validity", () => {
+    const now = t("2026-08-31T12:00:00Z");
+    expect(onmWarningIsCurrent(warning("advance"), now)).toBe(true);
+    expect(
+      onmWarningIsCurrent(warning("expired"), t("2026-09-01T00:00:00Z")),
+    ).toBe(false);
+    expect(
+      onmWarningIsCurrent(warning("future-issued", { sentMs: now + 1 }), now),
+    ).toBe(false);
+    expect(
+      onmWarningIsCurrent(warning("backward", { expiresMs: now }), now),
+    ).toBe(false);
+    expect(
+      onmWarningIsCurrent(warning("invalid", { expiresMs: NaN }), now),
+    ).toBe(false);
   });
 
   it("suppresses a reissue of something already broadcast in an earlier run", () => {

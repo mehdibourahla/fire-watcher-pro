@@ -39,6 +39,12 @@ authority (e.g. Protection Civile) originates an Instruction; Nadhir relays it, 
 and timestamped, never generates one. Hard invariant, no exceptions in any mode.
 _Avoid_: recommendation, guidance (see Standing Guidance)
 
+**Official Warning**:
+A warning issued by an identified authority for a stated hazard, area and period, with
+the authority's wording and lifecycle. It is distinct from a retrospective incident report
+or a reviewed media publication. Nadhir relays its meaning and attribution; an internal
+delivery deadline never becomes an authority-declared expiry or all-clear.
+
 ### Modes
 
 **Survival Mode**:

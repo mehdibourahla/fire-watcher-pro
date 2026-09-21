@@ -370,6 +370,16 @@ function validity(w: OnmWarning): { start: number; end: number } {
   };
 }
 
+export function onmWarningIsCurrent(w: OnmWarning, now: number): boolean {
+  const { start, end } = validity(w);
+  return (
+    [w.sentMs, start, end, now].every(Number.isFinite) &&
+    w.sentMs <= now &&
+    end > start &&
+    end > now
+  );
+}
+
 function covers(previous: OnmWarning, next: OnmWarning): boolean {
   if (previous.wilayaId !== next.wilayaId || previous.event !== next.event)
     return false;

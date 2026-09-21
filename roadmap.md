@@ -22,21 +22,26 @@ Seed and ops credentials live in `~/.config/nadhir/`, never in this repo.
 
 ## Phases
 
-### Civil alerting milestones — 2026-09-16 branch status
+### Civil alerting milestones — 2026-09-21
 
-1. Operational readiness: isolated recovery/deduplication drills pass; production fault
-   injection still needs a maintenance window. DGPC quarantine requires investigation.
-   Evidence: [operational audit](docs/audits/2026-09-16-operational-readiness.md).
-2. Multi-hazard publication lifecycle: implemented on `codex/civil-alert-lifecycle`, pending
-   release. Reviewed fire/weather/flood/road/other information supports publish, revision,
+1. Source autonomy: #139 deployed. All five quarantined interpretations recovered on normal
+   scheduled runs; 16/16 source-health checks passed, with zero open replay gaps and watchdog
+   issues. Four exhausted historical gaps remain honestly marked unrecoverable. Broader
+   upstream-outage and disaster-restoration drills remain operational work.
+2. Multi-hazard publication lifecycle: #138 deployed. Reviewed fire/weather/flood/road/other information supports publish, revision,
    expiry, withdrawal, public historical links and CAP revision references.
-3. ITA review-to-publication: implemented on the same branch, pending release. Operators
+3. ITA review-to-publication: included in #138. Operators
    select an evidence-supported area and review summary/validity before map/API publication.
    Raw extraction and review reasons remain private. Automatic notifications are unchanged.
 
-Next: official multi-hazard authority onboarding and delivery policy, citizen hazard/area
-preferences, then preparedness content and institutional interoperability. These are not
-provided by the informational ITA publication workflow.
+4. [Official notification policy](docs/official-notification-policy.md): source/channel rules
+   defined; this branch enforces ONM validity at publication and in delivery queues. Complete
+   ONM cancellation/reference handling, structured operator-warning metadata and a distinct
+   DGPC non-fire warning adapter remain before wider automatic multi-hazard delivery.
+
+Next: implement those official-warning adapters, citizen hazard/area preferences, then
+preparedness content and institutional interoperability. ITA publication does not authorize
+notifications or authority instructions.
 
 - [x] P1 Foundation: schema, design system, i18n (ar/fr/en/kab), app shell
 - [x] P2 Live map, cluster markers, today panel

@@ -1,18 +1,25 @@
 # Known gaps
 
-## Civil platform update — 2026-09-16
+## Civil platform update — 2026-09-21
 
-The map supports multiple civil hazards. Branch `codex/civil-alert-lifecycle` adds reviewed
+The map supports multiple civil hazards. Deployed PR #138 adds reviewed
 ITA publications, audited revisions/withdrawal, automatic read-time expiry and public JSON/CAP.
-This work is not deployed yet. It does not expand notification eligibility or turn media into
+It does not expand notification eligibility or turn media into
 authority instructions. Official multi-hazard onboarding/delivery remains a separate milestone.
 
-Local recovery/deduplication drills pass. A production outage drill still requires a source
-and window; three quarantined DGPC documents need diagnosis. ITA production ingestion is
-healthy in the [dated operational audit](docs/audits/2026-09-16-operational-readiness.md).
-The owner previously confirmed iPhone push receipt; no new device receipt test was run here.
+Source recovery #139 is deployed: all four DGPC and one ITA quarantines recovered automatically;
+16/16 source-health checks, zero pending interpretations, zero open replay gaps and zero
+watchdog issues were verified on 21 September. The independent database-triggered watchdog
+ran successfully. Four exhausted historical gaps are retained as unrecoverable.
+Broader upstream-outage and disaster-restoration exercises remain. The owner previously
+confirmed iPhone push, private Telegram and authentication email receipt.
 
-## Current priorities — reconciled 2026-09-08
+The [official notification policy](docs/official-notification-policy.md) defines source,
+hazard, channel and lifecycle requirements. This branch fixes ONM publication/delivery expiry.
+ONM cancellation chains, structured manual-warning metadata and DGPC non-fire adapters remain
+explicit gaps; collecting a post or publishing an ITA item does not make it push-eligible.
+
+## Historical priorities — reconciled 2026-09-08
 
 Atomic risk publication is implemented;
 production's `local_fwi` checkpoint is complete for 2026-09-08. Local FWI percentiles and
