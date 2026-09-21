@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { investigateCivilReport } from "../civil-agent.server";
+import type { CivilOfficialEvidence } from "../civil-agent";
 
 const area = {
   id: "16000000-0000-4000-8000-000000000010",
@@ -40,6 +41,7 @@ const decision = {
     location_evidence: "ولاية تيبازة",
     expires_at: "2026-09-21T16:00:00Z",
     duplicate_id: null,
+    official_match: null,
   },
 };
 function deps(actions: unknown[]) {
@@ -52,9 +54,157 @@ function deps(actions: unknown[]) {
     ),
     searchAreas: vi.fn(async () => [area]),
     recentPublications: vi.fn(async () => []),
+    officialReports: vi.fn(async () => [] as CivilOfficialEvidence[]),
   };
 }
 describe("civil publication investigation", () => {
+  it("corrects an invented tool parent within the existing budget without executing it", async () => {
+    const tools = deps([
+      {
+        action: "search_areas",
+        query: "Tipaza",
+        parent_id: "00000000-0000-0000-0000-000000000000",
+        decision: null,
+      },
+      {
+        action: "search_areas",
+        query: "Tipaza",
+        parent_id: null,
+        decision: null,
+      },
+      decision,
+    ]);
+    expect((await investigateCivilReport(input, tools)).decision.outcome).toBe(
+      "publish",
+    );
+    expect(tools.searchAreas).toHaveBeenCalledTimes(1);
+    expect(tools.complete.mock.calls[1]![0].messages.at(-1)!.content).toContain(
+      "unobserved parent",
+    );
+  });
+  it.each([
+    [
+      "unseen incident",
+      { incident_id: "18000000-0000-4000-8000-000000000011" },
+      "unobserved official",
+    ],
+    [
+      "unseen mention",
+      { mention_id: "19000000-0000-4000-8000-000000000011" },
+      "unobserved official",
+    ],
+    [
+      "invented ITA quote",
+      { source_quote: "invented" },
+      "unsupported comparison quote",
+    ],
+    [
+      "invented official quote",
+      { official_quote: "invented" },
+      "unsupported comparison quote",
+    ],
+  ])("rejects %s in an official relationship", async (_, patch, expected) => {
+    const tools = deps([
+      {
+        ...decision,
+        decision: {
+          ...decision.decision,
+          outcome: "discard",
+          area_id: null,
+          location_evidence: null,
+          expires_at: null,
+          official_match: {
+            incident_id: "18000000-0000-4000-8000-000000000010",
+            mention_id: "19000000-0000-4000-8000-000000000010",
+            relationship: "duplicate",
+            reason: "Même événement",
+            source_quote: "حادث مرور",
+            official_quote: "حريق",
+            ...patch,
+          },
+        },
+      },
+    ]);
+    tools.officialReports.mockResolvedValue([
+      {
+        id: "18000000-0000-4000-8000-000000000010",
+        mention_id: "19000000-0000-4000-8000-000000000010",
+        evidence: "حريق",
+        status: "ongoing",
+        as_of: input.publishedAt,
+        kind: "vegetation",
+        place_text: null,
+        wilaya_id: area.id,
+        commune_id: null,
+        source_url: "https://t.me/DGPCDZ/1",
+        source_published_at: input.publishedAt,
+      },
+    ]);
+    await expect(investigateCivilReport(input, tools)).rejects.toThrow(
+      expected as string,
+    );
+    expect(tools.complete).toHaveBeenCalledTimes(6);
+  });
+  it("fails for retry when official evidence is unavailable, never treating it as no match", async () => {
+    const tools = deps([decision]);
+    tools.officialReports.mockRejectedValue(new Error("database unavailable"));
+    await expect(investigateCivilReport(input, tools)).rejects.toThrow(
+      "database unavailable",
+    );
+    expect(tools.complete).not.toHaveBeenCalled();
+  });
+  it("grounds a cross-source duplicate in observed official evidence", async () => {
+    const official = {
+      id: "18000000-0000-4000-8000-000000000010",
+      mention_id: "19000000-0000-4000-8000-000000000010",
+      evidence: "حريق في تيبازة",
+      status: "ongoing",
+      as_of: input.publishedAt,
+      kind: "vegetation",
+      place_text: "Tipaza",
+      wilaya_id: area.id,
+      commune_id: null,
+      source_url: "https://t.me/DGPCDZ/1",
+      source_published_at: input.publishedAt,
+    };
+    const tools = deps([
+      {
+        action: "official_reports",
+        query: "تيبازة",
+        parent_id: null,
+        decision: null,
+      },
+      {
+        ...decision,
+        decision: {
+          ...decision.decision,
+          outcome: "discard",
+          area_id: null,
+          location_evidence: null,
+          expires_at: null,
+          official_match: {
+            incident_id: official.id,
+            mention_id: official.mention_id,
+            relationship: "duplicate",
+            reason: "Même événement déjà rapporté.",
+            source_quote: "حريق في تيبازة",
+            official_quote: official.evidence,
+          },
+        },
+      },
+    ]);
+    tools.officialReports.mockResolvedValue([official]);
+    const result = await investigateCivilReport(
+      { ...input, body: "حريق في تيبازة", incident: { kind: "fire" } },
+      tools,
+    );
+    expect(result.decision.outcome).toBe("discard");
+    expect(result.decision.official_match?.incident_id).toBe(official.id);
+    expect(result.trace.at(-1)).toMatchObject({
+      action: "official_reports",
+      results: [official],
+    });
+  });
   it("compares quotes against canonical source whitespace", async () => {
     const tools = deps([
       {
@@ -145,7 +295,7 @@ describe("civil publication investigation", () => {
     const result = await investigateCivilReport(input, tools);
     expect(tools.searchAreas).toHaveBeenCalledWith("Tipaza", null);
     expect(result.decision.outcome).toBe("publish");
-    expect(result.trace[1]).toMatchObject({
+    expect(result.trace.at(-1)).toMatchObject({
       action: "search_areas",
       results: [area],
     });

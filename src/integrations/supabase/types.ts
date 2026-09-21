@@ -3530,6 +3530,22 @@ export type Database = {
       };
     };
     Functions: {
+      search_civil_official_evidence: {
+        Args: { _query?: string | null; _area?: string | null };
+        Returns: {
+          id: string;
+          mention_id: string;
+          evidence: string;
+          status: string;
+          as_of: string;
+          kind: string;
+          place_text: string | null;
+          wilaya_id: string;
+          commune_id: string | null;
+          source_url: string;
+          source_published_at: string;
+        }[];
+      };
       finish_civil_investigation: {
         Args: {
           _attempt: number;

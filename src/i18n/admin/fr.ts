@@ -16,6 +16,11 @@ export const adminFr: AdminTranslation = {
       failed: "Échec de l’investigation",
       superseded: "Publication existante conservée",
       evidence: "Preuves consultées",
+      official: {
+        duplicate: "Déjà couvert par la Protection Civile",
+        context: "Éléments officiels liés",
+        conflict: "Écarts avec les éléments officiels",
+      },
     },
     previous: "Publications précédentes",
     next: "Publications plus anciennes",

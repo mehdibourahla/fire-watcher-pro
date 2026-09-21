@@ -14,6 +14,11 @@ export const adminEn = {
       failed: "Investigation failed",
       superseded: "Existing publication retained",
       evidence: "Evidence consulted",
+      official: {
+        duplicate: "Already covered by Protection Civile",
+        context: "Related official evidence",
+        conflict: "Differences from official evidence",
+      },
     },
     previous: "Previous publications",
     next: "Older publications",

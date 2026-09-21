@@ -1,7 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ItaExtractionSchema } from "@/lib/text-sources/ita-extraction";
-import { CivilDecisionSchema } from "@/lib/civil-agent";
+import { StoredCivilDecisionSchema } from "@/lib/civil-agent";
 
 export const civilAttentionQuery = (page = 0) =>
   queryOptions({
@@ -22,7 +22,7 @@ export const civilAttentionQuery = (page = 0) =>
           .sort((a, b) => b.attempt - a.attempt)
           .map((entry) => ({
             ...entry,
-            decision: CivilDecisionSchema.parse(entry.decision),
+            decision: StoredCivilDecisionSchema.parse(entry.decision),
           }));
         const extraction = ItaExtractionSchema.parse(work.report.extraction);
         return {
@@ -53,7 +53,7 @@ export const civilInvestigationsQuery = queryOptions({
         .sort((a, b) => b.attempt - a.attempt)
         .map((entry) => ({
           ...entry,
-          decision: CivilDecisionSchema.parse(entry.decision),
+          decision: StoredCivilDecisionSchema.parse(entry.decision),
         }));
       return {
         ...work,

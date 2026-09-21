@@ -21,6 +21,16 @@ Automatic publication cannot supersede any previously published version of the s
 
 ## Subsequent integration
 
+### Official-source reconciliation slice
+
+Extend the existing investigation with a bounded tool for current, attributed DGPC incident evidence. The agent decides whether coverage is redundant, adds useful context, or conflicts; similarity of area/time alone never makes that decision. Exact source quotes and observed incident/mention identifiers ground each relationship. Redundant coverage can be discarded; useful additional information can still publish as ITA. Warnings and satellite detections are deliberately excluded from this incident-identity slice.
+
+Persist the relationship in the private immutable decision ledger and show it in operator history. Citizens benefit from fewer redundant publications; public attribution, official incident state and notification eligibility remain unchanged. Recheck the official evidence at persistence so a changed/unlisted incident triggers retry rather than applying a stale comparison. An unavailable evidence tool is a retryable failure, not an empty successful search.
+
+Validate unseen IDs, invented quotes, duplicate/publication contradictions, stale official mentions, transaction rollback, and provider failure. Run a real-model read-only comparison, full application/SQL checks, and independent specification then quality/database review before opening the next PR.
+
+Evidence: 997 application tests and 989 SQL assertions pass, including v1-history compatibility, stale place/status rejection, useful context publication and zero broadcasts. The existing human/agent concurrency regression passes. Independent specification, quality and database reviews passed. A live Gemini probe initially misclassified repetition as context; the revised instructions require identifying the concrete added fact. The final read-only run preserved a real Tipaza road report, discarded a synthetic exact repeat of actual DGPC evidence, and retained a synthetic road-obstruction update as useful context. These three scenarios are limited semantic evidence, not a reliability-rate claim; no probe wrote to production.
+
 The same evidence-first approach extends to DGPC interpretation, multi-source event reconciliation, weather relevance and recovery planning. Polygon/road-provider evidence is required before precise point/corridor rendering. This milestone uses existing honest administrative-area rendering; it does not invent geometry or reclassify ITA as an official warning. Existing official channel restrictions, kill switches and safety-instruction policy remain mandatory execution constraints.
 
 ## Verification evidence
