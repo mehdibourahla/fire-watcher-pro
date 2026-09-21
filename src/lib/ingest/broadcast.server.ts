@@ -16,6 +16,7 @@ import {
   fuelLimitedCodes,
   insideCommunes,
   onmRelayPlan,
+  onmWarningIsCurrent,
   planFireBroadcast,
   pushCodesFor,
   setThreadCoverage,
@@ -803,7 +804,10 @@ async function relayOnmWarnings(): Promise<number> {
   const relayedIds = new Set(relayed.map((w) => w.id));
 
   const { relay, suppressed } = onmRelayPlan(
-    warnings.filter((w) => !relayedIds.has(w.id)).map(toWarning),
+    warnings
+      .filter((w) => !relayedIds.has(w.id))
+      .map(toWarning)
+      .filter((warning) => onmWarningIsCurrent(warning, Date.parse(nowIso))),
     relayed,
   );
   for (const warning of suppressed)
