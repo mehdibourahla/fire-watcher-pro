@@ -2,6 +2,21 @@ import type { AdminTranslation } from "./en";
 
 export const adminFr: AdminTranslation = {
   publication: {
+    agent: {
+      attention: "Décisions humaines et investigations en échec",
+      correction:
+        "Publier un incident d’un message corrigé retire toutes les publications actives de ses versions précédentes. L’historique des retraits est conservé.",
+      expired: "Source trop ancienne",
+      pending: "Investigation en attente",
+      processing: "Investigation en cours",
+      hold: "En attente de nouvelles preuves",
+      publish: "Publié par l’agent",
+      discard: "Non retenu par l’agent",
+      review: "Décision humaine nécessaire",
+      failed: "Échec de l’investigation",
+      superseded: "Publication existante conservée",
+      evidence: "Preuves consultées",
+    },
     previous: "Publications précédentes",
     next: "Publications plus anciennes",
     published: "Publications examinées",
@@ -221,7 +236,7 @@ export const adminFr: AdminTranslation = {
 
       title: "Signalements Info Trafic Algérie",
       description:
-        "50 dernières versions collectées. Informations de presse interprétées par IA, à vérifier. Résumés en français. Aucune alerte publique envoyée.",
+        "50 dernières versions collectées. Un agent enquête et décide de la publication ; les cas non résolus apparaissent dans la file de revue. Résumés en français. Aucune notification envoyée.",
       empty: "Aucun signalement ITA collecté.",
       received: "Collecté le {{time}}",
       extracted: "Interprétation IA — non vérifiée",

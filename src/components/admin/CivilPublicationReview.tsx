@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { adminUnitsQuery } from "@/lib/nadhir";
+import type { CivilDecision } from "@/lib/civil-agent";
 import {
   civilPublicationsQuery,
   publishItaPublication,
@@ -19,6 +20,7 @@ type Props = {
   summary: string;
   publishedAt: string;
   publication?: CivilPublication | undefined;
+  suggestion?: CivilDecision | undefined;
 };
 
 function localDate(value: string) {
@@ -53,6 +55,7 @@ function PublicationForm({
   summary: initialSummary,
   publishedAt,
   publication: initialPublication,
+  suggestion,
   onDone,
 }: Props & { onDone: () => void }) {
   const { t } = useTranslation("admin");
@@ -60,12 +63,14 @@ function PublicationForm({
   const units = useQuery(adminUnitsQuery);
   const [publication] = useState(initialPublication);
   const [summary, setSummary] = useState(
-    publication?.summary ?? initialSummary,
+    publication?.summary ?? suggestion?.summary ?? initialSummary,
   );
   const [hazard, setHazard] = useState<CivilPublication["hazard"]>(
-    publication?.hazard ?? "road",
+    publication?.hazard ?? suggestion?.hazard ?? "road",
   );
-  const [areaId, setAreaId] = useState(publication?.area_id ?? "");
+  const [areaId, setAreaId] = useState(
+    publication?.area_id ?? suggestion?.area_id ?? "",
+  );
   const maximum =
     Date.parse(publishedAt) + CIVIL_PUBLICATION_MAX_AGE_HOURS * 3_600_000;
   const [expires, setExpires] = useState(
@@ -109,6 +114,7 @@ function PublicationForm({
       await qc.invalidateQueries({
         queryKey: civilPublicationsQuery(true).queryKey.slice(0, 1),
       });
+      await qc.invalidateQueries({ queryKey: ["admin", "civil-attention"] });
       onDone();
     },
   });
@@ -129,6 +135,11 @@ function PublicationForm({
       }}
     >
       <p className="text-xs text-muted-foreground">{t("publication.policy")}</p>
+      {!publication && (
+        <p className="text-xs text-muted-foreground">
+          {t("publication.agent.correction")}
+        </p>
+      )}
       {publication && (
         <a className="underline" href={`/?event=civil%3A${publication.id}`}>
           {t("publication.view")}

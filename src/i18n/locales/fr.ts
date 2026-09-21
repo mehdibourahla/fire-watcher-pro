@@ -310,11 +310,11 @@ export const fr: Translation = {
     publicationexpired: "Validité expirée",
     publicationwithdrawn: "Publication retirée",
     publicationNotice:
-      "Information d’Info Trafic Algérie, relue par Nadhir. Ce n’est pas une alerte officielle ni une consigne d’urgence.",
+      "Information d’Info Trafic Algérie, analysée par Nadhir avec l’IA et une revue humaine si nécessaire. Ce n’est pas une alerte officielle ni une consigne d’urgence.",
     publicationHistorical:
       "Publication historique. Son expiration ou retrait ne signifie pas que l’incident est terminé ou la zone sûre.",
     sourcePublishedAt: "Publication de la source",
-    publicationUpdatedAt: "Dernière mise à jour relue",
+    publicationUpdatedAt: "Dernière mise à jour de la publication",
     officialGroup: "Alertes et signalements officiels",
     observationsGroup: "Médias, observations et signalements citoyens",
     reportedBoundary:
