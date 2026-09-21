@@ -213,10 +213,11 @@ export const adminFr: AdminTranslation = {
       download: "Télécharger les données vérifiées",
     },
     ita: {
-      retry: "Relancer l’extraction",
+      retry: "Réessayer maintenant",
       retryFailed:
-        "La relance a échoué. Un rapport épuisé peut être relancé une fois par jour.",
-      retryQueued: "Extraction en attente du prochain traitement de la source.",
+        "Relance indisponible : source en pause, traitement déjà en attente ou en cours, ou limite quotidienne de récupération atteinte.",
+      retryQueued:
+        "Extraction mise en file pour le prochain traitement disponible.",
       exhaustedOnly: "Afficher uniquement les extractions épuisées",
 
       title: "Signalements Info Trafic Algérie",

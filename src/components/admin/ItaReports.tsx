@@ -146,7 +146,8 @@ export function ItaReports() {
             )}
             {isAdmin &&
               !report.extraction &&
-              report.extraction_attempts >= 5 && (
+              report.extraction_attempts > 0 &&
+              report.extraction_error && (
                 <button
                   type="button"
                   className="mt-2 rounded border px-3 py-1"

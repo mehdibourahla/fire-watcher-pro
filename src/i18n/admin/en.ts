@@ -208,10 +208,10 @@ export const adminEn = {
       download: "Download verified payload",
     },
     ita: {
-      retry: "Retry extraction",
+      retry: "Retry now",
       retryFailed:
-        "Retry could not be queued. An exhausted report can be requeued once per day.",
-      retryQueued: "Extraction queued for a later source run.",
+        "Retry unavailable: check whether the source is paused, work is already queued or running, or the daily recovery limit was reached.",
+      retryQueued: "Extraction queued for the next available worker.",
       exhaustedOnly: "Show exhausted extractions only",
 
       title: "Info Trafic Algérie reports",
