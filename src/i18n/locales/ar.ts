@@ -302,11 +302,11 @@ export const ar: Translation = {
     publicationexpired: "انتهت مدة الصلاحية",
     publicationwithdrawn: "سُحب المنشور",
     publicationNotice:
-      "معلومة من Info Trafic Algérie راجعها نذير. ليست تحذيراً رسمياً أو تعليمات طوارئ.",
+      "معلومة من Info Trafic Algérie حللها نذير بالذكاء الاصطناعي ومراجعة بشرية عند الحاجة. ليست تحذيراً رسمياً أو تعليمات طوارئ.",
     publicationHistorical:
       "منشور سابق. انتهاء صلاحيته أو سحبه لا يعني انتهاء الحادث أو أن المنطقة آمنة.",
     sourcePublishedAt: "تاريخ نشر المصدر",
-    publicationUpdatedAt: "آخر تحديث تمت مراجعته",
+    publicationUpdatedAt: "آخر تحديث للمنشور",
     officialGroup: "التحذيرات والبلاغات الرسمية",
     observationsGroup: "الإعلام والرصد وبلاغات المواطنين",
     reportedBoundary:

@@ -28,7 +28,8 @@ model output labelled as such. Nadhir may always publish Information, at honest 
 _Avoid_: alert (overloaded), advice
 
 **Civil Publication**:
-An operator-reviewed, attributed media item with an explicit administrative area and expiry.
+An attributed media item with an evidence-backed administrative area and expiry, published
+by an investigating agent or an operator. Human review resolves material uncertainty.
 It can be revised or withdrawn with a private audit trail. Review does not confer official
 authority; expiry or withdrawal does not mean an all-clear. Public map/API publication does
 not grant notification eligibility. ITA is the first producer; its raw extraction stays private.

@@ -1,5 +1,20 @@
 export const adminEn = {
   publication: {
+    agent: {
+      attention: "Human decisions and failed investigations",
+      correction:
+        "Publishing an incident from a corrected post withdraws all active publications from earlier versions of that post. Withdrawal history is retained.",
+      expired: "Source expired",
+      pending: "Investigation queued",
+      processing: "Investigating",
+      hold: "Awaiting further evidence",
+      publish: "Published by agent",
+      discard: "Discarded by agent",
+      review: "Human decision needed",
+      failed: "Investigation failed",
+      superseded: "Existing publication retained",
+      evidence: "Evidence consulted",
+    },
     previous: "Previous publications",
     next: "Older publications",
     published: "Reviewed publications",
@@ -216,7 +231,7 @@ export const adminEn = {
 
       title: "Info Trafic Algérie reports",
       description:
-        "Latest 50 collected revisions. Media reports interpreted by AI, awaiting human verification. French summaries. No public alerts are sent.",
+        "Latest 50 collected revisions. An agent investigates and decides publication; unresolved cases appear in the review queue. French summaries. No notifications are sent.",
       empty: "No ITA reports collected yet.",
       received: "Collected {{time}}",
       extracted: "AI interpretation — unverified",

@@ -186,11 +186,14 @@ it("archives an ITA 304 before checkpointing or claiming pending extraction", as
     eq: () => query,
     single: async () => ({ data: { etag: '"old"' }, error: null }),
     is: async () => ({ count: 0, error: null }),
+    in: async () => ({ count: 0, error: null }),
   };
   from.mockReturnValue(query);
   archivedFetch.mockResolvedValue(new Response(null, { status: 304 }));
   rpc.mockImplementation(async (name) => ({
-    data: name === "claim_ita_extractions" ? [] : 0,
+    data: ["claim_ita_extractions", "claim_civil_investigations"].includes(name)
+      ? []
+      : 0,
     error: null,
   }));
   await runItaSource({ id: "job", attempt_count: 1 } as Parameters<
