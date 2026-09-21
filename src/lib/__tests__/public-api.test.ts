@@ -208,6 +208,30 @@ describe("serializePublicSourceStatus", () => {
     });
   });
 
+  it("exposes processing-only degradation without calling the source healthy", () => {
+    const result = serializePublicSourceStatus(
+      [
+        {
+          ...healthySource,
+          state: "degraded",
+          processing_only: true,
+          processing: {
+            key: healthySource.key,
+            collection_at: "2026-09-21T15:00:00Z",
+            pending: 1,
+            quarantined: 0,
+          },
+        },
+      ],
+      "generated",
+    );
+    expect(result.overall).toBe("affected");
+    expect(result.sources[0]).toMatchObject({
+      state: "degraded",
+      processing_only: true,
+      processing: { pending: 1 },
+    });
+  });
   it("drops private and unknown properties instead of spreading database rows", () => {
     const rowWithPrivateFields = {
       ...healthySource,

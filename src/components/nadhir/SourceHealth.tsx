@@ -37,7 +37,9 @@ export function SourceHealth({
         {source.label}
       </span>
       <span className="text-sm" style={{ color: status.color }}>
-        {t(`status.state.${source.state}`)}
+        {source.processing_only
+          ? t("status.processingDegraded")
+          : t(`status.state.${source.state}`)}
       </span>
       <span className="tabular text-sm text-muted-foreground">
         {source.valid_at

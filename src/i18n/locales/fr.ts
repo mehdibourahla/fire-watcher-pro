@@ -651,6 +651,7 @@ export const fr: Translation = {
   },
   status: {
     collectionAt: "Dernière collecte réussie : {{time}}",
+    processingDegraded: "Collecte à jour · traitement incomplet",
     processingBacklog:
       "Traitement : {{pending}} en attente · {{quarantined}} à examiner",
     degradedCount:

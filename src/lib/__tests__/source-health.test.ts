@@ -20,12 +20,17 @@ it("keeps fresh collection and unresolved processing distinct without masking st
   const rows = withProcessingHealth([source("ita", "healthy")], processing);
   expect(rows[0]).toMatchObject({
     state: "degraded",
+    processing_only: true,
     processing: processing[0],
   });
   expect(summariseSourceHealth(rows).allHealthy).toBe(false);
   expect(
     withProcessingHealth([source("ita", "stale")], processing)[0]?.state,
   ).toBe("stale");
+  expect(
+    withProcessingHealth([source("ita", "stale")], processing)[0]
+      ?.processing_only,
+  ).toBe(false);
 });
 
 function source(

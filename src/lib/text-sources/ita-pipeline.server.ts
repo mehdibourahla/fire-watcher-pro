@@ -130,7 +130,7 @@ export async function runItaSource(job: ClaimedSourceJob): Promise<ItaRun> {
   const fence = { _job: job.id, _attempt: job.attempt_count };
   const recovery = await supabaseAdmin.rpc("prepare_source_recovery", {
     _key: "ita_website",
-    _parser_version: "ita-extract-v3",
+    _parser_version: "ita-extract-v4",
     ...fence,
   });
   if (recovery.error)
