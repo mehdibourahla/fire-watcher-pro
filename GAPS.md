@@ -1,5 +1,17 @@
 # Known gaps
 
+## Civil platform update — 2026-09-16
+
+The map supports multiple civil hazards. Branch `codex/civil-alert-lifecycle` adds reviewed
+ITA publications, audited revisions/withdrawal, automatic read-time expiry and public JSON/CAP.
+This work is not deployed yet. It does not expand notification eligibility or turn media into
+authority instructions. Official multi-hazard onboarding/delivery remains a separate milestone.
+
+Local recovery/deduplication drills pass. A production outage drill still requires a source
+and window; three quarantined DGPC documents need diagnosis. ITA production ingestion is
+healthy in the [dated operational audit](docs/audits/2026-09-16-operational-readiness.md).
+The owner previously confirmed iPhone push receipt; no new device receipt test was run here.
+
 ## Current priorities — reconciled 2026-09-08
 
 Atomic risk publication is implemented;
@@ -30,7 +42,7 @@ acting on them. Code availability alone does not prove live delivery or field ve
 What Nadhir does not do yet, why it matters, and where to start. Historical measurements retain
 their dates and reproduction pointers.
 
-Nadhir is a wildfire early-warning service. A gap in a warning system is not the same as a
+Nadhir is expanding from wildfire monitoring to civil information and alerts. A gap in a warning system is not the same as a
 missing feature in a normal app: if the danger scale is wrong or an alert never sends, the
 product is confidently useless at the moment it matters. The list is ordered accordingly.
 

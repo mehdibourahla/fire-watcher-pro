@@ -27,6 +27,12 @@ A fact Nadhir states in its own voice: an observation with its timestamp and sou
 model output labelled as such. Nadhir may always publish Information, at honest freshness.
 _Avoid_: alert (overloaded), advice
 
+**Civil Publication**:
+An operator-reviewed, attributed media item with an explicit administrative area and expiry.
+It can be revised or withdrawn with a private audit trail. Review does not confer official
+authority; expiry or withdrawal does not mean an all-clear. Public map/API publication does
+not grant notification eligibility. ITA is the first producer; its raw extraction stays private.
+
 **Instruction**:
 A directive telling a person what to do — evacuate, shelter, take a route. Only an
 authority (e.g. Protection Civile) originates an Instruction; Nadhir relays it, verified

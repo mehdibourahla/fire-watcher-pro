@@ -34,6 +34,119 @@ export type Database = {
   };
   public: {
     Tables: {
+      civil_publication_revisions: {
+        Row: {
+          action: string;
+          actor_id: string;
+          created_at: string;
+          id: string;
+          new_payload: Json;
+          prior_payload: Json | null;
+          publication_id: string;
+          reason: string;
+          revision: number;
+        };
+        Insert: {
+          action: string;
+          actor_id: string;
+          created_at?: string;
+          id?: string;
+          new_payload: Json;
+          prior_payload?: Json | null;
+          publication_id: string;
+          reason: string;
+          revision: number;
+        };
+        Update: {
+          action?: string;
+          actor_id?: string;
+          created_at?: string;
+          id?: string;
+          new_payload?: Json;
+          prior_payload?: Json | null;
+          publication_id?: string;
+          reason?: string;
+          revision?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "civil_publication_revisions_publication_id_fkey";
+            columns: ["publication_id"];
+            isOneToOne: false;
+            referencedRelation: "civil_publications";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      civil_publications: {
+        Row: {
+          area_id: string;
+          cap_references: Json;
+          expires_at: string;
+          hazard: string;
+          id: string;
+          incident_index: number;
+          ita_report_id: string;
+          published_at: string;
+          revision: number;
+          source_name: string;
+          source_published_at: string;
+          source_url: string;
+          state: string;
+          summary: string;
+          updated_at: string;
+        };
+        Insert: {
+          area_id: string;
+          cap_references?: Json;
+          expires_at: string;
+          hazard: string;
+          id?: string;
+          incident_index: number;
+          ita_report_id: string;
+          published_at?: string;
+          revision?: number;
+          source_name: string;
+          source_published_at: string;
+          source_url: string;
+          state?: string;
+          summary: string;
+          updated_at?: string;
+        };
+        Update: {
+          area_id?: string;
+          cap_references?: Json;
+          expires_at?: string;
+          hazard?: string;
+          id?: string;
+          incident_index?: number;
+          ita_report_id?: string;
+          published_at?: string;
+          revision?: number;
+          source_name?: string;
+          source_published_at?: string;
+          source_url?: string;
+          state?: string;
+          summary?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "civil_publications_area_id_fkey";
+            columns: ["area_id"];
+            isOneToOne: false;
+            referencedRelation: "admin_units";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "civil_publications_ita_report_id_fkey";
+            columns: ["ita_report_id"];
+            isOneToOne: false;
+            referencedRelation: "ita_reports";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       weather_snapshots: {
         Row: {
           id: string;
@@ -3303,6 +3416,72 @@ export type Database = {
       };
     };
     Functions: {
+      publish_ita_publication: {
+        Args: {
+          _area_id: string;
+          _expires_at: string;
+          _hazard: string;
+          _incident_index: number;
+          _reason: string;
+          _report_id: string;
+          _summary: string;
+        };
+        Returns: {
+          area_id: string;
+          cap_references: Json;
+          expires_at: string;
+          hazard: string;
+          id: string;
+          incident_index: number;
+          ita_report_id: string;
+          published_at: string;
+          revision: number;
+          source_name: string;
+          source_published_at: string;
+          source_url: string;
+          state: string;
+          summary: string;
+          updated_at: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "civil_publications";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      revise_civil_publication: {
+        Args: {
+          _action: string;
+          _expected_revision: number;
+          _id: string;
+          _patch: Json;
+          _reason: string;
+        };
+        Returns: {
+          area_id: string;
+          cap_references: Json;
+          expires_at: string;
+          hazard: string;
+          id: string;
+          incident_index: number;
+          ita_report_id: string;
+          published_at: string;
+          revision: number;
+          source_name: string;
+          source_published_at: string;
+          source_url: string;
+          state: string;
+          summary: string;
+          updated_at: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "civil_publications";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       retry_text_document: { Args: { _id: string }; Returns: undefined };
       prepare_source_recovery: {
         Args: { _attempt: number; _job: string; _key: string };

@@ -22,6 +22,19 @@ export const Route = createFileRoute("/api/public/v1/")({
             "Read-only. Responses are cached for 60 seconds. Please stay under 60 requests per minute.",
           endpoints: [
             {
+              path: "/api/public/v1/civil",
+              params: {
+                id: "optional publication UUID; required for CAP",
+                format: "json (default) or cap",
+                history: "true to include expired/withdrawn",
+                limit: "1-500",
+                offset: "integer",
+              },
+              example: `${base}/api/public/v1/civil`,
+              notes:
+                "Reviewed media information with source attribution and revision history references. Not an official warning. Source rights apply.",
+            },
+            {
               path: "/api/public/v1/weather",
               params: { commune: "required commune code" },
               example: `${base}/api/public/v1/weather?commune=1701`,

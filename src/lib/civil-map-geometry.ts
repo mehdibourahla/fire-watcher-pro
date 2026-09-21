@@ -42,6 +42,7 @@ function administrativeGeometry(
 }
 
 export function situationAreaId(item: Situation): string | null {
+  if (item.source === "civil") return item.ended ? null : item.areaId;
   if (item.source === "onm") return item.data.wilaya_id;
   if (item.source !== "official") return null;
   return item.data.precision === "wilaya"
@@ -65,29 +66,37 @@ export function civilMapGeoJSON(
     reports: { type: "FeatureCollection", features: [] } as FeatureCollection,
   };
   for (const item of items) {
-    if (item.source === "satellite") continue;
+    if (item.source === "satellite" || (item.source === "civil" && item.ended))
+      continue;
     const collection =
       result[
         item.source === "onm"
           ? "warnings"
-          : item.source === "citizen"
+          : item.source === "citizen" || item.source === "civil"
             ? "reports"
             : "official"
       ];
     const properties = {
-      id: item.data.id,
+      id: item.source === "civil" ? item.id : item.data.id,
       situationId: item.id,
       category: item.category,
       source: item.source,
       label: label(item),
-      status: item.source === "onm" ? item.data.severity : item.data.status,
+      status:
+        item.source === "onm"
+          ? item.data.severity
+          : item.source === "civil"
+            ? item.data.state
+            : item.data.status,
       selected: item.id === selectedId,
       precision:
-        item.source === "official"
-          ? item.data.precision
-          : item.source === "onm"
-            ? "wilaya"
-            : "point",
+        item.source === "civil"
+          ? (item.data.area?.level ?? "administrative")
+          : item.source === "official"
+            ? item.data.precision
+            : item.source === "onm"
+              ? "wilaya"
+              : "point",
       ...(item.source === "citizen"
         ? { kind: item.data.kind, sighting: item.data.sighting }
         : {}),

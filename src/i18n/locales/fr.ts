@@ -306,8 +306,17 @@ export const fr: Translation = {
     general: "Urgence générale",
   },
   civilMap: {
+    publicationactive: "Information publiée",
+    publicationexpired: "Validité expirée",
+    publicationwithdrawn: "Publication retirée",
+    publicationNotice:
+      "Information d’Info Trafic Algérie, relue par Nadhir. Ce n’est pas une alerte officielle ni une consigne d’urgence.",
+    publicationHistorical:
+      "Publication historique. Son expiration ou retrait ne signifie pas que l’incident est terminé ou la zone sûre.",
+    sourcePublishedAt: "Publication de la source",
+    publicationUpdatedAt: "Dernière mise à jour relue",
     officialGroup: "Alertes et signalements officiels",
-    observationsGroup: "Observations et signalements citoyens",
+    observationsGroup: "Médias, observations et signalements citoyens",
     reportedBoundary:
       "La zone délimitée, lorsqu’elle est disponible, correspond au territoire administratif signalé, pas à l’emprise du danger.",
     boundaryUnavailable:
@@ -366,7 +375,7 @@ export const fr: Translation = {
     unknown: "État inconnu",
     upcoming: "À venir",
     current: "En cours",
-    showEnded: "Inclure les situations terminées",
+    showEnded: "Inclure les situations terminées et historiques",
     showCandidates: "Inclure les observations non vérifiées",
     source: "Source",
     observedAt: "Observé",

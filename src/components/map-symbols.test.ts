@@ -10,6 +10,17 @@ import {
 } from "./map-symbols";
 
 describe("civil map symbol contracts", () => {
+  it("uses the reviewed civil hazard without giving media reports an official badge", () => {
+    for (const [category, expected] of [
+      ["road", "road"],
+      ["weather", "weather"],
+      ["fire", "fire"],
+      ["other", "observation"],
+    ])
+      expect(symbolFor("reports", { source: "civil", category })).toBe(
+        expected,
+      );
+  });
   it("distinguishes citizen observations, road obstruction and rescue from official fire", () => {
     expect(symbolFor("reports", { kind: "sighting", sighting: "flames" })).toBe(
       "observation",

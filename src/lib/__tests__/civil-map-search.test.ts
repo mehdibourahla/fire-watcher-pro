@@ -29,3 +29,14 @@ it("discards invalid search types and rejects truthy false strings", () => {
     }),
   ).toEqual({ hazard: "all", ended: false, candidates: false });
 });
+
+it("preserves civil publication links while keeping historical items hidden by default", () => {
+  expect(
+    parseMapSearch({ event: "civil:12345678-1234-1234-1234-123456789abc" }),
+  ).toEqual({
+    event: "civil:12345678-1234-1234-1234-123456789abc",
+    hazard: "all",
+    ended: false,
+    candidates: false,
+  });
+});

@@ -1,6 +1,46 @@
 import type { AdminTranslation } from "./en";
 
 export const adminFr: AdminTranslation = {
+  publication: {
+    previous: "Publications précédentes",
+    next: "Publications plus anciennes",
+    published: "Publications examinées",
+    manage: "Gérer la publication",
+    review: "Examiner avant publication",
+    active: "Publiée",
+    expired: "Expirée",
+    withdrawn: "Retirée",
+    withdrawnExplanation:
+      "Cette publication a été retirée. Cela ne signifie pas que l’incident est terminé.",
+    policy:
+      "Publier une information attribuée sur la carte et l’API publiques. Aucune notification n’est envoyée. Vérifiez la source, la situation actuelle et la zone administrative. N’ajoutez pas de consignes officielles.",
+    view: "Voir l’information publique",
+    summary: "Résumé examiné (français)",
+    hazard: "Risque",
+    area: "Zone administrative",
+    chooseArea: "Choisir une zone justifiée par la source",
+    expires: "Valide jusqu’au (heure locale)",
+    reason: "Motif de révision (privé)",
+    reasonRequired: "Saisissez un motif.",
+    refresh: "Recharger la dernière version",
+    saved: "Publication enregistrée.",
+    save: "Enregistrer la révision",
+    publish: "Publier l’information",
+    withdraw: "Retirer la publication",
+    withdrawConfirm:
+      "Retirer cette publication des informations actuelles ? Ce retrait est définitif et ne signifie pas la fin du danger. Saisissez le motif ci-dessus.",
+    cancel: "Annuler",
+    tooOld:
+      "Cette source date de plus de 72 heures : elle ne peut plus être publiée ou prolongée.",
+    hazards: {
+      fire: "Incendie",
+      weather: "Météo",
+      flood: "Inondation",
+      road: "Circulation",
+      other: "Autre",
+    },
+    reportedStatus: "État rapporté : {{status}}",
+  },
   nav: {
     triage: "Triage",
     sources: "Sources",

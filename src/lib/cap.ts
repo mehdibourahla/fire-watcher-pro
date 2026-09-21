@@ -1,10 +1,13 @@
-export type CapUrgency = "Immediate" | "Expected" | "Future" | "Past";
-export type CapSeverity = "Extreme" | "Severe" | "Moderate" | "Minor";
-export type CapCertainty = "Observed" | "Likely" | "Possible" | "Unlikely";
+export type CapUrgency =
+  "Immediate" | "Expected" | "Future" | "Past" | "Unknown";
+export type CapSeverity =
+  "Extreme" | "Severe" | "Moderate" | "Minor" | "Unknown";
+export type CapCertainty =
+  "Observed" | "Likely" | "Possible" | "Unlikely" | "Unknown";
 
 export type CapInfo = {
   language: string;
-  category: "Fire";
+  category: "Fire" | "Met" | "Transport" | "Other";
   event: string;
   urgency: CapUrgency;
   severity: CapSeverity;
@@ -50,6 +53,84 @@ export type FireCapInput = {
 };
 
 export const CAP_SENDER = "alerts@nadhir.app";
+
+type CivilCapInput = {
+  id: string;
+  hazard: "fire" | "weather" | "flood" | "road" | "other";
+  summary: string;
+  source_name: string;
+  source_url: string;
+  source_published_at: string;
+  published_at: string;
+  updated_at: string;
+  expires_at: string;
+  state: "published" | "withdrawn";
+  revision: number;
+  cap_references: { revision: number; sent: string }[];
+};
+
+export function buildCivilPublicationCap(
+  input: CivilCapInput,
+  areaDesc: string,
+): CapAlert {
+  const category: Record<CivilCapInput["hazard"], CapInfo["category"]> = {
+    fire: "Fire",
+    weather: "Met",
+    flood: "Met",
+    road: "Transport",
+    other: "Other",
+  };
+  const event = {
+    fire: "Incendie signalé",
+    weather: "Phénomène météo signalé",
+    flood: "Inondation signalée",
+    road: "Information routière",
+    other: "Information civile",
+  };
+  const sent = capDateTime(new Date(input.updated_at));
+  return {
+    identifier: `nadhir-civil-${input.id}-${input.revision}`,
+    sender: CAP_SENDER,
+    sent,
+    status: "Actual",
+    scope: "Public",
+    msgType:
+      input.state === "withdrawn"
+        ? "Cancel"
+        : input.revision > 1
+          ? "Update"
+          : "Alert",
+    ...(input.cap_references.length
+      ? {
+          references: input.cap_references
+            .map(
+              (ref) =>
+                `${CAP_SENDER},nadhir-civil-${input.id}-${ref.revision},${capDateTime(new Date(ref.sent))}`,
+            )
+            .join(" "),
+        }
+      : {}),
+    info:
+      input.state === "withdrawn"
+        ? []
+        : [
+            {
+              language: "fr-DZ",
+              category: category[input.hazard],
+              event: event[input.hazard],
+              urgency: "Unknown",
+              severity: "Unknown",
+              certainty: "Unknown",
+              effective: capDateTime(new Date(input.published_at)),
+              expires: capDateTime(new Date(input.expires_at)),
+              headline: input.summary,
+              description: `${input.summary}\nSource : ${input.source_name} — ${input.source_url}\nPublié par la source : ${input.source_published_at}\nInformation issue d'un média, examinée par Nadhir. Ce n'est pas une consigne officielle.`,
+              instruction: "",
+              areaDesc,
+            },
+          ],
+  };
+}
 const VALID_FOR_MINUTES = 180;
 
 /** CAP 1.2 forbids the "Z" designator; Algeria is UTC+01:00 all year. */

@@ -53,6 +53,64 @@ const official: Extract<Situation, { source: "official" }> = {
 };
 
 describe("civil map administrative geometry", () => {
+  it("maps reviewed civil information at area precision and never maps historical tombstones", () => {
+    const item: Situation = {
+      ...official,
+      id: "civil:p",
+      source: "civil",
+      category: "road",
+      data: {
+        id: "p",
+        ita_report_id: "r",
+        incident_index: 0,
+        hazard: "road",
+        summary: "Route fermée",
+        area_id: "w1",
+        source_name: "Info Trafic Algérie",
+        source_url: "https://infotraficalgerie.com/home",
+        source_published_at: official.at,
+        published_at: official.at,
+        updated_at: official.at,
+        expires_at: "2026-09-17T12:00:00Z",
+        state: "published",
+        revision: 1,
+        cap_references: [],
+        area: {
+          ...official.data.wilaya!,
+          id: "w1",
+          code: "01",
+          level: "wilaya",
+          parent_id: null,
+        },
+      },
+    };
+    const result = civilMapGeoJSON(
+      [item],
+      new Map([["w1", polygon]]),
+      () => "Road",
+      item.id,
+    );
+    expect(result.official.features).toEqual([]);
+    expect(result.reports.features.map((f) => f.geometry.type)).toEqual([
+      "Polygon",
+      "Point",
+    ]);
+    expect(result.reports.features[1]?.properties).toMatchObject({
+      id: "civil:p",
+      source: "civil",
+      precision: "wilaya",
+      category: "road",
+    });
+    expect(
+      civilMapGeoJSON(
+        [{ ...item, ended: true }],
+        new Map([["w1", polygon]]),
+        () => "Road",
+        item.id,
+      ).reports.features,
+    ).toEqual([]);
+    expect(situationAreaId({ ...item, ended: true })).toBeNull();
+  });
   it("uses only the ONM declared wilaya and keeps severity separate from source", () => {
     const item: Situation = {
       ...official,
