@@ -81,6 +81,7 @@ export type IncidentInsert = {
 export type Gazetteer = {
   wilayas: { id: string; name_ar: string }[];
   communesByWilaya: Map<string, CommuneCandidate[]>;
+  formerWilayaByCommune?: Map<string, string>;
 };
 
 export type TextSourceStore = {
@@ -163,7 +164,9 @@ function kindOf(line: string): IncidentKind {
   return AGRICULTURAL.test(line) ? "agricultural" : "vegetation";
 }
 
-type Draft = Omit<MentionInsert, "document_id" | "text_source_id">;
+type Draft = Omit<MentionInsert, "document_id" | "text_source_id"> & {
+  distribution_wilaya_id?: string;
+};
 
 function resolveLlmMention(
   m: LlmMention,
@@ -175,6 +178,7 @@ function resolveLlmMention(
   let wilayaId =
     (m.wilaya ? resolveWilaya(m.wilaya, gazetteer.wilayas) : null) ??
     fallbackWilaya;
+  const reportedWilayaId = wilayaId;
   let commune =
     wilayaId && m.commune
       ? resolveCommune(
@@ -198,6 +202,11 @@ function resolveLlmMention(
   if (!wilayaId) return null;
   return {
     wilaya_id: wilayaId,
+    ...(commune &&
+    reportedWilayaId &&
+    gazetteer.formerWilayaByCommune?.get(commune.id) === reportedWilayaId
+      ? { distribution_wilaya_id: reportedWilayaId }
+      : {}),
     commune_id: commune?.id ?? null,
     place_text: m.place,
     kind: m.kind,
@@ -256,9 +265,11 @@ function gateByDistribution(
   }
   const out = drafts.filter((d) => !live(d));
   const ongoing = new Map<string, Draft[]>();
-  for (const d of drafts)
+  for (const d of drafts) {
+    const countWilaya = d.distribution_wilaya_id ?? d.wilaya_id;
     if (live(d))
-      ongoing.set(d.wilaya_id, [...(ongoing.get(d.wilaya_id) ?? []), d]);
+      ongoing.set(countWilaya, [...(ongoing.get(countWilaya) ?? []), d]);
+  }
   let gated = 0;
   for (const [wilayaId, group] of ongoing) {
     const entry = counts.get(wilayaId);
@@ -550,7 +561,7 @@ export async function runTextSourceWith(
       bulletins.push(coverage);
     }
     inserts.push(
-      ...drafts.map((d) => ({
+      ...drafts.map(({ distribution_wilaya_id: _countWilaya, ...d }) => ({
         ...d,
         document_id: doc.id,
         text_source_id: source.id,
@@ -647,11 +658,12 @@ function createSupabaseStore(key: string): TextSourceStore {
           id: string;
           level: string;
           name_ar: string;
+          code: string;
           parent_id: string | null;
         }>((from, to) =>
           supabaseAdmin
             .from("admin_units")
-            .select("id, level, name_ar, parent_id")
+            .select("id, level, name_ar, code, parent_id")
             .in("level", ["wilaya", "commune"])
             .order("code")
             .range(from, to),
@@ -671,8 +683,17 @@ function createSupabaseStore(key: string): TextSourceStore {
           a.alias_ar,
         ]);
       const communesByWilaya = new Map<string, CommuneCandidate[]>();
+      const wilayaByCode = new Map(
+        rows.filter((u) => u.level === "wilaya").map((u) => [u.code, u.id]),
+      );
+      const formerWilayaByCommune = new Map<string, string>();
       for (const u of rows) {
         if (u.level !== "commune" || !u.parent_id) continue;
+        const former = /^\d{4}$/.test(u.code)
+          ? wilayaByCode.get(u.code.slice(0, 2))
+          : undefined;
+        if (former && former !== u.parent_id)
+          formerWilayaByCommune.set(u.id, former);
         const list = communesByWilaya.get(u.parent_id) ?? [];
         list.push({
           id: u.id,
@@ -682,6 +703,7 @@ function createSupabaseStore(key: string): TextSourceStore {
         communesByWilaya.set(u.parent_id, list);
       }
       return {
+        formerWilayaByCommune,
         wilayas: rows
           .filter((u) => u.level === "wilaya")
           .map((u) => ({ id: u.id, name_ar: u.name_ar })),

@@ -3305,7 +3305,12 @@ export type Database = {
     Functions: {
       retry_text_document: { Args: { _id: string }; Returns: undefined };
       prepare_source_recovery: {
-        Args: { _attempt: number; _job: string; _key: string };
+        Args: {
+          _attempt: number;
+          _job: string;
+          _key: string;
+          _parser_version?: string;
+        };
         Returns: number;
       };
       source_processing_health: {

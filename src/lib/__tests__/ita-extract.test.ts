@@ -1,5 +1,8 @@
 import { expect, it, vi } from "vitest";
 import { extractItaReport } from "../text-sources/ita-extract.server";
+type ExtractionRequest = Parameters<
+  NonNullable<Parameters<typeof extractItaReport>[1]>["complete"]
+>[0];
 const post = {
   id: "808412572528916_1511278197712051",
   uri: "traficalg",
@@ -30,7 +33,7 @@ const output = {
 const deps = (value: unknown) => ({
   apiKey: "test",
   model: "test",
-  complete: vi.fn(async () => JSON.stringify(value)),
+  complete: vi.fn(async (_request: ExtractionRequest) => JSON.stringify(value)),
 });
 it("retains grounded LLM interpretation and requests strict output", async () => {
   const d = deps(output);
@@ -97,6 +100,53 @@ it("stops after one failed repair instead of accepting unsupported evidence", as
     "unsupported event evidence",
   );
   expect(d.complete).toHaveBeenCalledTimes(2);
+});
+it("identifies the omitted-word location quotes and supplies the source for correction", async () => {
+  const message =
+    "🚨🚨 \n\nحادث مرور بالطريق الوطني رقم 12 بين تيزي وزو بين إعكورن وأدكار .";
+  const invalidQuote = "الطريق الوطني رقم 12 بين إعكورن وأدكار";
+  const sourceQuote = "الطريق الوطني رقم 12 بين تيزي وزو بين إعكورن وأدكار";
+  const incident = {
+    ...output.incidents[0],
+    kind: "collision",
+    summary_fr: "Accident entre Yakouren et Azazga.",
+    evidence: "حادث مرور",
+    location_text: invalidQuote,
+    location_evidence: invalidQuote,
+    direction_text: null,
+    direction_evidence: null,
+    region_assessment: "unverified",
+  };
+  const corrected = {
+    ...output,
+    incidents: [
+      {
+        ...incident,
+        summary_fr:
+          "Accident sur la route nationale 12 entre إعكورن et أدكار, dans le secteur mentionné de تيزي وزو.",
+        location_text: sourceQuote,
+        location_evidence: sourceQuote,
+      },
+    ],
+  };
+  const d = deps(corrected);
+  d.complete.mockResolvedValueOnce(
+    JSON.stringify({ ...output, incidents: [incident] }),
+  );
+  expect(await extractItaReport({ ...post, message }, d)).toEqual(corrected);
+  const feedback = d.complete.mock.calls[1]?.[0].messages.at(-1)?.content ?? "";
+  expect(feedback).toContain("incidents[0].location_evidence");
+  expect(feedback).toContain("incidents[0].location_text");
+  expect(feedback).toContain(invalidQuote);
+  expect(feedback).toContain(message.replace(/\s+/gu, " ").trim());
+  expect(feedback).toContain("place names verbatim");
+  expect(d.complete).toHaveBeenCalledTimes(2);
+
+  const repeated = deps({ ...output, incidents: [incident] });
+  await expect(
+    extractItaReport({ ...post, message }, repeated),
+  ).rejects.toThrow("incidents[0].location_text");
+  expect(repeated.complete).toHaveBeenCalledTimes(2);
 });
 it("shares the report deadline with its repair request", async () => {
   const invalid = {

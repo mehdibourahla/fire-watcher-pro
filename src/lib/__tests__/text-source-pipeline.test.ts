@@ -423,6 +423,64 @@ describe("runTextSource", () => {
 });
 
 describe("distribution gate", () => {
+  it("uses a verified former wilaya for counting while retaining the current commune parent", async () => {
+    const f = memoryStore();
+    const original = f.store.loadGazetteer;
+    f.store.loadGazetteer = async () => ({
+      ...(await original()),
+      formerWilayaByCommune: new Map([[FAR, SKIKDA]]),
+    });
+    const result = await runTextSourceWith(
+      "dgpc_telegram",
+      deps(
+        [
+          post(
+            "boundary",
+            "2026-09-02T12:10:00Z",
+            bulletin(
+              "13",
+              "⏮️⏮️ ولاية سكيكدة 01",
+              "حريق ببلدية بلدة بعيدة، العملية متواصلة...",
+              1,
+            ),
+          ),
+        ],
+        f.store,
+        llmWith(mention({ commune: "بلدة بعيدة" })),
+      ),
+    );
+    expect(result).toMatchObject({ mentions: 1, unresolved: 0, gated: 0 });
+    expect(f.retry.size).toBe(0);
+    expect(f.mentions[0]).toMatchObject({ commune_id: FAR, wilaya_id: OTHER });
+    expect(f.mentions[0]).not.toHaveProperty("distribution_wilaya_id");
+  });
+
+  it("does not accept an unverified reporting-wilaya mismatch", async () => {
+    const f = memoryStore();
+    const result = await runTextSourceWith(
+      "dgpc_telegram",
+      deps(
+        [
+          post(
+            "wrong-boundary",
+            "2026-09-02T12:10:00Z",
+            bulletin(
+              "13",
+              "⏮️⏮️ ولاية سكيكدة 01",
+              "حريق ببلدية بلدة بعيدة، العملية متواصلة...",
+              1,
+            ),
+          ),
+        ],
+        f.store,
+        llmWith(mention({ commune: "بلدة بعيدة" })),
+      ),
+    );
+    expect(result.gated).toBe(1);
+    expect(f.retry.size).toBe(1);
+    expect(f.confirmed).toHaveLength(0);
+  });
+
   it("drops a commune in a wilaya the bulletin's distribution does not list", async () => {
     const { store, mentions } = memoryStore();
     const result = await runTextSourceWith(
@@ -927,6 +985,134 @@ describe("extraction retry", () => {
 });
 
 describe("durable interpretation completion", () => {
+  it.each([
+    {
+      number: "7069",
+      asOf: "2026-09-18T19:00:00.000Z",
+      interpreted: [
+        mention({
+          wilaya: "بسكرة",
+          commune: null,
+          evidence: "⏮️⏮️ ولاية بسكرة 01 (حريق واحة نخيل)",
+        }),
+      ],
+      expected: [{ wilaya_id: "07", commune_id: null }],
+    },
+    {
+      number: "6998",
+      asOf: "2026-09-07T06:00:00.000Z",
+      interpreted: [
+        mention({
+          wilaya: "سطيف",
+          commune: "عين الفراج",
+          place: "قرية منداس",
+          evidence:
+            "حريق أشجار مثمرة وأحراش ببلدية عين الفراج بالمكان المسمى قرية منداس",
+        }),
+      ],
+      expected: [{ wilaya_id: "19", commune_id: "1913" }],
+    },
+    {
+      number: "6872",
+      asOf: "2026-08-30T06:00:00.000Z",
+      interpreted: [
+        mention({
+          wilaya: "باتنة",
+          commune: "عزيل عبد القادر",
+          kind: "agricultural",
+          evidence: "حريق أحزمة تبن بمشتة العيضات ببلدية عزيل عبد القادر.",
+        }),
+        mention({
+          wilaya: "سطيف",
+          commune: "بابور",
+          evidence:
+            "حريق أدغال و احراش ، بالمكان المسمى واد عافرة و لارباع، ببلدية بابور، في أخر مراحل الإخماد.",
+        }),
+      ],
+      expected: [
+        { wilaya_id: "60", commune_id: "0515" },
+        { wilaya_id: "19", commune_id: "1916" },
+      ],
+    },
+    {
+      number: "7012",
+      asOf: "2026-09-10T06:00:00.000Z",
+      interpreted: [
+        mention({
+          wilaya: "البويرة",
+          commune: "الصحاريج",
+          evidence:
+            "حريق غابة ببلدية الصحاريج، عملية معالجة بؤر الحرائق وبقايا الجمر متواصلة...",
+        }),
+      ],
+      expected: [{ wilaya_id: "10", commune_id: "1030" }],
+    },
+  ])(
+    "recovers captured quarantined DGPC/$number while retaining its historical event time",
+    async ({ number, asOf, interpreted, expected }) => {
+      const captured = recoveryPosts.find(
+        (p) => p.external_id === `DGPCDZ/${number}`,
+      )!;
+      for (const m of interpreted) expect(captured.body).toContain(m.evidence);
+      const f = memoryStore();
+      // Names, current parents and commune codes verified against the production gazetteer.
+      f.store.loadGazetteer = async () => ({
+        wilayas: [
+          { id: "07", name_ar: "بسكرة" },
+          { id: "05", name_ar: "باتنة" },
+          { id: "19", name_ar: "سطيف" },
+          { id: "10", name_ar: "البويرة" },
+          { id: "60", name_ar: "بريكة" },
+        ],
+        communesByWilaya: new Map([
+          ["07", [{ id: "0701", name_ar: "بسكرة", aliases: [] }]],
+          [
+            "19",
+            [
+              { id: "1913", name_ar: "عين لقراج", aliases: ["عين الفراج"] },
+              { id: "1916", name_ar: "بابور", aliases: [] },
+            ],
+          ],
+          ["10", [{ id: "1030", name_ar: "الصهاريج", aliases: ["الصحاريج"] }]],
+          ["60", [{ id: "0515", name_ar: "عزيل عبد القادر", aliases: [] }]],
+        ]),
+        formerWilayaByCommune: new Map([["0515", "05"]]),
+      });
+      const result = await runTextSourceWith("dgpc_telegram", {
+        ...deps(
+          [post(number, captured.published_at, captured.body)],
+          f.store,
+          llmWith(...interpreted),
+        ),
+        now: () => new Date("2026-09-21T14:00:00Z"),
+      });
+      expect(result.error).toBeUndefined();
+      expect(result).toMatchObject({
+        mentions: expected.length,
+        unresolved: 0,
+        gated: 0,
+      });
+      expect(f.retry.size).toBe(0);
+      expect(f.mentions).toEqual(
+        expected.map((location) =>
+          expect.objectContaining({ ...location, as_of: asOf }),
+        ),
+      );
+      expect([...f.incidents.values()]).toEqual(
+        expected.map(() =>
+          expect.objectContaining({ as_of: asOf, last_reported_at: asOf }),
+        ),
+      );
+      expect(f.unlisted.size).toBe(0);
+      if (number === "7069") expect(f.confirmed).toHaveLength(0);
+      const before = f.incidents.size;
+      await runTextSourceWith("dgpc_telegram", {
+        ...deps([], f.store, llmWith(...interpreted)),
+        now: () => new Date("2026-09-21T14:00:00Z"),
+      });
+      expect(f.incidents.size).toBe(before);
+    },
+  );
   it("reports exhausted processing separately from a successful collection", async () => {
     const f = memoryStore();
     f.store.pendingCount = async () => 6;
