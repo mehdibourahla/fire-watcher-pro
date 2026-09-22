@@ -63,16 +63,22 @@ export function useSituationLabels(units: AdminUnit[], now: number) {
       return t(
         `civilMap.publication${civilPublicationLifecycle(item.data, now)}`,
       );
-    if (item.ended) return t("civilMap.ended");
-    if (item.source === "official")
-      return t(`official.statuses.${item.data.status}`);
+    if (item.phase === "ended") return t("civilMap.ended");
+    if (item.source === "official") {
+      const authority = t(`official.statuses.${item.data.status}`);
+      return item.phase === "live"
+        ? authority
+        : t("civilMap.lastKnown", { status: authority });
+    }
     if (item.source === "satellite")
       return t(
-        item.candidate
-          ? "civilMap.candidate"
-          : item.data.state === "contained_guess"
+        item.phase === "archived"
+          ? "civilMap.archived"
+          : item.phase === "fading"
             ? "civilMap.quiet"
-            : "civilMap.observed",
+            : item.candidate
+              ? "civilMap.candidate"
+              : "civilMap.observed",
       );
     if (item.source === "citizen") return t("map.reportUnverified");
     return t(
@@ -204,7 +210,7 @@ export function SituationDetails({
         <p className="rounded-xl bg-muted p-3 text-sm">
           {t("civilMap.publicationNotice")}
         </p>
-        {item.ended && (
+        {item.phase !== "live" && (
           <p className="rounded-xl border p-3 text-sm">
             {t("civilMap.publicationHistorical")}
           </p>

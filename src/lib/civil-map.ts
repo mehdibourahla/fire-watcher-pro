@@ -5,10 +5,16 @@ import type {
   OnmVigilance,
 } from "./nadhir";
 import type { HazardReport } from "./open-areas";
+import type { CivilPublication } from "./civil-publication";
 import {
-  civilPublicationLifecycle,
-  type CivilPublication,
-} from "./civil-publication";
+  firePhase,
+  isVisibleByDefault,
+  officialPhase,
+  publicationPhase,
+  reportPhase,
+  warningPhase,
+  type Phase,
+} from "./incident-lifecycle";
 
 export type HazardCategory = "all" | "fire" | "weather" | "road" | "other";
 type SituationBase = {
@@ -19,7 +25,7 @@ type SituationBase = {
   lon: number | null;
   areaId: string | null;
   wilayaId: string | null;
-  ended: boolean;
+  phase: Phase;
   candidate: boolean;
 };
 export type Situation = SituationBase &
@@ -93,7 +99,7 @@ export function buildSituations({
       ...coordinates(area),
       areaId: data.area_id,
       wilayaId: area?.level === "wilaya" ? area.id : (area?.parent_id ?? null),
-      ended: civilPublicationLifecycle(data, now) !== "active",
+      phase: publicationPhase(data, now),
       candidate: false,
       data,
     });
@@ -113,7 +119,7 @@ export function buildSituations({
         (data.commune_id
           ? (byId.get(data.commune_id)?.parent_id ?? null)
           : null),
-      ended: data.state === "extinguished",
+      phase: firePhase(data, now),
       candidate: data.state === "unconfirmed" && data.confirmed_at === null,
       data,
     });
@@ -132,7 +138,7 @@ export function buildSituations({
       ...coordinates(commune ?? data.wilaya ?? byId.get(data.wilaya_id)),
       areaId: commune ? data.commune_id : data.wilaya_id,
       wilayaId: data.wilaya_id,
-      ended: data.status === "extinguished",
+      phase: officialPhase(data, now),
       candidate: false,
       data,
     });
@@ -153,7 +159,7 @@ export function buildSituations({
       ...coordinates(data),
       areaId: null,
       wilayaId: null,
-      ended: false,
+      phase: reportPhase(data, now),
       candidate: false,
       data,
     });
@@ -174,7 +180,7 @@ export function buildSituations({
       ...coordinates(area?.level === "wilaya" ? area : null),
       areaId: data.wilaya_id,
       wilayaId: data.wilaya_id,
-      ended: false,
+      phase: warningPhase(data, now),
       candidate: false,
       data,
     });
@@ -211,7 +217,9 @@ export function filterSituations(
   return items.filter((item) => {
     if (
       (filters.category !== "all" && item.category !== filters.category) ||
-      (!filters.showEnded && item.ended) ||
+      (!filters.showEnded &&
+        !isVisibleByDefault(item.phase) &&
+        !(item.phase === "fading" && area)) ||
       (!filters.showCandidates && item.candidate)
     )
       return false;

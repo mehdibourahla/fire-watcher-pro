@@ -64,6 +64,7 @@ export type FireCluster = {
   nearest_settlement_id: string | null;
   nearest_settlement_km: number | null;
   confirmed_at: string | null;
+  resolved_at: string | null;
   confirmed_mention_id: string | null;
 };
 

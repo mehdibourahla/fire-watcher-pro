@@ -372,6 +372,8 @@ export const fr: Translation = {
     observed: "Observation satellite",
     quiet: "Aucune observation satellite récente",
     ended: "Terminé",
+    archived: "Aucune nouvelle détection",
+    lastKnown: "Dernier statut connu : {{status}}",
     unknown: "État inconnu",
     upcoming: "À venir",
     current: "En cours",
@@ -533,8 +535,8 @@ export const fr: Translation = {
   state: {
     unconfirmed: "Non confirmé",
     active: "Actif",
-    contained_guess: "Probablement maîtrisé",
-    extinguished: "Éteint",
+    contained_guess: "Non observé récemment",
+    extinguished: "Aucune nouvelle détection",
     false_positive: "Fausse alerte",
   },
   explain: {

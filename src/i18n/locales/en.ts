@@ -365,6 +365,8 @@ export const en = {
     observed: "Satellite observation",
     quiet: "No recent satellite observation",
     ended: "Ended",
+    archived: "No new detections",
+    lastKnown: "Last known status: {{status}}",
     unknown: "Unknown status",
     upcoming: "Upcoming",
     current: "Current",
@@ -524,8 +526,8 @@ export const en = {
   state: {
     unconfirmed: "Unconfirmed",
     active: "Active",
-    contained_guess: "Likely contained",
-    extinguished: "Extinguished",
+    contained_guess: "Not seen recently",
+    extinguished: "No new detections",
     false_positive: "False positive",
   },
   explain: {

@@ -361,6 +361,8 @@ export const ar: Translation = {
     observed: "رصد بالأقمار الصناعية",
     quiet: "لا يوجد رصد حديث بالأقمار الصناعية",
     ended: "انتهى",
+    archived: "لا رصد جديد",
+    lastKnown: "آخر حالة معروفة: {{status}}",
     unknown: "الحالة غير معروفة",
     upcoming: "مرتقب",
     current: "جارٍ",
@@ -521,8 +523,8 @@ export const ar: Translation = {
   state: {
     unconfirmed: "غير مؤكد",
     active: "نشط",
-    contained_guess: "يرجَّح احتواؤه",
-    extinguished: "منطفئ",
+    contained_guess: "لم يُرصد مؤخرًا",
+    extinguished: "لا رصد جديد",
     false_positive: "إنذار خاطئ",
   },
   explain: {

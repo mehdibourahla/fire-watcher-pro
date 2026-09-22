@@ -42,7 +42,8 @@ function administrativeGeometry(
 }
 
 export function situationAreaId(item: Situation): string | null {
-  if (item.source === "civil") return item.ended ? null : item.areaId;
+  if (item.source === "civil")
+    return item.phase === "live" ? item.areaId : null;
   if (item.source === "onm") return item.data.wilaya_id;
   if (item.source !== "official") return null;
   return item.data.precision === "wilaya"
@@ -66,7 +67,10 @@ export function civilMapGeoJSON(
     reports: { type: "FeatureCollection", features: [] } as FeatureCollection,
   };
   for (const item of items) {
-    if (item.source === "satellite" || (item.source === "civil" && item.ended))
+    if (
+      item.source === "satellite" ||
+      (item.source === "civil" && item.phase !== "live")
+    )
       continue;
     const collection =
       result[
