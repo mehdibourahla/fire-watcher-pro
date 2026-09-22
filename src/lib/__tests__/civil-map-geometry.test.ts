@@ -329,7 +329,7 @@ describe("civil map administrative geometry", () => {
     });
   });
 
-  it("draws an ONM warning as its wilaya outline instead of a marker", () => {
+  it("draws one tint per wilaya at its most severe current warning", () => {
     const base = {
       ...official,
       source: "onm" as const,
@@ -370,8 +370,17 @@ describe("civil map administrative geometry", () => {
     ];
     const result = civilMapGeoJSON(
       [
+        warning("storm", "Thunderstorm", "Moderate", "live"),
         warning("rain", "Rain", "Severe", "live"),
-        warning("storm", "Thunderstorm", "Moderate", "upcoming"),
+        warning("later", "Heat", "Extreme", "upcoming"),
+        (() => {
+          const w = warning("soon", "Rain", "Moderate", "upcoming");
+          return {
+            ...w,
+            wilayaId: "w2",
+            data: { ...w.data, wilaya_id: "w2" },
+          } as Situation;
+        })(),
         (() => {
           const w = warning("elsewhere", "Heat", "Extreme", "live");
           return {
@@ -383,8 +392,11 @@ describe("civil map administrative geometry", () => {
       ],
       new Map(),
       () => "Warning",
-      undefined,
-      new Map([["w1", outline]]),
+      "weather:storm",
+      new Map([
+        ["w1", outline],
+        ["w2", outline],
+      ]),
     );
     const areas = result.warnings.features.filter(
       (f) => f.geometry.type === "Polygon",
@@ -395,12 +407,13 @@ describe("civil map administrative geometry", () => {
         severity: "severe",
         event: "rain",
         upcoming: false,
+        selected: true,
       }),
       expect.objectContaining({
-        id: "storm",
+        id: "soon",
         severity: "moderate",
-        event: "storm",
         upcoming: true,
+        selected: false,
       }),
     ]);
     expect(areas[0]?.geometry).toEqual({

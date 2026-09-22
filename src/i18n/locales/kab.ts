@@ -365,6 +365,7 @@ export const kab: Translation = {
     sourceCitizen: "Signalement citoyen",
     sourceOnm: "Vigilance ONM",
     heatSignal: "Signal thermique satellite",
+    heatSignalShort: "Signal thermique",
     probable: "Feu probable",
     quiet: "Aucune observation satellite récente",
     ended: "Terminé",
@@ -395,8 +396,10 @@ export const kab: Translation = {
       "Les prévisions des modèles apportent du contexte ; ce ne sont pas des avertissements officiels.",
     unknownLocation: "Lieu indisponible",
     satelliteLegend: "Observations satellites, sans confirmation officielle",
-    colorLegend: "Rouge : source officielle · Orange : feu probable, indices concordants · Gris : une seule source, non vérifiée",
-    tintLegend: "Teinte jaune, orange ou rouge : niveau de vigilance de l’ONM sur la wilaya ; hachures : période à venir",
+    colorLegend:
+      "Rouge : source officielle · Orange : feu probable, indices concordants · Gris : une seule source, non vérifiée",
+    tintLegend:
+      "Teinte jaune, orange ou rouge : niveau de vigilance de l’ONM sur la wilaya ; hachures : période à venir",
     officialLegend: "Incidents attribués à une source officielle",
     weatherLegend: "Vigilances officielles de l’ONM pour le territoire indiqué",
     citizenLegend: "Signalements citoyens, sans vérification indépendante",

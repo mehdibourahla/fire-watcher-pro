@@ -9,8 +9,8 @@ export const PATTERNS = [
 ] as const;
 export type MapPattern = (typeof PATTERNS)[number];
 
-const TILE = 16;
-const INK = "rgba(38, 59, 73, 0.55)";
+const TILE = 24;
+const INK = "rgba(38, 59, 73, 0.3)";
 
 export const patternImage = (pattern: MapPattern) => `pattern-${pattern}`;
 
@@ -61,9 +61,9 @@ export function drawPattern(pattern: MapPattern): ImageData {
     context.quadraticCurveTo(11, 12, 15, 8);
     context.stroke();
   } else if (pattern === "upcoming") {
-    line(0, 16, 16, 0);
-    line(-8, 8, 8, -8);
-    line(8, 24, 24, 8);
+    line(0, TILE, TILE, 0);
+    line(-TILE / 2, TILE / 2, TILE / 2, -TILE / 2);
+    line(TILE / 2, TILE * 1.5, TILE * 1.5, TILE / 2);
   }
   return context.getImageData(0, 0, canvas.width, canvas.height);
 }

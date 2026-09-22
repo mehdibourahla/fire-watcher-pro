@@ -680,7 +680,7 @@ function LiveMapPage() {
                   : panelTitle}
               </h1>
               <p
-                className={`truncate text-xs text-muted-foreground ${desktop ? "mt-0.5" : ""}`}
+                className={`line-clamp-2 text-xs text-muted-foreground ${desktop ? "mt-0.5" : ""}`}
               >
                 {panelView === "list" ? summaryLine : t("civilMap.title")}
               </p>

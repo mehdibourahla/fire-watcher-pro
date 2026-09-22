@@ -59,6 +59,36 @@ const ONM_EVENTS: Record<string, string> = {
   Heat: "heat",
 };
 
+const SEVERITY_RANK: Record<string, number> = {
+  Moderate: 1,
+  Severe: 2,
+  Extreme: 3,
+};
+
+// one tint per wilaya: stacked translucent fills read darker than ONM's own scale
+function wilayaTints(items: Situation[]) {
+  const groups = new Map<string, Extract<Situation, { source: "onm" }>[]>();
+  for (const item of items)
+    if (item.source === "onm" && item.data.wilaya_id)
+      groups.set(item.data.wilaya_id, [
+        ...(groups.get(item.data.wilaya_id) ?? []),
+        item,
+      ]);
+  return new Map(
+    [...groups].map(([wilaya, group]) => {
+      const current = group.filter((item) => item.phase !== "upcoming");
+      const pool = current.length ? current : group;
+      const lead = pool.reduce((a, b) =>
+        (SEVERITY_RANK[b.data.severity] ?? 0) >
+        (SEVERITY_RANK[a.data.severity] ?? 0)
+          ? b
+          : a,
+      );
+      return [wilaya, { lead, members: group }] as const;
+    }),
+  );
+}
+
 function closedRing(outline: readonly [number, number][] | undefined) {
   if (!outline || outline.length < 3 || !outline.every(position)) return null;
   const [first] = outline;
@@ -79,6 +109,7 @@ export function civilMapGeoJSON(
   warnings: FeatureCollection;
   reports: FeatureCollection;
 } {
+  const tints = wilayaTints(items);
   const result = {
     official: { type: "FeatureCollection", features: [] } as FeatureCollection,
     warnings: { type: "FeatureCollection", features: [] } as FeatureCollection,
@@ -129,12 +160,15 @@ export function civilMapGeoJSON(
         ? closedRing(outlines.get(item.data.wilaya_id))
         : null;
     if (item.source === "onm" && outline) {
+      const tint = tints.get(item.data.wilaya_id!)!;
+      if (tint.lead !== item) continue;
       collection.features.push({
         type: "Feature",
         id: `${item.id}:area`,
         geometry: { type: "Polygon", coordinates: [outline] },
         properties: {
           ...properties,
+          selected: tint.members.some((member) => member.id === selectedId),
           area: true,
           severity: item.data.severity.toLowerCase(),
           event: ONM_EVENTS[item.data.event] ?? "other",

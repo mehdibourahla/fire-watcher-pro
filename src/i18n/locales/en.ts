@@ -359,6 +359,7 @@ export const en = {
     sourceCitizen: "Citizen report",
     sourceOnm: "ONM warning",
     heatSignal: "Satellite heat signal",
+    heatSignalShort: "Heat signal",
     probable: "Probable fire",
     quiet: "No recent satellite observation",
     ended: "Ended",
@@ -389,8 +390,10 @@ export const en = {
       "Model forecasts support context; they are not official warnings.",
     unknownLocation: "Location unavailable",
     satelliteLegend: "Satellite observations, not official confirmation",
-    colorLegend: "Red: official source · Orange: probable fire, corroborating evidence · Grey: single source, unverified",
-    tintLegend: "Yellow, orange or red tint: ONM warning level over the wilaya; hatching: period still to come",
+    colorLegend:
+      "Red: official source · Orange: probable fire, corroborating evidence · Grey: single source, unverified",
+    tintLegend:
+      "Yellow, orange or red tint: ONM warning level over the wilaya; hatching: period still to come",
     officialLegend: "Incidents attributed to an official source",
     weatherLegend: "Official ONM warnings for the indicated area",
     citizenLegend: "Citizen reports, not independently verified",
