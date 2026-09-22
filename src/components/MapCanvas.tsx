@@ -7,6 +7,7 @@ import type { FeatureCollection } from "geojson";
 import type { MapLayers, MapPadding } from "./FireMap";
 import type { FireCluster } from "@/lib/nadhir";
 import type { FireLevel } from "@/lib/fire-confidence";
+import type { RoadHint } from "@/lib/civil-map";
 
 const FireMap = lazy(() => import("./FireMap"));
 
@@ -14,6 +15,7 @@ type Props = {
   clusters: FireCluster[];
   fireLevels?: ReadonlyMap<string, FireLevel>;
   userPosition?: { lat: number; lon: number } | null;
+  roadHints?: RoadHint[];
   selectedShortId?: string | null;
   onSelect?: (cluster: FireCluster) => void;
   official?: FeatureCollection;

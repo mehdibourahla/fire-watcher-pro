@@ -61,6 +61,7 @@ import { civilMapGeoJSON, situationAreaId } from "@/lib/civil-map-geometry";
 import {
   buildSituations,
   filterSituations,
+  roadHints,
   findPlaces,
   nearestPlace,
   selectedSituation,
@@ -544,6 +545,7 @@ function LiveMapPage() {
           clusters={mapFires}
           fireLevels={fireLevels}
           userPosition={userPosition}
+          roadHints={roadHints(visible, allUnits)}
           official={mapOfficial}
           warnings={mapWarnings}
           reports={mapReports}
