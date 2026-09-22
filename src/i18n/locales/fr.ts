@@ -757,6 +757,10 @@ export const fr: Translation = {
     kindFire: "Incendie",
     kindRisk: "Danger",
     openFire: "Voir l'incendie",
+    stateLive: "En cours",
+    stateToday: "Prévision du jour",
+    statePastForecast: "Prévision passée",
+    earlier: "Messages précédents : {{count}}",
   },
   account: {
     enableDeviceNotifications: "Autoriser les notifications sur cet appareil",

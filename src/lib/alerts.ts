@@ -35,24 +35,32 @@ export const alertsQuery = queryOptions({
   },
 });
 
-export async function markAlertRead(id: string, read: boolean) {
-  const { error } = await supabase
-    .from("alerts")
-    .update({ read_at: read ? new Date().toISOString() : null })
-    .eq("id", id);
-  if (error) throw new Error(error.message);
-}
+export const alertFiresQuery = (ids: string[]) => {
+  const sorted = [...new Set(ids)].sort();
+  return queryOptions({
+    queryKey: ["alert-fires", sorted],
+    enabled: sorted.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("fire_clusters")
+        .select("id, state, last_detected_at, resolved_at")
+        .in("id", sorted);
+      if (error) throw new Error(error.message);
+      return new Map((data ?? []).map((fire) => [fire.id, fire]));
+    },
+  });
+};
 
-export async function markAllAlertsRead(ids: string[]) {
+export async function markAlertsRead(ids: string[], read: boolean) {
   if (!ids.length) return;
   const { error } = await supabase
     .from("alerts")
-    .update({ read_at: new Date().toISOString() })
+    .update({ read_at: read ? new Date().toISOString() : null })
     .in("id", ids);
   if (error) throw new Error(error.message);
 }
 
-export async function deleteAlert(id: string) {
-  const { error } = await supabase.from("alerts").delete().eq("id", id);
+export async function deleteAlerts(ids: string[]) {
+  const { error } = await supabase.from("alerts").delete().in("id", ids);
   if (error) throw new Error(error.message);
 }

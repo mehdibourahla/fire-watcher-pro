@@ -740,6 +740,10 @@ export const en = {
     kindFire: "Fire",
     kindRisk: "Danger",
     openFire: "Open fire page",
+    stateLive: "Ongoing",
+    stateToday: "Today's forecast",
+    statePastForecast: "Past forecast",
+    earlier: "Earlier messages: {{count}}",
   },
   account: {
     enableDeviceNotifications: "Allow notifications on this device",

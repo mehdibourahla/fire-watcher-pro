@@ -744,6 +744,10 @@ export const kab: Translation = {
     kindFire: "Times",
     kindRisk: "Aɣilif",
     openFire: "Ldi asebter n times",
+    stateLive: "En cours",
+    stateToday: "Prévision du jour",
+    statePastForecast: "Prévision passée",
+    earlier: "Messages précédents : {{count}}",
   },
   account: {
     enableDeviceNotifications: "Sireg ilɣa deg yibenk-a",

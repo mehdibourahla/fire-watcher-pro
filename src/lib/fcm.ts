@@ -10,7 +10,10 @@ export function fcmTopic(code: string, lang: string): string {
 export type FcmMessage = {
   topic: string;
   notification: { title: string; body: string };
-  webpush: { fcm_options: { link: string } };
+  webpush: {
+    fcm_options: { link: string };
+    notification?: { tag: string; renotify: boolean };
+  };
   data: { broadcast_id: string; severity: string; kind: string };
 };
 
@@ -20,11 +23,16 @@ function message(
   body: string,
   link: string,
   data: FcmMessage["data"],
+  tag?: string,
 ): FcmMessage {
   return {
     topic,
     notification: { title, body },
-    webpush: { fcm_options: { link } },
+    // a later message with the same tag replaces the earlier one in the tray
+    webpush: {
+      fcm_options: { link },
+      ...(tag ? { notification: { tag, renotify: true } } : {}),
+    },
     data,
   };
 }
@@ -54,6 +62,7 @@ export function fcmMessagesForFire(args: {
           block.description,
           link,
           data,
+          `fire-${args.shortId}`,
         ),
       );
     }
@@ -66,6 +75,8 @@ export function fcmMessagesForOnm(args: {
   communeCodes: string[];
   title: string;
   headlineFr: string | null;
+  wilayaId: string | null;
+  event: string;
 }): FcmMessage[] {
   const data = {
     broadcast_id: args.broadcastId,
@@ -84,6 +95,7 @@ export function fcmMessagesForOnm(args: {
           body,
           `${APP_URL}/forecast`,
           data,
+          args.wilayaId ? `onm-${args.wilayaId}-${args.event}` : undefined,
         ),
       );
   return out;

@@ -5,12 +5,13 @@ import { useTranslation } from "react-i18next";
 
 import type { Locale } from "@/i18n";
 import {
+  alertFiresQuery,
   alertsQuery,
-  deleteAlert,
-  markAlertRead,
-  markAllAlertsRead,
-  type Alert,
+  deleteAlerts,
+  markAlertsRead,
 } from "@/lib/alerts";
+import { groupAlerts, groupPhase, type AlertGroup } from "@/lib/alert-groups";
+import type { Phase } from "@/lib/incident-lifecycle";
 import { runMyAlertCheck } from "@/lib/alerts.functions";
 import { zonesQuery } from "@/lib/account";
 import { RiskChip } from "@/components/nadhir/RiskChip";
@@ -39,18 +40,19 @@ function AlertsPage() {
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["alerts"] });
   const readMutation = useMutation({
-    mutationFn: ({ id, read }: { id: string; read: boolean }) =>
-      markAlertRead(id, read),
+    mutationFn: ({ ids, read }: { ids: string[]; read: boolean }) =>
+      markAlertsRead(ids, read),
     onSuccess: invalidate,
   });
   const deleteMutation = useMutation({
-    mutationFn: deleteAlert,
+    mutationFn: deleteAlerts,
     onSuccess: invalidate,
   });
   const allReadMutation = useMutation({
     mutationFn: () =>
-      markAllAlertsRead(
+      markAlertsRead(
         (alerts.data ?? []).filter((a) => !a.read_at).map((a) => a.id),
+        true,
       ),
     onSuccess: invalidate,
   });
@@ -61,6 +63,15 @@ function AlertsPage() {
 
   const rows = alerts.data ?? [];
   const unread = rows.filter((a) => !a.read_at).length;
+  const groups = groupAlerts(rows);
+  const fires = useQuery(
+    alertFiresQuery(
+      rows.flatMap((a) =>
+        a.kind === "fire" && a.cluster_id ? [a.cluster_id] : [],
+      ),
+    ),
+  );
+  const now = Date.now();
   const zoneName = (id: string | null) =>
     zones.data?.find((z) => z.id === id)?.name ?? "";
 
@@ -113,16 +124,22 @@ function AlertsPage() {
         </div>
       ) : (
         <ul className="mt-6 space-y-3">
-          {rows.map((alert) => (
+          {groups.map((group) => (
             <AlertCard
-              key={alert.id}
-              alert={alert}
+              key={group.key}
+              group={group}
+              phase={groupPhase(group, fires.data ?? new Map(), now)}
               locale={locale}
-              zoneName={zoneName(alert.zone_id)}
+              zoneName={zoneName(group.latest.zone_id)}
               onToggleRead={() =>
-                readMutation.mutate({ id: alert.id, read: !alert.read_at })
+                readMutation.mutate({
+                  ids: group.messages.map((m) => m.id),
+                  read: group.unread > 0,
+                })
               }
-              onDelete={() => deleteMutation.mutate(alert.id)}
+              onDelete={() =>
+                deleteMutation.mutate(group.messages.map((m) => m.id))
+              }
             />
           ))}
         </ul>
@@ -132,26 +149,43 @@ function AlertsPage() {
 }
 
 function AlertCard({
-  alert,
+  group,
+  phase,
   locale,
   zoneName,
   onToggleRead,
   onDelete,
 }: {
-  alert: Alert;
+  group: AlertGroup;
+  phase: Phase;
   locale: Locale;
   zoneName: string;
   onToggleRead: () => void;
   onDelete: () => void;
 }) {
   const { t } = useTranslation();
+  const alert = group.latest;
   const shortId = alert.payload?.short_id;
+  const earlier = group.messages.slice(1);
+  const state =
+    alert.kind === "risk"
+      ? phase === "live"
+        ? "alerts.stateToday"
+        : "alerts.statePastForecast"
+      : phase === "live"
+        ? "alerts.stateLive"
+        : phase === "fading"
+          ? "civilMap.quiet"
+          : phase === "ended"
+            ? "civilMap.ended"
+            : "civilMap.archived";
   return (
     <li
-      className={`card p-4 ${alert.read_at ? "opacity-70" : ""}`}
+      className={`card p-4 ${group.unread ? "" : "opacity-70"}`}
       style={{
         borderInlineStartWidth: 4,
-        borderInlineStartColor: riskSolid(alert.severity),
+        borderInlineStartColor:
+          phase === "live" ? riskSolid(alert.severity) : "var(--border)",
       }}
     >
       <div className="flex flex-wrap items-baseline gap-2">
@@ -164,7 +198,25 @@ function AlertCard({
           {relativeTime(alert.created_at, locale)}
         </span>
       </div>
+      <p className="mt-1 text-sm font-medium">{t(state)}</p>
       <p className="mt-1 text-sm text-muted-foreground">{alert.body}</p>
+      {earlier.length ? (
+        <details className="mt-2 text-xs text-muted-foreground">
+          <summary className="cursor-pointer">
+            {t("alerts.earlier", { count: earlier.length })}
+          </summary>
+          <ul className="mt-1 space-y-1">
+            {earlier.map((message) => (
+              <li key={message.id}>
+                <time dateTime={message.created_at}>
+                  {relativeTime(message.created_at, locale)}
+                </time>{" "}
+                · {message.title}
+              </li>
+            ))}
+          </ul>
+        </details>
+      ) : null}
       <div className="mt-3 flex flex-wrap items-center gap-3 text-xs">
         {zoneName ? (
           <span className="text-muted-foreground">{zoneName}</span>
@@ -183,7 +235,7 @@ function AlertCard({
           onClick={onToggleRead}
           className="text-muted-foreground hover:text-foreground"
         >
-          {t(alert.read_at ? "alerts.markUnread" : "alerts.markRead")}
+          {t(group.unread ? "alerts.markRead" : "alerts.markUnread")}
         </button>
         <button
           type="button"
