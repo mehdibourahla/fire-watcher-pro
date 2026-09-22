@@ -1,3 +1,5 @@
+import { fireLevel } from "@/lib/fire-confidence";
+import { fireContexts } from "@/lib/ingest/fire-context.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import type { Json } from "@/integrations/supabase/types";
 import { MIN_CONFIDENCE } from "@/lib/alerts-rules";
@@ -30,7 +32,7 @@ import {
   buildOfficialCap,
   type BroadcastPhase,
 } from "@/lib/cap";
-import { coordLabel, haversineKm } from "@/lib/nadhir";
+import { coordLabel, fireStage, haversineKm } from "@/lib/nadhir";
 import { fetchAllPages } from "@/lib/paginate";
 
 import { algiersClock, algiersToday } from "./algiers-date";
@@ -313,6 +315,8 @@ export async function publishBroadcasts(): Promise<BroadcastRun> {
     chains.set(row.cluster_id, chain);
   }
 
+  const contexts = await fireContexts(clusters);
+
   let published = 0;
   const errors: string[] = [];
 
@@ -362,6 +366,9 @@ export async function publishBroadcasts(): Promise<BroadcastRun> {
       additions,
       inside,
       fuelLimited,
+      eligible:
+        fireLevel(fireStage(cluster), contexts.get(cluster.id)!) !==
+        "heat_signal",
     });
     if (!plan) continue;
 

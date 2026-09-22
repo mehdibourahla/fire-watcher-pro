@@ -142,6 +142,7 @@ describe("planFireBroadcast", () => {
     targets: ["1503", "1510"],
     additions: [],
     inside: [],
+    eligible: true,
   };
   const thread = (
     phase: string,
@@ -156,6 +157,45 @@ describe("planFireBroadcast", () => {
       codes: ["1503", "1510"],
       inside: [],
     });
+  });
+
+  it("never starts a thread for a bare heat signal", () => {
+    expect(planFireBroadcast({ ...base, eligible: false })).toBeNull();
+    expect(
+      planFireBroadcast({
+        ...base,
+        eligible: false,
+        open: thread("end", ["1503"]),
+      }),
+    ).toBeNull();
+  });
+
+  it("keeps an open thread alive once it started, whatever the context now", () => {
+    const open = thread("initial", ["1503"]);
+    expect(
+      planFireBroadcast({
+        ...base,
+        eligible: false,
+        open,
+        additions: ["1510"],
+      }),
+    ).toMatchObject({ action: "update", added: ["1510"] });
+    expect(
+      planFireBroadcast({
+        ...base,
+        eligible: false,
+        open,
+        lastDetectedMs: now - 13 * HOUR,
+      }),
+    ).toEqual({ action: "end" });
+    expect(
+      planFireBroadcast({
+        ...base,
+        eligible: false,
+        open,
+        state: "false_positive",
+      }),
+    ).toEqual({ action: "cancel" });
   });
 
   it("never opens below the confidence floor or before confirmation", () => {
@@ -338,6 +378,7 @@ describe("planFireBroadcast fuel gate", () => {
     additions: [],
     inside: [],
     fuelLimited: new Set(["3306"]),
+    eligible: true,
   };
 
   it("does not open a thread where every target commune has no fuel", () => {

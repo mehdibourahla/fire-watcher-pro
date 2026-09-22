@@ -16,8 +16,11 @@ import {
   bearingBetween,
   coordLabel,
   haversineKm,
+  fireStage,
   publishedRiskTarget,
 } from "@/lib/nadhir";
+import { fireLevel } from "@/lib/fire-confidence";
+import { fireContexts } from "@/lib/ingest/fire-context.server";
 import { fetchAllPages } from "@/lib/paginate";
 import {
   zoneLifecycle,
@@ -241,7 +244,7 @@ export async function evaluateAlerts(userId?: string): Promise<AlertRun> {
   const { data: allLive, error: liveError } = await supabaseAdmin
     .from("fire_clusters")
     .select(
-      "id, short_id, state, lat, lon, confidence, spread_bearing_deg, last_detected_at, confirmed_at, est_area_ha, max_frp_mw",
+      "id, short_id, state, lat, lon, confidence, spread_bearing_deg, last_detected_at, confirmed_at, est_area_ha, max_frp_mw, commune_id",
     )
     .in("state", LIVE_STATES);
   if (liveError) throw new Error(liveError.message);
@@ -278,6 +281,15 @@ export async function evaluateAlerts(userId?: string): Promise<AlertRun> {
 
   const alertable = (allLive ?? []).filter((c) =>
     ALERTING_STATES.includes(c.state),
+  );
+
+  const contexts = await fireContexts(alertable);
+  const probable = new Set(
+    alertable
+      .filter(
+        (c) => fireLevel(fireStage(c), contexts.get(c.id)!) !== "heat_signal",
+      )
+      .map((c) => c.id),
   );
 
   // R3 gates on how close the fire actually is; the centroid understates that by
@@ -490,6 +502,9 @@ export async function evaluateAlerts(userId?: string): Promise<AlertRun> {
           urgent = { name: s.name, bearing };
           break;
         }
+
+        // a settlement downwind is danger to life, so only the "new" tier waits for context
+        if (!urgent && !probable.has(cluster.id)) continue;
 
         const severity = urgent ? SEVERITY.emergency : SEVERITY.warning;
         if (quiet && severity < SEVERITY.emergency) {

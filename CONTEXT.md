@@ -78,10 +78,26 @@ _Avoid_: unconfirmed (now means "not Confirmed", which is most fires)
 
 **Detected**:
 A Fire whose satellite evidence crosses the publication bar with at least two independent
-looks: two slots, two sensors, or a sensor plus a citizen Hazard Report. A Detected Fire may
-be pushed as a Broadcast Alert in Nadhir's voice, worded as satellite Information ("fire
-detected by satellite"), never as "confirmed".
+looks: two slots, two sensors, or a sensor plus a citizen Hazard Report. Internal bar only:
+on its own a Detected Fire is shown as a Heat Signal and never pushed.
 _Avoid_: confirmed (reserved for authorities), active (internal state word)
+
+**Heat Signal**:
+What a citizen sees for a Fire backed by satellite evidence alone ("satellite heat signal"):
+often an agricultural or waste burn, so it is grey, map-only and never pushed.
+_Avoid_: fire (for satellite-only evidence), hotspot (user-facing)
+
+**Probable Fire**:
+A Detected Fire with independent context: its commune is at least 10 % forest, today's danger
+level is extreme, or a citizen reported a sighting within 5 km and 6 h. The highest level
+Nadhir reaches on its own evidence; it may be pushed, worded as satellite Information.
+_Avoid_: confirmed, likely fire
+
+**Fading**:
+A situation whose lease lapsed without new evidence: shown as past ("last seen 8 h ago"),
+never pushed, and revived by new evidence. Silence never makes a situation ended; only an
+authority, or an operator closing a Fire, does.
+_Avoid_: extinguished, contained (for satellite silence)
 
 **Confirmed**:
 A Fire, or an Official Incident with no Fire, that an official source has announced — today the
