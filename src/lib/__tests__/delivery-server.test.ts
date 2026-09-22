@@ -58,7 +58,15 @@ function fixture(
       },
     ],
     fire_clusters: [{ id: "f1", short_id: "DZ123" }],
-    onm_vigilance: [{ id: "onm1", title: "Wind warning", headline_fr: null }],
+    onm_vigilance: [
+      {
+        id: "onm1",
+        title: "Wind warning",
+        headline_fr: null,
+        wilaya_id: "w1",
+        event: "Strong",
+      },
+    ],
     authority_warnings: [
       { id: "w1", source: "Protection Civile", body: "Manual warning" },
     ],

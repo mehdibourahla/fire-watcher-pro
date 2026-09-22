@@ -54,6 +54,16 @@ describe("fcmMessagesForFire", () => {
     expect(ar.notification.title).toBe("حريق مؤكد — عزازقة");
   });
 
+  it("replaces the previous notification about the same fire in the tray", () => {
+    expect(
+      messages.every(
+        (m) =>
+          m.webpush.notification?.tag === "fire-DZ7K4A" &&
+          m.webpush.notification.renotify,
+      ),
+    ).toBe(true);
+  });
+
   it("deep-links to the fire page", () => {
     expect(messages[0]!.webpush.fcm_options.link).toBe(
       "https://nadhir.app/fire/DZ7K4A",
@@ -85,6 +95,8 @@ describe("fcmMessagesForOnm", () => {
     communeCodes: ["1503"],
     title: "Rain Extreme warning for the wilaya: Tizi Ouzou",
     headlineFr: "Pluies torrentielles attendues",
+    wilayaId: "w15",
+    event: "Rain",
   });
 
   it("relays verbatim with attribution to every language topic", () => {
@@ -103,10 +115,19 @@ describe("fcmMessagesForOnm", () => {
       communeCodes: ["1503"],
       title: "Wind Severe warning for the wilaya: Bejaia",
       headlineFr: null,
+      wilayaId: null,
+      event: "Strong",
     });
     expect(bare[0]!.notification.body).toBe(
       "Wind Severe warning for the wilaya: Bejaia",
     );
+  });
+
+  it("replaces the previous bulletin for the same wilaya and phenomenon in the tray", () => {
+    expect(messages[0]!.webpush.notification).toEqual({
+      tag: "onm-w15-Rain",
+      renotify: true,
+    });
   });
 
   it("links to the forecast surface", () => {

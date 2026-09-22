@@ -49,7 +49,15 @@ type CapText = {
 type DeliveryContext = {
   infoByCap: Map<string, CapText[]>;
   shortIdByCluster: Map<string, string>;
-  onmById: Map<string, { title: string; headline_fr: string | null }>;
+  onmById: Map<
+    string,
+    {
+      title: string;
+      headline_fr: string | null;
+      wilaya_id: string | null;
+      event: string;
+    }
+  >;
   authorityById: Map<string, { source: string; body: string }>;
 };
 
@@ -147,7 +155,7 @@ async function loadContext(rows: PendingRow[]): Promise<DeliveryContext> {
   if (onmIds.length) {
     const { data, error } = await supabaseAdmin
       .from("onm_vigilance")
-      .select("id, title, headline_fr")
+      .select("id, title, headline_fr, wilaya_id, event")
       .in("id", onmIds);
     if (error) throw new Error(error.message);
     for (const row of data ?? []) context.onmById.set(row.id, row);
@@ -199,6 +207,8 @@ function fcmMessagesFor(
       communeCodes: row.push_codes,
       title: onm.title,
       headlineFr: onm.headline_fr,
+      wilayaId: onm.wilaya_id,
+      event: onm.event,
     });
   }
   if (row.kind === "official") {
