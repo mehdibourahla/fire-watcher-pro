@@ -764,6 +764,7 @@ async function relayOnmWarnings(): Promise<number> {
     .select("id, severity, wilaya_id, event, sent, onset, expires")
     .in("severity", ["Severe", "Extreme"])
     .not("wilaya_id", "is", null)
+    .is("superseded_at", null)
     .or(`expires.is.null,expires.gt.${nowIso}`);
   if (error) throw new Error(error.message);
   if (!warnings?.length) return 0;

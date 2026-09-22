@@ -202,6 +202,27 @@ describe("independent weather evidence", () => {
     expect(html).not.toContain(">active<");
   });
 
+  it("drops a warning ONM replaced even before its own expiry", () => {
+    state.onm = {
+      data: [
+        {
+          id: "replaced",
+          wilaya_id: "wilaya",
+          event: "Rain",
+          area_desc: "Djelfa",
+          onset: "2026-09-15T08:00:00Z",
+          expires: "2026-09-15T20:00:00Z",
+          sent: "2026-09-15T05:00:00Z",
+          superseded_at: "2026-09-15T08:30:00Z",
+          title: "Replaced warning",
+        },
+      ],
+    };
+    const html = renderToStaticMarkup(<WeatherForecast />);
+    expect(html).not.toContain("Replaced warning");
+    expect(html).toContain("warningsNone");
+  });
+
   it("groups overlapping changed validity transitively while preserving every original", () => {
     const base = {
       wilaya_id: "wilaya",

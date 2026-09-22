@@ -141,7 +141,9 @@ export function WeatherForecast({ communeId }: { communeId?: string } = {}) {
     return groups
       .filter((group) =>
         group.bulletins.some(
-          (warning) => !warning.expires || Date.parse(warning.expires) > now,
+          (warning) =>
+            !warning.superseded_at &&
+            (!warning.expires || Date.parse(warning.expires) > now),
         ),
       )
       .map((group) =>

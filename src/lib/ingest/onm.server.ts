@@ -172,6 +172,7 @@ export type OnmRun = {
   fetched: number;
   stored: number;
   unmatched: number;
+  superseded?: number;
   detailed?: number;
   error?: string;
 };
@@ -241,11 +242,27 @@ export async function ingestOnm(): Promise<OnmRun> {
       };
   }
 
+  const newest = entries.reduce((a, b) =>
+    Date.parse(b.sent) > Date.parse(a.sent) ? b : a,
+  );
+  const { data: superseded, error: supersedeError } = await supabaseAdmin.rpc(
+    "supersede_onm_absent",
+    { _feed_cap_ids: entries.map((e) => e.cap_id), _feed_sent: newest.sent },
+  );
+  if (supersedeError)
+    return {
+      fetched: entries.length,
+      stored: rows.length,
+      unmatched,
+      error: `ONM supersession failed: ${supersedeError.message}`,
+    };
+
   const detailed = await backfillCapDetails();
   return {
     fetched: entries.length,
     stored: rows.length,
     unmatched,
+    superseded: superseded ?? 0,
     detailed: detailed.filled,
     ...(detailed.failed
       ? { error: `ONM partial CAP detail coverage: ${detailed.failed} failed` }

@@ -104,6 +104,7 @@ it("archives ONM detail XML and does not swallow its archive failure", async () 
     };
     return query;
   });
+  rpc.mockResolvedValue({ data: 0, error: null });
   archivedFetch
     .mockResolvedValueOnce(new Response(feed))
     .mockRejectedValueOnce(new ArchiveFailure("detail archive failed"));

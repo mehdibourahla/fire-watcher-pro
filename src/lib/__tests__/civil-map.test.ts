@@ -119,6 +119,7 @@ const warning = (over: Partial<OnmVigilance> = {}): OnmVigilance => ({
   cap_url: null,
   wilaya_id: "w1",
   headline_fr: null,
+  superseded_at: null,
   ...over,
 });
 const build = (over: Partial<Parameters<typeof buildSituations>[0]> = {}) =>
