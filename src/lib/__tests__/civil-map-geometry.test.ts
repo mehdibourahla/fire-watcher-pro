@@ -23,6 +23,7 @@ const official: Extract<Situation, { source: "official" }> = {
   areaId: "w1",
   wilayaId: "w1",
   phase: "live",
+  confidence: "official",
   candidate: false,
   data: {
     id: "i1",

@@ -18,7 +18,15 @@ type Result = { data: unknown; error: { message: string } | null };
 function query(table: string, result: Result, filters: [string, unknown][]) {
   let mode = "read";
   const builder: Record<string, unknown> = {};
-  for (const method of ["select", "order", "limit", "range", "in"]) {
+  for (const method of [
+    "select",
+    "order",
+    "limit",
+    "range",
+    "in",
+    "neq",
+    "gte",
+  ]) {
     builder[method] = vi.fn((...args: unknown[]) => {
       if (method === "in") filters.push([String(args[0]), args[1]]);
       return builder;
@@ -84,6 +92,7 @@ describe("alert risk publication boundary", () => {
         confirmed_at: null,
         est_area_ha: 20,
         max_frp_mw: 40,
+        first_detected_at: "2026-09-08T11:00:00Z",
         last_detected_at: "2026-09-08T11:50:00Z",
       };
       const data: Record<string, unknown> = {
@@ -333,5 +342,99 @@ describe("alert risk publication boundary", () => {
 
     expect(result.created).toBe(0);
     expect(drainWebhookDeliveries).not.toHaveBeenCalled();
+  });
+});
+
+describe("zone fire alerts follow the confidence ladder", () => {
+  beforeEach(() => {
+    fromMock.mockReset();
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-09-08T12:00:00Z"));
+  });
+  afterEach(() => vi.useRealTimers());
+
+  async function phases(
+    forest: number,
+    settlements: unknown[] = [],
+    failing?: string,
+  ) {
+    const data: Record<string, unknown> = {
+      zones: [
+        {
+          id: "z1",
+          user_id: "u1",
+          name: "Zone",
+          notify_fires: true,
+          notify_risk: false,
+          lat: 36,
+          lon: 3,
+          radius_km: 10,
+        },
+      ],
+      profiles: [{ id: "u1", locale: "en" }],
+      fire_clusters: [
+        {
+          id: "c1",
+          short_id: "abc",
+          state: "active",
+          lat: 36,
+          lon: 3,
+          confidence: 0.9,
+          spread_bearing_deg: 0,
+          confirmed_at: null,
+          est_area_ha: 5,
+          max_frp_mw: 10,
+          first_detected_at: "2026-09-08T11:00:00Z",
+          last_detected_at: "2026-09-08T11:50:00Z",
+          commune_id: "k1",
+        },
+      ],
+      admin_units: [{ id: "k1", forest_fraction: forest }],
+      settlements,
+    };
+    const written: Record<string, unknown>[] = [];
+    fromMock.mockImplementation((table: string) => {
+      const builder = query(
+        table,
+        table === failing
+          ? { data: null, error: { message: `${table} unavailable` } }
+          : { data: data[table] ?? [], error: null },
+        [],
+      );
+      const upsert = builder["upsert"] as (rows: unknown) => unknown;
+      builder["upsert"] = (rows: Record<string, unknown>[]) => {
+        if (table === "alerts") written.push(...rows);
+        return upsert(rows);
+      };
+      return builder;
+    });
+    const run = evaluateAlerts("u1");
+    if (failing) await expect(run).rejects.toThrow(`${failing} unavailable`);
+    else await run;
+    return written.map((r) => (r["payload"] as { phase: string }).phase);
+  }
+
+  it("does not alert a zone about a bare heat signal", async () => {
+    expect(await phases(0)).not.toContain("new");
+  });
+
+  it("alerts a zone about a probable fire", async () => {
+    expect(await phases(0.4)).toContain("new");
+  });
+
+  it("still escalates a heat signal spreading towards a settlement", async () => {
+    expect(
+      await phases(0, [{ id: "s1", name: "Village", lat: 36.02, lon: 3 }]),
+    ).toContain("urgent");
+  });
+
+  it("still raises the urgent alert when fire context cannot be read, then fails loudly", async () => {
+    expect(
+      await phases(
+        0.4,
+        [{ id: "s1", name: "Village", lat: 36.02, lon: 3 }],
+        "hazard_reports",
+      ),
+    ).toEqual(["urgent"]);
   });
 });

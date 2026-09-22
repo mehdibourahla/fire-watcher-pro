@@ -278,6 +278,48 @@ describe("civil situations", () => {
       ),
     ).toHaveLength(8);
   });
+  it("ranks every source on one confidence ladder", () => {
+    const forested = { ...commune, forest_fraction: 0.4 };
+    const desert = { ...other, id: "c3", parent_id: "w1", forest_fraction: 0 };
+    const items = buildSituations({
+      fires: [
+        fire({ id: "forest" }),
+        fire({ id: "desert", commune_id: "c3" }),
+        fire({ id: "extreme", commune_id: "c3", lat: 36, lon: 3 }),
+      ],
+      official: [
+        official(),
+        official({ id: "press", authority_tier: "media" }),
+      ],
+      reports: [report({ lat: 20, lon: 5 })],
+      warnings: [warning()],
+      danger: new Map([["c3", 5]]),
+      units: [forested, wilaya, desert],
+      now,
+    });
+    const at = (id: string) => items.find((x) => x.id === id);
+    expect(at("fire:forest")).toMatchObject({
+      confidence: "corroborated",
+      level: "probable",
+    });
+    expect(at("official:i")?.confidence).toBe("official");
+    expect(at("official:press")?.confidence).toBe("single");
+    expect(at("weather:w")?.confidence).toBe("official");
+    expect(at("report:r")?.confidence).toBe("single");
+    expect(at("fire:extreme")).toMatchObject({ level: "probable" });
+    const withoutDanger = buildSituations({
+      fires: [fire({ id: "desert", commune_id: "c3" })],
+      official: [],
+      reports: [],
+      warnings: [],
+      units: [forested, wilaya, desert],
+      now,
+    });
+    expect(withoutDanger[0]).toMatchObject({
+      confidence: "single",
+      level: "heat_signal",
+    });
+  });
   it("includes upcoming ONM warnings but excludes expired, undated and unsent warnings", () => {
     const items = build({
       warnings: [

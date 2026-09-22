@@ -199,6 +199,7 @@ export function planFireBroadcast(args: {
   additions: string[];
   inside: string[];
   fuelLimited?: Set<string>;
+  eligible: boolean;
 }): FirePlan {
   const burnable = (codes: string[]) =>
     args.fuelLimited ? codes.filter((c) => !args.fuelLimited!.has(c)) : codes;
@@ -235,7 +236,11 @@ export function planFireBroadcast(args: {
     return null;
   }
 
-  if (args.state === "active" && args.confidence >= MIN_CONFIDENCE) {
+  if (
+    args.eligible &&
+    args.state === "active" &&
+    args.confidence >= MIN_CONFIDENCE
+  ) {
     const codes = burnable(args.targets);
     if (!codes.length) return null;
     const fresh = burnable(args.inside).filter((c) => codes.includes(c));

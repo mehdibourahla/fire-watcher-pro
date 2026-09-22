@@ -1,3 +1,5 @@
+import { fireLevel, type FireContext } from "@/lib/fire-confidence";
+import { fireContexts } from "@/lib/ingest/fire-context.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import type { Json } from "@/integrations/supabase/types";
 import { MIN_CONFIDENCE } from "@/lib/alerts-rules";
@@ -30,7 +32,7 @@ import {
   buildOfficialCap,
   type BroadcastPhase,
 } from "@/lib/cap";
-import { coordLabel, haversineKm } from "@/lib/nadhir";
+import { coordLabel, fireStage, haversineKm } from "@/lib/nadhir";
 import { fetchAllPages } from "@/lib/paginate";
 
 import { algiersClock, algiersToday } from "./algiers-date";
@@ -53,6 +55,7 @@ type ClusterRow = {
   confidence: number;
   detection_count: number;
   spread_bearing_deg: number | null;
+  first_detected_at: string;
   last_detected_at: string;
   nearest_settlement_id: string | null;
   nearest_settlement_km: number | null;
@@ -154,7 +157,7 @@ export async function publishBroadcasts(): Promise<BroadcastRun> {
   const coverage = coverageOf(latestByCluster);
 
   const clusterFields =
-    "id, short_id, state, lat, lon, confidence, detection_count, spread_bearing_deg, last_detected_at, nearest_settlement_id, nearest_settlement_km, commune_id, max_frp_mw, confirmed_at";
+    "id, short_id, state, lat, lon, confidence, detection_count, spread_bearing_deg, first_detected_at, last_detected_at, nearest_settlement_id, nearest_settlement_km, commune_id, max_frp_mw, confirmed_at";
   const { data: confirmed, error: confirmedError } = await supabaseAdmin
     .from("fire_clusters")
     .select(clusterFields)
@@ -315,6 +318,13 @@ export async function publishBroadcasts(): Promise<BroadcastRun> {
 
   let published = 0;
   const errors: string[] = [];
+  // without context no new thread starts, but open threads must still update and end
+  const contexts = await fireContexts(clusters).catch((error: unknown) => {
+    errors.push(
+      error instanceof Error ? error.message : "fire context unavailable",
+    );
+    return new Map<string, FireContext>();
+  });
 
   for (const cluster of clusters) {
     const open = latestByCluster.get(cluster.id) ?? null;
@@ -362,6 +372,10 @@ export async function publishBroadcasts(): Promise<BroadcastRun> {
       additions,
       inside,
       fuelLimited,
+      eligible: contexts.has(cluster.id)
+        ? fireLevel(fireStage(cluster), contexts.get(cluster.id)!) !==
+          "heat_signal"
+        : false,
     });
     if (!plan) continue;
 

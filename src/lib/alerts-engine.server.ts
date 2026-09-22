@@ -16,8 +16,11 @@ import {
   bearingBetween,
   coordLabel,
   haversineKm,
+  fireStage,
   publishedRiskTarget,
 } from "@/lib/nadhir";
+import { fireLevel, type FireContext } from "@/lib/fire-confidence";
+import { fireContexts } from "@/lib/ingest/fire-context.server";
 import { fetchAllPages } from "@/lib/paginate";
 import {
   zoneLifecycle,
@@ -241,7 +244,7 @@ export async function evaluateAlerts(userId?: string): Promise<AlertRun> {
   const { data: allLive, error: liveError } = await supabaseAdmin
     .from("fire_clusters")
     .select(
-      "id, short_id, state, lat, lon, confidence, spread_bearing_deg, last_detected_at, confirmed_at, est_area_ha, max_frp_mw",
+      "id, short_id, state, lat, lon, confidence, spread_bearing_deg, first_detected_at, last_detected_at, confirmed_at, est_area_ha, max_frp_mw, commune_id",
     )
     .in("state", LIVE_STATES);
   if (liveError) throw new Error(liveError.message);
@@ -278,6 +281,21 @@ export async function evaluateAlerts(userId?: string): Promise<AlertRun> {
 
   const alertable = (allLive ?? []).filter((c) =>
     ALERTING_STATES.includes(c.state),
+  );
+
+  // urgent alerts are not gated, so a context failure must not stop them
+  let contextError: unknown = null;
+  const contexts = await fireContexts(alertable).catch((error: unknown) => {
+    contextError = error;
+    return new Map<string, FireContext>();
+  });
+  const probable = new Set(
+    alertable
+      .filter((c) => {
+        const context = contexts.get(c.id);
+        return !!context && fireLevel(fireStage(c), context) !== "heat_signal";
+      })
+      .map((c) => c.id),
   );
 
   // R3 gates on how close the fire actually is; the centroid understates that by
@@ -491,6 +509,9 @@ export async function evaluateAlerts(userId?: string): Promise<AlertRun> {
           break;
         }
 
+        // a settlement downwind is danger to life, so only the "new" tier waits for context
+        if (!urgent && !probable.has(cluster.id)) continue;
+
         const severity = urgent ? SEVERITY.emergency : SEVERITY.warning;
         if (quiet && severity < SEVERITY.emergency) {
           suppressed += 1;
@@ -577,7 +598,10 @@ export async function evaluateAlerts(userId?: string): Promise<AlertRun> {
     }
   }
 
-  if (!rows.length) return { evaluated: zones.length, created: 0, suppressed };
+  if (!rows.length) {
+    if (contextError) throw contextError;
+    return { evaluated: zones.length, created: 0, suppressed };
+  }
 
   const capIdByIdentifier = await ensureCapAlerts([...capEvents.values()]);
   const alertRows = rows.map((row) => {
@@ -607,6 +631,7 @@ export async function evaluateAlerts(userId?: string): Promise<AlertRun> {
     const { drainWebhookDeliveries } = await import("@/lib/webhooks.server");
     delivered = await drainWebhookDeliveries();
   }
+  if (contextError) throw contextError;
 
   return {
     evaluated: zones.length,
