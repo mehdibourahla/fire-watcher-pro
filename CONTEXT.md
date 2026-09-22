@@ -79,17 +79,20 @@ _Avoid_: unconfirmed (now means "not Confirmed", which is most fires)
 **Detected**:
 A Fire whose satellite evidence crosses the publication bar with at least two independent
 looks: two slots, two sensors, or a sensor plus a citizen Hazard Report. Internal bar only:
-on its own a Detected Fire is shown as a Heat Signal and never pushed.
+on its own a Detected Fire is shown as a Heat Signal.
 _Avoid_: confirmed (reserved for authorities), active (internal state word)
 
 **Heat Signal**:
 What a citizen sees for a Fire backed by satellite evidence alone ("satellite heat signal"):
-often an agricultural or waste burn, so it is grey, map-only and never pushed.
+often an agricultural or waste burn, so it is grey, never broadcast and never a "new" Zone
+alert. One exception, danger to life: a settlement in its downwind cone still raises the
+Zone's urgent alert.
 _Avoid_: fire (for satellite-only evidence), hotspot (user-facing)
 
 **Probable Fire**:
 A Detected Fire with independent context: its commune is at least 10 % forest, today's danger
-level is extreme, or a citizen reported a sighting within 5 km and 6 h. The highest level
+level is extreme, or a citizen reported a sighting within 5 km, from 6 h before its first
+look to 6 h after its last. The highest level
 Nadhir reaches on its own evidence; it may be pushed, worded as satellite Information.
 _Avoid_: confirmed, likely fire
 

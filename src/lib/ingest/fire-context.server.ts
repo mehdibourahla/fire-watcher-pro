@@ -2,16 +2,18 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { hasSightingNear, type FireContext } from "@/lib/fire-confidence";
 import { algiersToday } from "@/lib/ingest/algiers-date";
 import { publishedRiskTarget } from "@/lib/nadhir";
+import { fetchAllPages } from "@/lib/paginate";
 
 type ContextCluster = {
   id: string;
   commune_id: string | null;
   lat: number;
   lon: number;
+  first_detected_at: string;
   last_detected_at: string;
 };
 
-const SIGHTING_LOOKBACK_MS = 30 * 3_600_000;
+const SIGHTING_WINDOW_MS = 6 * 3_600_000;
 
 export async function fireContexts(
   clusters: readonly ContextCluster[],
@@ -56,21 +58,30 @@ export async function fireContexts(
   }
 
   const oldest = Math.min(
-    ...clusters.map((c) => Date.parse(c.last_detected_at)),
+    ...clusters
+      .map((c) => Date.parse(c.first_detected_at))
+      .filter(Number.isFinite),
+    Date.now(),
   );
-  const { data: reports, error: reportsError } = await supabaseAdmin
-    .from("hazard_reports")
-    .select("kind, lat, lon, observed_at, status")
-    .eq("kind", "sighting")
-    .neq("status", "rejected")
-    .gte("observed_at", new Date(oldest - SIGHTING_LOOKBACK_MS).toISOString());
-  if (reportsError)
-    throw new Error(`fire context reports: ${reportsError.message}`);
-  const sightings = (reports ?? []).flatMap((r) =>
+  const reports = await fetchAllPages<{
+    kind: string | null;
+    lat: number | null;
+    lon: number | null;
+    observed_at: string | null;
+    status: string | null;
+  }>((from, to) =>
+    supabaseAdmin
+      .from("hazard_reports")
+      .select("kind, lat, lon, observed_at, status")
+      .eq("kind", "sighting")
+      .gte("observed_at", new Date(oldest - SIGHTING_WINDOW_MS).toISOString())
+      .order("observed_at")
+      .range(from, to),
+  );
+  const sightings = reports.flatMap((r) =>
     r.kind && r.lat !== null && r.lon !== null && r.observed_at && r.status
       ? [
           {
-            ...r,
             kind: r.kind,
             lat: r.lat,
             lon: r.lon,

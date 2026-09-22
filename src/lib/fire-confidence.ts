@@ -25,7 +25,12 @@ export function fireLevel(stage: FireStage, ctx: FireContext): FireLevel {
 }
 
 export function hasSightingNear(
-  fire: { lat: number; lon: number; last_detected_at: string },
+  fire: {
+    lat: number;
+    lon: number;
+    first_detected_at: string;
+    last_detected_at: string;
+  },
   reports: readonly {
     kind: string;
     lat: number;
@@ -34,12 +39,14 @@ export function hasSightingNear(
     status: string;
   }[],
 ): boolean {
-  const seen = Date.parse(fire.last_detected_at);
+  const from = Date.parse(fire.first_detected_at) - SIGHTING_WINDOW_MS;
+  const to = Date.parse(fire.last_detected_at) + SIGHTING_WINDOW_MS;
   return reports.some(
     (r) =>
       r.kind === "sighting" &&
       r.status !== "rejected" &&
-      Math.abs(Date.parse(r.observed_at) - seen) <= SIGHTING_WINDOW_MS &&
+      Date.parse(r.observed_at) >= from &&
+      Date.parse(r.observed_at) <= to &&
       haversineKm(fire.lat, fire.lon, r.lat, r.lon) <= SIGHTING_RADIUS_KM,
   );
 }

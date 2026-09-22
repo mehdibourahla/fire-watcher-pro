@@ -19,7 +19,7 @@ import {
   fireStage,
   publishedRiskTarget,
 } from "@/lib/nadhir";
-import { fireLevel } from "@/lib/fire-confidence";
+import { fireLevel, type FireContext } from "@/lib/fire-confidence";
 import { fireContexts } from "@/lib/ingest/fire-context.server";
 import { fetchAllPages } from "@/lib/paginate";
 import {
@@ -244,7 +244,7 @@ export async function evaluateAlerts(userId?: string): Promise<AlertRun> {
   const { data: allLive, error: liveError } = await supabaseAdmin
     .from("fire_clusters")
     .select(
-      "id, short_id, state, lat, lon, confidence, spread_bearing_deg, last_detected_at, confirmed_at, est_area_ha, max_frp_mw, commune_id",
+      "id, short_id, state, lat, lon, confidence, spread_bearing_deg, first_detected_at, last_detected_at, confirmed_at, est_area_ha, max_frp_mw, commune_id",
     )
     .in("state", LIVE_STATES);
   if (liveError) throw new Error(liveError.message);
@@ -283,12 +283,18 @@ export async function evaluateAlerts(userId?: string): Promise<AlertRun> {
     ALERTING_STATES.includes(c.state),
   );
 
-  const contexts = await fireContexts(alertable);
+  // urgent alerts are not gated, so a context failure must not stop them
+  let contextError: unknown = null;
+  const contexts = await fireContexts(alertable).catch((error: unknown) => {
+    contextError = error;
+    return new Map<string, FireContext>();
+  });
   const probable = new Set(
     alertable
-      .filter(
-        (c) => fireLevel(fireStage(c), contexts.get(c.id)!) !== "heat_signal",
-      )
+      .filter((c) => {
+        const context = contexts.get(c.id);
+        return !!context && fireLevel(fireStage(c), context) !== "heat_signal";
+      })
       .map((c) => c.id),
   );
 
@@ -592,7 +598,10 @@ export async function evaluateAlerts(userId?: string): Promise<AlertRun> {
     }
   }
 
-  if (!rows.length) return { evaluated: zones.length, created: 0, suppressed };
+  if (!rows.length) {
+    if (contextError) throw contextError;
+    return { evaluated: zones.length, created: 0, suppressed };
+  }
 
   const capIdByIdentifier = await ensureCapAlerts([...capEvents.values()]);
   const alertRows = rows.map((row) => {
@@ -622,6 +631,7 @@ export async function evaluateAlerts(userId?: string): Promise<AlertRun> {
     const { drainWebhookDeliveries } = await import("@/lib/webhooks.server");
     delivered = await drainWebhookDeliveries();
   }
+  if (contextError) throw contextError;
 
   return {
     evaluated: zones.length,

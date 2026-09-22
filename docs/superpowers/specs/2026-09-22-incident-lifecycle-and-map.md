@@ -81,6 +81,10 @@ Order: 1, then 2 → 3 → 4, with 5 and 6 after 4. All 1,536 communes carry a `
 - Most satellite-only fires are agricultural or waste burns. Check: sample 20 against land cover.
 - ~~The map labels future-onset ONM periods "Current".~~ Refuted: `useSituationLabels` already returns "upcoming" when onset is in the future.
 
+## Known gaps
+
+- Between midnight and the next risk publication, the map reads the published snapshot at horizon 0 while the push gate reads today's date through `publishedRiskTarget`, so a card can say "Feu probable" on danger alone for a fire the gate held back (or the reverse). Display only; the push decision is the server's.
+
 ## Out of scope
 
 Protection Civile Telegram editing, new sources, and any change to the Instruction rule.

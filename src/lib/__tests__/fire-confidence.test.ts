@@ -53,6 +53,7 @@ describe("hasSightingNear", () => {
   const fire = {
     lat: 36.7,
     lon: 4.0,
+    first_detected_at: "2026-09-22T02:00:00Z",
     last_detected_at: "2026-09-22T12:00:00Z",
   };
   const report = (over: Record<string, unknown> = {}) => ({
@@ -64,16 +65,20 @@ describe("hasSightingNear", () => {
     ...over,
   });
 
-  it("counts a citizen sighting within 5 km and 6 h of the last look", () => {
+  it("counts a citizen sighting within 5 km at any point of the fire's life", () => {
     expect(hasSightingNear(fire, [report()])).toBe(true);
     expect(
       hasSightingNear(fire, [report({ observed_at: "2026-09-22T12:30:00Z" })]),
+    ).toBe(true);
+    expect(
+      hasSightingNear(fire, [report({ observed_at: "2026-09-21T21:00:00Z" })]),
     ).toBe(true);
   });
 
   it.each([
     ["too far", { lat: 36.8 }],
-    ["too old", { observed_at: "2026-09-22T05:59:00Z" }],
+    ["from before the fire", { observed_at: "2026-09-21T19:59:00Z" }],
+    ["long after its last look", { observed_at: "2026-09-22T18:01:00Z" }],
     ["rejected", { status: "rejected" }],
     ["not a fire report", { kind: "road_blocked" }],
   ])("ignores a report %s", (_label, over) => {

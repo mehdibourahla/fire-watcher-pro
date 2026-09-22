@@ -8,7 +8,7 @@ vi.mock("@/integrations/supabase/client.server", () => ({
   supabaseAdmin: {
     from: (table: string) => {
       const query: Record<string, unknown> = {};
-      for (const op of ["select", "eq", "in", "gte", "neq"])
+      for (const op of ["select", "eq", "in", "gte", "order", "range"])
         query[op] = () => query;
       const result = () =>
         db.errors[table]
@@ -31,6 +31,7 @@ const cluster = {
   commune_id: "c1",
   lat: 36.7,
   lon: 4.0,
+  first_detected_at: "2026-09-22T10:00:00Z",
   last_detected_at: "2026-09-22T12:00:00Z",
 };
 
@@ -70,13 +71,15 @@ it("leaves danger unknown when no forecast is published for today", async () => 
   expect((await fireContexts([cluster])).get("f1")?.dangerLevel).toBeNull();
 });
 
-it.each(["admin_units", "risk_forecasts", "hazard_reports"])(
-  "fails loudly when %s cannot be read",
-  async (table) => {
-    db.errors[table] = "unavailable";
-    await expect(fireContexts([cluster])).rejects.toThrow("unavailable");
-  },
-);
+it.each([
+  "admin_units",
+  "risk_publication_checkpoint",
+  "risk_forecasts",
+  "hazard_reports",
+])("fails loudly when %s cannot be read", async (table) => {
+  db.errors[table] = "unavailable";
+  await expect(fireContexts([cluster])).rejects.toThrow("unavailable");
+});
 
 it("skips every query for an empty list", async () => {
   db.errors = { admin_units: "must not be read" };
