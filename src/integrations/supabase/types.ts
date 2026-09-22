@@ -3390,6 +3390,13 @@ export type Database = {
       };
     };
     Views: {
+      onm_wilaya_outlines: {
+        Row: {
+          polygon: Json | null;
+          wilaya_id: string | null;
+        };
+        Relationships: [];
+      };
       delivery_queue_health: {
         Row: {
           channel: string | null;
