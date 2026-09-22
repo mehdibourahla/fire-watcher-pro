@@ -262,6 +262,69 @@ describe("civil publication investigation", () => {
       "unobserved area",
     );
   });
+  it("caps a publication at its hazard's lease whatever validity the model chose", async () => {
+    const long = deps([
+      {
+        action: "search_areas",
+        query: "Tipaza",
+        parent_id: null,
+        decision: null,
+      },
+      {
+        ...decision,
+        decision: { ...decision.decision, expires_at: "2026-09-24T10:00:00Z" },
+      },
+    ]);
+    expect(
+      (await investigateCivilReport(input, long)).decision.expires_at,
+    ).toBe("2026-09-21T12:00:00.000Z");
+    const short = deps([
+      {
+        action: "search_areas",
+        query: "Tipaza",
+        parent_id: null,
+        decision: null,
+      },
+      {
+        ...decision,
+        decision: { ...decision.decision, expires_at: "2026-09-21T11:30:00Z" },
+      },
+    ]);
+    expect(
+      (await investigateCivilReport(input, short)).decision.expires_at,
+    ).toBe("2026-09-21T11:30:00Z");
+  });
+  it("sends back a report already older than its hazard's lease to be discarded", async () => {
+    const discard = {
+      ...decision,
+      decision: {
+        ...decision.decision,
+        outcome: "discard",
+        reason: "Information routière trop ancienne pour être utile.",
+        area_id: null,
+        location_evidence: null,
+        expires_at: null,
+      },
+    };
+    const tools = {
+      ...deps([
+        {
+          action: "search_areas",
+          query: "Tipaza",
+          parent_id: null,
+          decision: null,
+        },
+        decision,
+        discard,
+      ]),
+      now: new Date("2026-09-21T13:00:00Z"),
+    };
+    const result = await investigateCivilReport(input, tools);
+    expect(result.decision.outcome).toBe("discard");
+    expect(tools.complete.mock.calls[2]![0].messages.at(-1)!.content).toContain(
+      "obsolete",
+    );
+  });
   it("accepts a valid explicit timezone offset returned by the live model", async () => {
     const tools = deps([
       {

@@ -1,3 +1,4 @@
+import { civilLeaseHours } from "./incident-lifecycle";
 import { z } from "zod/v4";
 import {
   CivilDecisionSchema,
@@ -68,7 +69,7 @@ Use search_areas to investigate administrative names in Arabic/French; use knowl
 Use recent_publications to investigate potential duplicate coverage before publishing. Distinguish a new occurrence from repeated coverage of the same event. If clearly redundant, discard and identify the observed duplicate_id. Different details or uncertainty about identity are not proof of duplication. Do not alter an existing publication or infer resolution from silence.
 Use official_reports to compare with actual Protection Civile incident evidence. A first recent sample is supplied; it is bounded, not exhaustive. Search with query (literal place/evidence substring in Arabic/French) and/or parent_id (an observed commune or wilaya ID) to refine it. These records currently cover fires; absence is not disproof of a road or other incident. Only identify a shared occurrence when source meaning, geography and chronology support it, never merely proximity or a shared hazard. Preserve differences in as_of and source publication times; a later report is not automatically a contradiction. An official warning is not an observed incident. official_match records one material relationship with exact whitespace-normalized source_quote and official_quote. Use duplicate only for truly redundant coverage and discard it; context can accompany useful additional ITA information, while conflict must be explained and materially unresolved contradictions should go to review. Never borrow official authority, transfer an all-clear between events, change the official record, or suppress useful new information just because an official report exists. Leave official_match null if no supported relationship was found.
 Before choosing context and publishing, identify the concrete useful fact ITA adds beyond the official evidence and state it in the relationship reason. Repeating, translating, or corroborating the same facts is not added information. For example, an official report of a forest fire in Tlemcen and an ITA repeat of that same dated report with no new facts is duplicate/discard; saying the official report confirms it is not a reason to publish again. An ITA report of a road obstruction caused by that fire adds a different useful fact and may be context/publish. Another fire in the same wilaya at a different place or time is not automatically the same event. Retain reported/as-of wording: an old report's ongoing status is not proof that the event is ongoing now.
-Publish timely useful information when supported, with an explicit expires_at no later than 72 hours after the source timestamp. Choose freshness appropriate to the event: a past collision ordinarily remains useful for hours, not automatically the maximum three days; longer periods need supporting context. Expiry is display freshness, not an all-clear; unknown ongoing status is acceptable if explicitly framed as a reported event. Hold only when new evidence is reasonably expected; it will be revisited. Discard irrelevant, obsolete or duplicate items. Review only material uncertainty that investigation cannot resolve and would make publication misleading. Explain what the human must resolve in French. Lack of exact commune alone is not grounds for review if a supported broader area is useful. Non-publish outcomes may leave area_id/location_evidence/expires_at null. duplicate_id is only for discard. Search tools then return a decide step with your final decision. You have six steps total; reserve the last for a decision.`;
+Publish timely useful information when supported, with an explicit expires_at no later than the hazard's lease after the source timestamp: road 2 hours, fire 3 hours, flood, weather and other 6 hours. Later values are cut to the lease; after it the item fades on the map as past information. Choose freshness appropriate to the event: a past collision ordinarily remains useful for an hour or two, not automatically the maximum. Expiry is display freshness, not an all-clear; unknown ongoing status is acceptable if explicitly framed as a reported event. Hold only when new evidence is reasonably expected; it will be revisited. Discard irrelevant, obsolete or duplicate items. Review only material uncertainty that investigation cannot resolve and would make publication misleading. Explain what the human must resolve in French. Lack of exact commune alone is not grounds for review if a supported broader area is useful. Non-publish outcomes may leave area_id/location_evidence/expires_at null. duplicate_id is only for discard. Search tools then return a decide step with your final decision. You have six steps total; reserve the last for a decision.`;
 
 export async function investigateCivilReport(
   input: CivilAgentInput,
@@ -195,6 +196,13 @@ export async function investigateCivilReport(
             expiry > Date.parse(input.publishedAt) + 72 * 3600000
           )
             throw new Error("Civil agent invalid validity");
+          const lease = civilLeaseHours(d.hazard);
+          const cap = Date.parse(input.publishedAt) + lease * 3600000;
+          if (cap <= deps.now.getTime())
+            throw new Error(
+              `Civil ${d.hazard} information older than ${lease} hours is obsolete; discard it`,
+            );
+          if (expiry > cap) d.expires_at = new Date(cap).toISOString();
         }
         return {
           decision: d,

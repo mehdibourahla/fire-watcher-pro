@@ -29,7 +29,7 @@ Approved in brainstorming on 2026-09-22. One model for how every incident become
 | Archived | past the per-type cap | history only, "no news since …" | never |
 | Ended | authority states it | history, "Ended · Protection civile, 09:10" | never |
 
-A Fading or Archived incident returns to Live on new evidence, keeping its identity. Leases are computed by code; an authority-supplied expiry wins over the default.
+A Fading incident returns to Live on new evidence, keeping its identity. Archived is terminal for satellite fires: fusion stops attaching detections to a cluster silent for 24 h, so later heat starts a new incident. Leases are computed by code; an authority-supplied expiry wins over the default. Internal DB states (`contained_guess`, `extinguished`) stay; the public phase is derived from timestamps in `src/lib/incident-lifecycle.ts`. A satellite fire is Ended only when an operator closed it (`resolved_at` set by `resolve_fire`; the fusion timer never sets it).
 
 | Type | Source | Default lease | Revived / renewed by |
 |---|---|---|---|
@@ -40,7 +40,7 @@ A Fading or Archived incident returns to Live on new evidence, keeping its ident
 | Flood | ITA / citizen | 6 h | corroboration |
 | Road | ITA / citizen | 2 h | new report on the same segment |
 
-Archive caps per type are set in sub-project 2's plan, starting from 72 h.
+Archive: satellite 24 h, citizen reports 24 h, DGPC and ITA 72 h after the source. The civil agent's `expires_at` is capped at the lease in code: in prod, 20 of 27 road publications had received the 72 h maximum despite the prompt.
 
 ## Confidence ladder
 
@@ -73,13 +73,13 @@ Fire promotion: satellite alone is a **Heat signal**; satellite plus forest land
 | 6 | Inbox and tray: one row per incident with live state; notification tag replacement on push | 1 day |
 | 7 | LLM reviewer for keep/deactivate with citations, code-enforced | 2 days, after 2 |
 
-Order: 1, then 2 → 3 → 4, with 5 and 6 after 4. Commune boundary polygons are needed only where commune areas are drawn (DGPC by commune, FWI); ONM already carries its polygon.
+Order: 1, then 2 → 3 → 4, with 5 and 6 after 4. All 1,536 communes carry a `geom` in `admin_units` (wilayas none); ONM warnings carry their own polygon.
 
 ## Open hypotheses (check before relying on them)
 
 - Carto tiles expose Algerian road refs as "RN12"/"A1" in `transportation_name.ref`. Check: decode one tile around Naciria.
 - Most satellite-only fires are agricultural or waste burns. Check: sample 20 against land cover.
-- The map labels future-onset ONM periods "Current". Check: read how the card derives its label from `onset`.
+- ~~The map labels future-onset ONM periods "Current".~~ Refuted: `useSituationLabels` already returns "upcoming" when onset is in the future.
 
 ## Out of scope
 
