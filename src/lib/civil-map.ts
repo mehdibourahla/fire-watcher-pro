@@ -1,9 +1,17 @@
-import type {
-  AdminUnit,
-  FireCluster,
-  OfficialIncident,
-  OnmVigilance,
+import {
+  fireStage,
+  type AdminUnit,
+  type FireCluster,
+  type OfficialIncident,
+  type OnmVigilance,
 } from "./nadhir";
+import {
+  fireConfidence,
+  fireLevel,
+  hasSightingNear,
+  type Confidence,
+  type FireLevel,
+} from "./fire-confidence";
 import type { HazardReport } from "./open-areas";
 import type { CivilPublication } from "./civil-publication";
 import {
@@ -26,11 +34,12 @@ type SituationBase = {
   areaId: string | null;
   wilayaId: string | null;
   phase: Phase;
+  confidence: Confidence;
   candidate: boolean;
 };
 export type Situation = SituationBase &
   (
-    | { source: "satellite"; data: FireCluster }
+    | { source: "satellite"; data: FireCluster; level: FireLevel }
     | { source: "official"; data: OfficialIncident }
     | { source: "citizen"; data: HazardReport }
     | { source: "onm"; data: OnmVigilance }
@@ -42,6 +51,7 @@ type SituationInput = {
   reports: HazardReport[];
   warnings: OnmVigilance[];
   publications?: CivilPublication[];
+  danger?: ReadonlyMap<string, number>;
   units: AdminUnit[];
   now: number;
 };
@@ -80,6 +90,7 @@ export function buildSituations({
   reports,
   warnings,
   publications = [],
+  danger = new Map(),
   units,
   now,
 }: SituationInput): Situation[] {
@@ -100,6 +111,7 @@ export function buildSituations({
       areaId: data.area_id,
       wilayaId: area?.level === "wilaya" ? area.id : (area?.parent_id ?? null),
       phase: publicationPhase(data, now),
+      confidence: "single",
       candidate: false,
       data,
     });
@@ -107,6 +119,15 @@ export function buildSituations({
   for (const data of fires) {
     if (data.state === "false_positive" || !recent(data.last_detected_at, 72))
       continue;
+    const level = fireLevel(fireStage(data), {
+      forestFraction: data.commune_id
+        ? (byId.get(data.commune_id)?.forest_fraction ?? null)
+        : null,
+      dangerLevel: data.commune_id
+        ? (danger.get(data.commune_id) ?? null)
+        : null,
+      nearbySighting: hasSightingNear(data, reports),
+    });
     items.push({
       id: `fire:${data.id}`,
       source: "satellite",
@@ -120,8 +141,10 @@ export function buildSituations({
           ? (byId.get(data.commune_id)?.parent_id ?? null)
           : null),
       phase: firePhase(data, now),
+      confidence: fireConfidence(level),
       candidate: data.state === "unconfirmed" && data.confirmed_at === null,
       data,
+      level,
     });
   }
   for (const data of official) {
@@ -139,6 +162,7 @@ export function buildSituations({
       areaId: commune ? data.commune_id : data.wilaya_id,
       wilayaId: data.wilaya_id,
       phase: officialPhase(data, now),
+      confidence: data.authority_tier === "media" ? "single" : "official",
       candidate: false,
       data,
     });
@@ -160,6 +184,7 @@ export function buildSituations({
       areaId: null,
       wilayaId: null,
       phase: reportPhase(data, now),
+      confidence: "single",
       candidate: false,
       data,
     });
@@ -181,6 +206,7 @@ export function buildSituations({
       areaId: data.wilaya_id,
       wilayaId: data.wilaya_id,
       phase: warningPhase(data, now),
+      confidence: "official",
       candidate: false,
       data,
     });

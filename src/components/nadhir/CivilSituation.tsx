@@ -76,9 +76,11 @@ export function useSituationLabels(units: AdminUnit[], now: number) {
           ? "civilMap.archived"
           : item.phase === "fading"
             ? "civilMap.quiet"
-            : item.candidate
-              ? "civilMap.candidate"
-              : "civilMap.observed",
+            : item.level === "confirmed"
+              ? "stage.confirmed"
+              : item.level === "probable"
+                ? "civilMap.probable"
+                : "civilMap.heatSignal",
       );
     if (item.source === "citizen") return t("map.reportUnverified");
     return t(

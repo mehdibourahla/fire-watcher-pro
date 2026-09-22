@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { Situation } from "@/lib/civil-map";
 import type { FireCluster, OfficialIncident } from "@/lib/nadhir";
 import type { Phase } from "@/lib/incident-lifecycle";
+import type { FireLevel } from "@/lib/fire-confidence";
 import { SituationCard } from "./CivilSituation";
 
 vi.mock("react-i18next", () => ({
@@ -34,18 +35,24 @@ const card = (item: Situation) =>
       onSelect={() => {}}
     />,
   );
-const satellite = (phase: Phase): Situation => ({
+const satellite = (
+  phase: Phase,
+  level: FireLevel = "heat_signal",
+): Situation => ({
   ...base,
   id: "fire:f",
   source: "satellite",
   phase,
+  confidence: "single",
   data: { state: "extinguished" } as FireCluster,
+  level,
 });
 const official = (phase: Phase, status: string): Situation => ({
   ...base,
   id: "official:i",
   source: "official",
   phase,
+  confidence: "official",
   data: {
     status,
     authority_tier: "national",
@@ -68,6 +75,12 @@ describe("situation status wording", () => {
 
   it("says not seen recently while a fire fades", () => {
     expect(card(satellite("fading"))).toContain("civilMap.quiet");
+  });
+
+  it("names a live satellite fire by its confidence level", () => {
+    expect(card(satellite("live"))).toContain("civilMap.heatSignal");
+    expect(card(satellite("live", "probable"))).toContain("civilMap.probable");
+    expect(card(satellite("live", "confirmed"))).toContain("stage.confirmed");
   });
 
   it("keeps ended for an operator's closure", () => {

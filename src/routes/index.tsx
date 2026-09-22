@@ -44,6 +44,7 @@ import {
   communeGeomsQuery,
   officialIncidentsQuery,
   onmVigilanceQuery,
+  todayRiskForecastsQuery,
   sourceHealthQuery,
   unitName,
   relativeTime,
@@ -107,6 +108,7 @@ function LiveMapPage() {
   const official = useQuery({ ...officialIncidentsQuery, ...REFRESH });
   const reports = useQuery({ ...hazardReportsQuery, ...REFRESH });
   const warnings = useQuery({ ...onmVigilanceQuery, ...REFRESH });
+  const danger = useQuery({ ...todayRiskForecastsQuery, ...REFRESH });
   const publications = useQuery({
     ...civilPublicationsQuery(search.ended),
     ...REFRESH,
@@ -262,10 +264,14 @@ function LiveMapPage() {
               selectedPublication.data,
             ]
           : (publications.data ?? []),
+        danger: new Map(
+          (danger.data ?? []).map((f) => [f.commune_id, f.danger_level]),
+        ),
         units: allUnits,
         now,
       }),
     [
+      danger.data,
       fires.data,
       official.data,
       reports.data,
