@@ -2114,6 +2114,7 @@ export type Database = {
           onset: string | null;
           polygon: Json | null;
           sent: string;
+          superseded_at: string | null;
           severity: string;
           title: string;
           urgency: string;
@@ -2134,6 +2135,7 @@ export type Database = {
           onset?: string | null;
           polygon?: Json | null;
           sent: string;
+          superseded_at?: string | null;
           severity: string;
           title: string;
           urgency: string;
@@ -2154,6 +2156,7 @@ export type Database = {
           onset?: string | null;
           polygon?: Json | null;
           sent?: string;
+          superseded_at?: string | null;
           severity?: string;
           title?: string;
           urgency?: string;
@@ -3530,6 +3533,10 @@ export type Database = {
       };
     };
     Functions: {
+      supersede_onm_absent: {
+        Args: { _feed_cap_ids: string[]; _feed_sent: string };
+        Returns: number;
+      };
       search_civil_official_evidence: {
         Args: { _query?: string | null; _area?: string | null };
         Returns: {
