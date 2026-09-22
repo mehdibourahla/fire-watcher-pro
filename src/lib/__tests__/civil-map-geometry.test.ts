@@ -22,7 +22,7 @@ const official: Extract<Situation, { source: "official" }> = {
   lon: 3.5,
   areaId: "w1",
   wilayaId: "w1",
-  ended: false,
+  phase: "live",
   candidate: false,
   data: {
     id: "i1",
@@ -103,13 +103,13 @@ describe("civil map administrative geometry", () => {
     });
     expect(
       civilMapGeoJSON(
-        [{ ...item, ended: true }],
+        [{ ...item, phase: "archived" as const }],
         new Map([["w1", polygon]]),
         () => "Road",
         item.id,
       ).reports.features,
     ).toEqual([]);
-    expect(situationAreaId({ ...item, ended: true })).toBeNull();
+    expect(situationAreaId({ ...item, phase: "archived" as const })).toBeNull();
   });
   it("uses only the ONM declared wilaya and keeps severity separate from source", () => {
     const item: Situation = {

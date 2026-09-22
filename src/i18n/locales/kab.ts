@@ -371,6 +371,8 @@ export const kab: Translation = {
     observed: "Observation satellite",
     quiet: "Aucune observation satellite récente",
     ended: "Terminé",
+    archived: "Aucune nouvelle détection",
+    lastKnown: "Dernier statut connu : {{status}}",
     unknown: "État inconnu",
     upcoming: "À venir",
     current: "En cours",
@@ -529,8 +531,8 @@ export const kab: Translation = {
   state: {
     unconfirmed: "Ur yettwasentem ara",
     active: "Urmid",
-    contained_guess: "Ahat yettwaḥbes",
-    extinguished: "Yexsi",
+    contained_guess: "Non observé récemment",
+    extinguished: "Aucune nouvelle détection",
     false_positive: "Alɣu n ẓẓur",
   },
   explain: {

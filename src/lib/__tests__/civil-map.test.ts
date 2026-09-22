@@ -71,6 +71,7 @@ const fire = (over: Partial<FireCluster> = {}): FireCluster => ({
   nearest_settlement_km: null,
   confirmed_at: null,
   confirmed_mention_id: null,
+  resolved_at: null,
   ...over,
 });
 const official = (over: Partial<OfficialIncident> = {}): OfficialIncident => ({
@@ -165,18 +166,29 @@ describe("civil situations", () => {
         {
           ...publication,
           id: "expired",
+          source_published_at: at(100),
           updated_at: at(100),
           expires_at: at(99),
+        },
+        {
+          ...publication,
+          id: "fading",
+          source_published_at: at(5),
+          updated_at: at(4),
+          expires_at: at(3),
         },
         { ...publication, id: "withdrawn", state: "withdrawn" },
       ],
     });
-    expect(items).toHaveLength(3);
+    expect(items).toHaveLength(4);
+    expect(filterSituations(items, filters, units).map((i) => i.id)).toEqual([
+      "civil:p",
+    ]);
     expect(
       filterSituations(items, { ...filters, area: commune }, units).map(
         (i) => i.id,
       ),
-    ).toEqual(["civil:p"]);
+    ).toEqual(["civil:p", "civil:fading"]);
     expect(items.find((i) => i.id === "civil:p")).toMatchObject({
       source: "civil",
       category: "weather",
@@ -186,11 +198,13 @@ describe("civil situations", () => {
     });
     expect(
       filterSituations(items, { ...filters, showEnded: true }, units),
-    ).toHaveLength(3);
+    ).toHaveLength(4);
     expect(selectedSituation(items, [], "civil:expired")?.id).toBe(
       "civil:expired",
     );
-    expect(selectedSituation(items, [], "civil:withdrawn")?.ended).toBe(true);
+    expect(selectedSituation(items, [], "civil:withdrawn")?.phase).toBe(
+      "archived",
+    );
     expect(selectedSituation(items, [], "civil:missing")).toBeUndefined();
   });
   it("enforces source time windows and rejects invalid or future observations", () => {
@@ -217,31 +231,52 @@ describe("civil situations", () => {
         .sort(),
     ).toEqual(["fire:f", "official:i", "report:r"]);
   });
-  it("does not call contained, unknown or unlisted official incidents ended", () => {
+  it("ends only on an authority's word or an operator's closure, never on silence", () => {
     const items = build({
       official: [
         official({ id: "contained", status: "contained" }),
-        official({ id: "unknown", status: "unknown", unlisted_at: at(1) }),
+        official({ id: "unlisted", status: "unknown", unlisted_at: at(1) }),
         official({ id: "ended", status: "extinguished" }),
       ],
       fires: [
         fire({ id: "candidate", state: "unconfirmed" }),
         fire({ id: "confirmed", state: "unconfirmed", confirmed_at: at(1) }),
-        fire({ id: "ended", state: "extinguished" }),
+        fire({
+          id: "quiet",
+          state: "contained_guess",
+          last_detected_at: at(8),
+        }),
+        fire({ id: "silent", state: "extinguished", last_detected_at: at(30) }),
+        fire({ id: "closed", state: "extinguished", resolved_at: at(0.5) }),
       ],
     });
+    const phase = (id: string) => items.find((x) => x.id === id)?.phase;
+    expect(phase("fire:silent")).toBe("archived");
+    expect(phase("fire:closed")).toBe("ended");
+    expect(phase("official:ended")).toBe("ended");
+    expect(phase("official:unlisted")).toBe("fading");
     expect(
       filterSituations(items, filters, units)
         .map((x) => x.id)
         .sort(),
-    ).toEqual(["fire:confirmed", "official:contained", "official:unknown"]);
+    ).toEqual(["fire:confirmed", "official:contained"]);
+    expect(
+      filterSituations(items, { ...filters, area: commune }, units)
+        .map((x) => x.id)
+        .sort(),
+    ).toEqual([
+      "fire:confirmed",
+      "fire:quiet",
+      "official:contained",
+      "official:unlisted",
+    ]);
     expect(
       filterSituations(
         items,
         { ...filters, showEnded: true, showCandidates: true },
         units,
       ),
-    ).toHaveLength(6);
+    ).toHaveLength(8);
   });
   it("includes upcoming ONM warnings but excludes expired, undated and unsent warnings", () => {
     const items = build({

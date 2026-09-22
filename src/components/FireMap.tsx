@@ -1,3 +1,4 @@
+import { firePhase, isVisibleByDefault } from "@/lib/incident-lifecycle";
 import * as maplibregl from "maplibre-gl";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -74,6 +75,7 @@ function currentStyle() {
 function fireFeatures(
   clusters: FireCluster[],
   selectedShortId?: string | null,
+  now = Date.now(),
 ): FeatureCollection {
   return {
     type: "FeatureCollection",
@@ -88,8 +90,9 @@ function fireFeatures(
           selected,
           icon: `fire${selected ? "-selected" : ""}`,
           candidate: fireStage(fire) === "candidate",
-          ended:
-            fire.state === "extinguished" || fire.state === "false_positive",
+          faded:
+            fire.state === "false_positive" ||
+            !isVisibleByDefault(firePhase(fire, now)),
         },
       };
     }),
@@ -181,7 +184,7 @@ function installLayers(map: maplibregl.Map) {
           "case",
           ["boolean", ["get", "selected"], false],
           1,
-          ["boolean", ["get", "ended"], false],
+          ["boolean", ["get", "faded"], false],
           0.45,
           ["boolean", ["get", "candidate"], false],
           0.7,

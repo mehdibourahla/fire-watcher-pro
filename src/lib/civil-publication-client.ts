@@ -18,7 +18,10 @@ export const civilPublicationsQuery = (includeHistory = false, page = 0) =>
       if (!includeHistory)
         query = query
           .eq("state", "published")
-          .gt("expires_at", new Date().toISOString());
+          .gt(
+            "source_published_at",
+            new Date(Date.now() - 72 * 3_600_000).toISOString(),
+          );
       const { data, error } = await query;
       if (error) throw new Error(error.message);
       return (data ?? []) as CivilPublication[];

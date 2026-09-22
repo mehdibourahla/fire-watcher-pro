@@ -12,6 +12,7 @@ import { EmptyState, Skeleton } from "@/components/nadhir/states";
 import { EmergencyNumbers } from "@/components/SiteChrome";
 import type { Locale } from "@/i18n";
 import { downwindSettlement } from "@/lib/alerts-rules";
+import { firePhase } from "@/lib/incident-lifecycle";
 import { pageMeta } from "@/lib/page-meta";
 import {
   adminUnitsQuery,
@@ -79,6 +80,7 @@ function FireDetail() {
   }
 
   const { cluster, detections, confirmation } = detail.data;
+  const phase = firePhase(cluster, Date.now());
   const wilaya = (units.data ?? []).find((u) => u.id === cluster.wilaya_id);
   const place = placeLabel(
     cluster,
@@ -127,7 +129,18 @@ function FireDetail() {
           <p className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
             {wilaya ? <span>{unitName(wilaya, locale)} ·</span> : null}
             <span>{t(`stage.${fireStage(cluster)}`)}</span>
-            <span>· {t(`state.${cluster.state}`)}</span>
+            {phase !== "live" && (
+              <span>
+                ·{" "}
+                {t(
+                  phase === "ended"
+                    ? "civilMap.ended"
+                    : phase === "archived"
+                      ? "state.extinguished"
+                      : "state.contained_guess",
+                )}
+              </span>
+            )}
             <span className="tabular text-xs">· {cluster.short_id}</span>
           </p>
         </div>

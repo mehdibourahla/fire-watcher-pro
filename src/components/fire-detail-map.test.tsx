@@ -32,6 +32,7 @@ const { candidate } = vi.hoisted(() => ({
     wilaya_id: null,
     nearest_settlement_id: null,
     nearest_settlement_km: null,
+    resolved_at: null,
   } satisfies FireCluster,
 }));
 
