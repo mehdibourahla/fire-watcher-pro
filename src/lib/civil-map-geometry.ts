@@ -51,11 +51,29 @@ export function situationAreaId(item: Situation): string | null {
     : item.data.commune_id;
 }
 
+const ONM_EVENTS: Record<string, string> = {
+  Rain: "rain",
+  Thunderstorm: "storm",
+  Sandstorm: "sand",
+  Strong: "wind",
+  Heat: "heat",
+};
+
+function closedRing(outline: readonly [number, number][] | undefined) {
+  if (!outline || outline.length < 3 || !outline.every(position)) return null;
+  const [first] = outline;
+  const last = outline[outline.length - 1]!;
+  return first![0] === last[0] && first![1] === last[1]
+    ? [...outline]
+    : [...outline, first!];
+}
+
 export function civilMapGeoJSON(
   items: Situation[],
   geometries: ReadonlyMap<string, unknown>,
   label: (item: Situation) => string,
   selectedId?: string,
+  outlines: ReadonlyMap<string, readonly [number, number][]> = new Map(),
 ): {
   official: FeatureCollection;
   warnings: FeatureCollection;
@@ -93,6 +111,7 @@ export function civilMapGeoJSON(
             ? item.data.state
             : item.data.status,
       selected: item.id === selectedId,
+      confidence: item.confidence,
       precision:
         item.source === "civil"
           ? (item.data.area?.level ?? "administrative")
@@ -105,6 +124,25 @@ export function civilMapGeoJSON(
         ? { kind: item.data.kind, sighting: item.data.sighting }
         : {}),
     };
+    const outline =
+      item.source === "onm" && item.data.wilaya_id
+        ? closedRing(outlines.get(item.data.wilaya_id))
+        : null;
+    if (item.source === "onm" && outline) {
+      collection.features.push({
+        type: "Feature",
+        id: `${item.id}:area`,
+        geometry: { type: "Polygon", coordinates: [outline] },
+        properties: {
+          ...properties,
+          area: true,
+          severity: item.data.severity.toLowerCase(),
+          event: ONM_EVENTS[item.data.event] ?? "other",
+          upcoming: item.phase === "upcoming",
+        },
+      });
+      continue;
+    }
     const areaId = situationAreaId(item);
     const geometry = areaId ? geometries.get(areaId) : undefined;
     if (item.id === selectedId && administrativeGeometry(geometry)) {
