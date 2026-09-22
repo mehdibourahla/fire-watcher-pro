@@ -382,6 +382,7 @@ export type OnmVigilance = {
   cap_url: string | null;
   wilaya_id: string | null;
   headline_fr: string | null;
+  superseded_at: string | null;
 };
 
 export const onmVigilanceQuery = queryOptions({
@@ -391,9 +392,10 @@ export const onmVigilanceQuery = queryOptions({
       await supabase
         .from("onm_vigilance")
         .select(
-          "id, cap_id, title, event, severity, urgency, certainty, onset, expires, sent, area_desc, cap_url, wilaya_id, headline_fr",
+          "id, cap_id, title, event, severity, urgency, certainty, onset, expires, sent, area_desc, cap_url, wilaya_id, headline_fr, superseded_at",
         )
         .gt("expires", new Date().toISOString())
+        .is("superseded_at", null)
         .order("sent", { ascending: false })
         .limit(300),
     ),

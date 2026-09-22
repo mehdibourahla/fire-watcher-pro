@@ -43,6 +43,10 @@ vi.mock("@/integrations/supabase/client", () => ({
           call.filters.push(["lte", key, value]);
           return this;
         },
+        is(key: string, value: null) {
+          call.filters.push(["is", key, String(value)]);
+          return this;
+        },
         order(key: string) {
           call.order.push(key);
           return this;
@@ -63,6 +67,7 @@ vi.mock("@/integrations/supabase/client", () => ({
             .filter((row) =>
               call.filters.every(([operator, key, value]) => {
                 const actual = row[key as keyof OnmVigilance];
+                if (operator === "is") return actual == null;
                 if (actual === null) return false;
                 return operator === "eq"
                   ? actual === value
@@ -108,6 +113,7 @@ function bulletin(
     cap_url: null,
     wilaya_id: wilaya,
     headline_fr: null,
+    superseded_at: null,
   };
 }
 const fetchWarnings = () =>
@@ -171,6 +177,39 @@ describe("weather warning query producer", () => {
     ]);
     for (const call of source.calls)
       expect(call.filters).toContainEqual(["eq", "wilaya_id", "wilaya"]);
+  });
+
+  it("keeps replaced bulletins out of current warnings but in their history", async () => {
+    source.rows = [
+      bulletin(
+        "current",
+        "2026-09-15T09:00:00.000Z",
+        "2026-09-15T13:00:00.000Z",
+      ),
+      {
+        ...bulletin(
+          "replaced",
+          "2026-09-15T09:00:00.000Z",
+          "2026-09-15T13:00:00.000Z",
+        ),
+        superseded_at: "2026-09-15T10:00:00.000Z",
+      },
+    ];
+    const result = await fetchWarnings();
+    expect(source.calls[0]!.filters).toContainEqual([
+      "is",
+      "superseded_at",
+      "null",
+    ]);
+    expect(source.calls[1]!.filters).not.toContainEqual([
+      "is",
+      "superseded_at",
+      "null",
+    ]);
+    expect(result.warnings.map((row) => row.id).sort()).toEqual([
+      "current",
+      "replaced",
+    ]);
   });
 
   it("paginates history and retains current warnings if history fails", async () => {

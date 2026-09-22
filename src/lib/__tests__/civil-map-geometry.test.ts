@@ -132,6 +132,7 @@ describe("civil map administrative geometry", () => {
         cap_url: null,
         wilaya_id: "w1",
         headline_fr: null,
+        superseded_at: null,
       },
     };
     const result = civilMapGeoJSON(
