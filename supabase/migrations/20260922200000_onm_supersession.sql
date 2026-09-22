@@ -5,6 +5,7 @@ alter table public.onm_vigilance add column superseded_at timestamptz;
 create index onm_vigilance_current_idx on public.onm_vigilance(expires)
   where superseded_at is null;
 
+-- only the newest feed speaks for ONM: an older or cached one neither retires nor revives
 create function public.supersede_onm_absent(_feed_cap_ids text[], _feed_sent timestamptz)
 returns integer
 language plpgsql
@@ -16,6 +17,13 @@ begin
   if coalesce(cardinality(_feed_cap_ids), 0) = 0 or _feed_sent is null then
     raise exception 'a supersession pass needs a non-empty feed' using errcode = '22023';
   end if;
+  if _feed_sent < (select max(sent) from public.onm_vigilance) then
+    return 0;
+  end if;
+  update public.onm_vigilance
+     set superseded_at = null
+   where superseded_at is not null
+     and cap_id = any(_feed_cap_ids);
   update public.onm_vigilance
      set superseded_at = clock_timestamp()
    where superseded_at is null

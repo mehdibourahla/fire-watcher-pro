@@ -226,7 +226,7 @@ export async function ingestOnm(): Promise<OnmRun> {
   const rows = entries.map((e) => {
     const wilaya = matchWilaya(e.area_desc, wilayas);
     if (!wilaya) unmatched += 1;
-    return { ...e, wilaya_id: wilaya?.id ?? null, superseded_at: null };
+    return { ...e, wilaya_id: wilaya?.id ?? null };
   });
 
   for (let i = 0; i < rows.length; i += 500) {

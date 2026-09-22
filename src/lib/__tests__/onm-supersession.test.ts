@@ -46,12 +46,10 @@ beforeEach(() => {
   state.fetch.mockReset().mockImplementation(async () => new Response(feed));
 });
 
-it("retires warnings absent from the feed and revives those still in it", async () => {
+it("hands every feed id and its newest bulletin to the supersession pass", async () => {
   const run = await ingestOnm();
   expect(state.upserts).toHaveLength(4);
-  expect(state.upserts.every((row) => row["superseded_at"] === null)).toBe(
-    true,
-  );
+  expect(state.upserts.every((row) => !("superseded_at" in row))).toBe(true);
   expect(state.rpc).toHaveBeenCalledWith("supersede_onm_absent", {
     _feed_cap_ids: state.upserts.map((row) => row["cap_id"]),
     _feed_sent: "2026-08-30T15:54:22Z",
