@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildSituations,
   filterSituations,
+  situationSummary,
   findPlaces,
   nearestPlace,
   selectedSituation,
@@ -318,6 +319,38 @@ describe("civil situations", () => {
     expect(withoutDanger[0]).toMatchObject({
       confidence: "single",
       level: "heat_signal",
+    });
+  });
+  it("summarises the day's live situations by type and confidence", () => {
+    const forested = { ...commune, forest_fraction: 0.4 };
+    const desert = { ...other, id: "c3", parent_id: "w1", forest_fraction: 0 };
+    const items = buildSituations({
+      fires: [
+        fire({ id: "probable" }),
+        fire({ id: "signal", commune_id: "c3" }),
+        fire({ id: "quiet", last_detected_at: at(8) }),
+        fire({ id: "confirmed", confirmed_at: at(1) }),
+      ],
+      official: [official(), official({ id: "old", last_reported_at: at(30) })],
+      reports: [
+        report({ kind: "road_blocked" }),
+        report({ id: "r2", lat: 20, lon: 5 }),
+      ],
+      warnings: [
+        warning(),
+        warning({ id: "w2" }),
+        warning({ id: "w3", wilaya_id: "w9" }),
+      ],
+      units: [forested, wilaya, desert],
+      now,
+    });
+    expect(situationSummary(items)).toEqual({
+      confirmedFires: 1,
+      probableFires: 1,
+      heatSignals: 1,
+      warningWilayas: 2,
+      roads: 1,
+      reports: 1,
     });
   });
   it("includes upcoming ONM warnings but excludes expired, undated and unsent warnings", () => {

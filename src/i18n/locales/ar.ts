@@ -317,8 +317,6 @@ export const ar: Translation = {
     certainty: "اليقين (المصدر)",
     urgency: "الاستعجال (المصدر)",
     onset: "البداية",
-    situations_one: "حالة واحدة",
-    situations_other: "{{count}} حالات",
     sourceMedia: "خبر منسوب إلى وسيلة إعلام",
     detailUnavailable: "هذا العنصر لم يعد متاحاً ضمن الفترة الحالية.",
     sourceTime: "تظهر تواريخ الأحداث في كل بلاغ.",
@@ -335,7 +333,6 @@ export const ar: Translation = {
     weather: "الطقس",
     road: "الطريق",
     other: "أخرى",
-    situations: "{{count}} حالات",
     noSituations: "لا توجد بلاغات حالية في المصادر المتاحة",
     noSituationsBody:
       "غياب البلاغات لا يعني غياب الخطر. قد تكون التغطية غير مكتملة.",
@@ -388,6 +385,8 @@ export const ar: Translation = {
       "توقعات النماذج تقدم سياقاً إضافياً؛ وليست تحذيرات رسمية.",
     unknownLocation: "الموقع غير متاح",
     satelliteLegend: "أرصاد الأقمار الصناعية، وليست تأكيداً رسمياً",
+    colorLegend: "أحمر: مصدر رسمي · برتقالي: حريق محتمل بقرائن متوافقة · رمادي: مصدر واحد غير متحقق منه",
+    tintLegend: "لون أصفر أو برتقالي أو أحمر: مستوى يقظة الديوان الوطني للأرصاد الجوية على الولاية؛ التظليل المخطط: فترة قادمة",
     officialLegend: "حوادث منسوبة إلى مصدر رسمي",
     weatherLegend:
       "تحذيرات رسمية للديوان الوطني للأرصاد الجوية للمنطقة المحددة",
@@ -405,6 +404,15 @@ export const ar: Translation = {
     filters: "عوامل التصفية",
     nearby: "بالقرب",
     error: "تعذر تحميل الحالات",
+    summary: {
+      confirmedFires: "حرائق مؤكدة: {{count}}",
+      probableFires: "حرائق محتملة: {{count}}",
+      heatSignals: "إشارات حرارية: {{count}}",
+      warningWilayas: "ولايات تحت يقظة الديوان الوطني للأرصاد الجوية: {{count}}",
+      roads: "معلومات الطرق: {{count}}",
+      reports: "بلاغات: {{count}}",
+    },
+    summaryNone: "لا توجد حالات جارية",
   },
   map: {
     nearPlace: "قرب {{place}}",

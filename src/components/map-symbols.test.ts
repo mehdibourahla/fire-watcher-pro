@@ -3,13 +3,33 @@ import type { FeatureCollection } from "geojson";
 import { validateStyleMin } from "@maplibre/maplibre-gl-style-spec";
 import {
   BADGE_SIZE,
-  GROUP_SIZE,
   pointSymbolLayer,
   prepareSymbols,
   symbolFor,
 } from "./map-symbols";
 
 describe("civil map symbol contracts", () => {
+  it("colors a badge by who reports it, defaulting to a single source", () => {
+    const icons = (confidence?: string) =>
+      prepareSymbols(
+        {
+          type: "FeatureCollection",
+          features: [
+            {
+              type: "Feature",
+              geometry: { type: "Point", coordinates: [3, 36] },
+              properties: { id: "r", kind: "road_blocked", confidence },
+            },
+          ],
+        },
+        "reports",
+        null,
+      ).features[0]?.properties?.["icon"];
+    expect(icons("corroborated")).toBe("road-corroborated");
+    expect(icons()).toBe("road-single");
+    expect(icons("red")).toBe("road-single");
+  });
+
   it("uses the reviewed civil hazard without giving media reports an official badge", () => {
     for (const [category, expected] of [
       ["road", "road"],
@@ -39,7 +59,12 @@ describe("civil map symbol contracts", () => {
           type: "Feature",
           id: "warning:point",
           geometry: { type: "Point", coordinates: [3, 36] },
-          properties: { id: "warning", selected: true, label: "Algiers" },
+          properties: {
+            id: "warning",
+            selected: true,
+            label: "Algiers",
+            confidence: "official",
+          },
         },
         {
           type: "Feature",
@@ -57,14 +82,14 @@ describe("civil map symbol contracts", () => {
               ],
             ],
           },
-          properties: { id: "warning", selected: true },
+          properties: { id: "warning", selected: true, confidence: "official" },
         },
       ],
     };
     const selected = prepareSymbols(data, "warnings", "warning");
     expect(
       selected.features.map((feature) => feature.properties?.["icon"]),
-    ).toEqual(["weather-selected", "weather-selected"]);
+    ).toEqual(["weather-official-selected", "weather-official-selected"]);
     expect(selected.features.map((feature) => feature.id)).toEqual([
       "warning:point",
       "warning:area",
@@ -108,6 +133,5 @@ describe("civil map symbol contracts", () => {
       ["slice", ["coalesce", ["get", "label"], ""], 0, 26],
     ]);
     expect(BADGE_SIZE).toBeLessThanOrEqual(36);
-    expect(GROUP_SIZE).toBeLessThanOrEqual(40);
   });
 });

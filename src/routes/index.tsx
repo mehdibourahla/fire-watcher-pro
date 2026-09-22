@@ -25,6 +25,7 @@ import {
   X,
 } from "lucide-react";
 import { MapCanvas } from "@/components/MapCanvas";
+import { useGrantedPosition } from "@/lib/granted-position";
 import { MapWorkspacePanel } from "@/components/nadhir/MapWorkspacePanel";
 import {
   SituationCard,
@@ -43,6 +44,7 @@ import {
   clustersQuery,
   communeGeomsQuery,
   officialIncidentsQuery,
+  onmOutlinesQuery,
   onmVigilanceQuery,
   todayRiskForecastsQuery,
   sourceHealthQuery,
@@ -64,6 +66,7 @@ import {
   selectedSituation,
   CITIZEN_NEARBY_RADIUS_KM,
   type HazardCategory,
+  situationSummary,
 } from "@/lib/civil-map";
 import { parseMapSearch, type MapSearch } from "@/lib/civil-map-search";
 import { readSubscription } from "@/lib/push";
@@ -318,6 +321,42 @@ function LiveMapPage() {
   const boundaries = useQuery(
     communeGeomsQuery(selectedAreaId ? [selectedAreaId] : []),
   );
+  const fireLevels = useMemo(
+    () =>
+      new Map(
+        items.flatMap((item) =>
+          item.source === "satellite"
+            ? [[item.data.id, item.level] as const]
+            : [],
+        ),
+      ),
+    [items],
+  );
+  const outlines = useQuery(
+    onmOutlinesQuery(
+      items.flatMap((item) =>
+        item.source === "onm" && item.data.wilaya_id
+          ? [item.data.wilaya_id]
+          : [],
+      ),
+    ),
+  );
+  const userPosition = useGrantedPosition();
+  const summary = situationSummary(visible);
+  const summaryLine =
+    (
+      [
+        "confirmedFires",
+        "probableFires",
+        "heatSignals",
+        "warningWilayas",
+        "roads",
+        "reports",
+      ] as const
+    )
+      .filter((key) => summary[key] > 0)
+      .map((key) => t(`civilMap.summary.${key}`, { count: summary[key] }))
+      .join(" · ") || t("civilMap.summaryNone");
   const {
     official: mapOfficial,
     warnings: mapWarnings,
@@ -327,6 +366,7 @@ function LiveMapPage() {
     boundaries.data ?? new Map(),
     labels.title,
     selected?.id,
+    outlines.data,
   );
   const queries = [fires, official, reports, warnings, publications];
   const loading = queries.some((q) => q.isPending);
@@ -502,6 +542,8 @@ function LiveMapPage() {
       <section aria-label={t("civilMap.mapTitle")} className="absolute inset-0">
         <MapCanvas
           clusters={mapFires}
+          fireLevels={fireLevels}
+          userPosition={userPosition}
           official={mapOfficial}
           warnings={mapWarnings}
           reports={mapReports}
@@ -640,9 +682,7 @@ function LiveMapPage() {
               <p
                 className={`truncate text-xs text-muted-foreground ${desktop ? "mt-0.5" : ""}`}
               >
-                {panelView === "list"
-                  ? t("civilMap.situations", { count: visible.length })
-                  : t("civilMap.title")}
+                {panelView === "list" ? summaryLine : t("civilMap.title")}
               </p>
             </div>
             {panelView === "list" && (
@@ -991,6 +1031,8 @@ function LiveMapPage() {
                   <div className="space-y-3 border-t pt-4 text-xs leading-relaxed text-muted-foreground">
                     {[
                       "satelliteLegend",
+                      "colorLegend",
+                      "tintLegend",
                       "officialLegend",
                       "weatherLegend",
                       "citizenLegend",

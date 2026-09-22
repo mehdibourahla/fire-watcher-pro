@@ -1,18 +1,23 @@
-import { firePhase, isVisibleByDefault } from "@/lib/incident-lifecycle";
 import * as maplibregl from "maplibre-gl";
+import type { FilterSpecification } from "maplibre-gl";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import "maplibre-gl/dist/maplibre-gl.css";
-import type { FeatureCollection, Point } from "geojson";
-import { fireStage, type FireCluster } from "@/lib/nadhir";
+import type { FeatureCollection } from "geojson";
+import type { FireCluster } from "@/lib/nadhir";
+import type { FireLevel } from "@/lib/fire-confidence";
+import { fireFeatures } from "./map-fires";
 import { DEFAULT_MAP_LAYERS, type MapLayers } from "./map-layers";
 import { visibleMapFires } from "./map-fire-filter";
 import {
+  badgeImage,
+  CONFIDENCES,
   drawBadge,
   pointSymbolLayer,
   prepareSymbols,
   SYMBOLS,
 } from "./map-symbols";
+import { drawPattern, PATTERNS, patternImage } from "./map-patterns";
 export type { MapLayers } from "./map-layers";
 export type MapPadding = {
   top: number;
@@ -22,6 +27,8 @@ export type MapPadding = {
 };
 type Props = {
   clusters: FireCluster[];
+  fireLevels?: ReadonlyMap<string, FireLevel>;
+  userPosition?: { lat: number; lon: number } | null;
   selectedShortId?: string | null;
   onSelect?: (cluster: FireCluster) => void;
   official?: FeatureCollection;
@@ -43,20 +50,28 @@ type Props = {
   layers?: MapLayers;
 };
 const EMPTY: FeatureCollection = { type: "FeatureCollection", features: [] };
+const NO_LEVELS: ReadonlyMap<string, FireLevel> = new Map();
 const POINT_LAYERS = [
   "fires-selected",
   "official-selected",
   "reports-selected",
   "warnings-selected",
   "fires-points",
-  "fires-groups",
-  "official-groups",
-  "reports-groups",
-  "warnings-groups",
+  "fires-minor",
   "official-points",
   "reports-points",
   "warnings-points",
 ];
+const MINOR_MIN_ZOOM = 7;
+const ONM_COLOR = [
+  "match",
+  ["get", "severity"],
+  "extreme",
+  "#d64541",
+  "severe",
+  "#f2994a",
+  "#f2c94c",
+] as const;
 const AREA_LAYERS = ["official-fill", "warnings-fill", "reports-fill"];
 const ZERO_PADDING: MapPadding = { top: 0, bottom: 0, left: 0, right: 0 };
 function cameraOffset({
@@ -72,61 +87,77 @@ function currentStyle() {
     ? "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
     : "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json";
 }
-function fireFeatures(
-  clusters: FireCluster[],
-  selectedShortId?: string | null,
-  now = Date.now(),
-): FeatureCollection {
-  return {
-    type: "FeatureCollection",
-    features: clusters.map((fire) => {
-      const selected = fire.short_id === selectedShortId;
-      return {
-        type: "Feature",
-        geometry: { type: "Point", coordinates: [fire.lon, fire.lat] },
-        properties: {
-          id: fire.short_id,
-          label: fire.short_id,
-          selected,
-          icon: `fire${selected ? "-selected" : ""}`,
-          candidate: fireStage(fire) === "candidate",
-          faded:
-            fire.state === "false_positive" ||
-            !isVisibleByDefault(firePhase(fire, now)),
-        },
-      };
-    }),
-  };
-}
 function installLayers(map: maplibregl.Map) {
   for (const symbol of SYMBOLS)
-    for (const selected of [false, true]) {
-      const id = `${symbol}${selected ? "-selected" : ""}`;
-      if (!map.hasImage(id))
-        map.addImage(id, drawBadge(symbol, selected), { pixelRatio: 2 });
-    }
+    for (const confidence of CONFIDENCES)
+      for (const selected of [false, true]) {
+        const id = badgeImage(symbol, confidence, selected);
+        if (!map.hasImage(id))
+          map.addImage(id, drawBadge(symbol, confidence, selected), {
+            pixelRatio: 2,
+          });
+      }
+  for (const pattern of PATTERNS)
+    if (!map.hasImage(patternImage(pattern)))
+      map.addImage(patternImage(pattern), drawPattern(pattern), {
+        pixelRatio: 2,
+      });
   for (const source of ["official", "warnings", "reports", "fires"]) {
     if (!map.getSource(`${source}-selection`))
       map.addSource(`${source}-selection`, { type: "geojson", data: EMPTY });
     if (!map.getSource(source))
-      map.addSource(source, {
-        type: "geojson",
-        data: EMPTY,
-        cluster: true,
-        clusterRadius: 44,
-        clusterMaxZoom: 7,
-      });
+      map.addSource(source, { type: "geojson", data: EMPTY });
   }
-  for (const source of ["official", "warnings", "reports"]) {
+  if (!map.getSource("warnings-areas")) {
+    map.addSource("warnings-areas", { type: "geojson", data: EMPTY });
+    map.addLayer({
+      id: "warnings-fill",
+      source: "warnings-areas",
+      type: "fill",
+      filter: ["==", ["geometry-type"], "Polygon"],
+      paint: {
+        "fill-color": ONM_COLOR as unknown as string,
+        "fill-opacity": [
+          "case",
+          ["boolean", ["get", "selected"], false],
+          0.42,
+          ["boolean", ["get", "upcoming"], false],
+          0.12,
+          0.26,
+        ],
+      },
+    });
+    map.addLayer({
+      id: "warnings-texture",
+      source: "warnings-areas",
+      type: "fill",
+      filter: ["==", ["geometry-type"], "Polygon"],
+      paint: {
+        "fill-pattern": [
+          "case",
+          ["boolean", ["get", "upcoming"], false],
+          patternImage("upcoming"),
+          ["concat", "pattern-", ["coalesce", ["get", "event"], "other"]],
+        ],
+      },
+    });
+    map.addLayer({
+      id: "warnings-outline",
+      source: "warnings-areas",
+      type: "line",
+      filter: ["==", ["geometry-type"], "Polygon"],
+      paint: {
+        "line-color": ONM_COLOR as unknown as string,
+        "line-opacity": 0.9,
+        "line-width": ["case", ["boolean", ["get", "selected"], false], 2.5, 1],
+      },
+    });
+  }
+  for (const source of ["official", "reports"]) {
     if (!map.getSource(`${source}-areas`))
       map.addSource(`${source}-areas`, { type: "geojson", data: EMPTY });
     if (map.getLayer(`${source}-fill`)) continue;
-    const color =
-      source === "official"
-        ? "#a84422"
-        : source === "warnings"
-          ? "#326eaa"
-          : "#536879";
+    const color = source === "official" ? "#b3261e" : "#6b7780";
     map.addLayer({
       id: `${source}-fill`,
       source: `${source}-areas`,
@@ -155,42 +186,47 @@ function installLayers(map: maplibregl.Map) {
       },
     });
   }
-  for (const source of ["official", "warnings", "reports", "fires"]) {
-    if (map.getLayer(`${source}-groups`)) continue;
+  if (!map.getLayer("fires-pulse"))
     map.addLayer({
-      id: `${source}-groups`,
-      source,
-      type: "symbol",
-      filter: ["has", "point_count"],
-      layout: {
-        "icon-image": "group",
-        "icon-size": 1,
-        "icon-allow-overlap": true,
-        "text-field": ["get", "point_count_abbreviated"],
-        "text-font": ["Open Sans Semibold"],
-        "text-size": 12,
-        "text-allow-overlap": true,
+      id: "fires-pulse",
+      source: "fires",
+      type: "circle",
+      filter: ["boolean", ["get", "pulse"], false],
+      paint: {
+        "circle-radius": 18,
+        "circle-color": "rgba(0,0,0,0)",
+        "circle-stroke-color": "#d9730d",
+        "circle-stroke-width": 2,
+        "circle-stroke-opacity": 0.6,
       },
-      paint: { "text-color": "#ffffff" },
     });
-  }
   for (const source of ["official", "warnings", "reports", "fires"]) {
     if (map.getLayer(`${source}-points`)) continue;
     const layer = pointSymbolLayer(`${source}-points`, source);
-    if (source === "fires")
-      layer.paint = {
-        ...layer.paint,
+    if (source === "fires") {
+      layer.filter = [
+        "all",
+        layer.filter!,
+        ["!", ["boolean", ["get", "minor"], false]],
+      ] as FilterSpecification;
+      const minor = pointSymbolLayer("fires-minor", "fires");
+      minor.minzoom = MINOR_MIN_ZOOM;
+      minor.filter = [
+        "all",
+        minor.filter!,
+        ["boolean", ["get", "minor"], false],
+      ] as FilterSpecification;
+      minor.paint = {
+        ...minor.paint,
         "icon-opacity": [
           "case",
-          ["boolean", ["get", "selected"], false],
-          1,
           ["boolean", ["get", "faded"], false],
           0.45,
-          ["boolean", ["get", "candidate"], false],
-          0.7,
-          1,
+          0.85,
         ],
       };
+      map.addLayer(minor);
+    }
     map.addLayer(layer);
   }
   for (const source of ["official", "warnings", "reports", "fires"]) {
@@ -202,6 +238,8 @@ function installLayers(map: maplibregl.Map) {
 }
 export default function FireMap({
   clusters,
+  fireLevels = NO_LEVELS,
+  userPosition,
   selectedShortId,
   onSelect,
   official = EMPTY,
@@ -233,7 +271,12 @@ export default function FireMap({
   );
   const data = useMemo(
     () => ({
-      fires: fireFeatures(visibleClusters, selectedShortId),
+      fires: fireFeatures(
+        visibleClusters,
+        selectedShortId,
+        fireLevels,
+        userPosition,
+      ),
       official: prepareSymbols(official, "official", selectedOfficialId),
       reports: prepareSymbols(reports, "reports", selectedReportId),
       warnings: prepareSymbols(warnings, "warnings", selectedWarningId),
@@ -241,6 +284,8 @@ export default function FireMap({
     [
       visibleClusters,
       selectedShortId,
+      fireLevels,
+      userPosition,
       official,
       selectedOfficialId,
       reports,
@@ -354,9 +399,11 @@ export default function FireMap({
         const visible = source === "warnings" || current.layers[source];
         for (const suffix of [
           "points",
+          "minor",
+          "pulse",
           "selected",
-          "groups",
           "fill",
+          "texture",
           "outline",
         ]) {
           const id = `${source}-${suffix}`;
@@ -404,29 +451,6 @@ export default function FireMap({
       if (!ready) return;
       const feature = featuresAt(event.point)[0];
       if (!feature) return;
-      if (feature.properties["cluster_id"] !== undefined) {
-        const source = map.getSource(
-          feature.source,
-        ) as maplibregl.GeoJSONSource;
-        void source
-          .getClusterExpansionZoom(feature.properties["cluster_id"])
-          .then((nextZoom) => {
-            if (!disposed)
-              map.easeTo({
-                center: (feature.geometry as Point).coordinates as [
-                  number,
-                  number,
-                ],
-                zoom: nextZoom,
-                offset: cameraOffset(latest.current.padding),
-              });
-          })
-          .catch((error: unknown) => {
-            if (!disposed && ready)
-              console.error("Map cluster expansion failed", error);
-          });
-        return;
-      }
       const id = feature.properties["id"];
       if (typeof id !== "string") return;
       const current = latest.current;
@@ -471,6 +495,32 @@ export default function FireMap({
   useEffect(() => {
     syncRef.current();
   }, [data, layers]);
+  const pulsing = data.fires.features.some((f) => f.properties?.["pulse"]);
+  useEffect(() => {
+    const map = mapRef.current;
+    if (
+      !loaded ||
+      !map ||
+      !pulsing ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    )
+      return;
+    let frame = 0;
+    const tick = (time: number) => {
+      const phase = (time % 1600) / 1600;
+      if (map.getLayer("fires-pulse")) {
+        map.setPaintProperty("fires-pulse", "circle-radius", 14 + phase * 16);
+        map.setPaintProperty(
+          "fires-pulse",
+          "circle-stroke-opacity",
+          0.7 * (1 - phase),
+        );
+      }
+      frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [loaded, pulsing]);
   const focusLat = focus?.lat;
   const focusLon = focus?.lon;
   const focusZoom = focus?.zoom;

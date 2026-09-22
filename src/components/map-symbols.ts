@@ -1,8 +1,8 @@
 import type { FeatureCollection } from "geojson";
 import type { SymbolLayerSpecification } from "maplibre-gl";
+import type { Confidence } from "@/lib/fire-confidence";
 
 export const BADGE_SIZE = 32;
-export const GROUP_SIZE = 36;
 export const SYMBOLS = [
   "fire",
   "official",
@@ -10,9 +10,9 @@ export const SYMBOLS = [
   "rescue",
   "observation",
   "weather",
-  "group",
 ] as const;
 export type MapSymbol = (typeof SYMBOLS)[number];
+export const CONFIDENCES = ["official", "corroborated", "single"] as const;
 
 const paths: Record<MapSymbol, string> = {
   fire: "M12 3C13 7 18 8 18 14a6 6 0 0 1-12 0c0-3 2-5 4-7 0 3 1 4 2 4 2-2 1-5 0-8Z",
@@ -24,17 +24,19 @@ const paths: Record<MapSymbol, string> = {
     "M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0",
   weather:
     "M7 16H6a4 4 0 0 1-1-8 6 6 0 0 1 11-2 5 5 0 0 1 2 10h-1M13 11l-4 7h5l-3 5",
-  group: "",
 };
-const colors: Record<MapSymbol, string> = {
-  fire: "#ba3d22",
-  official: "#a84422",
-  road: "#925c13",
-  rescue: "#a54059",
-  observation: "#536879",
-  weather: "#326eaa",
-  group: "#356d87",
+// only an authority is red; Nadhir's own evidence tops out at orange
+const colors: Record<Confidence, string> = {
+  official: "#b3261e",
+  corroborated: "#d9730d",
+  single: "#6b7780",
 };
+
+export const badgeImage = (
+  symbol: MapSymbol,
+  confidence: Confidence,
+  selected: boolean,
+) => `${symbol}-${confidence}${selected ? "-selected" : ""}`;
 
 export function symbolFor(
   kind: "official" | "reports" | "warnings",
@@ -70,12 +72,17 @@ export function prepareSymbols(
         selectedId === undefined
           ? properties["selected"] === true
           : properties["id"] === selectedId;
+      const confidence = (CONFIDENCES as readonly unknown[]).includes(
+        properties["confidence"],
+      )
+        ? (properties["confidence"] as Confidence)
+        : "single";
       return {
         ...feature,
         properties: {
           ...properties,
           selected,
-          icon: `${symbolFor(kind, properties)}${selected ? "-selected" : ""}`,
+          icon: badgeImage(symbolFor(kind, properties), confidence, selected),
         },
       };
     }),
@@ -129,29 +136,31 @@ export function pointSymbolLayer(
   };
 }
 
-export function drawBadge(symbol: MapSymbol, selected: boolean): ImageData {
-  const size = symbol === "group" ? GROUP_SIZE : BADGE_SIZE;
+export function drawBadge(
+  symbol: MapSymbol,
+  confidence: Confidence,
+  selected: boolean,
+): ImageData {
+  const size = BADGE_SIZE;
+  const color = colors[confidence];
   const canvas = document.createElement("canvas");
   canvas.width = canvas.height = size * 2;
   const context = canvas.getContext("2d");
   if (!context) throw new Error("Map icon canvas unavailable");
   context.scale(2, 2);
   context.beginPath();
-  context.roundRect(2, 2, size - 4, size - 4, symbol === "group" ? 9 : 8);
-  context.fillStyle =
-    selected || symbol === "group" ? colors[symbol] : "#ffffff";
+  context.roundRect(2, 2, size - 4, size - 4, 8);
+  context.fillStyle = selected ? color : "#ffffff";
   context.fill();
-  context.strokeStyle = selected ? "#ffffff" : colors[symbol];
+  context.strokeStyle = selected ? "#ffffff" : color;
   context.lineWidth = selected ? 3 : 1.5;
   context.stroke();
-  if (symbol !== "group") {
-    context.translate(6, 6);
-    context.scale(20 / 24, 20 / 24);
-    context.strokeStyle = selected ? "#ffffff" : colors[symbol];
-    context.lineWidth = 2;
-    context.lineCap = "round";
-    context.lineJoin = "round";
-    context.stroke(new Path2D(paths[symbol]));
-  }
+  context.translate(6, 6);
+  context.scale(20 / 24, 20 / 24);
+  context.strokeStyle = selected ? "#ffffff" : color;
+  context.lineWidth = 2;
+  context.lineCap = "round";
+  context.lineJoin = "round";
+  context.stroke(new Path2D(paths[symbol]));
   return context.getImageData(0, 0, canvas.width, canvas.height);
 }
