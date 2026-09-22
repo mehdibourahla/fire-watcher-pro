@@ -7,6 +7,8 @@ import type { FeatureCollection } from "geojson";
 import type { FireCluster } from "@/lib/nadhir";
 import type { FireLevel } from "@/lib/fire-confidence";
 import { fireFeatures } from "./map-fires";
+import type { RoadHint } from "@/lib/civil-map";
+import { cutSegment, type LonLat } from "@/lib/road-segment";
 import { DEFAULT_MAP_LAYERS, type MapLayers } from "./map-layers";
 import { visibleMapFires } from "./map-fire-filter";
 import {
@@ -29,6 +31,7 @@ type Props = {
   clusters: FireCluster[];
   fireLevels?: ReadonlyMap<string, FireLevel>;
   userPosition?: { lat: number; lon: number } | null;
+  roadHints?: RoadHint[];
   selectedShortId?: string | null;
   onSelect?: (cluster: FireCluster) => void;
   official?: FeatureCollection;
@@ -51,6 +54,43 @@ type Props = {
 };
 const EMPTY: FeatureCollection = { type: "FeatureCollection", features: [] };
 const NO_LEVELS: ReadonlyMap<string, FireLevel> = new Map();
+const NO_HINTS: RoadHint[] = [];
+const ROAD_MIN_ZOOM = 8;
+
+function roadSegments(
+  map: maplibregl.Map,
+  hints: RoadHint[],
+): FeatureCollection {
+  if (!hints.length || !map.getSource("carto") || map.getZoom() < ROAD_MIN_ZOOM)
+    return EMPTY;
+  return {
+    type: "FeatureCollection",
+    features: hints.flatMap((hint) => {
+      const lines = map
+        .querySourceFeatures("carto", {
+          sourceLayer: "transportation_name",
+          filter: ["==", ["get", "ref"], hint.ref],
+        })
+        .flatMap((feature) =>
+          feature.geometry.type === "LineString"
+            ? [feature.geometry.coordinates as LonLat[]]
+            : feature.geometry.type === "MultiLineString"
+              ? (feature.geometry.coordinates as LonLat[][])
+              : [],
+        );
+      const segment = cutSegment(lines, hint.anchor, { toward: hint.toward });
+      return segment
+        ? [
+            {
+              type: "Feature" as const,
+              geometry: { type: "LineString" as const, coordinates: segment },
+              properties: { id: hint.id },
+            },
+          ]
+        : [];
+    }),
+  };
+}
 const POINT_LAYERS = [
   "fires-selected",
   "official-selected",
@@ -72,7 +112,12 @@ const ONM_COLOR = [
   "#f2994a",
   "#f2c94c",
 ] as const;
-const AREA_LAYERS = ["official-fill", "warnings-fill", "reports-fill"];
+const AREA_LAYERS = [
+  "road-segments-line",
+  "official-fill",
+  "warnings-fill",
+  "reports-fill",
+];
 const ZERO_PADDING: MapPadding = { top: 0, bottom: 0, left: 0, right: 0 };
 function cameraOffset({
   top,
@@ -186,6 +231,42 @@ function installLayers(map: maplibregl.Map) {
       },
     });
   }
+  if (!map.getSource("road-segments")) {
+    map.addSource("road-segments", { type: "geojson", data: EMPTY });
+    map.addLayer({
+      id: "road-segments-casing",
+      source: "road-segments",
+      type: "line",
+      minzoom: ROAD_MIN_ZOOM,
+      layout: { "line-cap": "round", "line-join": "round" },
+      paint: { "line-color": "#ffffff", "line-width": 9 },
+    });
+    map.addLayer({
+      id: "road-segments-line",
+      source: "road-segments",
+      type: "line",
+      minzoom: ROAD_MIN_ZOOM,
+      layout: { "line-cap": "round", "line-join": "round" },
+      paint: { "line-color": "#4b5563", "line-width": 5 },
+    });
+    map.addLayer({
+      id: "road-segments-arrows",
+      source: "road-segments",
+      type: "symbol",
+      minzoom: ROAD_MIN_ZOOM,
+      layout: {
+        "symbol-placement": "line",
+        "symbol-spacing": 48,
+        "text-field": "›",
+        "text-font": ["Open Sans Semibold"],
+        "text-size": 16,
+        "text-keep-upright": false,
+        "text-rotation-alignment": "map",
+        "text-allow-overlap": true,
+      },
+      paint: { "text-color": "#ffffff" },
+    });
+  }
   if (!map.getLayer("fires-pulse"))
     map.addLayer({
       id: "fires-pulse",
@@ -240,6 +321,7 @@ export default function FireMap({
   clusters,
   fireLevels = NO_LEVELS,
   userPosition,
+  roadHints = NO_HINTS,
   selectedShortId,
   onSelect,
   official = EMPTY,
@@ -296,6 +378,7 @@ export default function FireMap({
   );
   const latest = useRef({
     data,
+    roadHints,
     layers,
     visibleClusters,
     onSelect,
@@ -310,6 +393,7 @@ export default function FireMap({
   useLayoutEffect(() => {
     latest.current = {
       data,
+      roadHints,
       layers,
       visibleClusters,
       onSelect,
@@ -417,6 +501,19 @@ export default function FireMap({
       }
     };
     syncRef.current = sync;
+    let drawnRoads = "";
+    const drawRoads = () => {
+      if (!ready) return;
+      const segments = roadSegments(map, latest.current.roadHints);
+      const key = JSON.stringify(segments);
+      // setData re-renders and fires idle again, so only write real changes
+      if (key === drawnRoads) return;
+      drawnRoads = key;
+      (
+        map.getSource("road-segments") as maplibregl.GeoJSONSource | undefined
+      )?.setData(segments);
+    };
+    map.on("idle", drawRoads);
     const timeout = window.setTimeout(() => {
       if (!ready) fail();
     }, 20000);
@@ -424,6 +521,7 @@ export default function FireMap({
       if (event.error?.message?.includes("WebGL")) fail();
     });
     map.on("style.load", () => {
+      drawnRoads = "";
       try {
         installLayers(map);
       } catch {
@@ -463,6 +561,7 @@ export default function FireMap({
       } else if (source === "official") current.onSelectOfficial?.(id);
       else if (source === "reports") current.onSelectReport?.(id);
       else if (source === "warnings") current.onSelectWarning?.(id);
+      else if (source === "road-segments") current.onSelectReport?.(id);
     });
     map.on("mousemove", (event) => {
       map.getCanvas().style.cursor =

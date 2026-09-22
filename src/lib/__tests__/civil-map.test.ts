@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildSituations,
   filterSituations,
+  roadHints,
   situationSummary,
   findPlaces,
   nearestPlace,
@@ -352,6 +353,55 @@ describe("civil situations", () => {
       roads: 1,
       reports: 1,
     });
+  });
+  it("hints a road segment only for a named road at commune level", () => {
+    const algiers = {
+      ...wilaya,
+      id: "w16",
+      code: "16",
+      name_fr: "Alger",
+      name_en: "Algiers",
+      lat: 36.75,
+      lon: 3.06,
+    };
+    const publication = (id: string, summary: string, area: AdminUnit) => ({
+      id,
+      ita_report_id: "r",
+      incident_index: 0,
+      hazard: "road" as const,
+      summary,
+      area_id: area.id,
+      source_name: "Info Trafic Algérie",
+      source_url: "https://infotraficalgerie.com/home",
+      source_published_at: at(1),
+      published_at: at(1),
+      updated_at: at(1),
+      expires_at: at(-1),
+      state: "published" as const,
+      revision: 1,
+      area,
+      cap_references: [],
+    });
+    const items = build({
+      publications: [
+        publication(
+          "named",
+          "Accident sur la route nationale numéro 12, à Naciria, en direction d'Alger.",
+          commune,
+        ),
+        publication("wilaya", "Accident sur la RN11 (Tipaza).", wilaya),
+        publication("unnamed", "Congestion à l'entrée de Béjaïa.", commune),
+      ],
+      units: [...units, algiers],
+    });
+    expect(roadHints(items, [...units, algiers])).toEqual([
+      {
+        id: "civil:named",
+        ref: "RN 12",
+        anchor: [commune.lon, commune.lat],
+        toward: [algiers.lon, algiers.lat],
+      },
+    ]);
   });
   it("includes upcoming ONM warnings but excludes expired, undated and unsent warnings", () => {
     const items = build({

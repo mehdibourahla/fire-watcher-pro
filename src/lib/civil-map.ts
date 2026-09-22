@@ -14,6 +14,7 @@ import {
 } from "./fire-confidence";
 import type { HazardReport } from "./open-areas";
 import type { CivilPublication } from "./civil-publication";
+import { parseDestination, parseRoadRef } from "./road-ref";
 import {
   firePhase,
   isVisibleByDefault,
@@ -247,6 +248,37 @@ export function situationSummary(items: Situation[]) {
   }
   summary.warningWilayas = wilayas.size;
   return summary;
+}
+
+export type RoadHint = {
+  id: string;
+  ref: string;
+  anchor: [number, number];
+  toward: [number, number] | null;
+};
+
+export function roadHints(items: Situation[], units: AdminUnit[]): RoadHint[] {
+  return items.flatMap((item) => {
+    if (
+      item.source !== "civil" ||
+      item.category !== "road" ||
+      item.phase !== "live" ||
+      item.data.area?.level !== "commune"
+    )
+      return [];
+    const ref = parseRoadRef(item.data.summary);
+    if (!ref) return [];
+    const destination = parseDestination(item.data.summary);
+    const place = destination ? findPlaces(units, destination, "fr")[0] : null;
+    return [
+      {
+        id: item.id,
+        ref,
+        anchor: [item.data.area.lon, item.data.area.lat],
+        toward: place ? [place.lon, place.lat] : null,
+      },
+    ];
+  });
 }
 
 function distanceKm(aLat: number, aLon: number, bLat: number, bLon: number) {
