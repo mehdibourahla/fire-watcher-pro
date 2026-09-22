@@ -684,7 +684,11 @@ function LiveMapPage() {
               <p
                 className={`line-clamp-2 text-xs text-muted-foreground ${desktop ? "mt-0.5" : ""}`}
               >
-                {panelView === "list" ? summaryLine : t("civilMap.title")}
+                {panelView !== "list"
+                  ? t("civilMap.title")
+                  : loading
+                    ? t("common.loading")
+                    : summaryLine}
               </p>
             </div>
             {panelView === "list" && (
