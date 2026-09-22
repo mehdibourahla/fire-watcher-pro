@@ -240,6 +240,7 @@ export function createSourceRunners(
         qualityChecks: {
           unmatched_wilayas: run.unmatched,
           detailed_entries: run.detailed ?? 0,
+          superseded_entries: run.superseded ?? 0,
         },
       };
     },
