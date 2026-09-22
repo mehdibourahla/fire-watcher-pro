@@ -24,10 +24,10 @@ export const adminKab = {
       download: "Sider isefka yettwasenqden",
     },
     ita: {
-      retry: "Ales asuffeɣ",
+      retry: "Ales tura",
       retryFailed:
-        "Ur izmir ara ad yales. Ales n usuffeɣ yezmer kan yiwet n tikkelt deg wass.",
-      retryQueued: "Asuffeɣ yettwarǧa i usekker i d-iteddun.",
+        "Ur izmir ara ad yales: aɣbalu yeḥbes, usesfer yettwarǧa neɣ iteddu, neɣ tewweḍ talast n wass.",
+      retryQueued: "Asuffeɣ yettwarǧa i usesfer amezwaru yellan.",
       exhaustedOnly: "Sken kan isallen i ifuken tikkal n usuffeɣ",
 
       title: "Info Trafic Algérie",
