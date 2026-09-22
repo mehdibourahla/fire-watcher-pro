@@ -46,6 +46,7 @@ jobs:
       - run: supabase start -x studio,imgproxy,inbucket,mailpit,logflare,vector,realtime,edge-runtime,supavisor
       - run: bash scripts/test-db.sh
       - run: bun run scripts/test-ita-retry-concurrency.ts
+      - run: bun run scripts/test-civil-publication-concurrency.ts
         env:
           DELIVERY_TEST_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
       - run: bun run scripts/test-delivery-concurrency.ts

@@ -305,11 +305,11 @@ export const en = {
     publicationexpired: "Validity expired",
     publicationwithdrawn: "Publication withdrawn",
     publicationNotice:
-      "Information from Info Trafic Algérie, reviewed by Nadhir. This is not an official warning or emergency instruction.",
+      "Information from Info Trafic Algérie, analysed by Nadhir with AI and human review when needed. This is not an official warning or emergency instruction.",
     publicationHistorical:
       "Historical publication. Expiry or withdrawal does not mean the incident is over or the area is safe.",
     sourcePublishedAt: "Source publication",
-    publicationUpdatedAt: "Last reviewed update",
+    publicationUpdatedAt: "Last publication update",
     officialGroup: "Official warnings and reports",
     observationsGroup: "Media, observations and citizen reports",
     reportedBoundary:

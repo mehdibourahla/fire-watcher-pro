@@ -4,6 +4,7 @@ import type { Json } from "@/integrations/supabase/types";
 import type { ClaimedSourceJob } from "@/lib/source-jobs";
 import { fetchItaFeed, type ItaFeedPost } from "./ita-feed";
 import { extractItaReport, type ItaExtraction } from "./ita-extract.server";
+import { runCivilInvestigations } from "@/lib/civil-investigation.server";
 
 type Revision = {
   source_post_id: string;
@@ -184,7 +185,7 @@ export async function runItaSource(job: ClaimedSourceJob): Promise<ItaRun> {
       return count ?? 0;
     },
   };
-  return runItaSourceWith({
+  const collection = runItaSourceWith({
     store,
     fetchFeed: (etag) =>
       fetchItaFeed(etag, (input, init) =>
@@ -192,4 +193,21 @@ export async function runItaSource(job: ClaimedSourceJob): Promise<ItaRun> {
       ),
     extract: extractItaReport,
   });
+  const [collectionResult, investigationResult] = await Promise.allSettled([
+    collection,
+    runCivilInvestigations(job),
+  ]);
+  if (collectionResult.status === "rejected") throw collectionResult.reason;
+  if (investigationResult.status === "rejected")
+    throw investigationResult.reason;
+  const run = collectionResult.value;
+  const investigations = investigationResult.value;
+  return {
+    ...run,
+    pending: run.pending + investigations.pending,
+    failed: run.failed + investigations.failed,
+    ...(investigations.failed && !run.error
+      ? { error: "Civil investigation failed; retry scheduled" }
+      : {}),
+  };
 }

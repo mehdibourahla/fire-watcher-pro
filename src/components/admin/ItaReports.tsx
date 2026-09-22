@@ -1,16 +1,19 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { itaReportsQuery } from "@/lib/admin-ita";
+import { civilInvestigationsQuery, itaReportsQuery } from "@/lib/admin-ita";
 import { myRolesQuery } from "@/lib/reports";
 import { supabase } from "@/integrations/supabase/client";
 import { civilPublicationsQuery } from "@/lib/civil-publication-client";
 import { CivilPublicationReview } from "./CivilPublicationReview";
+import { CivilInvestigationQueue } from "./CivilInvestigationQueue";
+import { CivilDecisionHistory } from "./CivilDecisionHistory";
 
 export function ItaReports() {
   const { t } = useTranslation("admin");
   const [exhaustedOnly, setExhaustedOnly] = useState(false);
   const reports = useQuery(itaReportsQuery(exhaustedOnly));
+  const investigations = useQuery(civilInvestigationsQuery);
   const publications = useQuery(civilPublicationsQuery(true));
   const [historyPage, setHistoryPage] = useState(0);
   const history = useQuery(civilPublicationsQuery(true, historyPage));
@@ -33,9 +36,15 @@ export function ItaReports() {
       <p className="mt-1 text-sm text-muted-foreground">
         {t("sources.ita.description")}
       </p>
+      <CivilInvestigationQueue />
       {publications.isError && (
         <p role="alert" className="text-destructive">
           {publications.error.message}
+        </p>
+      )}
+      {investigations.isError && (
+        <p role="alert" className="text-destructive">
+          {investigations.error.message}
         </p>
       )}
       <details className="mt-3">
@@ -157,38 +166,65 @@ export function ItaReports() {
                   {t("sources.ita.retry")}
                 </button>
               )}
-            {report.extraction?.incidents.map((incident, index) => (
-              <div key={index} className="mt-2 border-s-2 border-border ps-3">
-                <p lang="fr">{incident.summary_fr}</p>
-                <p className="mt-1 text-xs">
-                  {t("publication.reportedStatus", {
-                    status: incident.current_status,
-                  })}
-                </p>
-                <blockquote dir="auto" className="mt-1 text-muted-foreground">
-                  {incident.evidence}
-                </blockquote>
-                {incident.review_reasons.map((reason, i) => (
-                  <p key={i} dir="auto" className="mt-1 text-xs">
-                    {reason}
+            {report.extraction?.incidents.map((incident, index) => {
+              const investigation = investigations.data?.find(
+                (work) =>
+                  work.report_id === report.id && work.incident_index === index,
+              );
+              return (
+                <div key={index} className="mt-2 border-s-2 border-border ps-3">
+                  <p lang="fr">{incident.summary_fr}</p>
+                  <p className="mt-1 text-xs">
+                    {t("publication.reportedStatus", {
+                      status: incident.current_status,
+                    })}
                   </p>
-                ))}
-                {report.extraction?.disposition === "incident_report" &&
-                  publications.isSuccess && (
-                    <CivilPublicationReview
-                      reportId={report.id}
-                      incidentIndex={index}
-                      summary={incident.summary_fr}
-                      publishedAt={report.published_at}
-                      publication={publications.data.find(
-                        (item) =>
-                          item.ita_report_id === report.id &&
-                          item.incident_index === index,
+                  <blockquote dir="auto" className="mt-1 text-muted-foreground">
+                    {incident.evidence}
+                  </blockquote>
+                  {incident.review_reasons.map((reason, i) => (
+                    <p key={i} dir="auto" className="mt-1 text-xs">
+                      {reason}
+                    </p>
+                  ))}
+                  {investigation && (
+                    <div className="mt-2 rounded bg-muted p-2">
+                      <p className="font-medium">
+                        {t(`publication.agent.${investigation.state}`)}
+                      </p>
+                      {investigation.latest && (
+                        <p lang="fr" className="mt-1 text-xs">
+                          {investigation.latest.decision.reason}
+                        </p>
                       )}
-                    />
+                      {investigation.error && (
+                        <p role="alert" className="text-xs text-destructive">
+                          {investigation.error}
+                        </p>
+                      )}
+                      {investigation.latest && (
+                        <CivilDecisionHistory entries={investigation.history} />
+                      )}
+                    </div>
                   )}
-              </div>
-            ))}
+                  {report.extraction?.disposition === "incident_report" &&
+                    publications.isSuccess && (
+                      <CivilPublicationReview
+                        reportId={report.id}
+                        incidentIndex={index}
+                        summary={incident.summary_fr}
+                        publishedAt={report.published_at}
+                        suggestion={investigation?.latest?.decision}
+                        publication={publications.data.find(
+                          (item) =>
+                            item.ita_report_id === report.id &&
+                            item.incident_index === index,
+                        )}
+                      />
+                    )}
+                </div>
+              );
+            })}
             {report.extraction?.review_reasons.map((reason, index) => (
               <p key={index} dir="auto" className="mt-2 text-xs">
                 {reason}

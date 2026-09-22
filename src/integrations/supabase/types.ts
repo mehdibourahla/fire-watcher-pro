@@ -34,10 +34,122 @@ export type Database = {
   };
   public: {
     Tables: {
+      civil_decisions: {
+        Row: {
+          attempt: number;
+          created_at: string;
+          decision: Json;
+          id: string;
+          investigation_id: string;
+          model: string;
+          publication_id: string | null;
+          source_extraction: Json;
+          trace: Json;
+          version: string;
+        };
+        Insert: {
+          attempt: number;
+          created_at?: string;
+          decision: Json;
+          id?: string;
+          investigation_id: string;
+          model: string;
+          publication_id?: string | null;
+          source_extraction: Json;
+          trace: Json;
+          version: string;
+        };
+        Update: {
+          attempt?: number;
+          created_at?: string;
+          decision?: Json;
+          id?: string;
+          investigation_id?: string;
+          model?: string;
+          publication_id?: string | null;
+          source_extraction?: Json;
+          trace?: Json;
+          version?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "civil_decisions_investigation_id_fkey";
+            columns: ["investigation_id"];
+            isOneToOne: false;
+            referencedRelation: "civil_investigations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "civil_decisions_publication_id_fkey";
+            columns: ["publication_id"];
+            isOneToOne: false;
+            referencedRelation: "civil_publications";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      civil_investigations: {
+        Row: {
+          attempts: number;
+          error: string | null;
+          failures: number;
+          id: string;
+          incident_index: number;
+          job_attempt: number | null;
+          job_id: string | null;
+          next_attempt_at: string;
+          report_id: string;
+          state: string;
+          updated_at: string;
+        };
+        Insert: {
+          attempts?: number;
+          error?: string | null;
+          failures?: number;
+          id?: string;
+          incident_index: number;
+          job_attempt?: number | null;
+          job_id?: string | null;
+          next_attempt_at?: string;
+          report_id: string;
+          state?: string;
+          updated_at?: string;
+        };
+        Update: {
+          attempts?: number;
+          error?: string | null;
+          failures?: number;
+          id?: string;
+          incident_index?: number;
+          job_attempt?: number | null;
+          job_id?: string | null;
+          next_attempt_at?: string;
+          report_id?: string;
+          state?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "civil_investigations_job_id_fkey";
+            columns: ["job_id"];
+            isOneToOne: false;
+            referencedRelation: "source_jobs";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "civil_investigations_report_id_fkey";
+            columns: ["report_id"];
+            isOneToOne: false;
+            referencedRelation: "ita_reports";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       civil_publication_revisions: {
         Row: {
           action: string;
-          actor_id: string;
+          actor_id: string | null;
+          actor_kind: string;
           created_at: string;
           id: string;
           new_payload: Json;
@@ -48,7 +160,8 @@ export type Database = {
         };
         Insert: {
           action: string;
-          actor_id: string;
+          actor_id?: string | null;
+          actor_kind?: string;
           created_at?: string;
           id?: string;
           new_payload: Json;
@@ -59,7 +172,8 @@ export type Database = {
         };
         Update: {
           action?: string;
-          actor_id?: string;
+          actor_id?: string | null;
+          actor_kind?: string;
           created_at?: string;
           id?: string;
           new_payload?: Json;
@@ -3416,6 +3530,55 @@ export type Database = {
       };
     };
     Functions: {
+      search_civil_official_evidence: {
+        Args: { _query?: string | null; _area?: string | null };
+        Returns: {
+          id: string;
+          mention_id: string;
+          evidence: string;
+          status: string;
+          as_of: string;
+          kind: string;
+          place_text: string | null;
+          wilaya_id: string;
+          commune_id: string | null;
+          source_url: string;
+          source_published_at: string;
+        }[];
+      };
+      finish_civil_investigation: {
+        Args: {
+          _attempt: number;
+          _error: string | null;
+          _id: string;
+          _investigation_attempt: number;
+          _job: string;
+          _result: Json;
+        };
+        Returns: undefined;
+      };
+      claim_civil_investigations: {
+        Args: { _attempt: number; _job: string; _limit?: number };
+        Returns: {
+          attempts: number;
+          error: string | null;
+          failures: number;
+          id: string;
+          incident_index: number;
+          job_attempt: number | null;
+          job_id: string | null;
+          next_attempt_at: string;
+          report_id: string;
+          state: string;
+          updated_at: string;
+        }[];
+        SetofOptions: {
+          from: "*";
+          to: "civil_investigations";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
       publish_ita_publication: {
         Args: {
           _area_id: string;
