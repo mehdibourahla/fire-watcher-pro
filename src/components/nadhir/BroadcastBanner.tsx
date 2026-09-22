@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 
 import { type AnyLocale } from "@/i18n";
 import { supabase } from "@/integrations/supabase/client";
+import { firePhase } from "@/lib/incident-lifecycle";
 import { relativeTime } from "@/lib/nadhir";
 import { readSubscription } from "@/lib/push";
 
@@ -17,8 +18,17 @@ type BannerRow = {
   cluster_id: string | null;
   created_at: string;
   cap_alerts: { info: unknown } | null;
-  fire_clusters: { short_id: string } | null;
-  onm_vigilance: { title: string; headline_fr: string | null } | null;
+  fire_clusters: {
+    short_id: string;
+    state: string;
+    last_detected_at: string;
+    resolved_at: string | null;
+  } | null;
+  onm_vigilance: {
+    title: string;
+    headline_fr: string | null;
+    expires: string | null;
+  } | null;
   authority_warnings: { source: string; body: string } | null;
 };
 
@@ -29,7 +39,7 @@ const bannersQuery = queryOptions({
     const { data, error } = await supabase
       .from("broadcasts")
       .select(
-        "id, kind, phase, severity, commune_codes, cluster_id, created_at, cap_alerts(info), fire_clusters(short_id), onm_vigilance(title, headline_fr), authority_warnings(source, body)",
+        "id, kind, phase, severity, commune_codes, cluster_id, created_at, cap_alerts(info), fire_clusters(short_id, state, last_detected_at, resolved_at), onm_vigilance(title, headline_fr, expires), authority_warnings(source, body)",
       )
       .gte("created_at", since)
       .order("created_at", { ascending: false });
@@ -70,8 +80,14 @@ export function BroadcastBanner() {
     seen.add(thread);
     return true;
   });
+  const now = Date.now();
   const live = relevant.filter(
-    (row) => row.phase !== "end" && row.phase !== "cancel",
+    (row) =>
+      row.phase !== "end" &&
+      row.phase !== "cancel" &&
+      (!row.fire_clusters || firePhase(row.fire_clusters, now) === "live") &&
+      (!row.onm_vigilance?.expires ||
+        Date.parse(row.onm_vigilance.expires) > now),
   );
   if (!live.length) return null;
 

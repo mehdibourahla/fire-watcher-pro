@@ -732,6 +732,10 @@ export const ar: Translation = {
     kindFire: "حريق",
     kindRisk: "خطر",
     openFire: "صفحة الحريق",
+    stateLive: "جارٍ",
+    stateToday: "توقعات اليوم",
+    statePastForecast: "توقعات سابقة",
+    earlier: "رسائل سابقة: {{count}}",
   },
   account: {
     enableDeviceNotifications: "السماح بالإشعارات على هذا الجهاز",
