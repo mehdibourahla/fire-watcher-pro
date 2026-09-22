@@ -51,16 +51,65 @@ export function situationAreaId(item: Situation): string | null {
     : item.data.commune_id;
 }
 
+const ONM_EVENTS: Record<string, string> = {
+  Rain: "rain",
+  Thunderstorm: "storm",
+  Sandstorm: "sand",
+  Strong: "wind",
+  Heat: "heat",
+};
+
+const SEVERITY_RANK: Record<string, number> = {
+  Moderate: 1,
+  Severe: 2,
+  Extreme: 3,
+};
+
+// one tint per wilaya: stacked translucent fills read darker than ONM's own scale
+function wilayaTints(items: Situation[]) {
+  const groups = new Map<string, Extract<Situation, { source: "onm" }>[]>();
+  for (const item of items)
+    if (item.source === "onm" && item.data.wilaya_id)
+      groups.set(item.data.wilaya_id, [
+        ...(groups.get(item.data.wilaya_id) ?? []),
+        item,
+      ]);
+  return new Map(
+    [...groups].map(([wilaya, group]) => {
+      const current = group.filter((item) => item.phase !== "upcoming");
+      const pool = current.length ? current : group;
+      const lead = pool.reduce((a, b) =>
+        (SEVERITY_RANK[b.data.severity] ?? 0) >
+        (SEVERITY_RANK[a.data.severity] ?? 0)
+          ? b
+          : a,
+      );
+      return [wilaya, { lead, members: group }] as const;
+    }),
+  );
+}
+
+function closedRing(outline: readonly [number, number][] | undefined) {
+  if (!outline || outline.length < 3 || !outline.every(position)) return null;
+  const [first] = outline;
+  const last = outline[outline.length - 1]!;
+  return first![0] === last[0] && first![1] === last[1]
+    ? [...outline]
+    : [...outline, first!];
+}
+
 export function civilMapGeoJSON(
   items: Situation[],
   geometries: ReadonlyMap<string, unknown>,
   label: (item: Situation) => string,
   selectedId?: string,
+  outlines: ReadonlyMap<string, readonly [number, number][]> = new Map(),
 ): {
   official: FeatureCollection;
   warnings: FeatureCollection;
   reports: FeatureCollection;
 } {
+  const tints = wilayaTints(items);
   const result = {
     official: { type: "FeatureCollection", features: [] } as FeatureCollection,
     warnings: { type: "FeatureCollection", features: [] } as FeatureCollection,
@@ -93,6 +142,7 @@ export function civilMapGeoJSON(
             ? item.data.state
             : item.data.status,
       selected: item.id === selectedId,
+      confidence: item.confidence,
       precision:
         item.source === "civil"
           ? (item.data.area?.level ?? "administrative")
@@ -105,6 +155,28 @@ export function civilMapGeoJSON(
         ? { kind: item.data.kind, sighting: item.data.sighting }
         : {}),
     };
+    const outline =
+      item.source === "onm" && item.data.wilaya_id
+        ? closedRing(outlines.get(item.data.wilaya_id))
+        : null;
+    if (item.source === "onm" && outline) {
+      const tint = tints.get(item.data.wilaya_id!)!;
+      if (tint.lead !== item) continue;
+      collection.features.push({
+        type: "Feature",
+        id: `${item.id}:area`,
+        geometry: { type: "Polygon", coordinates: [outline] },
+        properties: {
+          ...properties,
+          selected: tint.members.some((member) => member.id === selectedId),
+          area: true,
+          severity: item.data.severity.toLowerCase(),
+          event: ONM_EVENTS[item.data.event] ?? "other",
+          upcoming: item.phase === "upcoming",
+        },
+      });
+      continue;
+    }
     const areaId = situationAreaId(item);
     const geometry = areaId ? geometries.get(areaId) : undefined;
     if (item.id === selectedId && administrativeGeometry(geometry)) {

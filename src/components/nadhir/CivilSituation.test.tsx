@@ -77,6 +77,11 @@ describe("situation status wording", () => {
     expect(card(satellite("fading"))).toContain("civilMap.quiet");
   });
 
+  it("never titles satellite-only evidence a fire", () => {
+    expect(card(satellite("live"))).toContain("civilMap.heatSignalShort");
+    expect(card(satellite("live", "probable"))).toContain("civilMap.fire");
+  });
+
   it("names a live satellite fire by its confidence level", () => {
     expect(card(satellite("live"))).toContain("civilMap.heatSignal");
     expect(card(satellite("live", "probable"))).toContain("civilMap.probable");

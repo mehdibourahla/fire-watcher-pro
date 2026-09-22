@@ -328,4 +328,109 @@ describe("civil map administrative geometry", () => {
       selected: false,
     });
   });
+
+  it("draws one tint per wilaya at its most severe current warning", () => {
+    const base = {
+      ...official,
+      source: "onm" as const,
+      category: "weather" as const,
+      confidence: "official" as const,
+    };
+    const warning = (
+      id: string,
+      event: string,
+      severity: string,
+      phase: "live" | "upcoming",
+    ): Situation => ({
+      ...base,
+      id: `weather:${id}`,
+      phase,
+      data: {
+        id,
+        cap_id: id,
+        title: event,
+        event,
+        severity,
+        urgency: "Future",
+        certainty: "Likely",
+        onset: official.at,
+        expires: "2026-09-17T12:00:00Z",
+        sent: official.at,
+        area_desc: "Wilaya",
+        cap_url: null,
+        wilaya_id: "w1",
+        headline_fr: null,
+        superseded_at: null,
+      },
+    });
+    const outline: [number, number][] = [
+      [3, 36],
+      [4, 36],
+      [4, 37],
+    ];
+    const result = civilMapGeoJSON(
+      [
+        warning("storm", "Thunderstorm", "Moderate", "live"),
+        warning("rain", "Rain", "Severe", "live"),
+        warning("later", "Heat", "Extreme", "upcoming"),
+        (() => {
+          const w = warning("soon", "Rain", "Moderate", "upcoming");
+          return {
+            ...w,
+            wilayaId: "w2",
+            data: { ...w.data, wilaya_id: "w2" },
+          } as Situation;
+        })(),
+        (() => {
+          const w = warning("elsewhere", "Heat", "Extreme", "live");
+          return {
+            ...w,
+            wilayaId: "w9",
+            data: { ...w.data, wilaya_id: "w9" },
+          } as Situation;
+        })(),
+      ],
+      new Map(),
+      () => "Warning",
+      "weather:storm",
+      new Map([
+        ["w1", outline],
+        ["w2", outline],
+      ]),
+    );
+    const areas = result.warnings.features.filter(
+      (f) => f.geometry.type === "Polygon",
+    );
+    expect(areas.map((f) => f.properties)).toEqual([
+      expect.objectContaining({
+        id: "rain",
+        severity: "severe",
+        event: "rain",
+        upcoming: false,
+        selected: true,
+      }),
+      expect.objectContaining({
+        id: "soon",
+        severity: "moderate",
+        upcoming: true,
+        selected: false,
+      }),
+    ]);
+    expect(areas[0]?.geometry).toEqual({
+      type: "Polygon",
+      coordinates: [[...outline, [3, 36]]],
+    });
+    expect(
+      result.warnings.features
+        .filter((f) => f.geometry.type === "Point")
+        .map((f) => f.properties?.["id"]),
+    ).toEqual(["elsewhere"]);
+  });
+
+  it("colors every marker by who reports it", () => {
+    const result = civilMapGeoJSON([official], new Map(), () => "");
+    expect(result.official.features[0]?.properties?.["confidence"]).toBe(
+      "official",
+    );
+  });
 });

@@ -43,7 +43,9 @@ export function useSituationLabels(units: AdminUnit[], now: number) {
       ? item.data.summary
       : item.source === "onm"
         ? item.data.headline_fr || item.data.title
-        : `${t(`civilMap.${item.category}`)} · ${place(item)}`;
+        : item.source === "satellite" && item.level === "heat_signal"
+          ? `${t("civilMap.heatSignalShort")} · ${place(item)}`
+          : `${t(`civilMap.${item.category}`)} · ${place(item)}`;
   const source = (item: Situation) =>
     t(
       item.source === "official" && item.data.authority_tier === "media"

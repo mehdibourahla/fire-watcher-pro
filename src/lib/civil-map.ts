@@ -216,6 +216,39 @@ export function buildSituations({
   );
 }
 
+export function situationSummary(items: Situation[]) {
+  const live = items.filter((item) => isVisibleByDefault(item.phase));
+  // a satellite fire is confirmed by the very DGPC incident listed beside it
+  const officialAreas = new Set(
+    live.flatMap((item) =>
+      item.source === "official" && item.confidence === "official"
+        ? [item.areaId]
+        : [],
+    ),
+  );
+  const wilayas = new Set<string>();
+  const summary = {
+    confirmedFires: officialAreas.size,
+    probableFires: 0,
+    heatSignals: 0,
+    warningWilayas: 0,
+    roads: 0,
+    reports: 0,
+  };
+  for (const item of live) {
+    if (item.source === "satellite") {
+      if (item.level === "probable") summary.probableFires += 1;
+      else if (item.level === "heat_signal") summary.heatSignals += 1;
+      else if (!officialAreas.has(item.areaId)) summary.confirmedFires += 1;
+    } else if (item.source === "onm") {
+      if (item.data.wilaya_id) wilayas.add(item.data.wilaya_id);
+    } else if (item.source !== "official" || item.confidence !== "official")
+      summary[item.category === "road" ? "roads" : "reports"] += 1;
+  }
+  summary.warningWilayas = wilayas.size;
+  return summary;
+}
+
 function distanceKm(aLat: number, aLon: number, bLat: number, bLon: number) {
   const rad = Math.PI / 180;
   const arc =

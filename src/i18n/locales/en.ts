@@ -320,8 +320,6 @@ export const en = {
     certainty: "Certainty (source)",
     urgency: "Urgency (source)",
     onset: "Starts",
-    situations_one: "{{count}} situation",
-    situations_other: "{{count}} situations",
     sourceMedia: "Attributed media report",
     detailUnavailable:
       "This item is no longer available in the current time window.",
@@ -339,7 +337,6 @@ export const en = {
     weather: "Weather",
     road: "Road",
     other: "Other",
-    situations: "{{count}} situations",
     noSituations: "No current reports in available sources",
     noSituationsBody:
       "No reports does not mean no danger. Coverage may be incomplete.",
@@ -362,6 +359,7 @@ export const en = {
     sourceCitizen: "Citizen report",
     sourceOnm: "ONM warning",
     heatSignal: "Satellite heat signal",
+    heatSignalShort: "Heat signal",
     probable: "Probable fire",
     quiet: "No recent satellite observation",
     ended: "Ended",
@@ -392,6 +390,10 @@ export const en = {
       "Model forecasts support context; they are not official warnings.",
     unknownLocation: "Location unavailable",
     satelliteLegend: "Satellite observations, not official confirmation",
+    colorLegend:
+      "Red: official source · Orange: probable fire, corroborating evidence · Grey: single source, unverified",
+    tintLegend:
+      "Yellow, orange or red tint: ONM warning level over the wilaya; hatching: period still to come",
     officialLegend: "Incidents attributed to an official source",
     weatherLegend: "Official ONM warnings for the indicated area",
     citizenLegend: "Citizen reports, not independently verified",
@@ -408,6 +410,15 @@ export const en = {
     filters: "Filters",
     nearby: "Nearby",
     error: "Unable to load situations",
+    summary: {
+      confirmedFires: "Confirmed fires: {{count}}",
+      probableFires: "Probable fires: {{count}}",
+      heatSignals: "Heat signals: {{count}}",
+      warningWilayas: "Wilayas under ONM warning: {{count}}",
+      roads: "Road reports: {{count}}",
+      reports: "Reports: {{count}}",
+    },
+    summaryNone: "No current situation",
   },
   map: {
     nearPlace: "near {{place}}",

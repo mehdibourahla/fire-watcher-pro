@@ -325,8 +325,6 @@ export const fr: Translation = {
     certainty: "Certitude (source)",
     urgency: "Urgence (source)",
     onset: "Début",
-    situations_one: "{{count}} situation",
-    situations_other: "{{count}} situations",
     sourceMedia: "Information attribuée à un média",
     detailUnavailable:
       "Cet élément n’est plus disponible dans la période actuelle.",
@@ -345,7 +343,6 @@ export const fr: Translation = {
     weather: "Météo",
     road: "Route",
     other: "Autre",
-    situations: "{{count}} situations",
     noSituations: "Aucun signalement actuel dans les sources disponibles",
     noSituationsBody:
       "L’absence de signalements ne signifie pas l’absence de danger. La couverture peut être incomplète.",
@@ -369,6 +366,7 @@ export const fr: Translation = {
     sourceCitizen: "Signalement citoyen",
     sourceOnm: "Vigilance ONM",
     heatSignal: "Signal thermique satellite",
+    heatSignalShort: "Signal thermique",
     probable: "Feu probable",
     quiet: "Aucune observation satellite récente",
     ended: "Terminé",
@@ -399,6 +397,10 @@ export const fr: Translation = {
       "Les prévisions des modèles apportent du contexte ; ce ne sont pas des avertissements officiels.",
     unknownLocation: "Lieu indisponible",
     satelliteLegend: "Observations satellites, sans confirmation officielle",
+    colorLegend:
+      "Rouge : source officielle · Orange : feu probable, indices concordants · Gris : une seule source, non vérifiée",
+    tintLegend:
+      "Teinte jaune, orange ou rouge : niveau de vigilance de l’ONM sur la wilaya ; hachures : période à venir",
     officialLegend: "Incidents attribués à une source officielle",
     weatherLegend: "Vigilances officielles de l’ONM pour le territoire indiqué",
     citizenLegend: "Signalements citoyens, sans vérification indépendante",
@@ -416,6 +418,15 @@ export const fr: Translation = {
     filters: "Filtres",
     nearby: "À proximité",
     error: "Impossible de charger les situations",
+    summary: {
+      confirmedFires: "Feux confirmés : {{count}}",
+      probableFires: "Feux probables : {{count}}",
+      heatSignals: "Signaux thermiques : {{count}}",
+      warningWilayas: "Wilayas en vigilance ONM : {{count}}",
+      roads: "Infos routières : {{count}}",
+      reports: "Signalements : {{count}}",
+    },
+    summaryNone: "Aucune situation en cours",
   },
   map: {
     nearPlace: "près de {{place}}",

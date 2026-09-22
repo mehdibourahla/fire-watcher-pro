@@ -402,6 +402,29 @@ export const onmVigilanceQuery = queryOptions({
     ),
 });
 
+export function onmOutlinesQuery(wilayaIds: string[]) {
+  const sorted = [...new Set(wilayaIds)].sort();
+  return queryOptions({
+    queryKey: ["onm_outlines", sorted],
+    enabled: sorted.length > 0,
+    staleTime: Infinity,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("onm_wilaya_outlines")
+        .select("wilaya_id, polygon")
+        .in("wilaya_id", sorted);
+      if (error) throw new Error(error.message);
+      return new Map(
+        (data ?? []).flatMap((row) =>
+          row.wilaya_id && Array.isArray(row.polygon)
+            ? [[row.wilaya_id, row.polygon as [number, number][]] as const]
+            : [],
+        ),
+      );
+    },
+  });
+}
+
 export const effisDangerQuery = queryOptions({
   queryKey: ["effis_danger"],
   queryFn: async () => {
