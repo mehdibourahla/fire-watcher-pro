@@ -1,5 +1,9 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { hasSightingNear, type FireContext } from "@/lib/fire-confidence";
+import {
+  hasSightingNear,
+  singleCandidateLinks,
+  type FireContext,
+} from "@/lib/fire-confidence";
 import { algiersToday } from "@/lib/ingest/algiers-date";
 import { publishedRiskTarget } from "@/lib/nadhir";
 import { fetchAllPages } from "@/lib/paginate";
@@ -14,6 +18,58 @@ type ContextCluster = {
 };
 
 const SIGHTING_WINDOW_MS = 6 * 3_600_000;
+const LINK_BEFORE_MS = 24 * 3_600_000;
+const LINK_AFTER_MS = 6 * 3_600_000;
+
+async function officialLinks(clusters: readonly ContextCluster[]) {
+  const lastSeen = clusters
+    .map((c) => Date.parse(c.last_detected_at))
+    .filter(Number.isFinite);
+  if (!lastSeen.length) return new Set<string>();
+  const incidents = await fetchAllPages<{
+    wilaya_id: string;
+    commune_id: string | null;
+    authority_tier: string;
+    first_reported_at: string;
+  }>((from, to) =>
+    supabaseAdmin
+      .from("official_incidents")
+      .select("wilaya_id, commune_id, authority_tier, first_reported_at")
+      .is("commune_id", null)
+      .neq("authority_tier", "media")
+      .gte(
+        "first_reported_at",
+        new Date(Math.min(...lastSeen) - LINK_AFTER_MS).toISOString(),
+      )
+      .order("first_reported_at")
+      .range(from, to),
+  );
+  if (!incidents.length) return new Set<string>();
+  const reported = incidents.map((i) => Date.parse(i.first_reported_at));
+  const candidates = await fetchAllPages<{
+    id: string;
+    wilaya_id: string | null;
+    state: string;
+    confirmed_at: string | null;
+    last_detected_at: string;
+  }>((from, to) =>
+    supabaseAdmin
+      .from("fire_clusters")
+      .select("id, wilaya_id, state, confirmed_at, last_detected_at")
+      .in("wilaya_id", [...new Set(incidents.map((i) => i.wilaya_id))])
+      .gte(
+        "last_detected_at",
+        new Date(Math.min(...reported) - LINK_BEFORE_MS).toISOString(),
+      )
+      .lte(
+        "last_detected_at",
+        new Date(Math.max(...reported) + LINK_AFTER_MS).toISOString(),
+      )
+      .order("id")
+      .range(from, to),
+  );
+  return singleCandidateLinks(incidents, candidates);
+}
 
 export async function fireContexts(
   clusters: readonly ContextCluster[],
@@ -92,11 +148,13 @@ export async function fireContexts(
       : [],
   );
 
+  const linked = await officialLinks(clusters);
   for (const c of clusters)
     contexts.set(c.id, {
       forestFraction: c.commune_id ? (forest.get(c.commune_id) ?? null) : null,
       dangerLevel: c.commune_id ? (danger.get(c.commune_id) ?? null) : null,
       nearbySighting: hasSightingNear(c, sightings),
+      officialMention: linked.has(c.id),
     });
   return contexts;
 }

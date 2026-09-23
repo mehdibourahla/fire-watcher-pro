@@ -8,7 +8,17 @@ vi.mock("@/integrations/supabase/client.server", () => ({
   supabaseAdmin: {
     from: (table: string) => {
       const query: Record<string, unknown> = {};
-      for (const op of ["select", "eq", "in", "gte", "order", "range"])
+      for (const op of [
+        "select",
+        "eq",
+        "neq",
+        "is",
+        "in",
+        "gte",
+        "lte",
+        "order",
+        "range",
+      ])
         query[op] = () => query;
       const result = () =>
         db.errors[table]
@@ -63,7 +73,42 @@ it("gathers forest cover, today's danger and nearby sightings per fire", async (
     forestFraction: 0.3,
     dangerLevel: 5,
     nearbySighting: true,
+    officialMention: false,
   });
+});
+
+it("backs the only satellite fire of a wilaya named by the DGPC", async () => {
+  db.rows["official_incidents"] = [
+    {
+      wilaya_id: "w1",
+      commune_id: null,
+      authority_tier: "national",
+      first_reported_at: "2026-09-22T15:00:00Z",
+    },
+  ];
+  db.rows["fire_clusters"] = [
+    {
+      id: "f1",
+      wilaya_id: "w1",
+      state: "active",
+      confirmed_at: null,
+      last_detected_at: "2026-09-22T12:00:00Z",
+    },
+  ];
+  expect((await fireContexts([cluster])).get("f1")?.officialMention).toBe(true);
+  db.rows["fire_clusters"] = [
+    ...(db.rows["fire_clusters"] as object[]),
+    {
+      id: "f2",
+      wilaya_id: "w1",
+      state: "active",
+      confirmed_at: null,
+      last_detected_at: "2026-09-22T13:00:00Z",
+    },
+  ];
+  expect((await fireContexts([cluster])).get("f1")?.officialMention).toBe(
+    false,
+  );
 });
 
 it("leaves danger unknown when no forecast is published for today", async () => {
@@ -76,6 +121,7 @@ it.each([
   "risk_publication_checkpoint",
   "risk_forecasts",
   "hazard_reports",
+  "official_incidents",
 ])("fails loudly when %s cannot be read", async (table) => {
   db.errors[table] = "unavailable";
   await expect(fireContexts([cluster])).rejects.toThrow("unavailable");

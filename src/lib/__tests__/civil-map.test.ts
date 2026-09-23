@@ -403,6 +403,40 @@ describe("civil situations", () => {
       },
     ]);
   });
+  it("backs a lone satellite fire with a DGPC report naming only its wilaya", () => {
+    const desert = { ...other, id: "c3", parent_id: "w1", forest_fraction: 0 };
+    const report = official({
+      commune_id: null,
+      precision: "wilaya",
+      first_reported_at: at(1),
+    });
+    const one = buildSituations({
+      fires: [fire({ id: "lone", commune_id: "c3", wilaya_id: "w1" })],
+      official: [report],
+      reports: [],
+      warnings: [],
+      units: [commune, wilaya, desert],
+      now,
+    });
+    expect(one.find((x) => x.id === "fire:lone")).toMatchObject({
+      level: "probable",
+    });
+    const two = buildSituations({
+      fires: [
+        fire({ id: "a", commune_id: "c3", wilaya_id: "w1" }),
+        fire({ id: "b", commune_id: "c3", wilaya_id: "w1" }),
+      ],
+      official: [report],
+      reports: [],
+      warnings: [],
+      units: [commune, wilaya, desert],
+      now,
+    });
+    expect(two.filter((x) => x.source === "satellite")).toEqual([
+      expect.objectContaining({ level: "heat_signal" }),
+      expect.objectContaining({ level: "heat_signal" }),
+    ]);
+  });
   it("includes upcoming ONM warnings but excludes expired, undated and unsent warnings", () => {
     const items = build({
       warnings: [

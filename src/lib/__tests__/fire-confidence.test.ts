@@ -3,6 +3,7 @@ import {
   fireConfidence,
   fireLevel,
   hasSightingNear,
+  singleCandidateLinks,
   type FireContext,
 } from "@/lib/fire-confidence";
 
@@ -10,6 +11,7 @@ const bare: FireContext = {
   forestFraction: 0,
   dangerLevel: 1,
   nearbySighting: false,
+  officialMention: false,
 };
 
 describe("fireLevel", () => {
@@ -19,6 +21,7 @@ describe("fireLevel", () => {
         forestFraction: 0.9,
         dangerLevel: 5,
         nearbySighting: true,
+        officialMention: true,
       }),
     ).toBe("heat_signal");
   });
@@ -30,6 +33,7 @@ describe("fireLevel", () => {
         forestFraction: null,
         dangerLevel: null,
         nearbySighting: false,
+        officialMention: false,
       }),
     ).toBe("heat_signal");
   });
@@ -40,6 +44,7 @@ describe("fireLevel", () => {
     [{ dangerLevel: 5 }, "probable"],
     [{ dangerLevel: 4 }, "heat_signal"],
     [{ nearbySighting: true }, "probable"],
+    [{ officialMention: true }, "probable"],
   ] as const)("%o makes two looks %s", (over, level) => {
     expect(fireLevel("detected", { ...bare, ...over })).toBe(level);
   });
@@ -90,4 +95,67 @@ it("maps each level onto the shared ladder", () => {
   expect(
     (["heat_signal", "probable", "confirmed"] as const).map(fireConfidence),
   ).toEqual(["single", "corroborated", "official"]);
+});
+
+describe("singleCandidateLinks", () => {
+  const reported = "2026-09-22T19:00:00Z";
+  const incident = (over: Record<string, unknown> = {}) => ({
+    wilaya_id: "w02",
+    commune_id: null,
+    authority_tier: "national",
+    first_reported_at: reported,
+    ...over,
+  });
+  const fire = (id: string, over: Record<string, unknown> = {}) => ({
+    id,
+    wilaya_id: "w02",
+    state: "active",
+    confirmed_at: null,
+    last_detected_at: "2026-09-22T16:07:00Z",
+    ...over,
+  });
+  const links = (
+    incidents: ReturnType<typeof incident>[],
+    fires: ReturnType<typeof fire>[],
+  ) => [...singleCandidateLinks(incidents, fires)].sort();
+
+  it("links the only satellite fire of the wilaya around the report", () => {
+    expect(links([incident()], [fire("boukadir")])).toEqual(["boukadir"]);
+  });
+
+  it("links nothing when several fires could match", () => {
+    expect(links([incident()], [fire("a"), fire("b")])).toEqual([]);
+  });
+
+  it.each([
+    ["located to a commune", { commune_id: "c1" }],
+    ["from the media", { authority_tier: "media" }],
+    ["in another wilaya", { wilaya_id: "w44" }],
+  ])("ignores an incident %s", (_label, over) => {
+    expect(links([incident(over)], [fire("a")])).toEqual([]);
+  });
+
+  it("never counts confirmed or false-positive fires as candidates", () => {
+    expect(
+      links(
+        [incident()],
+        [
+          fire("a"),
+          fire("done", { confirmed_at: reported }),
+          fire("flare", { state: "false_positive" }),
+        ],
+      ),
+    ).toEqual(["a"]);
+  });
+
+  it.each([
+    ["2026-09-21T19:00:00Z", ["edge"]],
+    ["2026-09-21T18:59:00Z", []],
+    ["2026-09-23T01:00:00Z", ["edge"]],
+    ["2026-09-23T01:01:00Z", []],
+  ])("a last look at %s links %j", (seen, expected) => {
+    expect(
+      links([incident()], [fire("edge", { last_detected_at: seen })]),
+    ).toEqual(expected);
+  });
 });
