@@ -15,6 +15,7 @@ export const adminFr: AdminTranslation = {
       review: "Décision humaine nécessaire",
       failed: "Échec de l’investigation",
       superseded: "Publication existante conservée",
+      none: "Aucune décision en attente.",
       evidence: "Preuves consultées",
       official: {
         duplicate: "Déjà couvert par la Protection Civile",
@@ -26,7 +27,7 @@ export const adminFr: AdminTranslation = {
     next: "Publications plus anciennes",
     published: "Publications examinées",
     manage: "Gérer la publication",
-    review: "Examiner avant publication",
+    review: "Publier manuellement",
     active: "Publiée",
     expired: "Expirée",
     withdrawn: "Retirée",

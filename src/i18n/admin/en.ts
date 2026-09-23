@@ -13,6 +13,7 @@ export const adminEn = {
       review: "Human decision needed",
       failed: "Investigation failed",
       superseded: "Existing publication retained",
+      none: "Nothing needs a decision.",
       evidence: "Evidence consulted",
       official: {
         duplicate: "Already covered by Protection Civile",
@@ -24,7 +25,7 @@ export const adminEn = {
     next: "Older publications",
     published: "Reviewed publications",
     manage: "Manage publication",
-    review: "Review for publication",
+    review: "Publish manually",
     active: "Published",
     expired: "Expired",
     withdrawn: "Withdrawn",
