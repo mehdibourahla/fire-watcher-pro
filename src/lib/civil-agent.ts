@@ -36,6 +36,8 @@ export type CivilArea = {
   name_ar: string;
   level: string;
   parent_id: string | null;
+  wilaya?: string | null;
+  matched?: string;
 };
 export type CivilAgentTrace = {
   action: "search_areas" | "recent_publications" | "official_reports";

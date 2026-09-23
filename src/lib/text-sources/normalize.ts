@@ -11,7 +11,7 @@ export function normalizeArabic(input: string): string {
     .replace(/ؤ/g, "و")
     .replace(/ئ/g, "ي")
     .replace(/ث/g, "ت")
-    .replace(/ق/g, "ك")
+    .replace(/[قڤڨگ]/g, "ك")
     .replace(/ذ/g, "د")
     .replace(/ظ/g, "ض");
   s = s

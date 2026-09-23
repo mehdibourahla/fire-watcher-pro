@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  civilDefaultExpiry,
   civilLeaseHours,
   firePhase,
   isVisibleByDefault,
@@ -146,6 +147,12 @@ it("gives each civil hazard its own lease", () => {
       civilLeaseHours,
     ),
   ).toEqual([2, 3, 6, 6, 6]);
+});
+
+it("runs an operator's civil default from the later of source and now", () => {
+  expect(civilDefaultExpiry(ahead(1), "road", NOW)).toBe(ahead(3));
+  expect(civilDefaultExpiry(ago(5), "road", NOW)).toBe(ahead(2));
+  expect(civilDefaultExpiry(ago(71), "other", NOW)).toBe(ahead(1));
 });
 
 it("shows only upcoming and live situations by default", () => {

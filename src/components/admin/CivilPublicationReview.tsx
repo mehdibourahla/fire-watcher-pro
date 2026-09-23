@@ -13,6 +13,7 @@ import {
   civilPublicationLifecycle,
   type CivilPublication,
 } from "@/lib/civil-publication";
+import { civilDefaultExpiry } from "@/lib/incident-lifecycle";
 
 type Props = {
   reportId: string;
@@ -73,10 +74,10 @@ function PublicationForm({
   );
   const maximum =
     Date.parse(publishedAt) + CIVIL_PUBLICATION_MAX_AGE_HOURS * 3_600_000;
-  const [expires, setExpires] = useState(
+  const [expires, setExpires] = useState(() =>
     localDate(
       publication?.expires_at ??
-        new Date(Math.min(Date.now() + 6 * 3_600_000, maximum)).toISOString(),
+        civilDefaultExpiry(publishedAt, hazard, Date.now()),
     ),
   );
   const [reason, setReason] = useState("");
