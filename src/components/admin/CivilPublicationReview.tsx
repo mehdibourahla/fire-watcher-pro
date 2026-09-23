@@ -80,6 +80,7 @@ function PublicationForm({
         civilDefaultExpiry(publishedAt, hazard, Date.now()),
     ),
   );
+  const [expiresEdited, setExpiresEdited] = useState(false);
   const [reason, setReason] = useState("");
   const [confirmWithdrawal, setConfirmWithdrawal] = useState(false);
   const mutation = useMutation({
@@ -163,9 +164,14 @@ function PublicationForm({
           <select
             className={field}
             value={hazard}
-            onChange={(event) =>
-              setHazard(event.target.value as CivilPublication["hazard"])
-            }
+            onChange={(event) => {
+              const next = event.target.value as CivilPublication["hazard"];
+              setHazard(next);
+              if (!publication && !expiresEdited)
+                setExpires(
+                  localDate(civilDefaultExpiry(publishedAt, next, Date.now())),
+                );
+            }}
           >
             {(["fire", "weather", "flood", "road", "other"] as const).map(
               (value) => (
@@ -207,7 +213,10 @@ function PublicationForm({
           required
           max={localDate(new Date(maximum).toISOString())}
           value={expires}
-          onChange={(event) => setExpires(event.target.value)}
+          onChange={(event) => {
+            setExpires(event.target.value);
+            setExpiresEdited(true);
+          }}
         />
       </label>
       <label className="block">

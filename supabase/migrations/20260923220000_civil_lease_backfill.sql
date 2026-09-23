@@ -12,10 +12,11 @@ declare
   _row public.civil_publications;
 begin
   for _before in
-    select * from public.civil_publications
-    where state='published' and published_at<'2026-09-23T00:00:00Z'
-      and expires_at>source_published_at+case hazard when 'road' then interval '2 hours' when 'fire' then interval '3 hours' else interval '6 hours' end
-    order by published_at for update
+    select p.* from public.civil_publications p
+    where p.state='published' and p.published_at<'2026-09-23T00:00:00Z'
+      and p.expires_at>p.source_published_at+case p.hazard when 'road' then interval '2 hours' when 'fire' then interval '3 hours' else interval '6 hours' end
+      and not exists(select 1 from public.civil_publication_revisions r where r.publication_id=p.id and r.actor_kind='human')
+    order by p.published_at for update
   loop
     update public.civil_publications set
       expires_at=source_published_at+case hazard when 'road' then interval '2 hours' when 'fire' then interval '3 hours' else interval '6 hours' end,
