@@ -686,7 +686,7 @@ function LiveMapPage() {
               >
                 {panelView !== "list"
                   ? t("civilMap.title")
-                  : loading
+                  : loading || units.isPending || danger.isPending
                     ? t("common.loading")
                     : summaryLine}
               </p>
