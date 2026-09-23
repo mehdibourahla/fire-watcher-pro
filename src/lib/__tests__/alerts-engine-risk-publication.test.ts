@@ -26,6 +26,8 @@ function query(table: string, result: Result, filters: [string, unknown][]) {
     "in",
     "neq",
     "gte",
+    "is",
+    "lte",
   ]) {
     builder[method] = vi.fn((...args: unknown[]) => {
       if (method === "in") filters.push([String(args[0]), args[1]]);

@@ -9,6 +9,7 @@ import {
   fireConfidence,
   fireLevel,
   hasSightingNear,
+  singleCandidateLinks,
   type Confidence,
   type FireLevel,
 } from "./fire-confidence";
@@ -117,6 +118,7 @@ export function buildSituations({
       data,
     });
   }
+  const linked = singleCandidateLinks(official, fires);
   for (const data of fires) {
     if (data.state === "false_positive" || !recent(data.last_detected_at, 72))
       continue;
@@ -128,6 +130,7 @@ export function buildSituations({
         ? (danger.get(data.commune_id) ?? null)
         : null,
       nearbySighting: hasSightingNear(data, reports),
+      officialMention: linked.has(data.id),
     });
     items.push({
       id: `fire:${data.id}`,

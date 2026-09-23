@@ -71,7 +71,7 @@ Fire promotion: satellite alone is a **Heat signal**; satellite plus forest land
 | 4 | Map redesign: visual grammar, status line, ONM polygons with textures and ONM colors, zoom rules | 3–5 days |
 | 5 | Road segments: OSM extract, agent extraction of road/place/direction, snapping, fallback | 2–3 days |
 | 6 | Inbox and tray: one row per incident with live state; notification tag replacement on push | 1 day |
-| 7 | Re-scoped, awaiting owner decision (see below) | — |
+| 7 | Code rule linking wilaya-only DGPC incidents to a single satellite fire (see below) | done |
 
 Order: 1, then 2 → 3 → 4, with 5 and 6 after 4. All 1,536 communes carry a `geom` in `admin_units` (wilayas none); ONM warnings carry their own polygon.
 
@@ -80,6 +80,8 @@ Order: 1, then 2 → 3 → 4, with 5 and 6 after 4. All 1,536 communes carry a `
 After sub-projects 2 and 3, keep/extend is decided by structured evidence (new looks, new DGPC mentions, sightings) and an authority's end is already extracted by the DGPC pipeline (`status = extinguished`). A keep/deactivate reviewer would re-decide those less reliably, so it is not built.
 
 The measured gap an LLM can close: of 85 DGPC incidents in 30 days, 26 are located only to a wilaya, and 12 of those coincide with an unconfirmed satellite fire in that wilaya (−24 h/+6 h). Code cannot match them, so the fire stays a heat signal (22 Sept: a straw-bale fire named "wilaya de Chlef" and the Boukadir cluster). Proposal: an LLM linker chooses among code-supplied candidates (same wilaya, time window) with a quoted reason; code allows it only to raise a heat signal to Probable (satellite + authority mention = two independent kinds of evidence), never to Confirmed or Ended. This lets an LLM enable a push, so it needs the owner's go.
+
+Decision (2026-09-23): no LLM. 7 of the 12 cases have exactly one candidate fire, so a code rule links a wilaya-only national DGPC incident to a satellite fire only when that fire is the single candidate (`singleCandidateLinks`), which makes it Probable. The 5 ambiguous cases stay heat signals.
 
 ## Open hypotheses (check before relying on them)
 
