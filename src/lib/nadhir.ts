@@ -304,13 +304,16 @@ async function must<T>(result: {
 
 /** Live map: only fires detected in the last 72h, so the map shows the current
  * situation instead of every archived cluster of the season. */
+const FIRE_CLUSTER_FIELDS =
+  "id, short_id, state, first_detected_at, last_detected_at, lat, lon, detection_count, sources, max_frp_mw, confidence, est_area_ha, fci_growth, wind_speed_kmh, wind_dir_deg, spread_bearing_deg, wind_gust_kmh, vpd_kpa, soil_moisture_m3m3, commune_id, wilaya_id, nearest_settlement_id, nearest_settlement_km, confirmed_at, resolved_at, confirmed_mention_id";
+
 export const clustersQuery = queryOptions({
   queryKey: ["clusters"],
   queryFn: async () =>
     must<FireCluster[]>(
       await supabase
         .from("fire_clusters")
-        .select("*")
+        .select(FIRE_CLUSTER_FIELDS)
         .neq("state", "false_positive")
         .gte(
           "last_detected_at",
@@ -330,7 +333,7 @@ export const historyClustersQuery = queryOptions({
     for (let i = 0; i < 10; i += 1) {
       const { data, error } = await supabase
         .from("fire_clusters")
-        .select("*")
+        .select(FIRE_CLUSTER_FIELDS)
         .neq("state", "false_positive")
         .order("first_detected_at", { ascending: false })
         .range(i * page, i * page + page - 1);
@@ -722,7 +725,7 @@ export function clusterDetailQuery(shortId: string) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("fire_clusters")
-        .select("*")
+        .select(FIRE_CLUSTER_FIELDS)
         .eq("short_id", shortId)
         .maybeSingle();
       if (error) throw new Error(error.message);
