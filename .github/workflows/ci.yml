@@ -44,7 +44,12 @@ jobs:
 
       # applies every migration to a fresh Postgres, then runs supabase/tests/*.sql
       - run: supabase start -x studio,imgproxy,inbucket,mailpit,logflare,vector,realtime,edge-runtime,supavisor
+        env:
+          # setup-cli pins ghcr.io, which throttles shared runners (toomanyrequests); same images on ECR
+          SUPABASE_INTERNAL_IMAGE_REGISTRY: public.ecr.aws
       - run: bash scripts/test-db.sh
+        env:
+          SUPABASE_INTERNAL_IMAGE_REGISTRY: public.ecr.aws
       - run: bun run scripts/test-ita-retry-concurrency.ts
       - run: bun run scripts/test-civil-publication-concurrency.ts
         env:

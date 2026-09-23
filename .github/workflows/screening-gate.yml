@@ -60,6 +60,9 @@ jobs:
       - if: steps.key.outputs.present == 'true'
         name: Start isolated source archive
         run: supabase start -x studio,imgproxy,inbucket,mailpit,logflare,vector,realtime,edge-runtime,supavisor
+        env:
+          # setup-cli pins ghcr.io, which throttles shared runners (toomanyrequests); same images on ECR
+          SUPABASE_INTERNAL_IMAGE_REGISTRY: public.ecr.aws
 
       - if: steps.key.outputs.present == 'true'
         name: Rebuild the registry from the labelled archive
