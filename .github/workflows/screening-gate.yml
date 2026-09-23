@@ -23,8 +23,6 @@ jobs:
   confusion-matrix:
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    permissions:
-      packages: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -59,17 +57,12 @@ jobs:
         with:
           version: 2.116.0
 
-      # shared runners exhaust ghcr.io's anonymous pull quota (toomanyrequests); pull as the workflow instead
-      - if: steps.key.outputs.present == 'true'
-        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
       - if: steps.key.outputs.present == 'true'
         name: Start isolated source archive
         run: supabase start -x studio,imgproxy,inbucket,mailpit,logflare,vector,realtime,edge-runtime,supavisor
+        env:
+          # ghcr.io throttles the shared runners (toomanyrequests, even logged in); same images on ECR
+          SUPABASE_INTERNAL_IMAGE_REGISTRY: public.ecr.aws
 
       - if: steps.key.outputs.present == 'true'
         name: Rebuild the registry from the labelled archive
