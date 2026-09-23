@@ -13,6 +13,7 @@ export const adminAr = {
       review: "يتطلب قرارًا بشريًا",
       failed: "فشل التحقيق",
       superseded: "تم الاحتفاظ بالمنشور الحالي",
+      none: "لا شيء بانتظار قرار.",
       evidence: "الأدلة التي تمت مراجعتها",
       official: {
         duplicate: "سبق أن أوردته الحماية المدنية",
@@ -24,7 +25,7 @@ export const adminAr = {
     next: "منشورات أقدم",
     published: "المنشورات المراجعة",
     manage: "إدارة المنشور",
-    review: "المراجعة قبل النشر",
+    review: "النشر يدويًا",
     active: "منشور",
     expired: "منتهي الصلاحية",
     withdrawn: "مسحوب",

@@ -62,7 +62,7 @@ export function CivilInvestigationQueue() {
         </article>
       ))}
       {queue.data?.length === 0 && (
-        <p className="mt-2 text-sm">{t("sources.ita.empty")}</p>
+        <p className="mt-2 text-sm">{t("publication.agent.none")}</p>
       )}
       <div className="mt-3 flex items-center gap-3 text-sm">
         <button
