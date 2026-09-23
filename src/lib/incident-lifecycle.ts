@@ -1,4 +1,7 @@
-import type { CivilHazard } from "./civil-publication";
+import {
+  CIVIL_PUBLICATION_MAX_AGE_HOURS,
+  type CivilHazard,
+} from "./civil-publication";
 
 export type Phase = "upcoming" | "live" | "fading" | "archived" | "ended";
 
@@ -24,6 +27,20 @@ const CIVIL_LEASE_HOURS: Record<CivilHazard, number> = {
 
 export const civilLeaseHours = (hazard: CivilHazard) =>
   CIVIL_LEASE_HOURS[hazard];
+
+export function civilDefaultExpiry(
+  sourcePublishedAt: string,
+  hazard: CivilHazard,
+  now: number,
+) {
+  const source = Date.parse(sourcePublishedAt);
+  return new Date(
+    Math.min(
+      Math.max(source, now) + civilLeaseHours(hazard) * HOUR,
+      source + CIVIL_PUBLICATION_MAX_AGE_HOURS * HOUR,
+    ),
+  ).toISOString();
+}
 
 export const isVisibleByDefault = (phase: Phase) =>
   phase === "upcoming" || phase === "live";

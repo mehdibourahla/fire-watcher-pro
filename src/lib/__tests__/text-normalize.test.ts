@@ -34,6 +34,11 @@ describe("normalizeArabic", () => {
     expect(normalizeArabic("عزابة")).toBe("عزابه");
   });
 
+  it("folds the Algerian gaf letters into qaf", () => {
+    expect(normalizeArabic("عين تڤورايت")).toBe(normalizeArabic("عين تقورايت"));
+    expect(normalizeArabic("ڨالمة")).toBe(normalizeArabic("قالمة"));
+  });
+
   it("drops hashtags, underscores and punctuation", () => {
     expect(normalizeArabic("#تيزي_وزو:")).toBe("تيزي وزو");
   });
