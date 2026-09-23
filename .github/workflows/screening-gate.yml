@@ -61,7 +61,7 @@ jobs:
         name: Start isolated source archive
         run: supabase start -x studio,imgproxy,inbucket,mailpit,logflare,vector,realtime,edge-runtime,supavisor
         env:
-          # ghcr.io throttles the shared runners (toomanyrequests, even logged in); same images on ECR
+          # setup-cli pins ghcr.io, which throttles shared runners (toomanyrequests); same images on ECR
           SUPABASE_INTERNAL_IMAGE_REGISTRY: public.ecr.aws
 
       - if: steps.key.outputs.present == 'true'
