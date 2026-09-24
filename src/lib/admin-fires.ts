@@ -31,27 +31,39 @@ export type UnresolvedFire = {
   state: string;
   confidence: number | null;
   detection_count: number | null;
+  first_detected_at: string;
   last_detected_at: string;
   updated_at: string;
+  max_frp_mw: number | null;
+  sources: string[] | null;
+  commune_id: string | null;
+  wilaya_id: string | null;
 };
 
-export const unresolvedFiresQuery = queryOptions({
-  queryKey: ["admin", "fires", "unresolved"],
-  queryFn: async (): Promise<UnresolvedFire[]> => {
-    const { data, error } = await supabase
-      .from("fire_clusters")
-      .select(
-        "id, short_id, lat, lon, state, confidence, detection_count, last_detected_at, updated_at",
-      )
-      .is("resolved_at", null)
-      .in("state", ["unconfirmed", "active", "contained_guess"])
-      .order("confidence", { ascending: false })
-      .limit(200);
-    if (error) throw new Error(error.message);
-    return (data ?? []) as UnresolvedFire[];
-  },
-  staleTime: 30_000,
-});
+// the same bar admin_attention_counts uses, so the page and the count agree
+export const STRONG_FIRE_CONFIDENCE = 0.6;
+
+export const unresolvedFiresQuery = (strongOnly: boolean) =>
+  queryOptions({
+    queryKey: ["admin", "fires", "unresolved", strongOnly],
+    queryFn: async (): Promise<UnresolvedFire[]> => {
+      let query = supabase
+        .from("fire_clusters")
+        .select(
+          "id, short_id, lat, lon, state, confidence, detection_count, first_detected_at, last_detected_at, updated_at, max_frp_mw, sources, commune_id, wilaya_id",
+        )
+        .is("resolved_at", null)
+        .in("state", ["unconfirmed", "active", "contained_guess"])
+        .order("confidence", { ascending: false })
+        .limit(200);
+      if (strongOnly) query = query.gte("confidence", STRONG_FIRE_CONFIDENCE);
+      const { data, error } = await query;
+      if (error) throw new Error(error.message);
+      return (data ?? []) as UnresolvedFire[];
+    },
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+  });
 
 export async function resolveFire(input: {
   id: string;

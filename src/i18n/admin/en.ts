@@ -283,12 +283,31 @@ export const adminEn = {
     byPerson: "by a person",
   },
   fires: {
+    detailTitle: "Fire",
+    placeholder: "Select a fire to see its evidence and resolve it.",
+    strongOnly: "Only fires at 60 % confidence or more",
+    openMap: "Show on the map",
+    place: "Place",
+    firstSeen: "First seen",
+    lastSeen: "Last seen",
+    detections: "Detections",
+    confidence: "Confidence",
+    frp: "Peak radiative power",
+    sources: "Sensors",
+    resolved: "Fire resolved",
+    endedTitle: "Mark {{id}} as ended?",
+    endedDescription:
+      "The fire leaves the map's live set and no further alerts are sent for it. Use this when the fire is known to be out.",
+    falseTitle: "Mark {{id}} as not a fire?",
+    falseDescription:
+      "Recorded as {{reason}}. It disappears from the map and from alerts. Future detections at the same spot are screened against this.",
+    state_active: "Active",
+    state_unconfirmed: "Unconfirmed",
+    state_contained_guess: "Probably contained",
     title: "Fires awaiting resolution",
     subtitle:
       "Satellite fires nobody has closed out yet, strongest evidence first.",
     empty: "Every fire has been resolved.",
-    detail:
-      "{{lat}}, {{lon}} · confidence {{confidence}}% · {{detections}} detections",
     reason: "Cause",
     note: "Note (optional)",
     markFalse: "Not a fire",
