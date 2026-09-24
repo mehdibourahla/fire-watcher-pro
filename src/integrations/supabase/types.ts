@@ -3961,6 +3961,33 @@ export type Database = {
         Args: { _gap_id: string; _reason?: string | null };
         Returns: string;
       };
+      admin_attention_counts: {
+        Args: never;
+        Returns: {
+          count: number;
+          item: string;
+          oldest: string | null;
+        }[];
+      };
+      moderate_citizen_report: {
+        Args: {
+          _cluster?: string | null;
+          _id: string;
+          _note?: string | null;
+          _status: string;
+        };
+        Returns: undefined;
+      };
+      relay_authority_warning: {
+        Args: {
+          _body: string;
+          _received_via: string;
+          _severity: string;
+          _source: string;
+          _wilaya: string;
+        };
+        Returns: string;
+      };
       resolve_fire: {
         Args: {
           _cluster: string;
