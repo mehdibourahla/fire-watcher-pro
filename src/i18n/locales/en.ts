@@ -728,6 +728,9 @@ export const en = {
     data: "Platform code is AGPL-3.0. Data outputs are CC-BY 4.0 with attribution to the upstream sources below.",
   },
   alerts: {
+    defaultPointZones:
+      "One or more of your zones is still on the default point near Tizi Ouzou, so their alerts describe that area, not your place.",
+    fixZones: "Fix my zones",
     title: "My alerts",
     subtitle: "Warnings raised for the places you watch.",
     checkNow: "Check my zones now",
@@ -783,6 +786,9 @@ export const en = {
     notifyFires: "Fire detections",
     notifyRisk: "Danger forecast",
     saveZone: "Save zone",
+    zoneDefaultPoint:
+      "This zone is still on the default point near Tizi Ouzou, so its alerts describe that area. Move it to your place.",
+    zoneMove: "Move this zone",
     addFirstZone: "Add your first zone",
     noZonesTitle: "No watch zone yet",
     editZone: "Edit zone",

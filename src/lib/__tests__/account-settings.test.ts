@@ -57,3 +57,11 @@ describe("profile settings mutation", () => {
     expect(failure.message).not.toContain("profiles_locale_valid");
   });
 });
+
+describe("isDefaultPoint", () => {
+  it("flags only a zone left on the old form's prefilled point", () => {
+    expect(account.isDefaultPoint({ lat: 36.7, lon: 4.05 })).toBe(true);
+    expect(account.isDefaultPoint({ lat: 36.7001, lon: 4.05 })).toBe(false);
+    expect(account.isDefaultPoint({ lat: 36.77, lon: 3.06 })).toBe(false);
+  });
+});

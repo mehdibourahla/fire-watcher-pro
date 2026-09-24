@@ -24,7 +24,7 @@ import { Switch } from "@/components/ui/switch";
 import { useEndSide } from "@/hooks/use-end-side";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { RTL_LOCALES, type Locale } from "@/i18n";
-import { saveZone, type Zone } from "@/lib/account";
+import { isDefaultPoint, saveZone, type Zone } from "@/lib/account";
 import { findPlaces, nearestPlace } from "@/lib/civil-map";
 import {
   adminUnitsQuery,
@@ -47,7 +47,7 @@ function Editor({ zone, onDone }: { zone: Zone | null; onDone: () => void }) {
       : { ...NORTHERN_ALGERIA, key: 0 },
   );
   const [point, setPoint] = useState({ lat: target.lat, lon: target.lon });
-  const [placed, setPlaced] = useState(!!zone);
+  const [placed, setPlaced] = useState(!!zone && !isDefaultPoint(zone));
   const [picked, setPicked] = useState<AdminUnit | null>(null);
   const [radius, setRadius] = useState(zone?.radius_km ?? 10);
   const [typedName, setTypedName] = useState<string | null>(zone?.name ?? null);

@@ -13,7 +13,7 @@ import {
 import { groupAlerts, groupPhase, type AlertGroup } from "@/lib/alert-groups";
 import type { Phase } from "@/lib/incident-lifecycle";
 import { runMyAlertCheck } from "@/lib/alerts.functions";
-import { zonesQuery } from "@/lib/account";
+import { isDefaultPoint, zonesQuery } from "@/lib/account";
 import { RiskChip } from "@/components/nadhir/RiskChip";
 import { riskSolid } from "@/components/nadhir/risk-visuals";
 import { relativeTime } from "@/lib/nadhir";
@@ -107,6 +107,22 @@ function AlertsPage() {
           {t("alerts.unread", { count: unread })}
         </span>
       </div>
+
+      {(zones.data ?? []).some(isDefaultPoint) ? (
+        <div
+          role="alert"
+          className="mt-6 rounded-lg px-4 py-3 text-sm"
+          style={{
+            backgroundColor: "var(--emergency-surface)",
+            color: "var(--emergency)",
+          }}
+        >
+          <p>{t("alerts.defaultPointZones")}</p>
+          <Link to="/zones" className="mt-1 inline-block font-medium underline">
+            {t("alerts.fixZones")}
+          </Link>
+        </div>
+      ) : null}
 
       {alerts.isLoading ? (
         <p className="mt-8 text-sm text-muted-foreground">
