@@ -59,12 +59,12 @@
 - Modify: `src/lib/alerts-engine.server.ts`
 - Create/extend: `src/lib/__tests__/alerts-engine-hazards.test.ts`
 
-- [ ] Load active items once per run: ONM (`superseded_at is null`, `expires > now()` or null onset window), official incidents (live phase), authority warnings (last 24 h), road publications (`state = 'published'`, `hazard = 'road'`, `expires_at > now()`), plus the commune→wilaya map for zones.
-- [ ] Per zone and switch, push one row: `kind`, `severity` (ONM: Moderate 2, Severe 3, Extreme 4; official 4; authority by its severity; road 2), `dedupe_key` `<kind>:<zone>:<source_id>`, `source_table`, `source_id`, localized `title`/`body` from `COPY`, ONM `headline_fr`/`title` quoted verbatim with "ONM" attribution.
-- [ ] Quiet hours: suppress unless the break-through rule applies; count in `suppressed`.
-- [ ] No CAP event for the new kinds.
-- [ ] Tests with a mocked Supabase (follow `alerts-engine-risk-publication.test.ts`): one alert per kind for a matching zone, none when the switch is off, none outside the area, dedupe key stable across runs, quiet-hours suppression and break-through.
-- [ ] Commit.
+- [x] Load active items once per run: ONM (`superseded_at is null`, `expires > now()` or null onset window), official incidents (live phase), authority warnings (last 24 h), road publications (`state = 'published'`, `hazard = 'road'`, `expires_at > now()`), plus the commune→wilaya map for zones.
+- [x] Per zone and switch, push one row: `kind`, `severity` (ONM: Moderate 2, Severe 3, Extreme 4; official 4; authority by its severity; road 2), `dedupe_key` `<kind>:<zone>:<source_id>`, `source_table`, `source_id`, localized `title`/`body` from `COPY`, ONM `headline_fr`/`title` quoted verbatim with "ONM" attribution.
+- [x] Quiet hours: suppress unless the break-through rule applies; count in `suppressed`.
+- [x] No CAP event for the new kinds.
+- [x] Tests with a mocked Supabase (follow `alerts-engine-risk-publication.test.ts`): one alert per kind for a matching zone, none when the switch is off, none outside the area, dedupe key stable across runs, quiet-hours suppression and break-through.
+- [x] Commit.
 
 ### Task 4: Push to the user's devices
 

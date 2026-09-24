@@ -27,6 +27,8 @@ import {
   type ZoneFireHistory,
   type ZoneStateEvent,
 } from "@/lib/zone-lifecycle";
+import { officialPhase } from "@/lib/incident-lifecycle";
+import { hazardAlerts, type HazardContext } from "@/lib/zone-hazard-alerts";
 
 type Copy = {
   fireTitle: string;
@@ -225,6 +227,68 @@ export type AlertRun = {
   sent?: number;
   failed?: number;
 };
+
+const AUTHORITY_WINDOW_MS = 24 * 3_600_000;
+
+async function loadHazardContext(
+  communeIds: string[],
+  now: Date,
+): Promise<HazardContext> {
+  const iso = now.toISOString();
+  const [units, weather, official, authority, road] = await Promise.all([
+    communeIds.length
+      ? supabaseAdmin
+          .from("admin_units")
+          .select("id, code, parent_id")
+          .in("id", communeIds)
+      : Promise.resolve({ data: [], error: null }),
+    supabaseAdmin
+      .from("onm_vigilance")
+      .select("id, severity, title, headline_fr, polygon, wilaya_id")
+      .is("superseded_at", null)
+      .or(`expires.is.null,expires.gt.${iso}`),
+    supabaseAdmin
+      .from("official_incidents")
+      .select(
+        "id, commune_id, wilaya_id, place_text, status, last_reported_at, unlisted_at",
+      )
+      .is("unlisted_at", null),
+    supabaseAdmin
+      .from("authority_warnings")
+      .select("id, source, body, severity, wilaya_id, commune_codes")
+      .gte(
+        "created_at",
+        new Date(now.getTime() - AUTHORITY_WINDOW_MS).toISOString(),
+      ),
+    supabaseAdmin
+      .from("civil_publications")
+      .select("id, summary, area_id, source_name")
+      .eq("state", "published")
+      .eq("hazard", "road")
+      .gt("expires_at", iso),
+  ]);
+  for (const result of [units, weather, official, authority, road])
+    if (result.error) throw new Error(result.error.message);
+  return {
+    communes: new Map(
+      (units.data ?? []).map((u) => [
+        u.id,
+        { code: u.code, wilayaId: u.parent_id },
+      ]),
+    ),
+    weather: (weather.data ?? []).map((w) => ({
+      ...w,
+      polygon: Array.isArray(w.polygon)
+        ? (w.polygon as [number, number][])
+        : null,
+    })),
+    official: (official.data ?? []).filter(
+      (i) => officialPhase(i, now.getTime()) === "live",
+    ),
+    authority: authority.data ?? [],
+    road: road.data ?? [],
+  };
+}
 
 export async function evaluateAlerts(userId?: string): Promise<AlertRun> {
   let zoneQuery = supabaseAdmin.from("zones").select("*").eq("active", true);
@@ -597,6 +661,23 @@ export async function evaluateAlerts(userId?: string): Promise<AlertRun> {
       }
     }
   }
+
+  const hazards = hazardAlerts(
+    zones,
+    await loadHazardContext(communeIds, now),
+    (owner) => {
+      const profile = profileById.get(owner);
+      return {
+        locale: profile?.locale ?? "ar",
+        quiet: inQuietHours(
+          profile?.quiet_hours_start ?? null,
+          profile?.quiet_hours_end ?? null,
+        ),
+      };
+    },
+  );
+  rows.push(...hazards.rows);
+  suppressed += hazards.suppressed;
 
   if (!rows.length) {
     if (contextError) throw contextError;
