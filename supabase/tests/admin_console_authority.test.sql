@@ -43,7 +43,7 @@ select set_config('request.jwt.claim.sub','1b000000-0000-4000-8000-000000000003'
 select throws_ok($$select relay_authority_warning('Protection Civile','phone','Evacuate the forest road','Severe','1b000000-0000-4000-8000-000000000010')$$,'42501',null,'an operator cannot relay an authority warning');
 update fire_clusters set state='false_positive' where id='1b000000-0000-4000-8000-000000000030';
 select is((select state from fire_clusters where id='1b000000-0000-4000-8000-000000000030'),'active','an operator can no longer resolve a fire around resolve_fire');
-select ok((select count(*) from admin_attention_counts() where item='fires' and count=1)=1,'an operator sees the unresolved fire');
+select is((select count from admin_attention_counts() where item='fires'),1::bigint,'an operator sees the unresolved fire');
 select ok(not exists(select 1 from admin_attention_counts() where item in ('citizen_reports','translations')),'an operator does not count moderation queues');
 
 select set_config('request.jwt.claim.sub','1b000000-0000-4000-8000-000000000001',true);

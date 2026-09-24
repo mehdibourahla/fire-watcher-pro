@@ -14,8 +14,8 @@ select lives_ok($$select set_broadcast_enabled(false,'Suspected false alarm wave
 reset role;
 
 select is(
-  (select array_agg(reason order by at) from admin_audit where action in ('source.pause','channel.pause') and actor_user_id='1e000000-0000-4000-8000-000000000001'),
-  array['NASA quota exhausted until midnight UTC','Bot token rotated'],
+  (select array_agg(reason order by reason) from admin_audit where action in ('source.pause','channel.pause') and actor_user_id='1e000000-0000-4000-8000-000000000001'),
+  array['Bot token rotated','NASA quota exhausted until midnight UTC'],
   'both pauses record their reason in the audit log');
 
 select is((select reason from admin_audit_timeline where action='broadcast.disabled' and actor_user_id='1e000000-0000-4000-8000-000000000001'),'Suspected false alarm wave from FCI','the audit timeline shows the note, not the internal reason code');
