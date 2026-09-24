@@ -733,6 +733,12 @@ export const en = {
     data: "Platform code is AGPL-3.0. Data outputs are CC-BY 4.0 with attribution to the upstream sources below.",
   },
   alerts: {
+    kindWeather: "Weather",
+    kindOfficial: "Official",
+    kindRoad: "Road",
+    stateCurrentNotice: "Current notice",
+    stateNoticeOver: "Notice period over — this is not an all-clear",
+    openMap: "Show on the map",
     defaultPointZones:
       "One or more of your zones is still on the default point near Tizi Ouzou, so their alerts describe that area, not your place.",
     fixZones: "Fix my zones",
@@ -789,8 +795,15 @@ export const en = {
     radius: "Radius: {{km}} km",
     minLevel: "Warn me from danger level",
     notifyFires: "Fire detections",
-    notifyRisk: "Danger forecast",
+    notifyRisk: "Fire danger forecast",
     saveZone: "Save zone",
+    follows: "Alerts this zone follows",
+    notifyWeather: "Weather warnings (ONM)",
+    notifyOfficial: "Official warnings (Protection Civile)",
+    notifyRoad: "Road incidents",
+    devicePush: "Alerts on this device when Nadhir is closed",
+    devicePushHint:
+      "Sends your zone alerts to this phone or computer, even when Nadhir is closed. Turn it on on each device you use.",
     zoneDefaultPoint:
       "This zone is still on the default point near Tizi Ouzou, so its alerts describe that area. Move it to your place.",
     zoneMove: "Move this zone",
@@ -814,7 +827,7 @@ export const en = {
       "Map for placing the zone. Move it to put the centre pin on your place.",
     zoneFollows: "Follows: {{list}}",
     zoneFollowsNothing:
-      "Follows nothing — turn on fires or danger to get alerts.",
+      "Follows nothing — turn on at least one hazard to get alerts.",
     deleteZoneTitle: "Delete {{name}}?",
     deleteZoneBody: "You will stop receiving alerts for this place.",
     noZones:

@@ -83,10 +83,10 @@
 
 **Files:** `src/components/zones/ZoneEditor.tsx`, `src/components/zones/ZoneCard.tsx`, `src/routes/_authenticated/alerts.tsx`, `src/routes/_authenticated/settings.tsx`, `src/i18n/locales/*.ts`
 
-- [ ] Editor: five switches; card "Follows" lists enabled hazards.
-- [ ] Alerts inbox: rows for weather/official/road with attribution and a map link.
-- [ ] Settings: "Push on this device" with states on / off / blocked / unsupported.
-- [ ] Browser pass en/ar at 390 and 1280 px; commit.
+- [x] Editor: five switches; card "Follows" lists enabled hazards.
+- [x] Alerts inbox: rows for weather/official/road with attribution and a map link.
+- [x] Settings: "Push on this device" with states on / off / blocked / unsupported.
+- [x] Browser pass en/ar at 390 and 1280 px; commit.
 
 ### Task 6: Replay and ship
 

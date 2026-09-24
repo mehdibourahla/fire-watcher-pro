@@ -68,6 +68,16 @@ export const zonesQuery = queryOptions({
 
 export const MAX_ZONES = 10;
 
+export const ZONE_HAZARDS = [
+  { key: "notify_fires", label: "account.notifyFires" },
+  { key: "notify_risk", label: "account.notifyRisk" },
+  { key: "notify_weather", label: "account.notifyWeather" },
+  { key: "notify_official", label: "account.notifyOfficial" },
+  { key: "notify_road", label: "account.notifyRoad" },
+] as const;
+
+export type ZoneHazardKey = (typeof ZONE_HAZARDS)[number]["key"];
+
 // the zone form prefilled this point until 2026-09-24; zones still on it were never placed
 export const isDefaultPoint = (zone: Pick<Zone, "lat" | "lon">) =>
   zone.lat === 36.7 && zone.lon === 4.05;
@@ -80,8 +90,7 @@ export type ZoneInput = Pick<
   | "radius_km"
   | "commune_id"
   | "min_danger_level"
-  | "notify_fires"
-  | "notify_risk"
+  | ZoneHazardKey
 >;
 
 export async function saveZone(input: ZoneInput, id?: string) {

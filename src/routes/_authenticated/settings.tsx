@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { LOCALES, LOCALE_LABELS, applyLocale, type Locale } from "@/i18n";
 import { profileQuery, saveProfileSettings } from "@/lib/account";
 import { titledMeta } from "@/lib/page-meta";
+import { DevicePush } from "@/components/DevicePush";
 import { signOutAccount } from "@/lib/sign-out";
 
 export const Route = createFileRoute("/_authenticated/settings")({
@@ -244,6 +245,7 @@ function SettingsPage() {
           <p className="text-xs text-muted-foreground">
             {t("account.pushHint")}
           </p>
+          <DevicePush />
         </fieldset>
         <div className="grid grid-cols-2 gap-3">
           <label className="block">

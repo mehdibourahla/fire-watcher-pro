@@ -24,7 +24,13 @@ import { Switch } from "@/components/ui/switch";
 import { useEndSide } from "@/hooks/use-end-side";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { RTL_LOCALES, type Locale } from "@/i18n";
-import { isDefaultPoint, saveZone, type Zone } from "@/lib/account";
+import {
+  isDefaultPoint,
+  saveZone,
+  ZONE_HAZARDS,
+  type Zone,
+  type ZoneHazardKey,
+} from "@/lib/account";
 import { findPlaces, nearestPlace } from "@/lib/civil-map";
 import {
   adminUnitsQuery,
@@ -64,8 +70,12 @@ function Editor({
   const [radius, setRadius] = useState(zone?.radius_km ?? 10);
   const [typedName, setTypedName] = useState<string | null>(zone?.name ?? null);
   const [level, setLevel] = useState(zone?.min_danger_level ?? 3);
-  const [fires, setFires] = useState(zone?.notify_fires ?? true);
-  const [risk, setRisk] = useState(zone?.notify_risk ?? true);
+  const [follows, setFollows] = useState(
+    () =>
+      Object.fromEntries(
+        ZONE_HAZARDS.map(({ key }) => [key, zone?.[key] ?? true]),
+      ) as Record<ZoneHazardKey, boolean>,
+  );
   const [query, setQuery] = useState("");
   const [locating, setLocating] = useState(false);
   const [locationFailed, setLocationFailed] = useState(false);
@@ -144,8 +154,7 @@ function Editor({
           radius_km: radius,
           commune_id: commune?.id ?? null,
           min_danger_level: level,
-          notify_fires: fires,
-          notify_risk: risk,
+          ...follows,
         },
         zone?.id,
       );
@@ -311,16 +320,23 @@ function Editor({
           </div>
         </fieldset>
 
-        <div className="space-y-3">
-          <label className="flex items-center justify-between gap-3">
-            <span>{t("account.notifyFires")}</span>
-            <Switch checked={fires} onCheckedChange={setFires} />
-          </label>
-          <label className="flex items-center justify-between gap-3">
-            <span>{t("account.notifyRisk")}</span>
-            <Switch checked={risk} onCheckedChange={setRisk} />
-          </label>
-        </div>
+        <fieldset className="space-y-3">
+          <legend className="font-medium">{t("account.follows")}</legend>
+          {ZONE_HAZARDS.map(({ key, label }) => (
+            <label
+              key={key}
+              className="flex items-center justify-between gap-3"
+            >
+              <span>{t(label)}</span>
+              <Switch
+                checked={follows[key]}
+                onCheckedChange={(checked) =>
+                  setFollows((prev) => ({ ...prev, [key]: checked }))
+                }
+              />
+            </label>
+          ))}
+        </fieldset>
 
         {error ? (
           <p role="alert" className="text-destructive">

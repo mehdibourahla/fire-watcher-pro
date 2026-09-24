@@ -737,6 +737,13 @@ export const kab: Translation = {
     data: "Tangalt n uɣawas d AGPL-3.0, isefka d CC-BY 4.0 s usmel n yiɣbula.",
   },
   alerts: {
+    kindWeather: "Météo",
+    kindOfficial: "Officiel",
+    kindRoad: "Route",
+    stateCurrentNotice: "Avis en cours",
+    stateNoticeOver:
+      "Période de l'avis terminée — ce n'est pas une fin d'alerte",
+    openMap: "Voir sur la carte",
     defaultPointZones:
       "Au moins une de vos zones est encore sur le point par défaut près de Tizi Ouzou : ses alertes décrivent cette zone-là, pas votre lieu.",
     fixZones: "Corriger mes zones",
@@ -795,6 +802,13 @@ export const kab: Translation = {
     notifyFires: "Tifin n times",
     notifyRisk: "Aseɣwer n uyhil",
     saveZone: "Sekles tamnaḍt",
+    follows: "Alertes suivies par cette zone",
+    notifyWeather: "Vigilances météo (ONM)",
+    notifyOfficial: "Avertissements officiels (Protection civile)",
+    notifyRoad: "Incidents routiers",
+    devicePush: "Alertes sur cet appareil quand Nadhir est fermé",
+    devicePushHint:
+      "Envoie les alertes de vos zones sur ce téléphone ou cet ordinateur, même quand Nadhir est fermé. Activez-le sur chaque appareil.",
     zoneDefaultPoint:
       "Cette zone est encore sur le point par défaut près de Tizi Ouzou : ses alertes décrivent cette zone-là. Déplacez-la sur votre lieu.",
     zoneMove: "Déplacer cette zone",
@@ -818,7 +832,7 @@ export const kab: Translation = {
       "Carte pour placer la zone. Déplacez-la pour mettre l'épingle centrale sur votre lieu.",
     zoneFollows: "Suit : {{list}}",
     zoneFollowsNothing:
-      "Ne suit rien — activez les feux ou le danger pour recevoir des alertes.",
+      "Ne suit rien — activez au moins un aléa pour recevoir des alertes.",
     deleteZoneTitle: "Supprimer {{name}} ?",
     deleteZoneBody: "Vous ne recevrez plus d'alertes pour ce lieu.",
     noZones:

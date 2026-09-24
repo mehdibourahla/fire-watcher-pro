@@ -9,6 +9,7 @@ const alert = (over: Partial<Alert>): Alert => ({
   severity: 3,
   cluster_id: "c1",
   commune_id: null,
+  source_id: null,
   title: "Fire near Zone",
   body: "",
   distance_km: 2,
@@ -102,5 +103,35 @@ describe("groupPhase", () => {
     ]);
     expect(groupPhase(today!, new Map(), now)).toBe("live");
     expect(groupPhase(yesterday!, new Map(), now)).toBe("archived");
+  });
+});
+
+describe("hazard alert groups", () => {
+  const weather = (over: Partial<Alert>) =>
+    alert({
+      kind: "weather",
+      cluster_id: null,
+      source_id: "onm1",
+      payload: { expires_at: "2026-09-23T18:00:00Z" },
+      ...over,
+    });
+
+  it("folds the same warning raised through several zones into one row", () => {
+    const groups = groupAlerts([
+      weather({ id: "home", zone_id: "z1" }),
+      weather({ id: "farm", zone_id: "z2" }),
+    ]);
+    expect(groups.map((g) => g.key)).toEqual(["weather:onm1"]);
+    expect(groups[0]!.messages).toHaveLength(2);
+  });
+
+  it("stays live until the source's own expiry, then archives", () => {
+    const [group] = groupAlerts([weather({})]);
+    expect(
+      groupPhase(group!, new Map(), Date.parse("2026-09-23T17:00:00Z")),
+    ).toBe("live");
+    expect(
+      groupPhase(group!, new Map(), Date.parse("2026-09-23T19:00:00Z")),
+    ).toBe("archived");
   });
 });
