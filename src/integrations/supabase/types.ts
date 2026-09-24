@@ -3989,7 +3989,7 @@ export type Database = {
       };
       moderate_citizen_report: {
         Args: {
-          _cluster?: string | null;
+          _cluster: string | null;
           _id: string;
           _note?: string | null;
           _status: string;

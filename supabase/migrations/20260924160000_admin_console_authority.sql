@@ -1,4 +1,4 @@
-create function public.moderate_citizen_report(_id uuid,_status text,_note text default null,_cluster uuid default null)
+create function public.moderate_citizen_report(_id uuid,_status text,_cluster uuid,_note text default null)
 returns void language plpgsql security definer set search_path='' as $$
 declare
   actor uuid := (select auth.uid());
@@ -25,8 +25,8 @@ begin
     jsonb_build_object('status',_status,'cluster_id',_cluster),clean_note,null);
 end;
 $$;
-revoke all on function public.moderate_citizen_report(uuid,text,text,uuid) from public,anon,service_role;
-grant execute on function public.moderate_citizen_report(uuid,text,text,uuid) to authenticated;
+revoke all on function public.moderate_citizen_report(uuid,text,uuid,text) from public,anon,service_role;
+grant execute on function public.moderate_citizen_report(uuid,text,uuid,text) to authenticated;
 drop policy "report moderators update reports" on public.citizen_reports;
 
 create function public.relay_authority_warning(_source text,_received_via text,_body text,_severity text,_wilaya uuid)

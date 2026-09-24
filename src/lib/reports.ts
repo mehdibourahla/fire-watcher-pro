@@ -188,13 +188,13 @@ export async function moderateReport(input: {
   id: string;
   status: ReportStatus;
   moderation_note?: string | null;
-  cluster_id?: string | null;
+  cluster_id: string | null;
 }) {
   const { error } = await supabase.rpc("moderate_citizen_report", {
     _id: input.id,
     _status: input.status,
     _note: input.moderation_note ?? null,
-    _cluster: input.cluster_id ?? null,
+    _cluster: input.cluster_id,
   });
   if (error) throw new Error(error.message);
 }

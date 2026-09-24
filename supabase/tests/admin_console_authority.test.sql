@@ -1,6 +1,6 @@
 begin;
 set local search_path = public, extensions;
-select plan(20);
+select plan(21);
 
 insert into auth.users(id,email) values
  ('1b000000-0000-4000-8000-000000000001','console-admin@example.invalid'),
@@ -30,7 +30,8 @@ select set_config('request.jwt.claim.sub','1b000000-0000-4000-8000-000000000002'
 update citizen_reports set note='rewritten' where id='1b000000-0000-4000-8000-000000000020';
 select is((select note from citizen_reports where id='1b000000-0000-4000-8000-000000000020'),'smoke above the ridge','a moderator can no longer rewrite a report directly');
 select throws_ok($$select moderate_citizen_report('1b000000-0000-4000-8000-000000000020','maybe',null,null)$$,'22023',null,'an unknown status is refused');
-select lives_ok($$select moderate_citizen_report('1b000000-0000-4000-8000-000000000020','approved','seen from the road','1b000000-0000-4000-8000-000000000030')$$,'a moderator approves and links a fire');
+select throws_ok($$select moderate_citizen_report(_id=>'1b000000-0000-4000-8000-000000000020',_status=>'approved')$$,'42883',null,'a caller cannot leave the fire link out and silently unlink it');
+select lives_ok($$select moderate_citizen_report(_id=>'1b000000-0000-4000-8000-000000000020',_status=>'approved',_note=>'seen from the road',_cluster=>'1b000000-0000-4000-8000-000000000030')$$,'a moderator approves and links a fire');
 select is((select status||'|'||cluster_id::text||'|'||reviewed_by::text from citizen_reports where id='1b000000-0000-4000-8000-000000000020'),
   'approved|1b000000-0000-4000-8000-000000000030|1b000000-0000-4000-8000-000000000002','status, fire link and reviewer are written server-side');
 select is((select array_agg(item order by item) from admin_attention_counts()),array['citizen_reports','ideas'],'a moderator counts only the queues they can act on');
