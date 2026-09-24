@@ -505,6 +505,7 @@ describe("zone hazard alerts reach the alert table", () => {
           headline_fr: null,
           polygon: null,
           wilaya_id: "w16",
+          expires: "2026-09-09T12:00:00Z",
         },
       ],
     });

@@ -28,12 +28,14 @@ export type HazardContext = {
     headline_fr: string | null;
     polygon: [number, number][] | null;
     wilaya_id: string | null;
+    expires: string;
   }[];
   official: {
     id: string;
     commune_id: string | null;
     wilaya_id: string | null;
     place_text: string | null;
+    last_reported_at: string;
   }[];
   authority: {
     id: string;
@@ -42,8 +44,15 @@ export type HazardContext = {
     severity: string;
     wilaya_id: string | null;
     commune_codes: string[] | null;
+    created_at: string;
   }[];
-  road: { id: string; summary: string; area_id: string; source_name: string }[];
+  road: {
+    id: string;
+    summary: string;
+    area_id: string;
+    source_name: string;
+    expires_at: string;
+  }[];
 };
 
 export type HazardAlertRow = {
@@ -119,6 +128,10 @@ const ONM_SEVERITY: Record<string, number> = {
 };
 const AUTHORITY_SEVERITY: Record<string, number> = { Severe: 4, Extreme: 5 };
 
+const HOUR = 3_600_000;
+const later = (at: string, hours: number) =>
+  new Date(Date.parse(at) + hours * HOUR).toISOString();
+
 const fill = (template: string, vars: Record<string, string>) =>
   template.replace(/\{\{(\w+)\}\}/g, (_, k: string) => vars[k] ?? "");
 
@@ -175,7 +188,11 @@ export function hazardAlerts(
             }),
             source_table: "onm_vigilance",
             source_id: warning.id,
-            payload: { onm_severity: warning.severity },
+            payload: {
+              onm_severity: warning.severity,
+              expires_at: warning.expires,
+              map_event: `weather:${warning.id}`,
+            },
           },
           warning.severity === "Extreme",
         );
@@ -195,7 +212,10 @@ export function hazardAlerts(
             }),
             source_table: "official_incidents",
             source_id: incident.id,
-            payload: {},
+            payload: {
+              expires_at: later(incident.last_reported_at, 72),
+              map_event: `official:${incident.id}`,
+            },
           },
           true,
         );
@@ -214,7 +234,10 @@ export function hazardAlerts(
             }),
             source_table: "authority_warnings",
             source_id: warning.id,
-            payload: { authority: warning.source },
+            payload: {
+              authority: warning.source,
+              expires_at: later(warning.created_at, 24),
+            },
           },
           true,
         );
@@ -236,7 +259,10 @@ export function hazardAlerts(
             }),
             source_table: "civil_publications",
             source_id: publication.id,
-            payload: {},
+            payload: {
+              expires_at: publication.expires_at,
+              map_event: `civil:${publication.id}`,
+            },
           },
           false,
         );

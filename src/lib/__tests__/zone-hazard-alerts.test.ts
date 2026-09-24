@@ -29,10 +29,17 @@ const context: HazardContext = {
       headline_fr: "Orages modérés sur Alger",
       polygon: null,
       wilaya_id: "w16",
+      expires: "2026-09-25T18:00:00Z",
     },
   ],
   official: [
-    { id: "dgpc1", commune_id: null, wilaya_id: "w16", place_text: "Alger" },
+    {
+      id: "dgpc1",
+      commune_id: null,
+      wilaya_id: "w16",
+      place_text: "Alger",
+      last_reported_at: "2026-09-24T10:00:00Z",
+    },
   ],
   authority: [
     {
@@ -42,6 +49,7 @@ const context: HazardContext = {
       severity: "Severe",
       wilaya_id: "w16",
       commune_codes: null,
+      created_at: "2026-09-24T09:00:00Z",
     },
   ],
   road: [
@@ -50,6 +58,7 @@ const context: HazardContext = {
       summary: "RN5 fermée à Bab Ezzouar",
       area_id: "c1",
       source_name: "Info Trafic Algérie",
+      expires_at: "2026-09-26T09:00:00Z",
     },
   ],
 };
@@ -130,5 +139,17 @@ describe("hazardAlerts", () => {
       awake,
     );
     expect(rows).toEqual([]);
+  });
+
+  it("records when each hazard stops being current and where it sits on the map", () => {
+    const { rows } = hazardAlerts([zone], context, awake);
+    expect(
+      rows.map((r) => [r.payload["expires_at"], r.payload["map_event"]]),
+    ).toEqual([
+      ["2026-09-25T18:00:00Z", "weather:onm1"],
+      ["2026-09-27T10:00:00.000Z", "official:dgpc1"],
+      ["2026-09-25T09:00:00.000Z", undefined],
+      ["2026-09-26T09:00:00Z", "civil:road1"],
+    ]);
   });
 });

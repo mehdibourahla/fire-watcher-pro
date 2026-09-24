@@ -247,9 +247,10 @@ async function loadHazardContext(
       : Promise.resolve({ data: [], error: null }),
     supabaseAdmin
       .from("onm_vigilance")
-      .select("id, severity, title, headline_fr, polygon, wilaya_id")
+      .select("id, severity, title, headline_fr, polygon, wilaya_id, expires")
       .is("superseded_at", null)
-      .or(`expires.is.null,expires.gt.${iso}`),
+      .gt("expires", iso)
+      .lte("sent", iso),
     supabaseAdmin
       .from("official_incidents")
       .select(
@@ -258,14 +259,16 @@ async function loadHazardContext(
       .is("unlisted_at", null),
     supabaseAdmin
       .from("authority_warnings")
-      .select("id, source, body, severity, wilaya_id, commune_codes")
+      .select(
+        "id, source, body, severity, wilaya_id, commune_codes, created_at",
+      )
       .gte(
         "created_at",
         new Date(now.getTime() - AUTHORITY_WINDOW_MS).toISOString(),
       ),
     supabaseAdmin
       .from("civil_publications")
-      .select("id, summary, area_id, source_name")
+      .select("id, summary, area_id, source_name, expires_at")
       .eq("state", "published")
       .eq("hazard", "road")
       .gt("expires_at", iso),
@@ -279,12 +282,19 @@ async function loadHazardContext(
         { code: u.code, wilayaId: u.parent_id },
       ]),
     ),
-    weather: (weather.data ?? []).map((w) => ({
-      ...w,
-      polygon: Array.isArray(w.polygon)
-        ? (w.polygon as [number, number][])
-        : null,
-    })),
+    weather: (weather.data ?? []).flatMap((w) =>
+      w.expires
+        ? [
+            {
+              ...w,
+              expires: w.expires,
+              polygon: Array.isArray(w.polygon)
+                ? (w.polygon as [number, number][])
+                : null,
+            },
+          ]
+        : [],
+    ),
     official: (official.data ?? []).filter(
       (i) => officialPhase(i, now.getTime()) === "live",
     ),
