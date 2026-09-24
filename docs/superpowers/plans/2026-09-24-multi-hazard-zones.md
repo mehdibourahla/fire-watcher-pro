@@ -49,8 +49,8 @@
 - `authorityConcernsZone(zoneCommuneCode, zoneWilayaId, warning): boolean`
 - `roadConcernsZone(zone, publication, zoneWilayaId): boolean` — `area_id` equals zone commune or zone wilaya.
 
-- [ ] Tests first: point-in-polygon, circle grazing an edge, circle far away, MultiPolygon, missing polygon falls back to wilaya; each concern function's commune/wilaya branches.
-- [ ] Implement; tests green; commit.
+- [x] Tests first: point-in-polygon, circle grazing an edge, circle far away, MultiPolygon, missing polygon falls back to wilaya; each concern function's commune/wilaya branches.
+- [x] Implement; tests green; commit.
 
 ### Task 3: Engine — weather, official, road
 
