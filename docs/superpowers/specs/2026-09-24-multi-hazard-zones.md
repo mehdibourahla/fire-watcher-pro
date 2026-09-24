@@ -33,6 +33,11 @@ Citizen hazard reports stay out: they are unmoderated and the display asymmetry 
 - `alerts.kind` CHECK widens to `fire, risk, weather, official, road`; `alerts` gains `source_table` and `source_id`
   so a non-fire alert points at its origin. Dedupe keys: `<kind>:<zone>:<source_id>` (one alert per zone per
   hazard item; a revised ONM or publication version gets a new id and so a new alert).
+- Weather follows the zone's "warn me from level" threshold (and the account's, whichever is stricter) on the
+  shared 1–5 scale: Moderate 2, Severe 3, Extreme 4. Official and road items ignore it. ONM warnings are
+  identified by event, severity and onset, not by row id: ONM re-issues an unchanged warning under a new id every
+  20–80 minutes. A 7-day prod replay (2026-09-24, 21 zones) gave 545 weather alerts by row id, 171 with these two
+  rules (1.2 per zone per day; median person 16 a week).
 - Existing `quiet_hours` apply. Break-through: fire inside the zone (unchanged), `weather` at ONM red, and
   `official` items — the settings copy promises this for extreme danger, and official warnings are life-safety.
 

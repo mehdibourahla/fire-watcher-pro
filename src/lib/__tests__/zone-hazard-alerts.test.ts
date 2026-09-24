@@ -14,6 +14,7 @@ const zone: HazardZone = {
   lon: 3.1,
   radius_km: 5,
   commune_id: "c1",
+  min_danger_level: 1,
   notify_weather: true,
   notify_official: true,
   notify_road: true,
@@ -65,7 +66,7 @@ const context: HazardContext = {
   ],
 };
 
-const awake = () => ({ locale: "fr", quiet: false });
+const awake = () => ({ locale: "fr", quiet: false, minLevel: 1 });
 
 describe("hazardAlerts", () => {
   it("raises one alert per matching hazard with a stable key and its source", () => {
@@ -95,6 +96,7 @@ describe("hazardAlerts", () => {
     const { rows, suppressed } = hazardAlerts([zone], context, () => ({
       locale: "fr",
       quiet: true,
+      minLevel: 1,
     }));
     expect(rows.map((r) => r.kind)).toEqual(["official", "official"]);
     expect(suppressed).toBe(2);
@@ -108,6 +110,7 @@ describe("hazardAlerts", () => {
     const { rows } = hazardAlerts([zone], extreme, () => ({
       locale: "fr",
       quiet: true,
+      minLevel: 1,
     }));
     expect(rows.some((r) => r.kind === "weather" && r.severity === 4)).toBe(
       true,
@@ -125,6 +128,7 @@ describe("hazardAlerts", () => {
     const { rows } = hazardAlerts([zone], context, () => ({
       locale: "en",
       quiet: false,
+      minLevel: 1,
     }));
     const road = rows.find((r) => r.kind === "road")!;
     expect(road.body).toContain("RN5 fermée à Bab Ezzouar");
@@ -186,5 +190,23 @@ describe("hazardAlerts", () => {
         .map((r) => r.dedupe_key),
     );
     expect(keys.size).toBe(2);
+  });
+
+  it("keeps weather below the zone's own level out, but never official or road items", () => {
+    const { rows } = hazardAlerts(
+      [{ ...zone, min_danger_level: 3 }],
+      context,
+      awake,
+    );
+    expect(rows.map((r) => r.kind)).toEqual(["official", "official", "road"]);
+  });
+
+  it("applies the account-wide level when it is stricter than the zone's", () => {
+    const { rows } = hazardAlerts([zone], context, () => ({
+      locale: "fr",
+      quiet: false,
+      minLevel: 3,
+    }));
+    expect(rows.some((r) => r.kind === "weather")).toBe(false);
   });
 });

@@ -14,6 +14,7 @@ export type HazardZone = {
   lon: number;
   radius_km: number;
   commune_id: string | null;
+  min_danger_level: number;
   notify_weather: boolean;
   notify_official: boolean;
   notify_road: boolean;
@@ -140,13 +141,18 @@ const fill = (template: string, vars: Record<string, string>) =>
 export function hazardAlerts(
   zones: HazardZone[],
   context: HazardContext,
-  profileOf: (userId: string) => { locale: string; quiet: boolean },
+  profileOf: (userId: string) => {
+    locale: string;
+    quiet: boolean;
+    minLevel: number;
+  },
 ) {
   const rows: HazardAlertRow[] = [];
   let suppressed = 0;
 
   for (const zone of zones) {
-    const { locale, quiet } = profileOf(zone.user_id);
+    const { locale, quiet, minLevel } = profileOf(zone.user_id);
+    const threshold = Math.max(zone.min_danger_level, minLevel);
     const copy = COPY[locale] ?? COPY["ar"]!;
     const commune = zone.commune_id
       ? context.communes.get(zone.commune_id)
@@ -179,6 +185,7 @@ export function hazardAlerts(
       for (const warning of context.weather) {
         if (!weatherConcernsZone(area, warning)) continue;
         const severity = ONM_SEVERITY[warning.severity] ?? 2;
+        if (severity < threshold) continue;
         add(
           {
             kind: "weather",

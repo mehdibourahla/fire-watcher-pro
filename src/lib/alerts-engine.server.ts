@@ -702,6 +702,7 @@ export async function evaluateAlerts(userId?: string): Promise<AlertRun> {
           profile?.quiet_hours_start ?? null,
           profile?.quiet_hours_end ?? null,
         ),
+        minLevel: profile?.min_danger_level ?? 1,
       };
     },
   );
