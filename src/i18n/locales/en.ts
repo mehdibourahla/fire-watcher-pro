@@ -1203,6 +1203,23 @@ export const en = {
       "For any data question, use the contact channel listed on the About page.",
   },
   broadcastAdmin: {
+    stopTitle: "Stop all public alerts?",
+    stopDescription:
+      "Nothing publishes or delivers until someone resumes. Already-sent notifications are not recalled.",
+    resumeTitle: "Resume public alerts?",
+    resumeDescription:
+      "Alerts publish again on the next pipeline run, including anything still current.",
+    relayConfirmTitle: "Relay this warning to {{wilaya}}?",
+    relayConfirmDescription:
+      "It is broadcast verbatim, attributed to {{source}}, to every commune of the wilaya on the next run.",
+    relayedOk: "Warning queued for broadcast",
+    recentWarnings: "Recent warnings",
+    action: {
+      published: "Published",
+      suppressed: "Suppressed",
+      enabled: "Broadcasting resumed",
+      disabled: "Broadcasting stopped",
+    },
     title: "Broadcast console",
     subtitle: "Kill-switch, audit log and manual relay of authority warnings.",
     forbidden: "Admin role required.",

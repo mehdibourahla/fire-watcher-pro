@@ -61,7 +61,7 @@ export async function getBroadcastAudit() {
   const { data, error } = await supabase
     .from("broadcast_audit")
     .select(
-      "id, at, action, reason, kind, phase, severity, commune_codes, actor_id",
+      "id, at, action, reason, kind, phase, severity, commune_codes, actor_id, payload",
     )
     .order("at", { ascending: false })
     .limit(200);
@@ -69,9 +69,13 @@ export async function getBroadcastAudit() {
   return data ?? [];
 }
 
-export async function setBroadcastEnabled(enabled: boolean) {
+export async function setBroadcastEnabled(
+  enabled: boolean,
+  note: string | null = null,
+) {
   const { data, error } = await supabase.rpc("set_broadcast_enabled", {
     _enabled: enabled,
+    _note: note,
   });
   if (error)
     throw new BroadcastAdminError("broadcastAdmin.toggleFailed", error);

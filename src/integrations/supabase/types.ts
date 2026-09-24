@@ -4204,7 +4204,7 @@ export type Database = {
         Returns: Json;
       };
       set_broadcast_enabled: {
-        Args: { _enabled: boolean };
+        Args: { _enabled: boolean; _note?: string | null };
         Returns: Json;
       };
       stage_risk_forecast_batch: {

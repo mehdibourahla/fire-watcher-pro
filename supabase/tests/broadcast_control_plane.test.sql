@@ -87,25 +87,25 @@ select ok(
 select has_function(
   'public',
   'set_broadcast_enabled',
-  array['boolean'],
+  array['boolean','text'],
   'the kill-switch has a database-owned transition function'
 );
 select ok(
   case
-    when to_regprocedure('public.set_broadcast_enabled(boolean)') is null then false
+    when to_regprocedure('public.set_broadcast_enabled(boolean,text)') is null then false
     else has_function_privilege(
       'authenticated',
-      'public.set_broadcast_enabled(boolean)',
+      'public.set_broadcast_enabled(boolean,text)',
       'execute'
     )
     and not has_function_privilege(
       'anon',
-      'public.set_broadcast_enabled(boolean)',
+      'public.set_broadcast_enabled(boolean,text)',
       'execute'
     )
     and not has_function_privilege(
       'service_role',
-      'public.set_broadcast_enabled(boolean)',
+      'public.set_broadcast_enabled(boolean,text)',
       'execute'
     )
   end,
@@ -115,7 +115,7 @@ select is(
   (
     select proconfig
     from pg_proc
-    where oid = to_regprocedure('public.set_broadcast_enabled(boolean)')
+    where oid = to_regprocedure('public.set_broadcast_enabled(boolean,text)')
   ),
   array['search_path=""'],
   'the security-definer transition has an empty search path'

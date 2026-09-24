@@ -42,7 +42,9 @@ describe("broadcast settings control plane", () => {
       error: null,
     });
 
-    await expect(setBroadcastEnabled(false)).resolves.toEqual({
+    await expect(
+      setBroadcastEnabled(false, "False alarm wave"),
+    ).resolves.toEqual({
       changed: true,
       enabled: false,
       updated_at: updatedAt,
@@ -50,6 +52,7 @@ describe("broadcast settings control plane", () => {
 
     expect(rpcMock).toHaveBeenCalledWith("set_broadcast_enabled", {
       _enabled: false,
+      _note: "False alarm wave",
     });
     expect(fromMock).not.toHaveBeenCalledWith("broadcast_settings");
   });
@@ -131,7 +134,7 @@ describe("broadcast settings control plane", () => {
 
     expect(fromMock).toHaveBeenCalledWith("broadcast_audit");
     expect(builder["select"]).toHaveBeenCalledWith(
-      "id, at, action, reason, kind, phase, severity, commune_codes, actor_id",
+      "id, at, action, reason, kind, phase, severity, commune_codes, actor_id, payload",
     );
   });
 });

@@ -1227,6 +1227,23 @@ export const fr: Translation = {
       "Pour toute question, utilisez le contact indiqué sur la page À propos.",
   },
   broadcastAdmin: {
+    stopTitle: "Couper toutes les alertes publiques ?",
+    stopDescription:
+      "Plus rien n'est publié ni envoyé tant que personne ne relance. Les notifications déjà envoyées ne sont pas rappelées.",
+    resumeTitle: "Relancer les alertes publiques ?",
+    resumeDescription:
+      "Les alertes sont de nouveau publiées au prochain passage, y compris celles encore en cours.",
+    relayConfirmTitle: "Relayer cet avertissement vers {{wilaya}} ?",
+    relayConfirmDescription:
+      "Il est diffusé mot pour mot, attribué à {{source}}, à toutes les communes de la wilaya au prochain passage.",
+    relayedOk: "Avertissement programmé pour diffusion",
+    recentWarnings: "Avertissements récents",
+    action: {
+      published: "Publié",
+      suppressed: "Supprimé",
+      enabled: "Diffusion relancée",
+      disabled: "Diffusion coupée",
+    },
     title: "Console de diffusion",
     subtitle:
       "Coupe-circuit, journal d'audit et relais manuel des avertissements d'autorités.",
