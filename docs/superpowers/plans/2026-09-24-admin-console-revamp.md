@@ -31,7 +31,7 @@ Browser check against the local dev server and the isolated Supabase stack, seed
 - [x] **P6 Sources + Tools.** Health table with reason and age, incidents open-first, gaps. Tools page for archive (status filter), text recovery, push test and ensemble.
 - [x] **P7 Broadcasts.** Kill switch behind a confirm plus reason, delivery channels moved in, relay dialog through the RPC, readable audit.
 - [x] **P8 Risk, DGPC incidents, Places.** States, reasons, location, search, pagination.
-- [ ] **P9 People + Audit.** Member table plus role Sheet with confirmation. Audit with labels, actor names, targets and filters.
+- [x] **P9 People + Audit.** Member table plus role Sheet with confirmation. Audit with labels, actor names, targets and filters.
 - [ ] **P10 i18n + polish.**
   - Complete ar and fr for every admin key.
   - RTL pass.

@@ -3413,7 +3413,9 @@ export type Database = {
           actor_kind: string | null;
           actor_label: string | null;
           actor_user_id: string | null;
+          after: Json | null;
           at: string | null;
+          before: Json | null;
           domain: string | null;
           id: string | null;
           reason: string | null;

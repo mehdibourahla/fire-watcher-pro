@@ -2,7 +2,7 @@ begin;
 
 set local search_path = public, extensions;
 
-select plan(5);
+select plan(6);
 
 select has_view('public', 'admin_audit_timeline', 'the unioned timeline exists');
 
@@ -42,6 +42,13 @@ select is(
    where target_table = 'broadcast_audit' and actor_user_id is null),
   'broadcast-pipeline',
   'an automated decision is labelled rather than left anonymous'
+);
+
+select is(
+  (select count(*) from public.admin_audit_timeline t
+   join public.broadcast_audit b on b.id = t.id),
+  (select count(*) from public.broadcast_audit),
+  'splitting by actor neither drops nor duplicates a broadcast row'
 );
 
 -- The invariant this view exists to preserve: a human toggle cannot be recorded anonymously.

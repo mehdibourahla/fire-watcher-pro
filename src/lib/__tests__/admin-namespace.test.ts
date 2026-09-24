@@ -46,6 +46,8 @@ describe("admin namespace", () => {
       "translationsPage.suggestions",
       "translationsPage.suggestions_other",
       "groups.admin",
+      "audit.domain_sources",
+      "audit.domain_incidents",
       "fires.reason",
       "sources.channel_telegram",
       "sources.title",
