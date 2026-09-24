@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
+import { Link, useSearch } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -18,11 +18,16 @@ import {
 
 export function ZonesPage() {
   const { t } = useTranslation();
+  const search = useSearch({ from: "/_authenticated/zones" });
+  const start =
+    search.lat !== undefined && search.lon !== undefined
+      ? { lat: search.lat, lon: search.lon }
+      : null;
   const zones = useQuery(zonesQuery);
   const units = useQuery(adminUnitsQuery);
   const clusters = useQuery(clustersQuery);
   const [editing, setEditing] = useState<Zone | null>(null);
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(!!start);
 
   const unitById = useMemo(
     () => new Map((units.data ?? []).map((unit) => [unit.id, unit])),
@@ -113,7 +118,12 @@ export function ZonesPage() {
         )}
       </section>
 
-      <ZoneEditor open={open} zone={editing} onOpenChange={setOpen} />
+      <ZoneEditor
+        open={open}
+        zone={editing}
+        start={editing ? null : start}
+        onOpenChange={setOpen}
+      />
     </div>
   );
 }

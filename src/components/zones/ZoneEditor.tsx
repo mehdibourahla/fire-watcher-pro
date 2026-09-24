@@ -36,7 +36,17 @@ import { cn } from "@/lib/utils";
 
 const NORTHERN_ALGERIA = { lat: 36.2, lon: 3.6, zoom: 6 };
 
-function Editor({ zone, onDone }: { zone: Zone | null; onDone: () => void }) {
+type Start = { lat: number; lon: number } | null;
+
+function Editor({
+  zone,
+  start,
+  onDone,
+}: {
+  zone: Zone | null;
+  start: Start;
+  onDone: () => void;
+}) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language as Locale;
   const qc = useQueryClient();
@@ -44,10 +54,12 @@ function Editor({ zone, onDone }: { zone: Zone | null; onDone: () => void }) {
   const [target, setTarget] = useState<PickerTarget>(() =>
     zone
       ? { lat: zone.lat, lon: zone.lon, zoom: 10, key: 0 }
-      : { ...NORTHERN_ALGERIA, key: 0 },
+      : start
+        ? { ...start, zoom: 11, key: 0 }
+        : { ...NORTHERN_ALGERIA, key: 0 },
   );
   const [point, setPoint] = useState({ lat: target.lat, lon: target.lon });
-  const [placed, setPlaced] = useState(!!zone && !isDefaultPoint(zone));
+  const [placed, setPlaced] = useState(zone ? !isDefaultPoint(zone) : !!start);
   const [picked, setPicked] = useState<AdminUnit | null>(null);
   const [radius, setRadius] = useState(zone?.radius_km ?? 10);
   const [typedName, setTypedName] = useState<string | null>(zone?.name ?? null);
@@ -111,14 +123,14 @@ function Editor({ zone, onDone }: { zone: Zone | null; onDone: () => void }) {
   const locateRef = useRef(locate);
   locateRef.current = locate;
   useEffect(() => {
-    if (zone || !navigator.permissions) return;
+    if (zone || start || !navigator.permissions) return;
     navigator.permissions
       .query({ name: "geolocation" })
       .then((status) => {
         if (status.state === "granted") locateRef.current(false);
       })
       .catch(() => undefined);
-  }, [zone]);
+  }, [zone, start]);
 
   const save = async () => {
     setPending(true);
@@ -331,10 +343,12 @@ function Editor({ zone, onDone }: { zone: Zone | null; onDone: () => void }) {
 export function ZoneEditor({
   open,
   zone,
+  start,
   onOpenChange,
 }: {
   open: boolean;
   zone: Zone | null;
+  start: Start;
   onOpenChange: (open: boolean) => void;
 }) {
   const { t } = useTranslation();
@@ -361,6 +375,7 @@ export function ZoneEditor({
           <Editor
             key={zone?.id ?? "new"}
             zone={zone}
+            start={start}
             onDone={() => onOpenChange(false)}
           />
         ) : null}

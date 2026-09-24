@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   coordLabel,
   placeLabel,
+  settlementName,
   wilayaGroups,
   type AdminUnit,
 } from "@/lib/nadhir";
@@ -71,5 +72,45 @@ describe("wilayaGroups", () => {
     expect(groups.map((g) => g.wilaya.id)).toEqual(["w06", "w15"]);
     expect(groups[0]!.communes.map((c) => c.id)).toEqual(["c2"]);
     expect(groups[1]!.communes.map((c) => c.id)).toEqual(["c1"]);
+  });
+});
+
+describe("settlementName", () => {
+  const oran = { name: "Oran ⵡⴰⵀⵔⴻⵏ وهران", name_ar: "وهران" };
+  const constantine = { name: "قسنطينة ⵇⵙⵏⵟⵉⵏⴰ", name_ar: null };
+
+  it("keeps only the Latin part of a three-script name outside Arabic", () => {
+    expect(settlementName(oran, "fr")).toBe("Oran");
+    expect(settlementName(oran, "kab")).toBe("Oran");
+  });
+
+  it("falls back to the Arabic part, never Tifinagh, when no Latin name exists", () => {
+    expect(settlementName(constantine, "en")).toBe("قسنطينة");
+  });
+
+  it("prefers the Arabic name in Arabic", () => {
+    expect(settlementName(oran, "ar")).toBe("وهران");
+    expect(settlementName(constantine, "ar")).toBe("قسنطينة");
+  });
+
+  it("names a near-settlement fire in the reader's script", () => {
+    const label = placeLabel(
+      { lat: 35.7, lon: -0.63, commune_id: null },
+      [],
+      [
+        {
+          id: "s1",
+          name: oran.name,
+          name_ar: oran.name_ar,
+          place_type: "city",
+          lat: 35.7,
+          lon: -0.64,
+          commune_id: null,
+          population: null,
+        },
+      ],
+      "en",
+    );
+    expect(label).toEqual({ name: "Oran", approximate: true });
   });
 });
