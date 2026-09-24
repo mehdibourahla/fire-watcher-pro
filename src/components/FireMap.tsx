@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import "maplibre-gl/dist/maplibre-gl.css";
 import type { FeatureCollection } from "geojson";
+import { basemapStyle } from "@/lib/basemap";
 import type { FireCluster } from "@/lib/nadhir";
 import type { FireLevel } from "@/lib/fire-confidence";
 import { fireFeatures } from "./map-fires";
@@ -126,11 +127,6 @@ function cameraOffset({
   right,
 }: MapPadding): [number, number] {
   return [(left - right) / 2, (top - bottom) / 2];
-}
-function currentStyle() {
-  return document.documentElement.classList.contains("dark")
-    ? "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
-    : "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json";
 }
 function installLayers(map: maplibregl.Map) {
   for (const symbol of SYMBOLS)
@@ -422,7 +418,7 @@ export default function FireMap({
       const target = latest.current.focus;
       map = new maplibregl.Map({
         container: containerRef.current,
-        style: currentStyle(),
+        style: basemapStyle(),
         center: target ? [target.lon, target.lat] : initial.center,
         zoom: target?.zoom ?? initial.zoom,
         minZoom: 3.5,
@@ -567,9 +563,9 @@ export default function FireMap({
       map.getCanvas().style.cursor =
         ready && featuresAt(event.point).length ? "pointer" : "";
     });
-    let style = currentStyle();
+    let style = basemapStyle();
     const observer = new MutationObserver(() => {
-      const next = currentStyle();
+      const next = basemapStyle();
       if (next === style) return;
       style = next;
       ready = false;

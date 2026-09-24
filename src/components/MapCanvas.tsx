@@ -37,7 +37,7 @@ type Props = {
   layers?: MapLayers;
 };
 
-function MapSkeleton() {
+export function MapSkeleton() {
   const { t } = useTranslation();
   return (
     <div
@@ -48,7 +48,7 @@ function MapSkeleton() {
   );
 }
 
-class MapBoundary extends Component<
+export class MapBoundary extends Component<
   {
     children: ReactNode;
     fallback: ReactNode;

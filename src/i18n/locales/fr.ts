@@ -74,6 +74,7 @@ export const fr: Translation = {
   },
   common: {
     close: "Fermer",
+    cancel: "Annuler",
     dismiss: "Masquer",
     delete: "Supprimer",
     appName: "Nadhir",
@@ -794,16 +795,35 @@ export const fr: Translation = {
     zonesSubtitle:
       "Gérez les lieux suivis et leurs alertes disponibles sur les incendies et le danger.",
     newZone: "Ajouter une zone",
-    zoneCommune: "Commune",
-    zoneCustom: "Point personnalisé",
     zoneName: "Nom de la zone",
-    lat: "Latitude",
-    lon: "Longitude",
     radius: "Rayon : {{km}} km",
     minLevel: "M'alerter à partir du niveau",
     notifyFires: "Détections de feux",
     notifyRisk: "Prévision de danger",
     saveZone: "Enregistrer la zone",
+    addFirstZone: "Ajouter votre première zone",
+    noZonesTitle: "Aucune zone surveillée",
+    editZone: "Modifier la zone",
+    edit: "Modifier",
+    zoneSearch: "Chercher une commune ou une wilaya",
+    zoneSearchEmpty: "Aucun lieu ne correspond.",
+    zoneWilaya: "Wilaya",
+    useLocation: "Utiliser ma position",
+    locating: "Recherche de votre position…",
+    locationFailed:
+      "Votre position est indisponible. Cherchez une commune ou déplacez la carte.",
+    placeHint:
+      "Déplacez la carte pour placer l'épingle sur votre lieu, ou cherchez une commune.",
+    zoneCommuneAuto: "Prévisions de danger pour {{name}}.",
+    zoneNoCommune:
+      "Aucune commune à moins de 50 km. Les alertes de feux fonctionnent ; les prévisions de danger exigent un lieu en Algérie.",
+    zoneMap:
+      "Carte pour placer la zone. Déplacez-la pour mettre l'épingle centrale sur votre lieu.",
+    zoneFollows: "Suit : {{list}}",
+    zoneFollowsNothing:
+      "Ne suit rien — activez les feux ou le danger pour recevoir des alertes.",
+    deleteZoneTitle: "Supprimer {{name}} ?",
+    deleteZoneBody: "Vous ne recevrez plus d'alertes pour ce lieu.",
     noZones:
       "Aucune zone. Ajoutez votre village, ferme ou forêt pour recevoir des alertes.",
     zoneClear: "Aucun feu actif dans cette zone actuellement.",

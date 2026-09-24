@@ -6,7 +6,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { useEndSide } from "./useEndSide";
+import { useEndSide } from "@/hooks/use-end-side";
 
 function useWide() {
   const [wide, setWide] = useState(true);

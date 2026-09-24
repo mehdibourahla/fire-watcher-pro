@@ -70,6 +70,7 @@ export const en = {
   },
   common: {
     close: "Close",
+    cancel: "Cancel",
     dismiss: "Dismiss",
     delete: "Delete",
     appName: "Nadhir",
@@ -776,16 +777,35 @@ export const en = {
     zonesSubtitle:
       "Manage the places you follow and their available fire and danger alerts.",
     newZone: "Add a zone",
-    zoneCommune: "Commune",
-    zoneCustom: "Custom point",
     zoneName: "Zone name",
-    lat: "Latitude",
-    lon: "Longitude",
     radius: "Radius: {{km}} km",
     minLevel: "Warn me from danger level",
     notifyFires: "Fire detections",
     notifyRisk: "Danger forecast",
     saveZone: "Save zone",
+    addFirstZone: "Add your first zone",
+    noZonesTitle: "No watch zone yet",
+    editZone: "Edit zone",
+    edit: "Edit",
+    zoneSearch: "Search a commune or wilaya",
+    zoneSearchEmpty: "No place matches.",
+    zoneWilaya: "Wilaya",
+    useLocation: "Use my location",
+    locating: "Finding your position…",
+    locationFailed:
+      "Your position is unavailable. Search a commune or move the map instead.",
+    placeHint:
+      "Move the map so the pin sits on your place, or search a commune.",
+    zoneCommuneAuto: "Danger forecasts for {{name}}.",
+    zoneNoCommune:
+      "No commune within 50 km. Fire alerts still work; danger forecasts need a place in Algeria.",
+    zoneMap:
+      "Map for placing the zone. Move it to put the centre pin on your place.",
+    zoneFollows: "Follows: {{list}}",
+    zoneFollowsNothing:
+      "Follows nothing — turn on fires or danger to get alerts.",
+    deleteZoneTitle: "Delete {{name}}?",
+    deleteZoneBody: "You will stop receiving alerts for this place.",
     noZones:
       "No zones yet. Add your village, farm or forest to start receiving warnings.",
     zoneClear: "No active fire inside this zone right now.",

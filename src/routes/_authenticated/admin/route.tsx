@@ -9,7 +9,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { AdminNav } from "@/components/admin/AdminNav";
-import { useEndSide } from "@/components/admin/kit/useEndSide";
+import { useEndSide } from "@/hooks/use-end-side";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,

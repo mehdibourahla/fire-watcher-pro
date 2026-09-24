@@ -63,6 +63,47 @@ export const zonesQuery = queryOptions({
   },
 });
 
+export const MAX_ZONES = 10;
+
+export type ZoneInput = Pick<
+  Zone,
+  | "name"
+  | "lat"
+  | "lon"
+  | "radius_km"
+  | "commune_id"
+  | "min_danger_level"
+  | "notify_fires"
+  | "notify_risk"
+>;
+
+export async function saveZone(input: ZoneInput, id?: string) {
+  if (id) {
+    const { error } = await supabase.from("zones").update(input).eq("id", id);
+    if (error) throw new Error(error.message);
+    return;
+  }
+  const { data: auth } = await supabase.auth.getUser();
+  if (!auth.user) throw new Error("no session");
+  const { error } = await supabase
+    .from("zones")
+    .insert({ ...input, user_id: auth.user.id });
+  if (error) throw new Error(error.message);
+}
+
+export async function setZoneActive(id: string, active: boolean) {
+  const { error } = await supabase
+    .from("zones")
+    .update({ active })
+    .eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+export async function deleteZone(id: string) {
+  const { error } = await supabase.from("zones").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
 export const profileQuery = queryOptions({
   queryKey: ["profile"],
   queryFn: async () => {
