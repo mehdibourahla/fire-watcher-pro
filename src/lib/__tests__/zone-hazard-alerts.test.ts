@@ -25,6 +25,8 @@ const context: HazardContext = {
     {
       id: "onm1",
       severity: "Moderate",
+      event: "Thunderstorm",
+      onset: "2026-09-25T06:00:00Z",
       title: "Thunderstorm Moderate warning for the wilaya: ALGER",
       headline_fr: "Orages modérés sur Alger",
       polygon: null,
@@ -69,7 +71,11 @@ describe("hazardAlerts", () => {
   it("raises one alert per matching hazard with a stable key and its source", () => {
     const { rows } = hazardAlerts([zone], context, awake);
     expect(rows.map((r) => [r.kind, r.dedupe_key, r.source_table])).toEqual([
-      ["weather", "weather:z1:onm1", "onm_vigilance"],
+      [
+        "weather",
+        "weather:z1:Thunderstorm:Moderate:2026-09-25T06:00:00Z",
+        "onm_vigilance",
+      ],
       ["official", "official:z1:dgpc1", "official_incidents"],
       ["official", "official:z1:auth1", "authority_warnings"],
       ["road", "road:z1:road1", "civil_publications"],
@@ -151,5 +157,34 @@ describe("hazardAlerts", () => {
       ["2026-09-25T09:00:00.000Z", undefined],
       ["2026-09-26T09:00:00Z", "civil:road1"],
     ]);
+  });
+
+  it("does not re-alert when ONM re-issues an unchanged warning under a new id", () => {
+    const reissued = {
+      ...context,
+      weather: [context.weather[0]!, { ...context.weather[0]!, id: "onm2" }],
+    };
+    const keys = new Set(
+      hazardAlerts([zone], reissued, awake)
+        .rows.filter((r) => r.kind === "weather")
+        .map((r) => r.dedupe_key),
+    );
+    expect(keys.size).toBe(1);
+  });
+
+  it("alerts again when ONM raises the severity", () => {
+    const raised = {
+      ...context,
+      weather: [
+        context.weather[0]!,
+        { ...context.weather[0]!, id: "onm2", severity: "Severe" },
+      ],
+    };
+    const keys = new Set(
+      hazardAlerts([zone], raised, awake)
+        .rows.filter((r) => r.kind === "weather")
+        .map((r) => r.dedupe_key),
+    );
+    expect(keys.size).toBe(2);
   });
 });

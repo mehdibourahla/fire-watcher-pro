@@ -24,6 +24,8 @@ export type HazardContext = {
   weather: {
     id: string;
     severity: string;
+    event: string;
+    onset: string | null;
     title: string;
     headline_fr: string | null;
     polygon: [number, number][] | null;
@@ -181,7 +183,8 @@ export function hazardAlerts(
           {
             kind: "weather",
             severity,
-            dedupe_key: `weather:${zone.id}:${warning.id}`,
+            // ONM re-issues an unchanged warning under a new id many times a day
+            dedupe_key: `weather:${zone.id}:${warning.event}:${warning.severity}:${warning.onset ?? warning.expires}`,
             title: fill(copy.weatherTitle, { zone: zone.name }),
             body: fill(copy.weatherBody, {
               text: warning.headline_fr ?? warning.title,

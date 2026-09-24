@@ -501,6 +501,8 @@ describe("zone hazard alerts reach the alert table", () => {
         {
           id: "onm1",
           severity: "Severe",
+          event: "Rain",
+          onset: "2026-09-08T15:00:00Z",
           title: "Rain Severe warning for the wilaya: ALGER",
           headline_fr: null,
           polygon: null,
@@ -514,7 +516,7 @@ describe("zone hazard alerts reach the alert table", () => {
         kind: "weather",
         source_table: "onm_vigilance",
         source_id: "onm1",
-        dedupe_key: "weather:z1:onm1",
+        dedupe_key: "weather:z1:Rain:Severe:2026-09-08T15:00:00Z",
       }),
     ]);
   });

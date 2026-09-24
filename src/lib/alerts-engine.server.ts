@@ -245,12 +245,28 @@ async function loadHazardContext(
           .select("id, code, parent_id")
           .in("id", communeIds)
       : Promise.resolve({ data: [], error: null }),
-    supabaseAdmin
-      .from("onm_vigilance")
-      .select("id, severity, title, headline_fr, polygon, wilaya_id, expires")
-      .is("superseded_at", null)
-      .gt("expires", iso)
-      .lte("sent", iso),
+    fetchAllPages<{
+      id: string;
+      severity: string;
+      event: string;
+      onset: string | null;
+      title: string;
+      headline_fr: string | null;
+      polygon: unknown;
+      wilaya_id: string | null;
+      expires: string | null;
+    }>((from, to) =>
+      supabaseAdmin
+        .from("onm_vigilance")
+        .select(
+          "id, severity, event, onset, title, headline_fr, polygon, wilaya_id, expires",
+        )
+        .is("superseded_at", null)
+        .gt("expires", iso)
+        .lte("sent", iso)
+        .order("id")
+        .range(from, to),
+    ).then((data) => ({ data, error: null })),
     supabaseAdmin
       .from("official_incidents")
       .select(
