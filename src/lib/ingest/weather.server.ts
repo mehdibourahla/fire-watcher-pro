@@ -1,6 +1,7 @@
 import { archivedFetch, ArchiveFailure } from "@/lib/source-archive.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { fetchAllPages } from "@/lib/paginate";
+import { FIRE_LEASE_HOURS } from "@/lib/incident-lifecycle";
 
 import { isFuelLimited, type LandcoverFractions } from "@/lib/zonal";
 
@@ -542,7 +543,10 @@ export async function enrichClusterWinds(): Promise<number> {
     .from("fire_clusters")
     .select("id, lat, lon")
     .in("state", ["active", "unconfirmed", "contained_guess"])
-    .gte("last_detected_at", new Date(Date.now() - 24 * 3600_000).toISOString())
+    .gte(
+      "last_detected_at",
+      new Date(Date.now() - FIRE_LEASE_HOURS * 3600_000).toISOString(),
+    )
     .order("last_detected_at", { ascending: false })
     .limit(100);
   if (queryError)
