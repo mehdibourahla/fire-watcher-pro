@@ -27,6 +27,7 @@ import {
   type ZoneFireHistory,
   type ZoneStateEvent,
 } from "@/lib/zone-lifecycle";
+import { drainAlertPushes } from "@/lib/alert-push.server";
 import { officialPhase } from "@/lib/incident-lifecycle";
 import { hazardAlerts, type HazardContext } from "@/lib/zone-hazard-alerts";
 
@@ -226,6 +227,8 @@ export type AlertRun = {
   suppressed: number;
   sent?: number;
   failed?: number;
+  pushed?: number;
+  pushFailed?: number;
 };
 
 const AUTHORITY_WINDOW_MS = 24 * 3_600_000;
@@ -680,8 +683,9 @@ export async function evaluateAlerts(userId?: string): Promise<AlertRun> {
   suppressed += hazards.suppressed;
 
   if (!rows.length) {
+    const push = await drainAlertPushes();
     if (contextError) throw contextError;
-    return { evaluated: zones.length, created: 0, suppressed };
+    return { evaluated: zones.length, created: 0, suppressed, ...push };
   }
 
   const capIdByIdentifier = await ensureCapAlerts([...capEvents.values()]);
@@ -712,6 +716,7 @@ export async function evaluateAlerts(userId?: string): Promise<AlertRun> {
     const { drainWebhookDeliveries } = await import("@/lib/webhooks.server");
     delivered = await drainWebhookDeliveries();
   }
+  const push = await drainAlertPushes();
   if (contextError) throw contextError;
 
   return {
@@ -719,5 +724,6 @@ export async function evaluateAlerts(userId?: string): Promise<AlertRun> {
     created: inserted?.length ?? 0,
     suppressed,
     ...delivered,
+    ...push,
   };
 }

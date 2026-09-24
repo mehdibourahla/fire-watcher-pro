@@ -1,5 +1,6 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { fcmConfigured, fcmSend } from "@/lib/ingest/fcm.server";
+import { readJsonBody } from "@/lib/request-body.server";
 
 const json = (body: unknown, status = 200) =>
   Response.json(body, {
@@ -34,32 +35,9 @@ export async function handlePushTest(request: Request): Promise<Response> {
     if (quota.data !== true)
       return json({ error: "Please wait one minute" }, 429);
     if (!fcmConfigured()) return json({ error: "Push is not configured" }, 503);
-    let body: unknown;
-    try {
-      const reader = request.body?.getReader();
-      if (!reader) return json({ error: "Missing body" }, 400);
-      const chunks: Uint8Array[] = [];
-      let size = 0;
-      while (true) {
-        const chunk = await reader.read();
-        if (chunk.done) break;
-        size += chunk.value.byteLength;
-        if (size > 8192) {
-          await reader.cancel();
-          return json({ error: "Body too large" }, 413);
-        }
-        chunks.push(chunk.value);
-      }
-      const bytes = new Uint8Array(size);
-      let offset = 0;
-      for (const chunk of chunks) {
-        bytes.set(chunk, offset);
-        offset += chunk.length;
-      }
-      body = JSON.parse(new TextDecoder().decode(bytes));
-    } catch {
-      return json({ error: "Invalid JSON" }, 400);
-    }
+    const read = await readJsonBody(request, 8192);
+    if ("error" in read) return json({ error: read.error }, read.status);
+    const body = read.body;
     if (
       !body ||
       typeof body !== "object" ||

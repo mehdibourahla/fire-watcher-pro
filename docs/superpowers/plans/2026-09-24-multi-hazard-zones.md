@@ -73,11 +73,11 @@
 - Modify: `src/lib/fcm.ts` (user topic name + send), `src/lib/push.ts` (join/leave user topic), server function for join/leave, `src/lib/alerts-engine.server.ts` (send after upsert)
 - Tests alongside.
 
-- [ ] Verify first, read-only: prod broadcast delivery receipts show FCM sends succeeding (credentials work).
-- [ ] `userTopic(userId)` → `v1.user.<userId>`; authenticated server function subscribes/unsubscribes the caller's token to their own topic only.
-- [ ] After upsert, send each inserted row to its user's topic with `tag = source_id ?? cluster_id` and the alert's title/body; record failures, never swallow them.
-- [ ] Client: join on sign-in when permission is granted, leave on sign-out.
-- [ ] Commit.
+- [x] Verify first, read-only: prod broadcast delivery receipts show FCM sends succeeding (credentials work).
+- [x] `userTopic(userId)` → `v1.user.<userId>`; authenticated server function subscribes/unsubscribes the caller's token to their own topic only.
+- [x] After upsert, send each inserted row to its user's topic with `tag = source_id ?? cluster_id` and the alert's title/body; record failures, never swallow them.
+- [x] Client: join on sign-in when permission is granted, leave on sign-out.
+- [x] Commit.
 
 ### Task 5: UI and copy
 

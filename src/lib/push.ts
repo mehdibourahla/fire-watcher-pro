@@ -154,3 +154,59 @@ export async function syncSubscription(): Promise<void> {
   const token = await registrationToken();
   await callSubscribeApi(token, current.communes, current.lang, "subscribe");
 }
+
+const USER_PUSH_KEY = "nadhir.userpush.v1";
+
+export function userPushEnabled(): boolean {
+  try {
+    return localStorage.getItem(USER_PUSH_KEY) === "on";
+  } catch {
+    return false;
+  }
+}
+
+async function callUserPush(action: "subscribe" | "unsubscribe") {
+  const { supabase } = await import("@/integrations/supabase/client");
+  const { data, error } = await supabase.auth.getSession();
+  if (error || !data.session) throw new Error("no_session");
+  const token = await registrationToken();
+  const res = await fetch("/api/private/user-push", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      authorization: `Bearer ${data.session.access_token}`,
+    },
+    body: JSON.stringify({ token, action }),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as {
+      error?: string;
+    } | null;
+    throw new Error(body?.error ?? `user push failed (${res.status})`);
+  }
+}
+
+export async function setUserPush(enabled: boolean): Promise<void> {
+  if (enabled) {
+    const permission = await Notification.requestPermission();
+    if (permission !== "granted") throw new Error("permission_denied");
+  }
+  await callUserPush(enabled ? "subscribe" : "unsubscribe");
+  try {
+    if (enabled) localStorage.setItem(USER_PUSH_KEY, "on");
+    else localStorage.removeItem(USER_PUSH_KEY);
+  } catch {
+    // storage can be unavailable (private mode); the topic membership still holds
+  }
+}
+
+export async function leaveUserPush(): Promise<void> {
+  if (!pushSupported() || !userPushEnabled()) return;
+  await setUserPush(false);
+}
+
+export async function syncUserPush(): Promise<void> {
+  if (!pushConfigured() || !pushSupported() || !userPushEnabled()) return;
+  if (Notification.permission !== "granted") return;
+  await callUserPush("subscribe");
+}

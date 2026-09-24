@@ -7,6 +7,53 @@ export function fcmTopic(code: string, lang: string): string {
   return `v1.commune.${code}.${lang}`;
 }
 
+export function userTopic(userId: string): string {
+  return `v1.user.${userId}`;
+}
+
+export type FcmUserMessage = {
+  topic: string;
+  notification: { title: string; body: string };
+  webpush: {
+    fcm_options: { link: string };
+    notification: { tag: string; renotify: boolean };
+  };
+  data: { alert_id: string; kind: string };
+};
+
+export function fcmMessageForAlert(alert: {
+  id: string;
+  user_id: string;
+  kind: string;
+  title: string;
+  body: string;
+  source_id: string | null;
+  cluster_id: string | null;
+  payload: unknown;
+}): FcmUserMessage {
+  const shortId =
+    alert.kind === "fire" &&
+    alert.payload &&
+    typeof alert.payload === "object" &&
+    "short_id" in alert.payload
+      ? String(alert.payload.short_id)
+      : null;
+  return {
+    topic: userTopic(alert.user_id),
+    notification: { title: alert.title, body: alert.body },
+    webpush: {
+      fcm_options: {
+        link: shortId ? `${APP_URL}/fire/${shortId}` : `${APP_URL}/alerts`,
+      },
+      notification: {
+        tag: alert.source_id ?? alert.cluster_id ?? alert.id,
+        renotify: true,
+      },
+    },
+    data: { alert_id: alert.id, kind: alert.kind },
+  };
+}
+
 export type FcmMessage = {
   topic: string;
   notification: { title: string; body: string };

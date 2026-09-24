@@ -772,6 +772,9 @@ export type Database = {
           id: string;
           kind: string;
           payload: Json | null;
+          push_attempts: number;
+          push_claimed_at: string | null;
+          push_state: string;
           read_at: string | null;
           severity: number;
           source_id: string | null;
@@ -793,6 +796,9 @@ export type Database = {
           id?: string;
           kind: string;
           payload?: Json | null;
+          push_attempts?: number;
+          push_claimed_at?: string | null;
+          push_state?: string;
           read_at?: string | null;
           severity?: number;
           source_id?: string | null;
@@ -814,6 +820,9 @@ export type Database = {
           id?: string;
           kind?: string;
           payload?: Json | null;
+          push_attempts?: number;
+          push_claimed_at?: string | null;
+          push_state?: string;
           read_at?: string | null;
           severity?: number;
           source_id?: string | null;
@@ -3977,6 +3986,10 @@ export type Database = {
       replay_source_gap: {
         Args: { _gap_id: string; _reason?: string | null };
         Returns: string;
+      };
+      claim_alert_pushes: {
+        Args: { _limit?: number };
+        Returns: Database["public"]["Tables"]["alerts"]["Row"][];
       };
       admin_attention_counts: {
         Args: never;

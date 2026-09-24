@@ -1,4 +1,4 @@
-import type { FcmMessage } from "@/lib/fcm";
+import type { FcmMessage, FcmUserMessage } from "@/lib/fcm";
 
 const SCOPE =
   "https://www.googleapis.com/auth/firebase.messaging https://www.googleapis.com/auth/cloud-platform";
@@ -94,7 +94,7 @@ export type FcmDeviceTest = {
 };
 
 export async function fcmSend(
-  message: FcmMessage | FcmDeviceTest,
+  message: FcmMessage | FcmUserMessage | FcmDeviceTest,
 ): Promise<void> {
   const account = requireAccount();
   const token = await accessToken(account);
