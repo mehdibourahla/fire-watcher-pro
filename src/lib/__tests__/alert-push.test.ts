@@ -45,6 +45,7 @@ describe("drainAlertPushes", () => {
     expect(await drainAlertPushes(deps)).toEqual({
       pushed: 1,
       pushFailed: 0,
+      claimsLost: 0,
     });
     expect(finished).toEqual([["a1", "sent"]]);
   });
@@ -56,6 +57,7 @@ describe("drainAlertPushes", () => {
     expect(await drainAlertPushes(deps)).toEqual({
       pushed: 0,
       pushFailed: 1,
+      claimsLost: 0,
     });
     expect(finished).toEqual([["a1", "pending"]]);
   });
@@ -74,7 +76,21 @@ describe("drainAlertPushes", () => {
   it("claims nothing when push is not configured", async () => {
     const { deps } = harness([claimed()], async () => undefined);
     const result = await drainAlertPushes({ ...deps, configured: () => false });
-    expect(result).toEqual({ pushed: 0, pushFailed: 0 });
+    expect(result).toEqual({ pushed: 0, pushFailed: 0, claimsLost: 0 });
     expect(deps.claim).not.toHaveBeenCalled();
+  });
+
+  it("carries on with the batch when another run reclaimed an alert", async () => {
+    const rows = [claimed({ id: "a1" }), claimed({ id: "a2" })];
+    const { deps } = harness(rows, async () => undefined);
+    deps.finish.mockImplementationOnce(async () => {
+      throw new Error("alert push claim lost");
+    });
+    expect(await drainAlertPushes(deps)).toEqual({
+      pushed: 1,
+      pushFailed: 0,
+      claimsLost: 1,
+    });
+    expect(deps.send).toHaveBeenCalledTimes(2);
   });
 });

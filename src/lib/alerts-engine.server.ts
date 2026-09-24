@@ -229,6 +229,7 @@ export type AlertRun = {
   failed?: number;
   pushed?: number;
   pushFailed?: number;
+  claimsLost?: number;
 };
 
 const AUTHORITY_WINDOW_MS = 24 * 3_600_000;

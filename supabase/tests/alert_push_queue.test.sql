@@ -1,6 +1,6 @@
 begin;
 set local search_path = public, extensions;
-select plan(7);
+select plan(9);
 
 insert into auth.users(id,email) values ('2c000000-0000-4000-8000-000000000001','push-owner@example.invalid');
 insert into alerts(id,user_id,kind,severity,dedupe_key,title,body,created_at) values
@@ -22,6 +22,10 @@ select is((select count(*) from claim_alert_pushes(10)),0::bigint,'an alert is a
 set local role authenticated;
 select set_config('request.jwt.claim.sub','2c000000-0000-4000-8000-000000000001',true);
 select throws_ok($$select * from claim_alert_pushes(10)$$,'42501',null,'users cannot claim pushes');
+select throws_ok($$update alerts set push_state='pending', push_attempts=0 where id='2c000000-0000-4000-8000-000000000010'$$,
+  '42501',null,'a user cannot re-queue their own alert for push');
+select lives_ok($$update alerts set read_at=now() where id='2c000000-0000-4000-8000-000000000010'$$,
+  'a user can still mark their own alert read');
 reset role;
 
 select throws_ok($$update alerts set push_state='maybe' where id='2c000000-0000-4000-8000-000000000010'$$,

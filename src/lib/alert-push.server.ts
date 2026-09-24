@@ -18,6 +18,7 @@ export type ClaimedPush = {
 type PushState = "sent" | "pending" | "failed";
 
 const MAX_ATTEMPTS = 5;
+const CLAIM_LOST = "alert push claim lost";
 
 const store = {
   configured: fcmConfigured,
@@ -38,7 +39,7 @@ const store = {
       .select("id");
     if (error) throw new Error(error.message);
     // another run reclaimed this alert after our claim went stale
-    if (!data?.length) throw new Error("alert push claim lost");
+    if (!data?.length) throw new Error(CLAIM_LOST);
   },
 };
 
@@ -46,21 +47,26 @@ export async function drainAlertPushes(
   dependencies: Partial<typeof store> = {},
 ) {
   const deps = { ...store, ...dependencies };
-  if (!deps.configured()) return { pushed: 0, pushFailed: 0 };
+  if (!deps.configured()) return { pushed: 0, pushFailed: 0, claimsLost: 0 };
   let pushed = 0;
   let pushFailed = 0;
+  let claimsLost = 0;
   for (const row of await deps.claim()) {
+    let state: PushState = "sent";
     try {
       await deps.send(row);
-      await deps.finish(row, "sent");
-      pushed++;
     } catch {
       pushFailed++;
-      await deps.finish(
-        row,
-        row.push_attempts >= MAX_ATTEMPTS ? "failed" : "pending",
-      );
+      state = row.push_attempts >= MAX_ATTEMPTS ? "failed" : "pending";
+    }
+    try {
+      await deps.finish(row, state);
+      if (state === "sent") pushed++;
+    } catch (failure) {
+      if (!(failure instanceof Error && failure.message === CLAIM_LOST))
+        throw failure;
+      claimsLost++;
     }
   }
-  return { pushed, pushFailed };
+  return { pushed, pushFailed, claimsLost };
 }
