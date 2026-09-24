@@ -30,9 +30,9 @@
 - Modify: `src/integrations/supabase/types.ts` (zones + alerts Row/Insert/Update)
 - Modify: `src/lib/account.ts` (`Zone`, `ZoneInput`)
 
-- [ ] Write the pgTAP test: new columns exist and default true for an inserted zone; existing zones backfilled; `alerts` accepts `weather`, `official`, `road` and still rejects `flood`; `source_table`/`source_id` nullable.
-- [ ] Migration: add `notify_weather`, `notify_official`, `notify_road` boolean not null default true to `zones`; replace the `alerts` kind CHECK with `fire, risk, weather, official, road`; add `source_table text`, `source_id uuid` to `alerts` with a CHECK that both are null or both set.
-- [ ] Update types and `Zone`/`ZoneInput`; run `DB=1 gates.sh`; commit.
+- [x] Write the pgTAP test: new columns exist and default true for an inserted zone; existing zones backfilled; `alerts` accepts `weather`, `official`, `road` and still rejects `flood`; `source_table`/`source_id` nullable.
+- [x] Migration: add `notify_weather`, `notify_official`, `notify_road` boolean not null default true to `zones`; replace the `alerts` kind CHECK with `fire, risk, weather, official, road`; add `source_table text`, `source_id uuid` to `alerts` with a CHECK that both are null or both set.
+- [x] Update types and `Zone`/`ZoneInput`; run `DB=1 gates.sh`; commit.
 
 ### Task 2: Pure matchers
 

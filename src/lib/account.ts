@@ -47,6 +47,9 @@ export type Zone = {
   min_danger_level: number;
   notify_fires: boolean;
   notify_risk: boolean;
+  notify_weather: boolean;
+  notify_official: boolean;
+  notify_road: boolean;
   active: boolean;
   created_at: string;
 };

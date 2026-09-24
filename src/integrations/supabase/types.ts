@@ -774,6 +774,8 @@ export type Database = {
           payload: Json | null;
           read_at: string | null;
           severity: number;
+          source_id: string | null;
+          source_table: string | null;
           title: string;
           user_id: string;
           zone_id: string | null;
@@ -793,6 +795,8 @@ export type Database = {
           payload?: Json | null;
           read_at?: string | null;
           severity?: number;
+          source_id?: string | null;
+          source_table?: string | null;
           title: string;
           user_id: string;
           zone_id?: string | null;
@@ -812,6 +816,8 @@ export type Database = {
           payload?: Json | null;
           read_at?: string | null;
           severity?: number;
+          source_id?: string | null;
+          source_table?: string | null;
           title?: string;
           user_id?: string;
           zone_id?: string | null;
@@ -3207,6 +3213,9 @@ export type Database = {
           name: string;
           notify_fires: boolean;
           notify_risk: boolean;
+          notify_road: boolean;
+          notify_weather: boolean;
+          notify_official: boolean;
           radius_km: number;
           updated_at: string;
           user_id: string;
@@ -3222,6 +3231,9 @@ export type Database = {
           name: string;
           notify_fires?: boolean;
           notify_risk?: boolean;
+          notify_road?: boolean;
+          notify_weather?: boolean;
+          notify_official?: boolean;
           radius_km?: number;
           updated_at?: string;
           user_id: string;
@@ -3237,6 +3249,9 @@ export type Database = {
           name?: string;
           notify_fires?: boolean;
           notify_risk?: boolean;
+          notify_road?: boolean;
+          notify_weather?: boolean;
+          notify_official?: boolean;
           radius_km?: number;
           updated_at?: string;
           user_id?: string;
