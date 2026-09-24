@@ -10,6 +10,7 @@ import { SplitView } from "@/components/admin/kit/SplitView";
 import { StatusBadge, type Tone } from "@/components/admin/kit/StatusBadge";
 import { When } from "@/components/admin/kit/When";
 import { Button } from "@/components/ui/button";
+import type { AnyLocale } from "@/i18n";
 import {
   editIncident,
   INCIDENT_STATUSES,
@@ -17,6 +18,7 @@ import {
   type IncidentStatus,
   type OfficialIncident,
 } from "@/lib/admin-incidents";
+import { unitName } from "@/lib/nadhir";
 import { cn } from "@/lib/utils";
 
 const FILTERS = ["listed", "unlisted", "all"] as const;
@@ -29,8 +31,9 @@ const STATUS_TONE: Record<string, Tone> = {
   unknown: "neutral",
 };
 
-const place = (incident: OfficialIncident) =>
-  [incident.commune?.name_fr, incident.wilaya?.name_fr]
+const place = (incident: OfficialIncident, locale: AnyLocale) =>
+  [incident.commune, incident.wilaya]
+    .map((unit) => (unit ? unitName(unit, locale) : null))
     .filter(Boolean)
     .join(" — ") ||
   incident.place_text ||
@@ -43,7 +46,7 @@ function Detail({
   incident: OfficialIncident;
   onDone: () => void;
 }) {
-  const { t } = useTranslation("admin");
+  const { t, i18n } = useTranslation("admin");
   const qc = useQueryClient();
   const [status, setStatus] = useState<IncidentStatus>(
     (INCIDENT_STATUSES as readonly string[]).includes(incident.status)
@@ -73,7 +76,7 @@ function Detail({
       </div>
       <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
         <dt className="text-muted-foreground">{t("incidents.place")}</dt>
-        <dd>{place(incident)}</dd>
+        <dd>{place(incident, i18n.language as AnyLocale)}</dd>
         <dt className="text-muted-foreground">{t("incidents.authority")}</dt>
         <dd>
           {t(`incidents.tier_${incident.authority_tier}`, {
@@ -141,7 +144,7 @@ function Detail({
 }
 
 export function OfficialIncidents() {
-  const { t } = useTranslation("admin");
+  const { t, i18n } = useTranslation("admin");
   const incidents = useQuery(officialIncidentsQuery);
   const [filter, setFilter] = useState<Filter>("listed");
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -222,7 +225,7 @@ export function OfficialIncidents() {
                         </span>
                       </span>
                       <span className="mt-1 block truncate text-xs text-muted-foreground">
-                        {place(incident)}
+                        {place(incident, i18n.language as AnyLocale)}
                       </span>
                     </button>
                   </li>

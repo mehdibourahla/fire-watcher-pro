@@ -32,7 +32,7 @@ Browser check against the local dev server and the isolated Supabase stack, seed
 - [x] **P7 Broadcasts.** Kill switch behind a confirm plus reason, delivery channels moved in, relay dialog through the RPC, readable audit.
 - [x] **P8 Risk, DGPC incidents, Places.** States, reasons, location, search, pagination.
 - [x] **P9 People + Audit.** Member table plus role Sheet with confirmation. Audit with labels, actor names, targets and filters.
-- [ ] **P10 i18n + polish.**
+- [x] **P10 i18n + polish.**
   - Complete ar and fr for every admin key.
   - RTL pass.
   - Mobile pass.

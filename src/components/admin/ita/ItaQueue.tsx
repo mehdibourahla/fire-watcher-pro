@@ -132,7 +132,11 @@ export function ItaQueue() {
                         <When at={work.report.published_at} />
                       </span>
                     </span>
-                    <span lang="fr" className="mt-1.5 line-clamp-2 text-sm">
+                    <span
+                      lang="fr"
+                      dir="auto"
+                      className="mt-1.5 line-clamp-2 text-sm"
+                    >
                       {work.latest?.summary ?? work.summary}
                     </span>
                   </button>

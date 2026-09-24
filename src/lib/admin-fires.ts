@@ -1,10 +1,12 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 
 import type { Tone } from "@/components/admin/kit/StatusBadge";
 
 import { supabase } from "@/integrations/supabase/client";
-import { adminUnitsQuery } from "@/lib/nadhir";
+import type { AnyLocale } from "@/i18n";
+import { adminUnitsQuery, unitName } from "@/lib/nadhir";
 
 export const FIRE_STATES = [
   "unconfirmed",
@@ -94,9 +96,13 @@ export const FIRE_STATE_TONE: Record<string, Tone> = {
 
 export function usePlace() {
   const units = useQuery(adminUnitsQuery);
+  const locale = useTranslation().i18n.language as AnyLocale;
   const names = useMemo(
-    () => new Map((units.data ?? []).map((unit) => [unit.id, unit.name_fr])),
-    [units.data],
+    () =>
+      new Map(
+        (units.data ?? []).map((unit) => [unit.id, unitName(unit, locale)]),
+      ),
+    [units.data, locale],
   );
   return (fire: UnresolvedFire) =>
     [fire.commune_id, fire.wilaya_id]

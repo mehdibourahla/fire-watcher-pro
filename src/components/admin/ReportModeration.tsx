@@ -11,7 +11,13 @@ import { When } from "@/components/admin/kit/When";
 import { ReportPhoto } from "@/components/ReportPhoto";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { adminUnitsQuery, clustersQuery, type FireCluster } from "@/lib/nadhir";
+import type { AnyLocale } from "@/i18n";
+import {
+  adminUnitsQuery,
+  clustersQuery,
+  unitName,
+  type FireCluster,
+} from "@/lib/nadhir";
 import {
   moderateReport,
   moderationQueueQuery,
@@ -192,15 +198,21 @@ function Detail({
 
 export function ReportModeration() {
   const { t } = useTranslation("admin");
-  const { t: tApp } = useTranslation();
+  const { t: tApp, i18n } = useTranslation();
   const queue = useQuery(moderationQueueQuery);
   const clusters = useQuery(clustersQuery);
   const units = useQuery(adminUnitsQuery);
   const [filter, setFilter] = useState<Filter>("pending");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const communes = useMemo(
-    () => new Map((units.data ?? []).map((unit) => [unit.id, unit.name_fr])),
-    [units.data],
+    () =>
+      new Map(
+        (units.data ?? []).map((unit) => [
+          unit.id,
+          unitName(unit, i18n.language as AnyLocale),
+        ]),
+      ),
+    [units.data, i18n.language],
   );
   const selected =
     queue.data?.find((report) => report.id === selectedId) ?? null;
@@ -291,7 +303,12 @@ export function ReportModeration() {
                           {(report.commune_id &&
                             communes.get(report.commune_id)) ||
                             `${report.lat.toFixed(3)}, ${report.lon.toFixed(3)}`}
-                          {report.note ? ` · ${report.note}` : ""}
+                          {report.note ? (
+                            <>
+                              {" · "}
+                              <bdi>{report.note}</bdi>
+                            </>
+                          ) : null}
                         </span>
                       </button>
                     </li>
