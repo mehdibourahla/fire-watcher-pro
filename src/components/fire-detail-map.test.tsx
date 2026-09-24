@@ -53,7 +53,7 @@ vi.mock("@tanstack/react-query", async (importOriginal) => ({
         },
         isLoading: false,
       };
-    if (["admin_units", "settlements"].includes(queryKey[0] ?? ""))
+    if (["admin_units", "settlements", "zones"].includes(queryKey[0] ?? ""))
       return { data: [], isLoading: false };
     throw new Error(`Unexpected query: ${queryKey.join("/")}`);
   },

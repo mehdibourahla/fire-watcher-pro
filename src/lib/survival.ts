@@ -2,6 +2,7 @@ import {
   LIVE_STATES,
   bearingBetween,
   haversineKm,
+  settlementName,
   unitName,
   type AdminUnit,
   type FireCluster,
@@ -95,7 +96,7 @@ export function positionCard(
       nearestKm = km;
       // bearing runs place -> user: "2 km south of the village" locates the caller.
       nearest = {
-        name: s.name,
+        name: settlementName(s, locale),
         km,
         bearing: bearingBetween(s.lat, s.lon, lat, lon),
       };

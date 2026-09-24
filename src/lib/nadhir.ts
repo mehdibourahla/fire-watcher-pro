@@ -180,6 +180,23 @@ export function coordLabel(lat: number, lon: number) {
 }
 
 /** Never expose short_id as a place: fall back through the nearest known place. */
+export function settlementName(
+  settlement: Pick<Settlement, "name" | "name_ar">,
+  locale: AnyLocale,
+) {
+  const words = settlement.name.split(/\s+/).filter(Boolean);
+  const arabic =
+    settlement.name_ar ??
+    words.filter((w) => /\p{Script=Arabic}/u.test(w)).join(" ");
+  if (locale === "ar") return arabic || settlement.name;
+  const latin = words.filter(
+    (w) => !/[\p{Script=Arabic}\p{Script=Tifinagh}]/u.test(w),
+  );
+  return latin.some((w) => /\p{Script=Latin}/u.test(w))
+    ? latin.join(" ")
+    : arabic || settlement.name;
+}
+
 export function placeLabel(
   cluster: Pick<FireCluster, "lat" | "lon" | "commune_id">,
   units: AdminUnit[],
@@ -196,7 +213,7 @@ export function placeLabel(
   let best: { name: string; km: number } | null = null;
   for (const s of settlements) {
     const km = haversineKm(cluster.lat, cluster.lon, s.lat, s.lon);
-    if (!best || km < best.km) best = { name: s.name, km };
+    if (!best || km < best.km) best = { name: settlementName(s, locale), km };
   }
   for (const u of units) {
     if (u.level !== "commune") continue;
