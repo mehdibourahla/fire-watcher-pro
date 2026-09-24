@@ -36,12 +36,26 @@ describe("admin namespace", () => {
       return read(adminEn) === read(adminFr);
     });
     expect(shared).toEqual([
-      "nav.triage",
       "nav.sources",
       "nav.incidents",
+      "ita.tabs.publications",
+      "ita.wilaya",
+      "ita.incidents",
+      "ita.incidents_other",
+      "reportsPage.km",
+      "translationsPage.suggestions",
+      "translationsPage.suggestions_other",
+      "groups.admin",
+      "audit.domain_sources",
+      "audit.domain_incidents",
       "fires.reason",
+      "sources.channel_telegram",
       "sources.title",
       "sources.colSource",
+      "incidents.detail",
+      "incidents.tier_national",
+      "incidents.tier_wilaya",
+      "places.openMap",
     ]);
   });
 });

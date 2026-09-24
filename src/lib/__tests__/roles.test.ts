@@ -155,3 +155,19 @@ describe("roleMutationErrorKey", () => {
     );
   });
 });
+
+describe("applyRoleChanges", () => {
+  it("grants before it revokes and leaves unchanged roles alone", async () => {
+    rpc.mockResolvedValue({ error: null });
+
+    await roles.applyRoleChanges(
+      "user-1",
+      roles.roleChanges(["translator", "operator"], ["operator", "admin"]),
+    );
+
+    expect(rpc.mock.calls).toEqual([
+      ["grant_user_role", { _user: "user-1", _role: "admin" }],
+      ["revoke_user_role", { _user: "user-1", _role: "translator" }],
+    ]);
+  });
+});

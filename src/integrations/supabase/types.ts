@@ -3413,7 +3413,9 @@ export type Database = {
           actor_kind: string | null;
           actor_label: string | null;
           actor_user_id: string | null;
+          after: Json | null;
           at: string | null;
+          before: Json | null;
           domain: string | null;
           id: string | null;
           reason: string | null;
@@ -3770,7 +3772,7 @@ export type Database = {
       prune_reliability_history: { Args: never; Returns: Json };
 
       set_source_paused: {
-        Args: { _key: string; _paused: boolean };
+        Args: { _key: string; _paused: boolean; _reason?: string | null };
         Returns: undefined;
       };
       acknowledge_operational_incident: {
@@ -3799,7 +3801,7 @@ export type Database = {
         Returns: boolean;
       };
       set_delivery_channel_paused: {
-        Args: { _channel: string; _paused: boolean };
+        Args: { _channel: string; _paused: boolean; _reason?: string | null };
         Returns: undefined;
       };
       bump_official_incident: {
@@ -3959,6 +3961,49 @@ export type Database = {
       };
       replay_source_gap: {
         Args: { _gap_id: string; _reason?: string | null };
+        Returns: string;
+      };
+      admin_attention_counts: {
+        Args: never;
+        Returns: {
+          count: number;
+          item: string;
+          oldest: string | null;
+        }[];
+      };
+      dismiss_civil_investigation: {
+        Args: { _id: string; _reason: string };
+        Returns: undefined;
+      };
+      list_risk_snapshot_runs: {
+        Args: never;
+        Returns: {
+          base_date: string;
+          created_at: string;
+          finished_at: string | null;
+          heartbeat_at: string;
+          scheduled_for: string;
+          snapshot_id: string;
+          status: string;
+        }[];
+      };
+      moderate_citizen_report: {
+        Args: {
+          _cluster: string | null;
+          _id: string;
+          _note?: string | null;
+          _status: string;
+        };
+        Returns: undefined;
+      };
+      relay_authority_warning: {
+        Args: {
+          _body: string;
+          _received_via: string;
+          _severity: string;
+          _source: string;
+          _wilaya: string;
+        };
         Returns: string;
       };
       resolve_fire: {
@@ -4173,7 +4218,7 @@ export type Database = {
         Returns: Json;
       };
       set_broadcast_enabled: {
-        Args: { _enabled: boolean };
+        Args: { _enabled: boolean; _note?: string | null };
         Returns: Json;
       };
       stage_risk_forecast_batch: {

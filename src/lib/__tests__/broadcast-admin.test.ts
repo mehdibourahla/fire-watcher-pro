@@ -1,15 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { fromMock, getUserMock, insertMock, rpcMock } = vi.hoisted(() => ({
+const { fromMock, rpcMock } = vi.hoisted(() => ({
   fromMock: vi.fn(),
-  getUserMock: vi.fn(),
-  insertMock: vi.fn(),
   rpcMock: vi.fn(),
 }));
 
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
-    auth: { getUser: getUserMock },
     from: fromMock,
     rpc: rpcMock,
   },
@@ -35,8 +32,6 @@ const validWarning = {
 describe("broadcast settings control plane", () => {
   beforeEach(() => {
     fromMock.mockReset();
-    getUserMock.mockReset();
-    insertMock.mockReset();
     rpcMock.mockReset();
   });
 
@@ -47,7 +42,9 @@ describe("broadcast settings control plane", () => {
       error: null,
     });
 
-    await expect(setBroadcastEnabled(false)).resolves.toEqual({
+    await expect(
+      setBroadcastEnabled(false, "False alarm wave"),
+    ).resolves.toEqual({
       changed: true,
       enabled: false,
       updated_at: updatedAt,
@@ -55,6 +52,7 @@ describe("broadcast settings control plane", () => {
 
     expect(rpcMock).toHaveBeenCalledWith("set_broadcast_enabled", {
       _enabled: false,
+      _note: "False alarm wave",
     });
     expect(fromMock).not.toHaveBeenCalledWith("broadcast_settings");
   });
@@ -136,7 +134,7 @@ describe("broadcast settings control plane", () => {
 
     expect(fromMock).toHaveBeenCalledWith("broadcast_audit");
     expect(builder["select"]).toHaveBeenCalledWith(
-      "id, at, action, reason, kind, phase, severity, commune_codes, actor_id",
+      "id, at, action, reason, kind, phase, severity, commune_codes, actor_id, payload",
     );
   });
 });
@@ -144,8 +142,6 @@ describe("broadcast settings control plane", () => {
 describe("authority warning submission", () => {
   beforeEach(() => {
     fromMock.mockReset();
-    getUserMock.mockReset();
-    insertMock.mockReset();
     rpcMock.mockReset();
   });
 
@@ -153,44 +149,37 @@ describe("authority warning submission", () => {
     { ...validWarning, source: " \t\n" },
     { ...validWarning, source: "\u00a0\u2003\u202f\u3000" },
     { ...validWarning, body: "\u00a0\u2003\u202f\u3000" },
-  ])("rejects whitespace-only input before authentication", async (warning) => {
-    await expect(submitAuthorityWarning(warning)).rejects.toMatchObject({
-      message: "broadcastAdmin.warningRequired",
-    });
-    expect(getUserMock).not.toHaveBeenCalled();
-    expect(fromMock).not.toHaveBeenCalled();
-  });
+  ])(
+    "rejects whitespace-only input before calling the relay",
+    async (warning) => {
+      await expect(submitAuthorityWarning(warning)).rejects.toMatchObject({
+        message: "broadcastAdmin.warningRequired",
+      });
+      expect(rpcMock).not.toHaveBeenCalled();
+      expect(fromMock).not.toHaveBeenCalled();
+    },
+  );
 
-  it("trims valid text and preserves attribution, severity, and wilaya", async () => {
-    getUserMock.mockResolvedValue({
-      data: { user: { id: "admin-1" } },
-      error: null,
-    });
-    insertMock.mockResolvedValue({ error: null });
-    fromMock.mockReturnValue({ insert: insertMock });
+  it("relays trimmed text through the audited function, which attributes it", async () => {
+    rpcMock.mockResolvedValue({ data: "warning-1", error: null });
 
     await expect(submitAuthorityWarning(validWarning)).resolves.toBeUndefined();
 
-    expect(fromMock).toHaveBeenCalledWith("authority_warnings");
-    expect(insertMock).toHaveBeenCalledWith({
-      source: "Protection Civile",
-      received_via: "phone",
-      body: "Close the forest road",
-      severity: "Severe",
-      wilaya_id: "wilaya-15",
-      created_by: "admin-1",
+    expect(fromMock).not.toHaveBeenCalled();
+    expect(rpcMock).toHaveBeenCalledWith("relay_authority_warning", {
+      _source: "Protection Civile",
+      _received_via: "phone",
+      _body: "Close the forest road",
+      _severity: "Severe",
+      _wilaya: "wilaya-15",
     });
   });
 
-  it("maps insert failures to localized guidance without exposing raw errors", async () => {
-    getUserMock.mockResolvedValue({
-      data: { user: { id: "admin-1" } },
-      error: null,
+  it("maps relay failures to localized guidance without exposing raw errors", async () => {
+    rpcMock.mockResolvedValue({
+      data: null,
+      error: { message: "warning_fields_required" },
     });
-    insertMock.mockResolvedValue({
-      error: { message: "authority_warnings_body_nonblank" },
-    });
-    fromMock.mockReturnValue({ insert: insertMock });
 
     const failure = await submitAuthorityWarning(validWarning).catch(
       (error) => error,
@@ -198,6 +187,6 @@ describe("authority warning submission", () => {
 
     expect(failure).toBeInstanceOf(BroadcastAdminError);
     expect(failure.message).toBe("broadcastAdmin.warningFailed");
-    expect(failure.message).not.toContain("authority_warnings_body_nonblank");
+    expect(failure.message).not.toContain("warning_fields_required");
   });
 });

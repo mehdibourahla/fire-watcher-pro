@@ -1,64 +1,83 @@
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import type { AnyLocale } from "@/i18n";
-import { adminTriageQuery, rankTriage } from "@/lib/admin-triage";
-import { relativeTime } from "@/lib/nadhir";
+import { PageHeader } from "@/components/admin/kit/PageHeader";
+import { QueryState } from "@/components/admin/kit/QueryState";
+import { StatusBadge } from "@/components/admin/kit/StatusBadge";
+import { When } from "@/components/admin/kit/When";
+import { attentionQuery } from "@/lib/admin-attention";
+import { overviewRows, unappliedTranslationsQuery } from "@/lib/admin-overview";
 import { myRolesQuery } from "@/lib/reports";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
-  component: TriagePage,
+  component: OverviewPage,
 });
 
-const TONE: Record<number, string> = {
-  1: "border-destructive/40 bg-destructive/5",
-  2: "border-border bg-muted/40",
-  3: "border-border",
-};
-
-function TriagePage() {
-  const { t, i18n } = useTranslation("admin");
+function OverviewPage() {
+  const { t } = useTranslation("admin");
   const roles = useQuery(myRolesQuery);
-  const triage = useQuery({
-    ...adminTriageQuery(roles.data ?? []),
-    enabled: !roles.isLoading,
+  const attention = useQuery(attentionQuery);
+  const translator = (roles.data ?? []).some(
+    (role) => role === "translator" || role === "admin",
+  );
+  const unapplied = useQuery({
+    ...unappliedTranslationsQuery,
+    enabled: translator,
   });
-
-  const rows = triage.data ? rankTriage(triage.data) : [];
 
   return (
     <section>
-      <h1 className="text-lg font-semibold">{t("triage.title")}</h1>
-
-      {triage.isError ? (
-        <p className="mt-4 text-sm text-destructive">
-          {(triage.error as Error).message}
-        </p>
-      ) : null}
-
-      {triage.isSuccess && rows.length === 0 ? (
-        <p className="mt-4 text-sm text-muted-foreground">
-          {t("triage.allClear")}{" "}
-          {t("triage.checkedAt", {
-            time: relativeTime(
-              new Date().toISOString(),
-              i18n.language as AnyLocale,
-            ),
-          })}
-        </p>
-      ) : null}
-
-      <ul className="mt-4 space-y-2">
-        {rows.map((row) => (
-          <li
-            key={row.key}
-            className={`rounded-md border px-3 py-2 text-sm ${TONE[row.severity]}`}
-          >
-            {t(`triage.${row.key}`, { count: row.count ?? 0 })}
-          </li>
-        ))}
-      </ul>
+      <PageHeader
+        title={t("overview.title")}
+        description={t("overview.description")}
+      />
+      <QueryState query={attention} rows={4}>
+        {(counts) => {
+          const rows = overviewRows(counts, unapplied.data ?? 0);
+          if (rows.length === 0)
+            return (
+              <div className="rounded-lg border border-border p-8 text-center">
+                <StatusBadge tone="ok">{t("overview.allClear")}</StatusBadge>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  {t("overview.checked")}{" "}
+                  <When at={new Date(attention.dataUpdatedAt).toISOString()} />
+                </p>
+              </div>
+            );
+          return (
+            <ul className="divide-y divide-border overflow-hidden rounded-lg border border-border">
+              {rows.map((row) => (
+                <li key={row.item}>
+                  <Link
+                    to={row.path}
+                    className="flex items-center gap-3 px-4 py-3 hover:bg-muted"
+                  >
+                    <StatusBadge tone={row.tone} className="tabular-nums">
+                      {row.count}
+                    </StatusBadge>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-sm font-medium">
+                        {t(`overview.items.${row.item}`)}
+                      </span>
+                      {row.oldest ? (
+                        <span className="text-xs text-muted-foreground">
+                          {t("overview.oldest")} <When at={row.oldest} />
+                        </span>
+                      ) : null}
+                    </span>
+                    <ChevronRight
+                      aria-hidden
+                      className="size-4 shrink-0 text-muted-foreground rtl:rotate-180"
+                    />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          );
+        }}
+      </QueryState>
     </section>
   );
 }

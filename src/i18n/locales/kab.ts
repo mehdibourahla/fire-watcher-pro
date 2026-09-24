@@ -1202,6 +1202,23 @@ export const kab: Translation = {
       "I yal asteqsi, seqdec anermis yellan deg usebter « Ɣef ».",
   },
   broadcastAdmin: {
+    stopTitle: "Couper toutes les alertes publiques ?",
+    stopDescription:
+      "Plus rien n'est publié ni envoyé tant que personne ne relance. Les notifications déjà envoyées ne sont pas rappelées.",
+    resumeTitle: "Relancer les alertes publiques ?",
+    resumeDescription:
+      "Les alertes sont de nouveau publiées au prochain passage, y compris celles encore en cours.",
+    relayConfirmTitle: "Relayer cet avertissement vers {{wilaya}} ?",
+    relayConfirmDescription:
+      "Il est diffusé mot pour mot, attribué à {{source}}, à toutes les communes de la wilaya au prochain passage.",
+    relayedOk: "Avertissement programmé pour diffusion",
+    recentWarnings: "Avertissements récents",
+    action: {
+      published: "Publié",
+      suppressed: "Supprimé",
+      enabled: "Diffusion relancée",
+      disabled: "Diffusion coupée",
+    },
     title: "Tanarit n uzuzer",
     subtitle:
       "Taqeffalt n uḥbas, aɣmis n usenqed, d uzuzer s ufus n yilɣa n tnebbaḍt.",

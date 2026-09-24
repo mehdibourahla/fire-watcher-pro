@@ -87,25 +87,25 @@ select ok(
 select has_function(
   'public',
   'set_broadcast_enabled',
-  array['boolean'],
+  array['boolean','text'],
   'the kill-switch has a database-owned transition function'
 );
 select ok(
   case
-    when to_regprocedure('public.set_broadcast_enabled(boolean)') is null then false
+    when to_regprocedure('public.set_broadcast_enabled(boolean,text)') is null then false
     else has_function_privilege(
       'authenticated',
-      'public.set_broadcast_enabled(boolean)',
+      'public.set_broadcast_enabled(boolean,text)',
       'execute'
     )
     and not has_function_privilege(
       'anon',
-      'public.set_broadcast_enabled(boolean)',
+      'public.set_broadcast_enabled(boolean,text)',
       'execute'
     )
     and not has_function_privilege(
       'service_role',
-      'public.set_broadcast_enabled(boolean)',
+      'public.set_broadcast_enabled(boolean,text)',
       'execute'
     )
   end,
@@ -115,7 +115,7 @@ select is(
   (
     select proconfig
     from pg_proc
-    where oid = to_regprocedure('public.set_broadcast_enabled(boolean)')
+    where oid = to_regprocedure('public.set_broadcast_enabled(boolean,text)')
   ),
   array['search_path=""'],
   'the security-definer transition has an empty search path'
@@ -384,57 +384,37 @@ select set_config(
   true
 );
 select throws_ok(
-  $$insert into public.authority_warnings (
-      source, received_via, body, severity, wilaya_id, created_by
-    )
-    select '   ', 'phone', 'Valid warning body', 'Severe', id,
-      'f0150000-0000-4000-8000-000000000001'
-    from public.admin_units where level = 'wilaya' order by code limit 1$$,
-  '23514',
+  $$select public.relay_authority_warning('   ', 'phone', 'Valid warning body', 'Severe',
+      (select id from public.admin_units where level = 'wilaya' order by code limit 1))$$,
+  '22023',
   null,
   'ASCII-space-only sources are rejected'
 );
 select throws_ok(
-  $$insert into public.authority_warnings (
-      source, received_via, body, severity, wilaya_id, created_by
-    )
-    select E'\t\n', 'phone', 'Valid warning body', 'Severe', id,
-      'f0150000-0000-4000-8000-000000000001'
-    from public.admin_units where level = 'wilaya' order by code limit 1$$,
-  '23514',
+  $$select public.relay_authority_warning(E'\t\n', 'phone', 'Valid warning body', 'Severe',
+      (select id from public.admin_units where level = 'wilaya' order by code limit 1))$$,
+  '22023',
   null,
   'control-whitespace-only sources are rejected'
 );
 select throws_ok(
-  $$insert into public.authority_warnings (
-      source, received_via, body, severity, wilaya_id, created_by
-    )
-    select U&'\00A0\2003\202F\3000', 'phone', 'Valid warning body',
-      'Severe', id, 'f0150000-0000-4000-8000-000000000001'
-    from public.admin_units where level = 'wilaya' order by code limit 1$$,
-  '23514',
+  $$select public.relay_authority_warning(U&'\00A0\2003\202F\3000', 'phone', 'Valid warning body', 'Severe',
+      (select id from public.admin_units where level = 'wilaya' order by code limit 1))$$,
+  '22023',
   null,
   'Unicode-whitespace-only sources are rejected'
 );
 select throws_ok(
-  $$insert into public.authority_warnings (
-      source, received_via, body, severity, wilaya_id, created_by
-    )
-    select 'Protection Civile', 'phone', U&'\00A0\2003\202F\3000',
-      'Severe', id, 'f0150000-0000-4000-8000-000000000001'
-    from public.admin_units where level = 'wilaya' order by code limit 1$$,
-  '23514',
+  $$select public.relay_authority_warning('Protection Civile', 'phone', U&'\00A0\2003\202F\3000', 'Severe',
+      (select id from public.admin_units where level = 'wilaya' order by code limit 1))$$,
+  '22023',
   null,
   'Unicode-whitespace-only warning bodies are rejected'
 );
 select lives_ok(
-  $$insert into public.authority_warnings (
-      source, received_via, body, severity, wilaya_id, created_by
-    )
-    select 'Protection Civile F016', 'phone', 'Close the forest road', 'Severe', id,
-      'f0150000-0000-4000-8000-000000000001'
-    from public.admin_units where level = 'wilaya' order by code limit 1$$,
-  'an admin can insert a valid attributed warning'
+  $$select public.relay_authority_warning('Protection Civile F016', 'phone', 'Close the forest road', 'Severe',
+      (select id from public.admin_units where level = 'wilaya' order by code limit 1))$$,
+  'an admin relays a valid warning through the audited function'
 );
 
 reset role;

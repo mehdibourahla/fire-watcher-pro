@@ -1,17 +1,21 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import type { AnyLocale } from "@/i18n";
+import { FireDetail } from "@/components/admin/FireDetail";
+import { PageHeader } from "@/components/admin/kit/PageHeader";
+import { QueryState } from "@/components/admin/kit/QueryState";
+import { SplitView } from "@/components/admin/kit/SplitView";
+import { StatusBadge } from "@/components/admin/kit/StatusBadge";
+import { When } from "@/components/admin/kit/When";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
-  resolveFire,
-  RESOLUTION_REASONS,
+  FIRE_STATE_TONE,
   unresolvedFiresQuery,
-  type ResolutionReason,
-  type UnresolvedFire,
+  usePlace,
 } from "@/lib/admin-fires";
-import { relativeTime } from "@/lib/nadhir";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/admin/fires")({
   component: FiresPage,
@@ -19,113 +23,85 @@ export const Route = createFileRoute("/_authenticated/admin/fires")({
 
 function FiresPage() {
   const { t } = useTranslation("admin");
-  const fires = useQuery(unresolvedFiresQuery);
+  const [strongOnly, setStrongOnly] = useState(true);
+  const fires = useQuery(unresolvedFiresQuery(strongOnly));
+  const place = usePlace();
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const selected = fires.data?.find((fire) => fire.id === selectedId) ?? null;
 
   return (
     <section>
-      <h1 className="text-lg font-semibold">{t("fires.title")}</h1>
-      <p className="mt-1 text-sm text-muted-foreground">
-        {t("fires.subtitle")}
-      </p>
-
-      {fires.isLoading ? (
-        <p className="mt-6 text-sm text-muted-foreground">
-          {t("queues.loading")}
-        </p>
-      ) : (fires.data ?? []).length === 0 ? (
-        <p className="mt-6 text-sm text-muted-foreground">{t("fires.empty")}</p>
-      ) : (
-        <ul className="mt-6 space-y-3">
-          {(fires.data ?? []).map((fire) => (
-            <FireCard key={fire.id} fire={fire} />
-          ))}
-        </ul>
-      )}
-    </section>
-  );
-}
-
-function FireCard({ fire }: { fire: UnresolvedFire }) {
-  const { t, i18n } = useTranslation("admin");
-  const locale = i18n.language as AnyLocale;
-  const qc = useQueryClient();
-  const [reason, setReason] = useState<ResolutionReason>("flare");
-  const [note, setNote] = useState("");
-
-  const act = useMutation({
-    mutationFn: (state: "extinguished" | "false_positive") =>
-      resolveFire({
-        id: fire.id,
-        state,
-        reason: state === "false_positive" ? reason : null,
-        note: note.trim() === "" ? null : note.trim(),
-        expectedUpdatedAt: fire.updated_at,
-      }),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: ["admin", "fires", "unresolved"] }),
-  });
-
-  return (
-    <li className="card flex flex-col gap-3 p-4">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <span className="font-medium">{fire.short_id}</span>
-        <span className="text-xs text-muted-foreground">
-          {relativeTime(fire.last_detected_at, locale)}
-        </span>
-      </div>
-      <p className="text-xs text-muted-foreground">
-        {t("fires.detail", {
-          lat: fire.lat.toFixed(3),
-          lon: fire.lon.toFixed(3),
-          confidence: ((fire.confidence ?? 0) * 100).toFixed(0),
-          detections: fire.detection_count ?? 0,
-        })}
-      </p>
-
-      <div className="flex flex-wrap items-center gap-2">
-        <select
-          aria-label={t("fires.reason")}
-          value={reason}
-          onChange={(e) => setReason(e.target.value as ResolutionReason)}
-          className="rounded-md border border-border bg-background px-2 py-1 text-xs"
-        >
-          {RESOLUTION_REASONS.map((r) => (
-            <option key={r} value={r}>
-              {t(`fires.reason_${r}`)}
-            </option>
-          ))}
-        </select>
-        <input
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-          placeholder={t("fires.note")}
-          className="min-w-40 flex-1 rounded-md border border-border bg-background px-2 py-1 text-xs"
+      <PageHeader title={t("fires.title")} description={t("fires.subtitle")} />
+      <label className="mb-4 flex items-center gap-2 text-sm">
+        <Checkbox
+          checked={strongOnly}
+          onCheckedChange={(value) => setStrongOnly(value === true)}
         />
-        <button
-          type="button"
-          disabled={act.isPending}
-          onClick={() => act.mutate("false_positive")}
-          className="rounded-md border border-border px-3 py-1.5 text-xs text-[var(--emergency)] disabled:opacity-50"
-        >
-          {t("fires.markFalse")}
-        </button>
-        <button
-          type="button"
-          disabled={act.isPending}
-          onClick={() => act.mutate("extinguished")}
-          className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground disabled:opacity-50"
-        >
-          {t("fires.markEnded")}
-        </button>
-      </div>
-
-      {act.isError ? (
-        <p className="text-xs text-[var(--emergency)]">
-          {(act.error as Error).message.includes("stale_write")
-            ? t("fires.staleWrite")
-            : (act.error as Error).message}
-        </p>
-      ) : null}
-    </li>
+        {t("fires.strongOnly")}
+      </label>
+      <QueryState
+        query={fires}
+        isEmpty={(rows) => rows.length === 0}
+        empty={t("fires.empty")}
+      >
+        {(rows) => (
+          <SplitView
+            detailTitle={t("fires.detailTitle")}
+            placeholder={t("fires.placeholder")}
+            onClose={() => setSelectedId(null)}
+            detail={
+              selected ? (
+                <FireDetail
+                  key={selected.id}
+                  fire={selected}
+                  place={place(selected)}
+                  onDone={() => setSelectedId(null)}
+                />
+              ) : null
+            }
+            list={
+              <ul className="divide-y divide-border overflow-hidden rounded-lg border border-border">
+                {rows.map((fire) => (
+                  <li key={fire.id}>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedId(fire.id)}
+                      className={cn(
+                        "block w-full px-4 py-3 text-start hover:bg-muted",
+                        fire.id === selectedId && "bg-muted",
+                      )}
+                    >
+                      <span className="flex items-center gap-2">
+                        <StatusBadge
+                          tone={FIRE_STATE_TONE[fire.state] ?? "neutral"}
+                        >
+                          {t(`fires.state_${fire.state}`)}
+                        </StatusBadge>
+                        <span className="font-mono text-xs">
+                          {fire.short_id}
+                        </span>
+                        <span className="ms-auto shrink-0 text-xs text-muted-foreground">
+                          <When at={fire.last_detected_at} />
+                        </span>
+                      </span>
+                      <span className="mt-1 flex gap-2 text-xs text-muted-foreground">
+                        <span className="min-w-0 flex-1 truncate">
+                          {place(fire)}
+                        </span>
+                        <span className="tabular-nums">
+                          {fire.confidence === null
+                            ? ""
+                            : `${Math.round(fire.confidence * 100)} %`}
+                        </span>
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            }
+          />
+        )}
+      </QueryState>
+    </section>
   );
 }

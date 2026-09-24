@@ -2,9 +2,9 @@ import { queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { archivePayloadName } from "./source-archive-export";
 
-export const sourceArchiveQuery = (source: string) =>
+export const sourceArchiveQuery = (source: string, errorsOnly = false) =>
   queryOptions({
-    queryKey: ["admin", "source-archive", source],
+    queryKey: ["admin", "source-archive", source, errorsOnly],
     queryFn: async () => {
       let query = supabase
         .from("source_captures")
@@ -13,6 +13,7 @@ export const sourceArchiveQuery = (source: string) =>
         .order("id")
         .limit(50);
       if (source) query = query.eq("source_key", source);
+      if (errorsOnly) query = query.gte("http_status", 400);
       const { data, error } = await query;
       if (error) throw new Error(error.message);
       return data ?? [];

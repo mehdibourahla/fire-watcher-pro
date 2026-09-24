@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { ADMIN_SECTIONS, canReachPanel, sectionsFor } from "@/lib/admin-access";
+import {
+  ADMIN_GROUPS,
+  ADMIN_SECTIONS,
+  canReachPanel,
+  sectionsFor,
+} from "@/lib/admin-access";
 import { adminEn } from "@/i18n/admin/en";
 
 describe("admin access", () => {
@@ -18,10 +23,10 @@ describe("admin access", () => {
     expect(canReachPanel(["moderator", "unknown"])).toBe(false);
   });
 
-  it("gives a translator the queues and nothing operational", () => {
+  it("gives a translator translations and nothing operational", () => {
     expect(sectionsFor(["translator"]).map((s) => s.key)).toEqual([
-      "triage",
-      "queues",
+      "overview",
+      "translations",
       "audit",
     ]);
   });
@@ -47,25 +52,18 @@ describe("admin access", () => {
     }
   });
 
-  it("marks only the sections that have a route as ready", () => {
-    const ready = ADMIN_SECTIONS.filter((s) => s.ready).map((s) => s.key);
-    expect(ready).toEqual([
-      "triage",
-      "sources",
-      "fires",
-      "risk",
-      "incidents",
+  it("shows Broadcasts only to admins, as the page itself does", () => {
+    expect(sectionsFor(["operator"]).map((s) => s.key)).not.toContain(
       "broadcasts",
-      "queues",
-      "places",
-      "people",
-      "audit",
-    ]);
+    );
   });
 
-  it("has a nav label for every section", () => {
+  it("has a nav label for every section and group", () => {
     for (const section of ADMIN_SECTIONS) {
       expect(adminEn.nav).toHaveProperty(section.key);
+    }
+    for (const group of ADMIN_GROUPS) {
+      expect(adminEn.groups).toHaveProperty(group);
     }
   });
 });

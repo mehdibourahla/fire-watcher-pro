@@ -188,21 +188,14 @@ export async function moderateReport(input: {
   id: string;
   status: ReportStatus;
   moderation_note?: string | null;
-  cluster_id?: string | null;
+  cluster_id: string | null;
 }) {
-  const { data: auth } = await supabase.auth.getUser();
-  const { error } = await supabase
-    .from("citizen_reports")
-    .update({
-      status: input.status,
-      moderation_note: input.moderation_note ?? null,
-      ...(input.cluster_id !== undefined
-        ? { cluster_id: input.cluster_id }
-        : {}),
-      reviewed_by: auth.user?.id ?? null,
-      reviewed_at: new Date().toISOString(),
-    })
-    .eq("id", input.id);
+  const { error } = await supabase.rpc("moderate_citizen_report", {
+    _id: input.id,
+    _status: input.status,
+    _note: input.moderation_note ?? null,
+    _cluster: input.cluster_id,
+  });
   if (error) throw new Error(error.message);
 }
 

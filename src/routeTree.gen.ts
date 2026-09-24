@@ -36,12 +36,16 @@ import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authenticated/admin/audit'
 import { Route as AuthenticatedAdminBroadcastsRouteImport } from './routes/_authenticated/admin/broadcasts'
 import { Route as AuthenticatedAdminFiresRouteImport } from './routes/_authenticated/admin/fires'
+import { Route as AuthenticatedAdminIdeasRouteImport } from './routes/_authenticated/admin/ideas'
 import { Route as AuthenticatedAdminIncidentsRouteImport } from './routes/_authenticated/admin/incidents'
+import { Route as AuthenticatedAdminItaRouteImport } from './routes/_authenticated/admin/ita'
 import { Route as AuthenticatedAdminPeopleRouteImport } from './routes/_authenticated/admin/people'
 import { Route as AuthenticatedAdminPlacesRouteImport } from './routes/_authenticated/admin/places'
-import { Route as AuthenticatedAdminQueuesRouteImport } from './routes/_authenticated/admin/queues'
+import { Route as AuthenticatedAdminReportsRouteImport } from './routes/_authenticated/admin/reports'
 import { Route as AuthenticatedAdminRiskRouteImport } from './routes/_authenticated/admin/risk'
 import { Route as AuthenticatedAdminSourcesRouteImport } from './routes/_authenticated/admin/sources'
+import { Route as AuthenticatedAdminToolsRouteImport } from './routes/_authenticated/admin/tools'
+import { Route as AuthenticatedAdminTranslationsRouteImport } from './routes/_authenticated/admin/translations'
 import { Route as ApiPrivateAccountRouteImport } from './routes/api/private/account'
 import { Route as ApiPrivateEnsembleRouteImport } from './routes/api/private/ensemble'
 import { Route as ApiPrivatePushTestRouteImport } from './routes/api/private/push-test'
@@ -196,12 +200,22 @@ const AuthenticatedAdminFiresRoute = AuthenticatedAdminFiresRouteImport.update({
   path: '/fires',
   getParentRoute: () => AuthenticatedAdminRouteRoute,
 } as any)
+const AuthenticatedAdminIdeasRoute = AuthenticatedAdminIdeasRouteImport.update({
+  id: '/ideas',
+  path: '/ideas',
+  getParentRoute: () => AuthenticatedAdminRouteRoute,
+} as any)
 const AuthenticatedAdminIncidentsRoute =
   AuthenticatedAdminIncidentsRouteImport.update({
     id: '/incidents',
     path: '/incidents',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminItaRoute = AuthenticatedAdminItaRouteImport.update({
+  id: '/ita',
+  path: '/ita',
+  getParentRoute: () => AuthenticatedAdminRouteRoute,
+} as any)
 const AuthenticatedAdminPeopleRoute =
   AuthenticatedAdminPeopleRouteImport.update({
     id: '/people',
@@ -214,10 +228,10 @@ const AuthenticatedAdminPlacesRoute =
     path: '/places',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
-const AuthenticatedAdminQueuesRoute =
-  AuthenticatedAdminQueuesRouteImport.update({
-    id: '/queues',
-    path: '/queues',
+const AuthenticatedAdminReportsRoute =
+  AuthenticatedAdminReportsRouteImport.update({
+    id: '/reports',
+    path: '/reports',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
 const AuthenticatedAdminRiskRoute = AuthenticatedAdminRiskRouteImport.update({
@@ -229,6 +243,17 @@ const AuthenticatedAdminSourcesRoute =
   AuthenticatedAdminSourcesRouteImport.update({
     id: '/sources',
     path: '/sources',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminToolsRoute = AuthenticatedAdminToolsRouteImport.update({
+  id: '/tools',
+  path: '/tools',
+  getParentRoute: () => AuthenticatedAdminRouteRoute,
+} as any)
+const AuthenticatedAdminTranslationsRoute =
+  AuthenticatedAdminTranslationsRouteImport.update({
+    id: '/translations',
+    path: '/translations',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
 const ApiPrivateAccountRoute = ApiPrivateAccountRouteImport.update({
@@ -352,12 +377,16 @@ export interface FileRoutesByFullPath {
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/admin/broadcasts': typeof AuthenticatedAdminBroadcastsRoute
   '/admin/fires': typeof AuthenticatedAdminFiresRoute
+  '/admin/ideas': typeof AuthenticatedAdminIdeasRoute
   '/admin/incidents': typeof AuthenticatedAdminIncidentsRoute
+  '/admin/ita': typeof AuthenticatedAdminItaRoute
   '/admin/people': typeof AuthenticatedAdminPeopleRoute
   '/admin/places': typeof AuthenticatedAdminPlacesRoute
-  '/admin/queues': typeof AuthenticatedAdminQueuesRoute
+  '/admin/reports': typeof AuthenticatedAdminReportsRoute
   '/admin/risk': typeof AuthenticatedAdminRiskRoute
   '/admin/sources': typeof AuthenticatedAdminSourcesRoute
+  '/admin/tools': typeof AuthenticatedAdminToolsRoute
+  '/admin/translations': typeof AuthenticatedAdminTranslationsRoute
   '/api/private/account': typeof ApiPrivateAccountRoute
   '/api/private/ensemble': typeof ApiPrivateEnsembleRoute
   '/api/private/push-test': typeof ApiPrivatePushTestRoute
@@ -402,12 +431,16 @@ export interface FileRoutesByTo {
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/admin/broadcasts': typeof AuthenticatedAdminBroadcastsRoute
   '/admin/fires': typeof AuthenticatedAdminFiresRoute
+  '/admin/ideas': typeof AuthenticatedAdminIdeasRoute
   '/admin/incidents': typeof AuthenticatedAdminIncidentsRoute
+  '/admin/ita': typeof AuthenticatedAdminItaRoute
   '/admin/people': typeof AuthenticatedAdminPeopleRoute
   '/admin/places': typeof AuthenticatedAdminPlacesRoute
-  '/admin/queues': typeof AuthenticatedAdminQueuesRoute
+  '/admin/reports': typeof AuthenticatedAdminReportsRoute
   '/admin/risk': typeof AuthenticatedAdminRiskRoute
   '/admin/sources': typeof AuthenticatedAdminSourcesRoute
+  '/admin/tools': typeof AuthenticatedAdminToolsRoute
+  '/admin/translations': typeof AuthenticatedAdminTranslationsRoute
   '/api/private/account': typeof ApiPrivateAccountRoute
   '/api/private/ensemble': typeof ApiPrivateEnsembleRoute
   '/api/private/push-test': typeof ApiPrivatePushTestRoute
@@ -456,12 +489,16 @@ export interface FileRoutesById {
   '/_authenticated/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/_authenticated/admin/broadcasts': typeof AuthenticatedAdminBroadcastsRoute
   '/_authenticated/admin/fires': typeof AuthenticatedAdminFiresRoute
+  '/_authenticated/admin/ideas': typeof AuthenticatedAdminIdeasRoute
   '/_authenticated/admin/incidents': typeof AuthenticatedAdminIncidentsRoute
+  '/_authenticated/admin/ita': typeof AuthenticatedAdminItaRoute
   '/_authenticated/admin/people': typeof AuthenticatedAdminPeopleRoute
   '/_authenticated/admin/places': typeof AuthenticatedAdminPlacesRoute
-  '/_authenticated/admin/queues': typeof AuthenticatedAdminQueuesRoute
+  '/_authenticated/admin/reports': typeof AuthenticatedAdminReportsRoute
   '/_authenticated/admin/risk': typeof AuthenticatedAdminRiskRoute
   '/_authenticated/admin/sources': typeof AuthenticatedAdminSourcesRoute
+  '/_authenticated/admin/tools': typeof AuthenticatedAdminToolsRoute
+  '/_authenticated/admin/translations': typeof AuthenticatedAdminTranslationsRoute
   '/api/private/account': typeof ApiPrivateAccountRoute
   '/api/private/ensemble': typeof ApiPrivateEnsembleRoute
   '/api/private/push-test': typeof ApiPrivatePushTestRoute
@@ -510,12 +547,16 @@ export interface FileRouteTypes {
     | '/admin/audit'
     | '/admin/broadcasts'
     | '/admin/fires'
+    | '/admin/ideas'
     | '/admin/incidents'
+    | '/admin/ita'
     | '/admin/people'
     | '/admin/places'
-    | '/admin/queues'
+    | '/admin/reports'
     | '/admin/risk'
     | '/admin/sources'
+    | '/admin/tools'
+    | '/admin/translations'
     | '/api/private/account'
     | '/api/private/ensemble'
     | '/api/private/push-test'
@@ -560,12 +601,16 @@ export interface FileRouteTypes {
     | '/admin/audit'
     | '/admin/broadcasts'
     | '/admin/fires'
+    | '/admin/ideas'
     | '/admin/incidents'
+    | '/admin/ita'
     | '/admin/people'
     | '/admin/places'
-    | '/admin/queues'
+    | '/admin/reports'
     | '/admin/risk'
     | '/admin/sources'
+    | '/admin/tools'
+    | '/admin/translations'
     | '/api/private/account'
     | '/api/private/ensemble'
     | '/api/private/push-test'
@@ -613,12 +658,16 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/audit'
     | '/_authenticated/admin/broadcasts'
     | '/_authenticated/admin/fires'
+    | '/_authenticated/admin/ideas'
     | '/_authenticated/admin/incidents'
+    | '/_authenticated/admin/ita'
     | '/_authenticated/admin/people'
     | '/_authenticated/admin/places'
-    | '/_authenticated/admin/queues'
+    | '/_authenticated/admin/reports'
     | '/_authenticated/admin/risk'
     | '/_authenticated/admin/sources'
+    | '/_authenticated/admin/tools'
+    | '/_authenticated/admin/translations'
     | '/api/private/account'
     | '/api/private/ensemble'
     | '/api/private/push-test'
@@ -865,11 +914,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminFiresRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/ideas': {
+      id: '/_authenticated/admin/ideas'
+      path: '/ideas'
+      fullPath: '/admin/ideas'
+      preLoaderRoute: typeof AuthenticatedAdminIdeasRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/incidents': {
       id: '/_authenticated/admin/incidents'
       path: '/incidents'
       fullPath: '/admin/incidents'
       preLoaderRoute: typeof AuthenticatedAdminIncidentsRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/ita': {
+      id: '/_authenticated/admin/ita'
+      path: '/ita'
+      fullPath: '/admin/ita'
+      preLoaderRoute: typeof AuthenticatedAdminItaRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
     '/_authenticated/admin/people': {
@@ -886,11 +949,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminPlacesRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
-    '/_authenticated/admin/queues': {
-      id: '/_authenticated/admin/queues'
-      path: '/queues'
-      fullPath: '/admin/queues'
-      preLoaderRoute: typeof AuthenticatedAdminQueuesRouteImport
+    '/_authenticated/admin/reports': {
+      id: '/_authenticated/admin/reports'
+      path: '/reports'
+      fullPath: '/admin/reports'
+      preLoaderRoute: typeof AuthenticatedAdminReportsRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
     '/_authenticated/admin/risk': {
@@ -905,6 +968,20 @@ declare module '@tanstack/react-router' {
       path: '/sources'
       fullPath: '/admin/sources'
       preLoaderRoute: typeof AuthenticatedAdminSourcesRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/tools': {
+      id: '/_authenticated/admin/tools'
+      path: '/tools'
+      fullPath: '/admin/tools'
+      preLoaderRoute: typeof AuthenticatedAdminToolsRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/translations': {
+      id: '/_authenticated/admin/translations'
+      path: '/translations'
+      fullPath: '/admin/translations'
+      preLoaderRoute: typeof AuthenticatedAdminTranslationsRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
     '/api/private/account': {
@@ -1040,12 +1117,16 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminAuditRoute: typeof AuthenticatedAdminAuditRoute
   AuthenticatedAdminBroadcastsRoute: typeof AuthenticatedAdminBroadcastsRoute
   AuthenticatedAdminFiresRoute: typeof AuthenticatedAdminFiresRoute
+  AuthenticatedAdminIdeasRoute: typeof AuthenticatedAdminIdeasRoute
   AuthenticatedAdminIncidentsRoute: typeof AuthenticatedAdminIncidentsRoute
+  AuthenticatedAdminItaRoute: typeof AuthenticatedAdminItaRoute
   AuthenticatedAdminPeopleRoute: typeof AuthenticatedAdminPeopleRoute
   AuthenticatedAdminPlacesRoute: typeof AuthenticatedAdminPlacesRoute
-  AuthenticatedAdminQueuesRoute: typeof AuthenticatedAdminQueuesRoute
+  AuthenticatedAdminReportsRoute: typeof AuthenticatedAdminReportsRoute
   AuthenticatedAdminRiskRoute: typeof AuthenticatedAdminRiskRoute
   AuthenticatedAdminSourcesRoute: typeof AuthenticatedAdminSourcesRoute
+  AuthenticatedAdminToolsRoute: typeof AuthenticatedAdminToolsRoute
+  AuthenticatedAdminTranslationsRoute: typeof AuthenticatedAdminTranslationsRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
 
@@ -1054,12 +1135,16 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminAuditRoute: AuthenticatedAdminAuditRoute,
     AuthenticatedAdminBroadcastsRoute: AuthenticatedAdminBroadcastsRoute,
     AuthenticatedAdminFiresRoute: AuthenticatedAdminFiresRoute,
+    AuthenticatedAdminIdeasRoute: AuthenticatedAdminIdeasRoute,
     AuthenticatedAdminIncidentsRoute: AuthenticatedAdminIncidentsRoute,
+    AuthenticatedAdminItaRoute: AuthenticatedAdminItaRoute,
     AuthenticatedAdminPeopleRoute: AuthenticatedAdminPeopleRoute,
     AuthenticatedAdminPlacesRoute: AuthenticatedAdminPlacesRoute,
-    AuthenticatedAdminQueuesRoute: AuthenticatedAdminQueuesRoute,
+    AuthenticatedAdminReportsRoute: AuthenticatedAdminReportsRoute,
     AuthenticatedAdminRiskRoute: AuthenticatedAdminRiskRoute,
     AuthenticatedAdminSourcesRoute: AuthenticatedAdminSourcesRoute,
+    AuthenticatedAdminToolsRoute: AuthenticatedAdminToolsRoute,
+    AuthenticatedAdminTranslationsRoute: AuthenticatedAdminTranslationsRoute,
     AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   }
 

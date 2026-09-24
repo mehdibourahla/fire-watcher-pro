@@ -61,7 +61,7 @@ export async function getBroadcastAudit() {
   const { data, error } = await supabase
     .from("broadcast_audit")
     .select(
-      "id, at, action, reason, kind, phase, severity, commune_codes, actor_id",
+      "id, at, action, reason, kind, phase, severity, commune_codes, actor_id, payload",
     )
     .order("at", { ascending: false })
     .limit(200);
@@ -69,9 +69,13 @@ export async function getBroadcastAudit() {
   return data ?? [];
 }
 
-export async function setBroadcastEnabled(enabled: boolean) {
+export async function setBroadcastEnabled(
+  enabled: boolean,
+  note: string | null = null,
+) {
   const { data, error } = await supabase.rpc("set_broadcast_enabled", {
     _enabled: enabled,
+    _note: note,
   });
   if (error)
     throw new BroadcastAdminError("broadcastAdmin.toggleFailed", error);
@@ -93,17 +97,15 @@ export async function submitAuthorityWarning(input: AuthorityWarningInput) {
   if (!source || !body)
     throw new BroadcastAdminError("broadcastAdmin.warningRequired");
 
-  const { data: auth, error: authError } = await supabase.auth.getUser();
-  if (authError || !auth.user)
-    throw new BroadcastAdminError("broadcastAdmin.warningFailed", authError);
+  if (!input.wilaya_id)
+    throw new BroadcastAdminError("broadcastAdmin.warningRequired");
 
-  const { error } = await supabase.from("authority_warnings").insert({
-    source,
-    received_via: input.received_via,
-    body,
-    severity: input.severity,
-    wilaya_id: input.wilaya_id || null,
-    created_by: auth.user.id,
+  const { error } = await supabase.rpc("relay_authority_warning", {
+    _source: source,
+    _received_via: input.received_via,
+    _body: body,
+    _severity: input.severity,
+    _wilaya: input.wilaya_id,
   });
   if (error)
     throw new BroadcastAdminError("broadcastAdmin.warningFailed", error);

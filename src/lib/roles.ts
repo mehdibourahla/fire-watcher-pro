@@ -127,3 +127,18 @@ export async function revokeRole(userId: string, role: AppRole) {
   });
   if (error) throw new Error(error.message);
 }
+
+export type RoleChanges = { grant: AppRole[]; revoke: AppRole[] };
+
+export const roleChanges = (
+  current: AppRole[],
+  next: AppRole[],
+): RoleChanges => ({
+  grant: next.filter((role) => !current.includes(role)),
+  revoke: current.filter((role) => !next.includes(role)),
+});
+
+export async function applyRoleChanges(userId: string, changes: RoleChanges) {
+  for (const role of changes.grant) await grantRole(userId, role);
+  for (const role of changes.revoke) await revokeRole(userId, role);
+}

@@ -2,7 +2,7 @@ begin;
 
 set local search_path = public, extensions;
 
-select plan(5);
+select plan(8);
 
 select has_view('public', 'admin_audit_timeline', 'the unioned timeline exists');
 
@@ -43,6 +43,34 @@ select is(
   'broadcast-pipeline',
   'an automated decision is labelled rather than left anonymous'
 );
+
+select is(
+  (select count(*) from public.admin_audit_timeline t
+   join public.broadcast_audit b on b.id = t.id),
+  (select count(*) from public.broadcast_audit),
+  'splitting by actor neither drops nor duplicates a broadcast row'
+);
+
+insert into auth.users (id, email) values ('ad030000-0000-4000-8000-000000000002', 'ad03-operator@example.invalid');
+insert into public.user_roles (user_id, role) values ('ad030000-0000-4000-8000-000000000002', 'operator');
+insert into public.admin_audit (actor_user_id, actor_kind, domain, action, target_table)
+values
+  ('ad030000-0000-4000-8000-000000000001', 'user', 'sources', 'source.pause', 'source_contracts'),
+  ('ad030000-0000-4000-8000-000000000002', 'user', 'sources', 'source.resume', 'source_contracts');
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', 'ad030000-0000-4000-8000-000000000002', true);
+select is(
+  (select array_agg(action) from public.admin_audit_timeline where target_table <> 'broadcast_audit'),
+  array['source.resume'],
+  'an operator reads only their own actions through the timeline'
+);
+select is(
+  (select count(*) from public.admin_audit_timeline where target_table = 'broadcast_audit'),
+  0::bigint,
+  'broadcast decisions stay admin-only through the timeline'
+);
+reset role;
 
 -- The invariant this view exists to preserve: a human toggle cannot be recorded anonymously.
 select throws_ok(
