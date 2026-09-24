@@ -90,5 +90,5 @@
 
 ### Task 6: Replay and ship
 
-- [ ] Read-only replay of the last 7 days of prod hazards against prod zones: alerts per kind per zone, no duplicate `dedupe_key`, quiet-hours suppressions.
+- [x] Read-only replay of the last 7 days of prod hazards against prod zones: alerts per kind per zone, no duplicate `dedupe_key`, quiet-hours suppressions.
 - [ ] Full gates (`DB=1`), CI-derived checks, build; PR; merge only on a named OK.
