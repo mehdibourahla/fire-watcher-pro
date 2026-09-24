@@ -1,7 +1,7 @@
 begin;
 set local search_path = public, extensions;
 select plan(20);
-select has_function('public', 'set_source_paused', array['text','boolean'], 'source pause control exists');
+select has_function('public', 'set_source_paused', array['text','boolean','text'], 'source pause control exists');
 
 insert into auth.users(id,email) values
   ('14000000-0000-4000-8000-000000000001','source-admin@example.invalid'),

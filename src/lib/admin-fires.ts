@@ -1,6 +1,10 @@
-import { queryOptions } from "@tanstack/react-query";
+import { queryOptions, useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
+
+import type { Tone } from "@/components/admin/kit/StatusBadge";
 
 import { supabase } from "@/integrations/supabase/client";
+import { adminUnitsQuery } from "@/lib/nadhir";
 
 export const FIRE_STATES = [
   "unconfirmed",
@@ -80,4 +84,23 @@ export async function resolveFire(input: {
     _expected_updated_at: input.expectedUpdatedAt,
   });
   if (error) throw new Error(error.message);
+}
+
+export const FIRE_STATE_TONE: Record<string, Tone> = {
+  active: "bad",
+  unconfirmed: "warn",
+  contained_guess: "neutral",
+};
+
+export function usePlace() {
+  const units = useQuery(adminUnitsQuery);
+  const names = useMemo(
+    () => new Map((units.data ?? []).map((unit) => [unit.id, unit.name_fr])),
+    [units.data],
+  );
+  return (fire: UnresolvedFire) =>
+    [fire.commune_id, fire.wilaya_id]
+      .map((id) => (id ? names.get(id) : undefined))
+      .filter(Boolean)
+      .join(" — ") || `${fire.lat.toFixed(3)}, ${fire.lon.toFixed(3)}`;
 }
