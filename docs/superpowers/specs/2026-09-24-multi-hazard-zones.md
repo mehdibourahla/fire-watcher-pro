@@ -1,7 +1,7 @@
 # Multi-hazard watch zones — design
 
 Date: 2026-09-24
-Status: draft for approval
+Status: approved 2026-09-24
 Decisions taken by the project owner: zone engine + device push; per-user FCM topic; road incidents notify at
 commune and wilaya level; every zone follows all hazards by default, each switchable.
 
