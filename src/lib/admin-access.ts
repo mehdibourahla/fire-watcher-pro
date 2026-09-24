@@ -31,7 +31,7 @@ export const ADMIN_GROUPS: AdminGroup[] = [
 
 export const ADMIN_SECTIONS: AdminSection[] = [
   {
-    key: "triage",
+    key: "overview",
     path: "/admin",
     group: "overview",
     roles: PANEL_ROLES,

@@ -63,7 +63,7 @@ export const adminFr: AdminTranslation = {
     reportedStatus: "État rapporté : {{status}}",
   },
   nav: {
-    triage: "Triage",
+    overview: "Vue d'ensemble",
     sources: "Sources",
     fires: "Incendies",
     risk: "Risque",
@@ -77,6 +77,31 @@ export const adminFr: AdminTranslation = {
   shell: {
     title: "Exploitation",
     noAccess: "Cet espace est réservé aux opérateurs de Nadhir.",
+  },
+  overview: {
+    title: "Vue d'ensemble",
+    description:
+      "Ce qui demande quelqu'un maintenant, du plus urgent au moins urgent.",
+    allClear: "Rien n'attend d'action.",
+    checked: "Vérifié",
+    oldest: "le plus ancien",
+    items: {
+      broadcasting_off:
+        "Les alertes publiques sont coupées par l'interrupteur général",
+      sources_unhealthy: "Sources qui ne remontent pas normalement",
+      operational_incidents: "Incidents d'exploitation non pris en compte",
+      ita_review: "Publications ITA en attente de décision",
+      ita_failed: "Enquêtes ITA en échec",
+      fires: "Feux en attente de clôture",
+      risk_pending: "Instantanés de risque en attente de publication",
+      delivery_backlog: "Notifications en attente d'envoi",
+      citizen_reports: "Signalements citoyens à modérer",
+      source_gaps: "Lacunes de données à rejouer",
+      translations: "Clés de traduction à examiner",
+      ideas: "Idées à modérer",
+      translations_unapplied:
+        "Traductions acceptées pas encore dans l'application",
+    },
   },
   groups: {
     overview: "Vue d'ensemble",
@@ -97,20 +122,6 @@ export const adminFr: AdminTranslation = {
     working: "En cours…",
     close: "Fermer",
     menu: "Menu d'administration",
-  },
-  triage: {
-    title: "À traiter",
-    allClear: "Tout est à jour.",
-    checkedAt: "Vérifié {{time}}",
-    killSwitch: "Les diffusions sont suspendues par le coupe-circuit.",
-    sourceStale: "{{count}} sources ne transmettent plus.",
-    riskUnpublished:
-      "La prévision de risque n'a pas été publiée pour le point du jour.",
-    firesAwaiting:
-      "{{count}} incendies attendent une résolution au-dessus du seuil d'alerte.",
-    translationUnapplied:
-      "{{count}} traductions acceptées ne sont pas arrivées dans leur fichier.",
-    queueDepth: "{{count}} éléments attendent une relecture.",
   },
   queues: {
     replyLabel: "Répondre à cette personne",

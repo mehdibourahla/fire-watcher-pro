@@ -61,7 +61,7 @@ export const adminEn = {
     reportedStatus: "Source status: {{status}}",
   },
   nav: {
-    triage: "Triage",
+    overview: "Overview",
     sources: "Sources",
     fires: "Fires",
     risk: "Risk",
@@ -75,6 +75,28 @@ export const adminEn = {
   shell: {
     title: "Operations",
     noAccess: "This area is reserved for Nadhir operators.",
+  },
+  overview: {
+    title: "Overview",
+    description: "What needs someone now, most urgent first.",
+    allClear: "Nothing needs action.",
+    checked: "Checked",
+    oldest: "oldest",
+    items: {
+      broadcasting_off: "Public alerts are stopped by the kill switch",
+      sources_unhealthy: "Sources not reporting normally",
+      operational_incidents: "Unacknowledged operational incidents",
+      ita_review: "ITA posts waiting for a decision",
+      ita_failed: "ITA investigations that failed",
+      fires: "Fires awaiting resolution",
+      risk_pending: "Risk snapshots awaiting publication",
+      delivery_backlog: "Notifications waiting to be delivered",
+      citizen_reports: "Citizen reports to moderate",
+      source_gaps: "Data gaps to replay",
+      translations: "Translation keys to review",
+      ideas: "Ideas to moderate",
+      translations_unapplied: "Accepted translations not yet in the app",
+    },
   },
   groups: {
     overview: "Overview",
@@ -95,19 +117,6 @@ export const adminEn = {
     working: "Working…",
     close: "Close",
     menu: "Admin menu",
-  },
-  triage: {
-    title: "What needs attention",
-    allClear: "Everything is current.",
-    checkedAt: "Checked {{time}}",
-    killSwitch: "Broadcasts are suppressed by the kill-switch.",
-    sourceStale: "{{count}} sources have stopped reporting.",
-    riskUnpublished:
-      "The risk forecast has not published for today's checkpoint.",
-    firesAwaiting: "{{count}} fires await resolution above the alerting bar.",
-    translationUnapplied:
-      "{{count}} accepted translations have not reached their locale file.",
-    queueDepth: "{{count}} items are waiting to be reviewed.",
   },
   queues: {
     replyLabel: "Reply to this contributor",

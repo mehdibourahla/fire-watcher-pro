@@ -36,7 +36,6 @@ describe("admin namespace", () => {
       return read(adminEn) === read(adminFr);
     });
     expect(shared).toEqual([
-      "nav.triage",
       "nav.sources",
       "nav.incidents",
       "groups.admin",

@@ -25,7 +25,7 @@ describe("admin access", () => {
 
   it("gives a translator the queues and nothing operational", () => {
     expect(sectionsFor(["translator"]).map((s) => s.key)).toEqual([
-      "triage",
+      "overview",
       "queues",
       "audit",
     ]);

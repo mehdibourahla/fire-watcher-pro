@@ -24,7 +24,7 @@ Browser check against the local dev server and the isolated Supabase stack, seed
   - Shell on the shadcn Sidebar with groups, role filtering and counts.
   - New section config.
   - The Kabyle admin bundle merges over the French one.
-- [ ] **P2 Overview.** It replaces Triage, reads `admin_attention_counts`, and every row links to its queue.
+- [x] **P2 Overview.** It replaces Triage, reads `admin_attention_counts`, and every row links to its queue.
 - [ ] **P3 ITA route.** Needs decision / Publications / Feed, an area combobox, and removal from Sources.
 - [ ] **P4 Queues split.** `/admin/reports` (new RPC), `/admin/translations` (grouped by key), `/admin/ideas`. Delete `/admin/queues`.
 - [ ] **P5 Fires.** Place, level, map link, filters, and resolution in the detail with a reason or a confirmation.

@@ -19,7 +19,7 @@ import { ADMIN_GROUPS, type AdminSection } from "@/lib/admin-access";
 import { attentionQuery, attentionTotal } from "@/lib/admin-attention";
 
 const ICONS: Record<string, LucideIcon> = {
-  triage: Inbox,
+  overview: Inbox,
   fires: Flame,
   queues: MessagesSquare,
   sources: Activity,
