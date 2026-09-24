@@ -17,6 +17,10 @@ insert into admin_units(id,level,code,name_ar,name_fr,name_en,lat,lon) values
  ('1b000000-0000-4000-8000-000000000010','wilaya','console-test','T','T','T',36,3);
 insert into citizen_reports(id,user_id,lat,lon,note) values
  ('1b000000-0000-4000-8000-000000000020','1b000000-0000-4000-8000-000000000005',36.7,3.0,'smoke above the ridge');
+-- the demo-fire migration seeds unresolved fires, so count relative to what is already there
+create temp table fire_baseline as select count(*) as n from fire_clusters
+  where resolved_at is null and confidence>=0.6 and state in ('unconfirmed','active','contained_guess');
+grant select on fire_baseline to authenticated;
 insert into fire_clusters(id,short_id,state,first_detected_at,last_detected_at,lat,lon,confidence) values
  ('1b000000-0000-4000-8000-000000000030','DZCONS1','active',now()-interval '3 hours',now()-interval '1 hour',36.7,3.0,0.9);
 
@@ -43,7 +47,7 @@ select set_config('request.jwt.claim.sub','1b000000-0000-4000-8000-000000000003'
 select throws_ok($$select relay_authority_warning('Protection Civile','phone','Evacuate the forest road','Severe','1b000000-0000-4000-8000-000000000010')$$,'42501',null,'an operator cannot relay an authority warning');
 update fire_clusters set state='false_positive' where id='1b000000-0000-4000-8000-000000000030';
 select is((select state from fire_clusters where id='1b000000-0000-4000-8000-000000000030'),'active','an operator can no longer resolve a fire around resolve_fire');
-select is((select count from admin_attention_counts() where item='fires'),1::bigint,'an operator sees the unresolved fire');
+select is((select count from admin_attention_counts() where item='fires'),(select n+1 from fire_baseline),'an operator sees the unresolved fire');
 select ok(not exists(select 1 from admin_attention_counts() where item in ('citizen_reports','translations')),'an operator does not count moderation queues');
 
 select set_config('request.jwt.claim.sub','1b000000-0000-4000-8000-000000000001',true);
