@@ -18,6 +18,7 @@ function groupKey(alert: Alert) {
     return `fire:${alert.cluster_id}`;
   if (alert.kind === "risk")
     return `risk:${alert.zone_id}:${algiersDay(alert.created_at)}`;
+  if (alert.source_id) return `${alert.kind}:${alert.source_id}`;
   return `alert:${alert.id}`;
 }
 
@@ -58,6 +59,10 @@ export function groupPhase(
     return algiersDay(latest.created_at) === algiersDay(now)
       ? "live"
       : "archived";
+  // an expiry is the end of the notice period, never an all-clear
+  const expires = latest.payload?.expires_at;
+  if (latest.kind !== "fire")
+    return expires && Date.parse(expires) > now ? "live" : "archived";
   const fire = latest.cluster_id ? fires.get(latest.cluster_id) : undefined;
   return fire ? firePhase(fire, now) : "archived";
 }

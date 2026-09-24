@@ -194,9 +194,10 @@ function RootComponent() {
 
   useEffect(() => {
     // ADR-0004: the client re-asserts its FCM topics on load (token refresh path)
-    void import("@/lib/push").then(({ syncSubscription }) =>
-      syncSubscription().catch(() => undefined),
-    );
+    void import("@/lib/push").then(({ syncSubscription, syncUserPush }) => {
+      syncSubscription().catch(() => undefined);
+      syncUserPush().catch(() => undefined);
+    });
   }, []);
 
   useEffect(() => {

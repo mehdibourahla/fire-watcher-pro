@@ -2,9 +2,11 @@ import { describe, expect, it } from "vitest";
 
 import {
   FCM_LANGS,
+  fcmMessageForAlert,
   fcmMessagesForFire,
   fcmMessagesForOnm,
   fcmTopic,
+  userTopic,
 } from "@/lib/fcm";
 
 const info = [
@@ -155,5 +157,46 @@ describe("fcmMessagesForAuthority", () => {
       );
       expect(m.data.kind).toBe("authority");
     }
+  });
+});
+
+describe("fcmMessageForAlert", () => {
+  const alert = {
+    id: "a1",
+    user_id: "u1",
+    kind: "weather",
+    title: "ONM warning for Home",
+    body: "ONM: “Orages”",
+    source_id: "onm1",
+    cluster_id: null,
+    payload: null,
+  };
+
+  it("sends a zone alert to its owner's own topic", () => {
+    expect(fcmMessageForAlert(alert).topic).toBe(userTopic("u1"));
+    expect(userTopic("u1")).toBe("v1.user.u1");
+  });
+
+  it("tags by hazard so a commune broadcast of the same hazard collapses into it", () => {
+    expect(fcmMessageForAlert(alert).webpush.notification.tag).toBe("onm1");
+    expect(
+      fcmMessageForAlert({ ...alert, source_id: null, cluster_id: "c9" })
+        .webpush.notification.tag,
+    ).toBe("c9");
+  });
+
+  it("opens the fire page for a fire alert and the inbox otherwise", () => {
+    expect(fcmMessageForAlert(alert).webpush.fcm_options.link).toBe(
+      "https://nadhir.app/alerts",
+    );
+    expect(
+      fcmMessageForAlert({
+        ...alert,
+        kind: "fire",
+        source_id: null,
+        cluster_id: "c9",
+        payload: { short_id: "DZ1" },
+      }).webpush.fcm_options.link,
+    ).toBe("https://nadhir.app/fire/DZ1");
   });
 });

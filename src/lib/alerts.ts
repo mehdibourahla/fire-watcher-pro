@@ -5,10 +5,11 @@ import { supabase } from "@/integrations/supabase/client";
 export type Alert = {
   id: string;
   zone_id: string | null;
-  kind: "fire" | "risk";
+  kind: "fire" | "risk" | "weather" | "official" | "road";
   severity: number;
   cluster_id: string | null;
   commune_id: string | null;
+  source_id: string | null;
   title: string;
   body: string;
   distance_km: number | null;
@@ -17,6 +18,8 @@ export type Alert = {
     short_id?: string;
     state?: string;
     danger_level?: number;
+    expires_at?: string;
+    map_event?: string;
   } | null;
   read_at: string | null;
   created_at: string;

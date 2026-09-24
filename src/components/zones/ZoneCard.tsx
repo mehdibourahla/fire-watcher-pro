@@ -21,6 +21,7 @@ import {
   deleteZone,
   isDefaultPoint,
   setZoneActive,
+  ZONE_HAZARDS,
   type Zone,
 } from "@/lib/account";
 import { unitName, type AdminUnit } from "@/lib/nadhir";
@@ -56,10 +57,9 @@ export function ZoneCard({
     }
   };
 
-  const follows = [
-    zone.notify_fires ? t("account.notifyFires") : null,
-    zone.notify_risk ? t("account.notifyRisk") : null,
-  ].filter(Boolean);
+  const follows = ZONE_HAZARDS.filter(({ key }) => zone[key]).map(({ label }) =>
+    t(label),
+  );
 
   return (
     <article className="rounded-xl border border-border bg-card p-4">

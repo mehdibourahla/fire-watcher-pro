@@ -26,7 +26,9 @@ function query(table: string, result: Result, filters: [string, unknown][]) {
     "in",
     "neq",
     "gte",
+    "gt",
     "is",
+    "or",
     "lte",
   ]) {
     builder[method] = vi.fn((...args: unknown[]) => {
@@ -438,5 +440,88 @@ describe("zone fire alerts follow the confidence ladder", () => {
         "hazard_reports",
       ),
     ).toEqual(["urgent"]);
+  });
+});
+
+describe("zone hazard alerts reach the alert table", () => {
+  beforeEach(() => {
+    fromMock.mockReset();
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-09-08T12:00:00Z"));
+  });
+  afterEach(() => vi.useRealTimers());
+
+  async function written(extra: Record<string, unknown>, failing?: string) {
+    const data: Record<string, unknown> = {
+      zones: [
+        {
+          id: "z1",
+          user_id: "u1",
+          name: "Home",
+          notify_fires: false,
+          notify_risk: false,
+          notify_weather: true,
+          notify_official: true,
+          notify_road: true,
+          lat: 36.6,
+          lon: 3.1,
+          radius_km: 5,
+          commune_id: "k1",
+        },
+      ],
+      profiles: [{ id: "u1", locale: "en" }],
+      admin_units: [{ id: "k1", code: "1601", parent_id: "w16" }],
+      ...extra,
+    };
+    const rows: Record<string, unknown>[] = [];
+    fromMock.mockImplementation((table: string) => {
+      const builder = query(
+        table,
+        table === failing
+          ? { data: null, error: { message: `${table} unavailable` } }
+          : { data: data[table] ?? [], error: null },
+        [],
+      );
+      const upsert = builder["upsert"] as (rows: unknown) => unknown;
+      builder["upsert"] = (next: Record<string, unknown>[]) => {
+        if (table === "alerts") rows.push(...next);
+        return upsert(next);
+      };
+      return builder;
+    });
+    const run = evaluateAlerts("u1");
+    if (failing) await expect(run).rejects.toThrow(`${failing} unavailable`);
+    else await run;
+    return rows;
+  }
+
+  it("writes a weather alert for an ONM warning covering the zone", async () => {
+    const rows = await written({
+      onm_vigilance: [
+        {
+          id: "onm1",
+          severity: "Severe",
+          event: "Rain",
+          onset: "2026-09-08T15:00:00Z",
+          title: "Rain Severe warning for the wilaya: ALGER",
+          headline_fr: null,
+          polygon: null,
+          wilaya_id: "w16",
+          expires: "2026-09-09T12:00:00Z",
+        },
+      ],
+    });
+    expect(rows).toEqual([
+      expect.objectContaining({
+        kind: "weather",
+        source_table: "onm_vigilance",
+        source_id: "onm1",
+        dedupe_key: "weather:z1:Rain:Severe:2026-09-08T15:00:00Z",
+      }),
+    ]);
+  });
+
+  it("fails loudly when a hazard source cannot be read", async () => {
+    await written({}, "civil_publications");
   });
 });

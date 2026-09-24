@@ -9,6 +9,7 @@ import {
   alertsQuery,
   deleteAlerts,
   markAlertsRead,
+  type Alert,
 } from "@/lib/alerts";
 import { groupAlerts, groupPhase, type AlertGroup } from "@/lib/alert-groups";
 import type { Phase } from "@/lib/incident-lifecycle";
@@ -164,6 +165,14 @@ function AlertsPage() {
   );
 }
 
+const KIND_LABEL: Record<Alert["kind"], string> = {
+  fire: "alerts.kindFire",
+  risk: "alerts.kindRisk",
+  weather: "alerts.kindWeather",
+  official: "alerts.kindOfficial",
+  road: "alerts.kindRoad",
+};
+
 function AlertCard({
   group,
   phase,
@@ -183,18 +192,23 @@ function AlertCard({
   const alert = group.latest;
   const shortId = alert.payload?.short_id;
   const earlier = group.messages.slice(1);
+  const mapEvent = alert.payload?.map_event;
   const state =
     alert.kind === "risk"
       ? phase === "live"
         ? "alerts.stateToday"
         : "alerts.statePastForecast"
-      : phase === "live"
-        ? "alerts.stateLive"
-        : phase === "fading"
-          ? "civilMap.quiet"
-          : phase === "ended"
-            ? "civilMap.ended"
-            : "civilMap.archived";
+      : alert.kind !== "fire"
+        ? phase === "live"
+          ? "alerts.stateCurrentNotice"
+          : "alerts.stateNoticeOver"
+        : phase === "live"
+          ? "alerts.stateLive"
+          : phase === "fading"
+            ? "civilMap.quiet"
+            : phase === "ended"
+              ? "civilMap.ended"
+              : "civilMap.archived";
   return (
     <li
       className={`card p-4 ${group.unread ? "" : "opacity-70"}`}
@@ -207,7 +221,7 @@ function AlertCard({
       <div className="flex flex-wrap items-baseline gap-2">
         <RiskChip level={alert.severity} showName={false} />
         <span className="rounded-full bg-muted px-2 py-0.5 text-xs">
-          {t(alert.kind === "fire" ? "alerts.kindFire" : "alerts.kindRisk")}
+          {t(KIND_LABEL[alert.kind])}
         </span>
         <h2 className="font-medium">{alert.title}</h2>
         <span className="ms-auto text-xs text-muted-foreground">
@@ -244,6 +258,14 @@ function AlertCard({
             className="font-medium text-primary"
           >
             {t("alerts.openFire")}
+          </Link>
+        ) : mapEvent ? (
+          <Link
+            to="/"
+            search={{ event: mapEvent }}
+            className="font-medium text-primary"
+          >
+            {t("alerts.openMap")}
           </Link>
         ) : null}
         <button
