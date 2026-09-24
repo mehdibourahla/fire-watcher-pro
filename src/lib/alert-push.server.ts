@@ -12,6 +12,7 @@ export type ClaimedPush = {
   cluster_id: string | null;
   payload: unknown;
   push_attempts: number;
+  push_claimed_at: string;
 };
 
 type PushState = "sent" | "pending" | "failed";
@@ -28,12 +29,16 @@ const store = {
     return (data ?? []) as ClaimedPush[];
   },
   send: (row: ClaimedPush) => fcmSend(fcmMessageForAlert(row)),
-  finish: async (id: string, state: PushState) => {
-    const { error } = await supabaseAdmin
+  finish: async (row: ClaimedPush, state: PushState) => {
+    const { data, error } = await supabaseAdmin
       .from("alerts")
       .update({ push_state: state })
-      .eq("id", id);
+      .eq("id", row.id)
+      .eq("push_claimed_at", row.push_claimed_at)
+      .select("id");
     if (error) throw new Error(error.message);
+    // another run reclaimed this alert after our claim went stale
+    if (!data?.length) throw new Error("alert push claim lost");
   },
 };
 
@@ -47,12 +52,12 @@ export async function drainAlertPushes(
   for (const row of await deps.claim()) {
     try {
       await deps.send(row);
-      await deps.finish(row.id, "sent");
+      await deps.finish(row, "sent");
       pushed++;
     } catch {
       pushFailed++;
       await deps.finish(
-        row.id,
+        row,
         row.push_attempts >= MAX_ATTEMPTS ? "failed" : "pending",
       );
     }

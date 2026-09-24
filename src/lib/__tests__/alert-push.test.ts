@@ -20,6 +20,7 @@ const claimed = (overrides: Partial<ClaimedPush> = {}): ClaimedPush => ({
   cluster_id: null,
   payload: null,
   push_attempts: 1,
+  push_claimed_at: "2026-09-24T20:00:00Z",
   ...overrides,
 });
 
@@ -31,8 +32,8 @@ function harness(rows: ClaimedPush[], send: () => Promise<void>) {
       configured: () => true,
       claim: vi.fn(async () => rows),
       send: vi.fn(send),
-      finish: vi.fn(async (id: string, state: string) => {
-        finished.push([id, state]);
+      finish: vi.fn(async (row: ClaimedPush, state: string) => {
+        finished.push([row.id, state]);
       }),
     },
   };
