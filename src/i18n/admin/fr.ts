@@ -63,6 +63,7 @@ export const adminFr: AdminTranslation = {
     reportedStatus: "État rapporté : {{status}}",
   },
   nav: {
+    ita: "Publications ITA",
     overview: "Vue d'ensemble",
     sources: "Sources",
     fires: "Incendies",
@@ -77,6 +78,49 @@ export const adminFr: AdminTranslation = {
   shell: {
     title: "Exploitation",
     noAccess: "Cet espace est réservé aux opérateurs de Nadhir.",
+  },
+  ita: {
+    title: "Publications ITA",
+    description:
+      "Publications d'Info Trafic Algérie lues par l'agent. Tranchez ce qu'il n'a pas pu décider et gérez ce qui est publié. Média cité, jamais une alerte officielle.",
+    tabs: {
+      queue: "À décider",
+      publications: "Publications",
+      feed: "Flux",
+    },
+    placeholder: "Sélectionnez un élément pour voir la publication et décider.",
+    detail: "Détails",
+    openPost: "Ouvrir la publication",
+    wilaya: "wilaya",
+    searchArea: "Chercher une commune, une localité ou une wilaya…",
+    noArea: "aucun résultat",
+    searches: "Ce que l'agent a cherché",
+    technical: "Détails techniques",
+    queueEmpty: "Rien n'attend de décision.",
+    dismiss: "Écarter",
+    dismissDescription:
+      "La publication quitte la file sans être publiée. Rien n'est montré au public.",
+    dismissed: "Écartée",
+    alreadyPublished:
+      "Cet incident est déjà publié ; gérez-le dans Publications.",
+    publicationsEmpty: "Aucune publication pour l'instant.",
+    feedEmpty: "Aucune publication ITA collectée pour l'instant.",
+    exhaustedOnly: "Uniquement les publications dont l'interprétation a échoué",
+    incidents: "{{count}} incident",
+    incidents_other: "{{count}} incidents",
+    extraction: {
+      extracted: "Interprétée",
+      failed: "Interprétation en échec",
+      pending: "En attente d'interprétation",
+      general: "Information générale",
+    },
+    retry: "Relancer l'interprétation",
+    retryFailed:
+      "Relance impossible : la source est peut-être en pause, un traitement est peut-être déjà prévu, ou la limite quotidienne est atteinte.",
+    retryQueued: "Interprétation programmée pour le prochain traitement.",
+    collected: "Collectée",
+    published: "Publiée",
+    expires: "Affichée jusqu'à",
   },
   overview: {
     title: "Vue d'ensemble",
@@ -263,25 +307,6 @@ export const adminFr: AdminTranslation = {
       not_modified: "Source inchangée (304)",
       failed: "Échec de collecte",
       download: "Télécharger les données vérifiées",
-    },
-    ita: {
-      retry: "Réessayer maintenant",
-      retryFailed:
-        "Relance indisponible : source en pause, traitement déjà en attente ou en cours, ou limite quotidienne de récupération atteinte.",
-      retryQueued:
-        "Extraction mise en file pour le prochain traitement disponible.",
-      exhaustedOnly: "Afficher uniquement les extractions épuisées",
-
-      title: "Signalements Info Trafic Algérie",
-      description:
-        "50 dernières versions collectées. Un agent enquête et décide de la publication ; les cas non résolus apparaissent dans la file de revue. Résumés en français. Aucune notification envoyée.",
-      empty: "Aucun signalement ITA collecté.",
-      received: "Collecté le {{time}}",
-      extracted: "Interprétation IA — non vérifiée",
-      failed: "Échec de l’interprétation",
-      pending: "En attente d’interprétation IA",
-      original: "Signalement original",
-      analysis: "Interprétation structurée",
     },
     pushTestTitle: "Test privé des notifications",
     pushTestHelp:

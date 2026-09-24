@@ -38,6 +38,13 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     attention: [],
   },
   {
+    key: "ita",
+    path: "/admin/ita",
+    group: "review",
+    roles: OPS,
+    attention: ["ita_review", "ita_failed"],
+  },
+  {
     key: "fires",
     path: "/admin/fires",
     group: "review",
@@ -56,13 +63,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     path: "/admin/sources",
     group: "operations",
     roles: OPS,
-    attention: [
-      "sources_unhealthy",
-      "operational_incidents",
-      "source_gaps",
-      "ita_review",
-      "ita_failed",
-    ],
+    attention: ["sources_unhealthy", "operational_incidents", "source_gaps"],
   },
   {
     key: "broadcasts",

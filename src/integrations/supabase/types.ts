@@ -3969,6 +3969,10 @@ export type Database = {
           oldest: string | null;
         }[];
       };
+      dismiss_civil_investigation: {
+        Args: { _id: string; _reason: string };
+        Returns: undefined;
+      };
       moderate_citizen_report: {
         Args: {
           _cluster?: string | null;

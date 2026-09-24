@@ -38,6 +38,10 @@ describe("admin namespace", () => {
     expect(shared).toEqual([
       "nav.sources",
       "nav.incidents",
+      "ita.tabs.publications",
+      "ita.wilaya",
+      "ita.incidents",
+      "ita.incidents_other",
       "groups.admin",
       "fires.reason",
       "sources.title",

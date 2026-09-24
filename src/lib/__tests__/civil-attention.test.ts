@@ -2,7 +2,7 @@ import { expect, it, vi } from "vitest";
 import { QueryClient } from "@tanstack/react-query";
 const { from } = vi.hoisted(() => ({ from: vi.fn() }));
 vi.mock("@/integrations/supabase/client", () => ({ supabase: { from } }));
-import { civilAttentionQuery, civilInvestigationsQuery } from "../admin-ita";
+import { civilAttentionQuery, itaReportsQuery } from "../admin-ita";
 
 it("reads immutable v1 decisions in both operator histories", async () => {
   const decision = {
@@ -29,11 +29,16 @@ it("reads immutable v1 decisions in both operator histories", async () => {
       },
     },
   };
+  const report = {
+    extraction: null,
+    civil_publications: [],
+    civil_investigations: [record],
+  };
   const query = {
     select: () => query,
     in: () => query,
     order: () => query,
-    limit: async () => ({ data: [record], error: null }),
+    limit: async () => ({ data: [report], error: null }),
     range: async () => ({ data: [record], error: null }),
   };
   from.mockReturnValue(query);
@@ -43,8 +48,8 @@ it("reads immutable v1 decisions in both operator histories", async () => {
       .official_match,
   ).toBeNull();
   expect(
-    (await client.fetchQuery(civilInvestigationsQuery))[0]?.history[0]?.decision
-      .official_match,
+    (await client.fetchQuery(itaReportsQuery()))[0]?.civil_investigations[0]
+      ?.history[0]?.decision.official_match,
   ).toBeNull();
 });
 

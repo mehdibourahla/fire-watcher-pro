@@ -23,24 +23,6 @@ export const adminKab = {
       failed: "Agmar ur yeddi ara",
       download: "Sider isefka yettwasenqden",
     },
-    ita: {
-      retry: "Ales tura",
-      retryFailed:
-        "Ur izmir ara ad yales: aɣbalu yeḥbes, usesfer yettwarǧa neɣ iteddu, neɣ tewweḍ talast n wass.",
-      retryQueued: "Asuffeɣ yettwarǧa i usesfer amezwaru yellan.",
-      exhaustedOnly: "Sken kan isallen i ifuken tikkal n usuffeɣ",
-
-      title: "Info Trafic Algérie",
-      description:
-        "50 n lqem ineggura yettwajemɛen. Isallen n tɣamsa s AI, ilaq asenqed n umdan. Igzul s tefransist. Ulac ilɣa azayez.",
-      empty: "Ulac isallen ITA yettwajemɛen yakan.",
-      received: "Yettwajemɛ {{time}}",
-      extracted: "Asegzi AI — ur yettwasenqed ara",
-      failed: "Asegzi ur yeddi ara",
-      pending: "Yettṛaǧu asegzi AI",
-      original: "Asali aẓetṭan",
-      analysis: "Asegzi s talɣa",
-    },
     pushTestTitle: "Asekyed uslig n telɣut",
     pushTestHelp:
       "Sit ɣef tqeffalt, syin uɣal ɣer ugdil agejdan n iPhone. Talɣut n usekyed ad truḥ ɣer yibenk-a kan.",

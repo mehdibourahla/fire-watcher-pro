@@ -37,6 +37,7 @@ import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminBroadcastsRouteImport } from './routes/_authenticated/admin/broadcasts'
 import { Route as AuthenticatedAdminFiresRouteImport } from './routes/_authenticated/admin/fires'
 import { Route as AuthenticatedAdminIncidentsRouteImport } from './routes/_authenticated/admin/incidents'
+import { Route as AuthenticatedAdminItaRouteImport } from './routes/_authenticated/admin/ita'
 import { Route as AuthenticatedAdminPeopleRouteImport } from './routes/_authenticated/admin/people'
 import { Route as AuthenticatedAdminPlacesRouteImport } from './routes/_authenticated/admin/places'
 import { Route as AuthenticatedAdminQueuesRouteImport } from './routes/_authenticated/admin/queues'
@@ -202,6 +203,11 @@ const AuthenticatedAdminIncidentsRoute =
     path: '/incidents',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminItaRoute = AuthenticatedAdminItaRouteImport.update({
+  id: '/ita',
+  path: '/ita',
+  getParentRoute: () => AuthenticatedAdminRouteRoute,
+} as any)
 const AuthenticatedAdminPeopleRoute =
   AuthenticatedAdminPeopleRouteImport.update({
     id: '/people',
@@ -353,6 +359,7 @@ export interface FileRoutesByFullPath {
   '/admin/broadcasts': typeof AuthenticatedAdminBroadcastsRoute
   '/admin/fires': typeof AuthenticatedAdminFiresRoute
   '/admin/incidents': typeof AuthenticatedAdminIncidentsRoute
+  '/admin/ita': typeof AuthenticatedAdminItaRoute
   '/admin/people': typeof AuthenticatedAdminPeopleRoute
   '/admin/places': typeof AuthenticatedAdminPlacesRoute
   '/admin/queues': typeof AuthenticatedAdminQueuesRoute
@@ -403,6 +410,7 @@ export interface FileRoutesByTo {
   '/admin/broadcasts': typeof AuthenticatedAdminBroadcastsRoute
   '/admin/fires': typeof AuthenticatedAdminFiresRoute
   '/admin/incidents': typeof AuthenticatedAdminIncidentsRoute
+  '/admin/ita': typeof AuthenticatedAdminItaRoute
   '/admin/people': typeof AuthenticatedAdminPeopleRoute
   '/admin/places': typeof AuthenticatedAdminPlacesRoute
   '/admin/queues': typeof AuthenticatedAdminQueuesRoute
@@ -457,6 +465,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/broadcasts': typeof AuthenticatedAdminBroadcastsRoute
   '/_authenticated/admin/fires': typeof AuthenticatedAdminFiresRoute
   '/_authenticated/admin/incidents': typeof AuthenticatedAdminIncidentsRoute
+  '/_authenticated/admin/ita': typeof AuthenticatedAdminItaRoute
   '/_authenticated/admin/people': typeof AuthenticatedAdminPeopleRoute
   '/_authenticated/admin/places': typeof AuthenticatedAdminPlacesRoute
   '/_authenticated/admin/queues': typeof AuthenticatedAdminQueuesRoute
@@ -511,6 +520,7 @@ export interface FileRouteTypes {
     | '/admin/broadcasts'
     | '/admin/fires'
     | '/admin/incidents'
+    | '/admin/ita'
     | '/admin/people'
     | '/admin/places'
     | '/admin/queues'
@@ -561,6 +571,7 @@ export interface FileRouteTypes {
     | '/admin/broadcasts'
     | '/admin/fires'
     | '/admin/incidents'
+    | '/admin/ita'
     | '/admin/people'
     | '/admin/places'
     | '/admin/queues'
@@ -614,6 +625,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/broadcasts'
     | '/_authenticated/admin/fires'
     | '/_authenticated/admin/incidents'
+    | '/_authenticated/admin/ita'
     | '/_authenticated/admin/people'
     | '/_authenticated/admin/places'
     | '/_authenticated/admin/queues'
@@ -872,6 +884,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminIncidentsRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/ita': {
+      id: '/_authenticated/admin/ita'
+      path: '/ita'
+      fullPath: '/admin/ita'
+      preLoaderRoute: typeof AuthenticatedAdminItaRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/people': {
       id: '/_authenticated/admin/people'
       path: '/people'
@@ -1041,6 +1060,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminBroadcastsRoute: typeof AuthenticatedAdminBroadcastsRoute
   AuthenticatedAdminFiresRoute: typeof AuthenticatedAdminFiresRoute
   AuthenticatedAdminIncidentsRoute: typeof AuthenticatedAdminIncidentsRoute
+  AuthenticatedAdminItaRoute: typeof AuthenticatedAdminItaRoute
   AuthenticatedAdminPeopleRoute: typeof AuthenticatedAdminPeopleRoute
   AuthenticatedAdminPlacesRoute: typeof AuthenticatedAdminPlacesRoute
   AuthenticatedAdminQueuesRoute: typeof AuthenticatedAdminQueuesRoute
@@ -1055,6 +1075,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminBroadcastsRoute: AuthenticatedAdminBroadcastsRoute,
     AuthenticatedAdminFiresRoute: AuthenticatedAdminFiresRoute,
     AuthenticatedAdminIncidentsRoute: AuthenticatedAdminIncidentsRoute,
+    AuthenticatedAdminItaRoute: AuthenticatedAdminItaRoute,
     AuthenticatedAdminPeopleRoute: AuthenticatedAdminPeopleRoute,
     AuthenticatedAdminPlacesRoute: AuthenticatedAdminPlacesRoute,
     AuthenticatedAdminQueuesRoute: AuthenticatedAdminQueuesRoute,

@@ -8,6 +8,7 @@ import {
   MapPin,
   Megaphone,
   MessagesSquare,
+  Newspaper,
   ScrollText,
   Siren,
   Users,
@@ -20,6 +21,7 @@ import { attentionQuery, attentionTotal } from "@/lib/admin-attention";
 
 const ICONS: Record<string, LucideIcon> = {
   overview: Inbox,
+  ita: Newspaper,
   fires: Flame,
   queues: MessagesSquare,
   sources: Activity,

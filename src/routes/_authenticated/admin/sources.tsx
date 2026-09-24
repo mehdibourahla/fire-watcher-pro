@@ -6,7 +6,6 @@ import type { AnyLocale } from "@/i18n";
 import { EnsemblePreview } from "@/components/admin/EnsemblePreview";
 import { PushDeviceTest } from "@/components/admin/PushDeviceTest";
 import { TextRecovery } from "@/components/admin/TextRecovery";
-import { ItaReports } from "@/components/admin/ItaReports";
 import { SourceArchive } from "@/components/admin/SourceArchive";
 import {
   acknowledgeIncident,
@@ -220,7 +219,6 @@ function SourcesPage() {
         </p>
       ) : null}
 
-      <ItaReports />
       {isAdmin && <TextRecovery />}
       {isAdmin && <SourceArchive />}
       <PushDeviceTest />

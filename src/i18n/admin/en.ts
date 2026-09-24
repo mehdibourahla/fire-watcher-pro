@@ -61,6 +61,7 @@ export const adminEn = {
     reportedStatus: "Source status: {{status}}",
   },
   nav: {
+    ita: "ITA publications",
     overview: "Overview",
     sources: "Sources",
     fires: "Fires",
@@ -75,6 +76,49 @@ export const adminEn = {
   shell: {
     title: "Operations",
     noAccess: "This area is reserved for Nadhir operators.",
+  },
+  ita: {
+    title: "ITA publications",
+    description:
+      "Info Trafic Algérie posts read by the agent. Decide what it could not, and manage what is published. Attributed media, never an official warning.",
+    tabs: {
+      queue: "Needs decision",
+      publications: "Publications",
+      feed: "Feed",
+    },
+    placeholder: "Select an item to see the post and decide.",
+    detail: "Details",
+    openPost: "Open the post",
+    wilaya: "wilaya",
+    searchArea: "Search a commune, town or wilaya…",
+    noArea: "no match",
+    searches: "What the agent searched",
+    technical: "Technical details",
+    queueEmpty: "Nothing needs a decision.",
+    dismiss: "Dismiss",
+    dismissDescription:
+      "The post leaves the queue without being published. Nothing is shown to the public.",
+    dismissed: "Dismissed",
+    alreadyPublished:
+      "This incident is already published; manage it in Publications.",
+    publicationsEmpty: "No publications yet.",
+    feedEmpty: "No ITA posts collected yet.",
+    exhaustedOnly: "Only posts whose interpretation failed",
+    incidents: "{{count}} incident",
+    incidents_other: "{{count}} incidents",
+    extraction: {
+      extracted: "Interpreted",
+      failed: "Interpretation failed",
+      pending: "Awaiting interpretation",
+      general: "General information",
+    },
+    retry: "Retry interpretation",
+    retryFailed:
+      "Retry unavailable: the source may be paused, work may already be queued, or the daily recovery limit was reached.",
+    retryQueued: "Interpretation queued for the next worker.",
+    collected: "Collected",
+    published: "Posted",
+    expires: "Shown until",
   },
   overview: {
     title: "Overview",
@@ -256,24 +300,6 @@ export const adminEn = {
       not_modified: "Source unchanged (304)",
       failed: "Collection failed",
       download: "Download verified payload",
-    },
-    ita: {
-      retry: "Retry now",
-      retryFailed:
-        "Retry unavailable: check whether the source is paused, work is already queued or running, or the daily recovery limit was reached.",
-      retryQueued: "Extraction queued for the next available worker.",
-      exhaustedOnly: "Show exhausted extractions only",
-
-      title: "Info Trafic Algérie reports",
-      description:
-        "Latest 50 collected revisions. An agent investigates and decides publication; unresolved cases appear in the review queue. French summaries. No notifications are sent.",
-      empty: "No ITA reports collected yet.",
-      received: "Collected {{time}}",
-      extracted: "AI interpretation — unverified",
-      failed: "Interpretation failed",
-      pending: "Awaiting AI interpretation",
-      original: "Original report",
-      analysis: "Structured interpretation",
     },
     pushTestTitle: "Private push test",
     pushTestHelp:
