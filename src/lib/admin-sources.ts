@@ -44,10 +44,15 @@ export const sourceHealthQuery = queryOptions({
   refetchInterval: 30_000,
 });
 
-export async function setSourcePaused(key: string, paused: boolean) {
+export async function setSourcePaused(
+  key: string,
+  paused: boolean,
+  reason: string | null,
+) {
   const { error } = await supabase.rpc("set_source_paused", {
     _key: key,
     _paused: paused,
+    _reason: reason,
   });
   if (error) throw new Error(error.message);
 }
@@ -141,10 +146,12 @@ export const operationalIncidentsQuery = queryOptions({
 export async function setDeliveryChannelPaused(
   channel: DeliveryChannel,
   paused: boolean,
+  reason: string | null,
 ) {
   const { error } = await supabase.rpc("set_delivery_channel_paused", {
     _channel: channel,
     _paused: paused,
+    _reason: reason,
   });
   if (error) throw new Error(error.message);
 }

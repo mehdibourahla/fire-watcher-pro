@@ -66,7 +66,7 @@ A sidebar organised by job, filtered by role. Every queue entry shows a live cou
   - Open operational incidents first, resolved ones behind a "Resolved" toggle.
   - Gaps with replay (reason plus confirmation).
   - The ITA, text recovery, archive, push-test and ensemble blocks move out.
-- **Broadcasts:** the kill switch sits behind a confirm dialog that requires a reason. It also holds delivery channels (moved from Sources), the relay form (in a dialog, now through the audited RPC) and the audit table with readable actors.
+- **Broadcasts:** the kill switch sits behind a confirm dialog that requires a reason. It also holds the relay form (in a dialog, now through the audited RPC) and the audit table with readable actors. Delivery channels stay on Sources: operators may pause a channel and Broadcasts is admin-only, so moving them would remove an operator capability.
 - **Risk:** status badges, loading and error states, a reason per discard.
 
 ### Reference and Admin

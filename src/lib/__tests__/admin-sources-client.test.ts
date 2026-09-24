@@ -37,10 +37,11 @@ it("shows quarantined processing as degraded in admin health and fails on unavai
 });
 it("uses the secured channel and incident operations", async () => {
   rpc.mockResolvedValue({ error: null });
-  await setDeliveryChannelPaused("telegram", true);
+  await setDeliveryChannelPaused("telegram", true, "Bot token rotated");
   expect(rpc).toHaveBeenCalledWith("set_delivery_channel_paused", {
     _channel: "telegram",
     _paused: true,
+    _reason: "Bot token rotated",
   });
   await acknowledgeIncident("incident");
   expect(rpc).toHaveBeenCalledWith("acknowledge_operational_incident", {
@@ -49,7 +50,7 @@ it("uses the secured channel and incident operations", async () => {
 });
 it("surfaces mutation errors without claiming success", async () => {
   rpc.mockResolvedValue({ error: { message: "permission denied" } });
-  await expect(setDeliveryChannelPaused("fcm", false)).rejects.toThrow(
+  await expect(setDeliveryChannelPaused("fcm", false, null)).rejects.toThrow(
     "permission denied",
   );
   await expect(acknowledgeIncident("incident")).rejects.toThrow(

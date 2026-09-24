@@ -47,6 +47,7 @@ describe("admin namespace", () => {
       "translationsPage.suggestions_other",
       "groups.admin",
       "fires.reason",
+      "sources.channel_telegram",
       "sources.title",
       "sources.colSource",
     ]);

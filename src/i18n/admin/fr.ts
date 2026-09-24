@@ -63,6 +63,7 @@ export const adminFr: AdminTranslation = {
     reportedStatus: "État rapporté : {{status}}",
   },
   nav: {
+    tools: "Outils",
     ita: "Publications ITA",
     overview: "Vue d'ensemble",
     sources: "Sources",
@@ -152,6 +153,11 @@ export const adminFr: AdminTranslation = {
     title: "Idées",
     description:
       "Idées envoyées depuis la page Contribuer. Publiez, répondez ou rejetez.",
+  },
+  tools: {
+    title: "Outils",
+    description:
+      "Diagnostic et reprise pour les administrateurs : charges archivées des sources, relances d'interprétation, test de notification sur l'appareil et aperçu météo d'ensemble.",
   },
   overview: {
     title: "Vue d'ensemble",
@@ -327,6 +333,42 @@ export const adminFr: AdminTranslation = {
     reason_other: "Autre",
   },
   sources: {
+    allHealthy: "Toutes les sources remontent normalement",
+    unhealthy: "{{count}} source demande attention",
+    unhealthy_other: "{{count}} sources demandent attention",
+    colReason: "Pourquoi",
+    saved: "Enregistré",
+    noOpenIncidents: "Aucun incident ouvert.",
+    showResolved: "Afficher les résolus ({{count}})",
+    hideResolved: "Masquer les résolus",
+    replayTitle: "Rejouer la lacune de {{source}} ?",
+    replayHelp:
+      "La fenêtre manquante est recollectée au prochain passage. À utiliser quand la source amont est rétablie.",
+    channel_fcm: "Notifications push",
+    channel_telegram: "Telegram",
+    state_healthy: "Saine",
+    state_delayed: "En retard",
+    state_degraded: "Dégradée",
+    state_stale: "Périmée",
+    state_paused: "En pause",
+    state_unavailable: "Aucune donnée",
+    state_unknown: "Inconnue",
+    gap_open: "Ouverte",
+    gap_replaying: "En reprise",
+    gap_unrecoverable: "Irrécupérable",
+    reason_internal_error: "Erreur interne",
+    reason_data_delayed: "Données en retard",
+    reason_credentials_missing: "Identifiants manquants",
+    reason_upstream_unreachable: "Source amont injoignable ou refus",
+    reason_schema_invalid: "Format de données inattendu",
+    reason_licence_invalid: "Licence non acceptable",
+    reason_run_delayed: "Passage en retard",
+    reason_queue_delayed: "File d'attente engorgée",
+    reason_lease_expired: "Bail du traitement expiré",
+    reason_delivery_expired: "Messages expirés avant envoi",
+    reason_budget_exhausted: "Quota épuisé",
+    reason_disabled: "Désactivée",
+    reason_network_error: "Erreur réseau",
     textRecovery: {
       title: "Reprise de l’interprétation des textes",
       description:
@@ -340,6 +382,7 @@ export const adminFr: AdminTranslation = {
       exhausted: "Interprétation incomplète après {{count}} tentatives.",
     },
     archive: {
+      errorsOnly: "Erreurs uniquement (HTTP 400 et plus)",
       title: "Archives brutes des sources",
       description:
         "50 dernières tentatives de collecte. Les données originales sont conservées pour analyse et retraitement, sans expiration automatique. Horaires UTC. Accès administrateur uniquement.",

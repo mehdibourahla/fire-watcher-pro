@@ -59,6 +59,42 @@ export const adminAr = {
     reportedStatus: "الحالة حسب المصدر: {{status}}",
   },
   sources: {
+    allHealthy: "كل المصادر تعمل بشكل طبيعي",
+    unhealthy: "{{count}} مصدر يحتاج إلى متابعة",
+    unhealthy_other: "{{count}} مصادر تحتاج إلى متابعة",
+    colReason: "السبب",
+    saved: "تم الحفظ",
+    noOpenIncidents: "لا توجد حوادث مفتوحة.",
+    showResolved: "عرض المحلولة ({{count}})",
+    hideResolved: "إخفاء المحلولة",
+    replayTitle: "إعادة جلب فجوة {{source}}؟",
+    replayHelp:
+      "تُجلب الفترة الناقصة مجددًا في التشغيل التالي. استخدم هذا بعد عودة المصدر.",
+    channel_fcm: "الإشعارات الفورية",
+    channel_telegram: "تيليغرام",
+    state_healthy: "سليم",
+    state_delayed: "متأخر",
+    state_degraded: "متدهور",
+    state_stale: "قديم",
+    state_paused: "موقوف مؤقتًا",
+    state_unavailable: "لا بيانات",
+    state_unknown: "غير معروف",
+    gap_open: "مفتوحة",
+    gap_replaying: "قيد الإعادة",
+    gap_unrecoverable: "غير قابلة للاستعادة",
+    reason_internal_error: "خطأ داخلي",
+    reason_data_delayed: "البيانات متأخرة",
+    reason_credentials_missing: "بيانات الاعتماد ناقصة",
+    reason_upstream_unreachable: "المصدر رفض الطلب أو تعذّر الوصول إليه",
+    reason_schema_invalid: "صيغة بيانات غير متوقعة",
+    reason_licence_invalid: "الترخيص غير مقبول",
+    reason_run_delayed: "التشغيل متأخر",
+    reason_queue_delayed: "طابور مزدحم",
+    reason_lease_expired: "انتهت مهلة المعالجة",
+    reason_delivery_expired: "انتهت صلاحية الرسائل قبل الإرسال",
+    reason_budget_exhausted: "استُنفدت الحصة",
+    reason_disabled: "معطّل",
+    reason_network_error: "خطأ في الشبكة",
     textRecovery: {
       title: "إعادة محاولة تفسير النصوص",
       description:
@@ -71,6 +107,7 @@ export const adminAr = {
       exhausted: "التفسير غير مكتمل بعد {{count}} محاولات.",
     },
     archive: {
+      errorsOnly: "الأخطاء فقط (HTTP 400 فما فوق)",
       title: "أرشيف بيانات المصادر الأصلية",
       description:
         "آخر 50 محاولة جمع. تُحفظ البيانات الأصلية للتحليل وإعادة المعالجة دون حذف تلقائي. الأوقات بتوقيت UTC. للمديرين فقط.",
@@ -264,6 +301,11 @@ export const adminAr = {
     reason_agri_burn: "حرق زراعي",
     reason_out_of_area: "خارج منطقة المراقبة",
     reason_other: "أخرى",
+  },
+  tools: {
+    title: "الأدوات",
+    description:
+      "التشخيص والاستعادة للمسؤولين: حمولات المصادر المؤرشفة، وإعادة محاولة التفسير، واختبار الإشعارات على الجهاز، ومعاينة الطقس التجميعية.",
   },
   overview: {
     title: "نظرة عامة",

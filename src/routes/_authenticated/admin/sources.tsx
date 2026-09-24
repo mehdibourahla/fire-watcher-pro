@@ -1,333 +1,454 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 
-import type { AnyLocale } from "@/i18n";
-import { EnsemblePreview } from "@/components/admin/EnsemblePreview";
-import { PushDeviceTest } from "@/components/admin/PushDeviceTest";
-import { TextRecovery } from "@/components/admin/TextRecovery";
-import { SourceArchive } from "@/components/admin/SourceArchive";
+import { ConfirmDialog } from "@/components/admin/kit/ConfirmDialog";
+import { PageHeader } from "@/components/admin/kit/PageHeader";
+import { QueryState } from "@/components/admin/kit/QueryState";
+import { StatusBadge, type Tone } from "@/components/admin/kit/StatusBadge";
+import { When } from "@/components/admin/kit/When";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   acknowledgeIncident,
   deliveryQueueQuery,
-  operationalIncidentsQuery,
-  setDeliveryChannelPaused,
-  type DeliveryChannel,
   openGapsQuery,
+  operationalIncidentsQuery,
   replayGap,
-  sourceHealthQuery,
+  setDeliveryChannelPaused,
   setSourcePaused,
+  sourceHealthQuery,
+  type SourceHealthRow,
 } from "@/lib/admin-sources";
-import { relativeTime } from "@/lib/nadhir";
 import { myRolesQuery } from "@/lib/reports";
 
 export const Route = createFileRoute("/_authenticated/admin/sources")({
   component: SourcesPage,
 });
 
-const STATE_TONE: Record<string, string> = {
-  healthy: "text-muted-foreground",
-  degraded: "text-[var(--warning,#b45309)]",
-  stale: "text-[var(--emergency)]",
+const STATE_TONE: Record<string, Tone> = {
+  healthy: "ok",
+  delayed: "warn",
+  degraded: "warn",
+  stale: "bad",
+  paused: "neutral",
 };
+// the same states admin_attention_counts counts, so the verdict and the nav badge agree
+const UNHEALTHY = ["delayed", "degraded", "stale"];
+const REASONS = [
+  "internal_error",
+  "data_delayed",
+  "credentials_missing",
+  "upstream_unreachable",
+  "schema_invalid",
+  "licence_invalid",
+  "run_delayed",
+  "queue_delayed",
+  "lease_expired",
+  "delivery_expired",
+  "budget_exhausted",
+  "disabled",
+  "network_error",
+];
 
-function SourcesPage() {
-  const { t, i18n } = useTranslation("admin");
-  const locale = i18n.language as AnyLocale;
+function Section({
+  title,
+  help,
+  children,
+}: {
+  title: string;
+  help?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="mt-8">
+      <h2 className="font-medium">{title}</h2>
+      {help ? (
+        <p className="mt-0.5 text-sm text-muted-foreground">{help}</p>
+      ) : null}
+      <div className="mt-3">{children}</div>
+    </section>
+  );
+}
+
+function useInvalidate() {
   const qc = useQueryClient();
+  return () => qc.invalidateQueries({ queryKey: ["admin"] });
+}
+
+function sourceState(row: SourceHealthRow) {
+  return row.enabled ? (row.state ?? "unknown") : "paused";
+}
+
+function Health({ isAdmin }: { isAdmin: boolean }) {
+  const { t } = useTranslation("admin");
+  const { t: tApp } = useTranslation();
   const health = useQuery(sourceHealthQuery);
-  const roles = useQuery(myRolesQuery);
-  const isAdmin = !roles.isError && (roles.data ?? []).includes("admin");
-  const gaps = useQuery(openGapsQuery);
+  const invalidate = useInvalidate();
+  const reason = (code: string | null) =>
+    !code ? "" : REASONS.includes(code) ? t(`sources.reason_${code}`) : code;
+  return (
+    <QueryState query={health} rows={6}>
+      {(rows) => {
+        const unhealthy = rows.filter((row) =>
+          UNHEALTHY.includes(sourceState(row)),
+        ).length;
+        return (
+          <>
+            <StatusBadge tone={unhealthy === 0 ? "ok" : "bad"}>
+              {unhealthy === 0
+                ? t("sources.allHealthy")
+                : t("sources.unhealthy", { count: unhealthy })}
+            </StatusBadge>
+            <div className="mt-3 overflow-x-auto rounded-lg border border-border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t("sources.colSource")}</TableHead>
+                    <TableHead>{t("sources.colState")}</TableHead>
+                    <TableHead>{t("sources.colLastSuccess")}</TableHead>
+                    <TableHead>{t("sources.colReason")}</TableHead>
+                    {isAdmin ? <TableHead /> : null}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {rows.map((row) => {
+                    const state = sourceState(row);
+                    return (
+                      <TableRow
+                        key={`${row.key}:${row.processing_only ?? false}`}
+                      >
+                        <TableCell>
+                          <span className="font-medium">
+                            {row.label ?? row.key}
+                          </span>
+                          {row.processing_only ? (
+                            <span className="block text-xs text-muted-foreground">
+                              {tApp("status.processingDegraded")}
+                            </span>
+                          ) : null}
+                        </TableCell>
+                        <TableCell>
+                          <StatusBadge tone={STATE_TONE[state] ?? "neutral"}>
+                            {t(`sources.state_${state}`, {
+                              defaultValue: state,
+                            })}
+                          </StatusBadge>
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          <When at={row.last_success_at} />
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {reason(row.public_reason_code)}
+                        </TableCell>
+                        {isAdmin ? (
+                          <TableCell className="text-end">
+                            {row.key && !row.processing_only ? (
+                              <ConfirmDialog
+                                trigger={
+                                  <Button size="sm" variant="outline">
+                                    {row.enabled
+                                      ? t("sources.pause")
+                                      : t("sources.resume")}
+                                  </Button>
+                                }
+                                title={t(
+                                  row.enabled
+                                    ? "sources.pauseSource"
+                                    : "sources.resumeSource",
+                                  { source: row.label ?? row.key },
+                                )}
+                                description={t("sources.sourcePauseHelp")}
+                                confirmLabel={
+                                  row.enabled
+                                    ? t("sources.pause")
+                                    : t("sources.resume")
+                                }
+                                destructive={row.enabled}
+                                reason={row.enabled ? "required" : "optional"}
+                                onConfirm={async (why) => {
+                                  await setSourcePaused(
+                                    row.key!,
+                                    row.enabled,
+                                    why,
+                                  );
+                                  toast.success(t("sources.saved"));
+                                  await invalidate();
+                                }}
+                              />
+                            ) : null}
+                          </TableCell>
+                        ) : null}
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          </>
+        );
+      }}
+    </QueryState>
+  );
+}
+
+function Delivery() {
+  const { t } = useTranslation("admin");
   const queues = useQuery(deliveryQueueQuery);
+  const invalidate = useInvalidate();
+  return (
+    <QueryState query={queues} rows={2}>
+      {(rows) => (
+        <div className="overflow-x-auto rounded-lg border border-border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{t("sources.channel")}</TableHead>
+                <TableHead>{t("sources.colState")}</TableHead>
+                <TableHead className="text-end">
+                  {t("sources.pending")}
+                </TableHead>
+                <TableHead className="text-end">
+                  {t("sources.expired")}
+                </TableHead>
+                <TableHead>{t("sources.oldestPending")}</TableHead>
+                <TableHead />
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {rows.map((row) => (
+                <TableRow key={row.channel}>
+                  <TableCell className="font-medium">
+                    {t(`sources.channel_${row.channel}`)}
+                  </TableCell>
+                  <TableCell>
+                    <StatusBadge tone={row.paused ? "warn" : "ok"}>
+                      {row.paused ? t("sources.paused") : t("sources.running")}
+                    </StatusBadge>
+                  </TableCell>
+                  <TableCell className="text-end tabular-nums">
+                    {row.pending_count}
+                  </TableCell>
+                  <TableCell className="text-end tabular-nums">
+                    {row.expired_count}
+                  </TableCell>
+                  <TableCell className="text-sm">
+                    <When at={row.oldest_pending_at} />
+                  </TableCell>
+                  <TableCell className="text-end">
+                    <ConfirmDialog
+                      trigger={
+                        <Button size="sm" variant="outline">
+                          {row.paused
+                            ? t("sources.resume")
+                            : t("sources.pause")}
+                        </Button>
+                      }
+                      title={t(
+                        row.paused
+                          ? "sources.resumeSource"
+                          : "sources.pauseSource",
+                        { source: t(`sources.channel_${row.channel}`) },
+                      )}
+                      description={t("sources.pauseHelp")}
+                      confirmLabel={
+                        row.paused ? t("sources.resume") : t("sources.pause")
+                      }
+                      destructive={!row.paused}
+                      reason={row.paused ? "optional" : "required"}
+                      onConfirm={async (why) => {
+                        await setDeliveryChannelPaused(
+                          row.channel,
+                          !row.paused,
+                          why,
+                        );
+                        toast.success(t("sources.saved"));
+                        await invalidate();
+                      }}
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+    </QueryState>
+  );
+}
+
+function Incidents() {
+  const { t } = useTranslation("admin");
   const incidents = useQuery(operationalIncidentsQuery);
-  const refresh = () =>
-    qc.invalidateQueries({ queryKey: ["admin", "sources"] });
-  const channel = useMutation({
-    mutationFn: ({
-      name,
-      paused,
-    }: {
-      name: DeliveryChannel;
-      paused: boolean;
-    }) => setDeliveryChannelPaused(name, paused),
-    onSuccess: refresh,
-  });
+  const invalidate = useInvalidate();
+  const [showResolved, setShowResolved] = useState(false);
   const acknowledge = useMutation({
     mutationFn: acknowledgeIncident,
-    onSuccess: refresh,
+    onSuccess: invalidate,
   });
-  const source = useMutation({
-    mutationFn: ({ key, paused }: { key: string; paused: boolean }) =>
-      setSourcePaused(key, paused),
-    onSuccess: refresh,
-  });
-
-  const replay = useMutation({
-    mutationFn: (id: string) => replayGap(id, null),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "sources"] }),
-  });
-
   return (
-    <section>
-      <h1 className="text-lg font-semibold">{t("sources.title")}</h1>
-      <p className="mt-1 text-sm text-muted-foreground">
-        {t("sources.subtitle")}
-      </p>
-
-      {[health, gaps, queues, incidents, roles].map((query, index) =>
-        query.isError ? (
-          <p
-            key={index}
-            role="alert"
-            className="mt-2 text-sm text-[var(--emergency)]"
-          >
-            {t("sources.loadFailed")}: {query.error.message}
-          </p>
-        ) : null,
-      )}
-
-      <h2 className="mt-6 text-sm font-medium">
-        {t("sources.deliveryQueues")}
-      </h2>
-      <p className="mt-1 text-xs text-muted-foreground">
-        {t("sources.pauseHelp")}
-      </p>
-      {queues.isPending ? (
-        <p role="status" className="mt-2 text-sm">
-          {t("sources.loading")}
-        </p>
-      ) : null}
-      <div className="mt-2 overflow-x-auto">
-        <table className="w-full min-w-[36rem] text-sm">
-          <thead>
-            <tr className="text-start text-xs text-muted-foreground">
-              {[
-                "channel",
-                "colState",
-                "pending",
-                "expired",
-                "oldestPending",
-                "action",
-              ].map((key) => (
-                <th key={key} scope="col" className="py-1 pe-3 text-start">
-                  {t(`sources.${key}`)}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {(queues.data ?? []).map((row) => (
-              <tr key={row.channel} className="border-t border-border">
-                <td className="py-2 pe-3">
-                  {row.channel === "fcm" ? t("sources.push") : "Telegram"}
-                </td>
-                <td className="pe-3">
-                  {t(row.paused ? "sources.paused" : "sources.running")}
-                </td>
-                <td className="pe-3">{row.pending_count}</td>
-                <td className="pe-3">{row.expired_count}</td>
-                <td className="pe-3">
-                  {row.oldest_pending_at
-                    ? relativeTime(row.oldest_pending_at, locale)
-                    : "—"}
-                </td>
-                <td>
-                  <button
-                    type="button"
-                    disabled={channel.isPending}
-                    onClick={() =>
-                      channel.mutate({ name: row.channel, paused: !row.paused })
-                    }
-                    className="rounded-md border border-border px-3 py-1 text-xs disabled:opacity-50"
-                  >
-                    {t(row.paused ? "sources.resume" : "sources.pause")}
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      {channel.isError ? (
-        <p role="alert" className="mt-2 text-sm text-[var(--emergency)]">
-          {t("sources.actionFailed")}: {channel.error.message}
-        </p>
-      ) : null}
-
-      <h2 className="mt-8 text-sm font-medium">
-        {t("sources.operationalIncidents")}
-      </h2>
-      <p className="mt-1 text-xs text-muted-foreground">
-        {t("sources.incidentsHelp")}
-      </p>
-      {incidents.isPending ? (
-        <p role="status" className="mt-2 text-sm">
-          {t("sources.loading")}
-        </p>
-      ) : null}
-      {incidents.isSuccess && !incidents.data.length ? (
-        <p className="mt-2 text-sm text-muted-foreground">
-          {t("sources.incidentsEmpty")}
-        </p>
-      ) : null}
-      <ul className="mt-2 space-y-2">
-        {(incidents.data ?? []).map((incident) => (
-          <li
-            key={incident.id}
-            className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border px-3 py-2 text-sm"
-          >
-            <div>
-              <p>
-                {incident.contract_key} · {incident.reason_code}
+    <QueryState query={incidents} rows={2}>
+      {(rows) => {
+        const open = rows.filter((row) => !row.resolved_at);
+        const resolved = rows.filter((row) => row.resolved_at);
+        const shown = showResolved ? rows : open;
+        return (
+          <div className="space-y-2">
+            {open.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                {t("sources.noOpenIncidents")}
               </p>
-              <p className="text-xs text-muted-foreground">
-                {t("sources.firstSeen")}:{" "}
-                {relativeTime(incident.first_seen_at, locale)} ·{" "}
-                {t("sources.lastSeen")}:{" "}
-                {relativeTime(incident.last_seen_at, locale)}
-              </p>
-              <p className="text-xs">
-                {t(
-                  incident.resolved_at
-                    ? "sources.resolved"
-                    : incident.acknowledged_at
-                      ? "sources.acknowledged"
-                      : "sources.open",
-                )}
-                {incident.acknowledged_at
-                  ? ` · ${relativeTime(incident.acknowledged_at, locale)}`
-                  : ""}
-              </p>
-            </div>
-            {!incident.resolved_at && !incident.acknowledged_at ? (
-              <button
-                type="button"
-                disabled={acknowledge.isPending}
-                onClick={() => acknowledge.mutate(incident.id)}
-                className="rounded-md bg-primary px-3 py-1 text-xs font-medium text-primary-foreground disabled:opacity-50"
-              >
-                {t("sources.acknowledge")}
-              </button>
             ) : null}
-          </li>
-        ))}
-      </ul>
-      {acknowledge.isError ? (
-        <p role="alert" className="mt-2 text-sm text-[var(--emergency)]">
-          {t("sources.actionFailed")}: {acknowledge.error.message}
-        </p>
-      ) : null}
-
-      {isAdmin && <TextRecovery />}
-      {isAdmin && <SourceArchive />}
-      <PushDeviceTest />
-      <EnsemblePreview />
-
-      <h2 className="mt-6 text-sm font-medium">{t("sources.health")}</h2>
-      <p className="mt-1 text-xs text-muted-foreground">
-        {t("sources.sourcePauseHelp")}
-      </p>
-      <div className="mt-2 overflow-x-auto">
-        <table className="w-full min-w-[36rem] text-sm">
-          <thead>
-            <tr className="text-left text-xs text-muted-foreground">
-              <th className="py-1 pr-3">{t("sources.colSource")}</th>
-              <th className="py-1 pr-3">{t("sources.colState")}</th>
-              <th className="py-1 pr-3">{t("sources.colCriticality")}</th>
-              <th className="py-1">{t("sources.colLastSuccess")}</th>
-              {isAdmin ? <th className="py-1">{t("sources.action")}</th> : null}
-            </tr>
-          </thead>
-          <tbody>
-            {(health.data ?? []).map((row) => (
-              <tr key={row.key ?? ""} className="border-t border-border">
-                <td className="py-1.5 pr-3">{row.label ?? row.key}</td>
-                <td
-                  className={`py-1.5 pr-3 ${STATE_TONE[row.state ?? ""] ?? ""}`}
-                >
-                  {row.processing_only
-                    ? t("translation:status.processingDegraded")
-                    : row.state}
-                </td>
-                <td className="py-1.5 pr-3 text-muted-foreground">
-                  {row.criticality}
-                </td>
-                <td className="py-1.5 text-muted-foreground">
-                  {row.last_success_at
-                    ? relativeTime(row.last_success_at, locale)
-                    : "—"}
-                </td>
-                {isAdmin ? (
-                  <td className="py-1.5">
-                    <button
-                      type="button"
-                      disabled={source.isPending || !row.key}
-                      aria-label={t(
-                        row.enabled
-                          ? "sources.pauseSource"
-                          : "sources.resumeSource",
-                        { source: row.label ?? row.key },
-                      )}
-                      onClick={() =>
-                        row.key &&
-                        source.mutate({ key: row.key, paused: row.enabled })
+            {shown.length > 0 ? (
+              <ul className="divide-y divide-border overflow-hidden rounded-lg border border-border">
+                {shown.map((incident) => (
+                  <li
+                    key={incident.id}
+                    className="flex flex-wrap items-center gap-3 px-4 py-2.5 text-sm"
+                  >
+                    <StatusBadge
+                      tone={
+                        incident.resolved_at
+                          ? "neutral"
+                          : incident.acknowledged_at
+                            ? "warn"
+                            : "bad"
                       }
-                      className="rounded-md border border-border px-3 py-1 text-xs disabled:opacity-50"
                     >
-                      {t(row.enabled ? "sources.pause" : "sources.resume")}
-                    </button>
-                  </td>
-                ) : null}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                      {incident.resolved_at
+                        ? t("sources.resolved")
+                        : incident.acknowledged_at
+                          ? t("sources.acknowledged")
+                          : t("sources.open")}
+                    </StatusBadge>
+                    <span className="font-medium">{incident.contract_key}</span>
+                    <span className="text-muted-foreground">
+                      {REASONS.includes(incident.reason_code)
+                        ? t(`sources.reason_${incident.reason_code}`)
+                        : incident.reason_code}
+                    </span>
+                    <span className="ms-auto text-xs text-muted-foreground">
+                      <When at={incident.last_seen_at} />
+                    </span>
+                    {!incident.resolved_at && !incident.acknowledged_at ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={acknowledge.isPending}
+                        onClick={() => acknowledge.mutate(incident.id)}
+                      >
+                        {t("sources.acknowledge")}
+                      </Button>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            {resolved.length > 0 ? (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setShowResolved((value) => !value)}
+              >
+                {showResolved
+                  ? t("sources.hideResolved")
+                  : t("sources.showResolved", { count: resolved.length })}
+              </Button>
+            ) : null}
+          </div>
+        );
+      }}
+    </QueryState>
+  );
+}
 
-      {source.isError ? (
-        <p role="alert" className="mt-2 text-sm text-[var(--emergency)]">
-          {t("sources.actionFailed")}: {source.error.message}
-        </p>
-      ) : null}
-
-      <h2 className="mt-8 text-sm font-medium">{t("sources.gaps")}</h2>
-      {gaps.isSuccess && gaps.data.length === 0 ? (
-        <p className="mt-2 text-sm text-muted-foreground">
-          {t("sources.gapsEmpty")}
-        </p>
-      ) : (
-        <ul className="mt-2 space-y-2">
-          {(gaps.data ?? []).map((gap) => (
+function Gaps() {
+  const { t } = useTranslation("admin");
+  const gaps = useQuery(openGapsQuery);
+  const invalidate = useInvalidate();
+  return (
+    <QueryState
+      query={gaps}
+      rows={2}
+      isEmpty={(rows) => rows.length === 0}
+      empty={t("sources.gapsEmpty")}
+    >
+      {(rows) => (
+        <ul className="divide-y divide-border overflow-hidden rounded-lg border border-border">
+          {rows.map((gap) => (
             <li
               key={gap.id}
-              className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border px-3 py-2 text-sm"
+              className="flex flex-wrap items-center gap-3 px-4 py-2.5 text-sm"
             >
-              <span>
-                {gap.contract_key}
-                <span className="ml-2 text-xs text-muted-foreground">
-                  {gap.state} ·{" "}
-                  {t("sources.replayCount", { count: gap.replay_count })}
-                </span>
+              <span className="font-medium">{gap.contract_key}</span>
+              <span className="text-muted-foreground">
+                <When at={gap.data_from} /> → <When at={gap.data_through} />
               </span>
-              <button
-                type="button"
-                disabled={replay.isPending}
-                onClick={() => replay.mutate(gap.id)}
-                className="rounded-md bg-primary px-3 py-1 text-xs font-medium text-primary-foreground disabled:opacity-50"
-              >
-                {t("sources.replay")}
-              </button>
+              <span className="text-xs text-muted-foreground">
+                {t(`sources.gap_${gap.state}`, { defaultValue: gap.state })} ·{" "}
+                {t("sources.replayCount", { count: gap.replay_count })}
+              </span>
+              <span className="ms-auto">
+                <ConfirmDialog
+                  trigger={
+                    <Button size="sm" variant="outline">
+                      {t("sources.replay")}
+                    </Button>
+                  }
+                  title={t("sources.replayTitle", { source: gap.contract_key })}
+                  description={t("sources.replayHelp")}
+                  confirmLabel={t("sources.replay")}
+                  reason="optional"
+                  onConfirm={async (why) => {
+                    await replayGap(gap.id, why);
+                    toast.success(t("sources.saved"));
+                    await invalidate();
+                  }}
+                />
+              </span>
             </li>
           ))}
         </ul>
       )}
+    </QueryState>
+  );
+}
 
-      {replay.isError ? (
-        <p className="mt-2 text-xs text-[var(--emergency)]">
-          {(replay.error as Error).message}
-        </p>
-      ) : null}
+function SourcesPage() {
+  const { t } = useTranslation("admin");
+  const roles = useQuery(myRolesQuery);
+  const isAdmin = !roles.isError && (roles.data ?? []).includes("admin");
+  return (
+    <section>
+      <PageHeader
+        title={t("sources.title")}
+        description={t("sources.subtitle")}
+      />
+      <Health isAdmin={isAdmin} />
+      <Section
+        title={t("sources.deliveryQueues")}
+        help={t("sources.pauseHelp")}
+      >
+        <Delivery />
+      </Section>
+      <Section
+        title={t("sources.operationalIncidents")}
+        help={t("sources.incidentsHelp")}
+      >
+        <Incidents />
+      </Section>
+      <Section title={t("sources.gaps")}>
+        <Gaps />
+      </Section>
     </section>
   );
 }

@@ -14,6 +14,7 @@ import {
   ScrollText,
   Siren,
   Users,
+  Wrench,
   type LucideIcon,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -35,6 +36,7 @@ const ICONS: Record<string, LucideIcon> = {
   places: MapPin,
   people: Users,
   audit: ScrollText,
+  tools: Wrench,
 };
 
 export function AdminNav({

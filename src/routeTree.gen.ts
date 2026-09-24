@@ -44,6 +44,7 @@ import { Route as AuthenticatedAdminPlacesRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAdminReportsRouteImport } from './routes/_authenticated/admin/reports'
 import { Route as AuthenticatedAdminRiskRouteImport } from './routes/_authenticated/admin/risk'
 import { Route as AuthenticatedAdminSourcesRouteImport } from './routes/_authenticated/admin/sources'
+import { Route as AuthenticatedAdminToolsRouteImport } from './routes/_authenticated/admin/tools'
 import { Route as AuthenticatedAdminTranslationsRouteImport } from './routes/_authenticated/admin/translations'
 import { Route as ApiPrivateAccountRouteImport } from './routes/api/private/account'
 import { Route as ApiPrivateEnsembleRouteImport } from './routes/api/private/ensemble'
@@ -244,6 +245,11 @@ const AuthenticatedAdminSourcesRoute =
     path: '/sources',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminToolsRoute = AuthenticatedAdminToolsRouteImport.update({
+  id: '/tools',
+  path: '/tools',
+  getParentRoute: () => AuthenticatedAdminRouteRoute,
+} as any)
 const AuthenticatedAdminTranslationsRoute =
   AuthenticatedAdminTranslationsRouteImport.update({
     id: '/translations',
@@ -379,6 +385,7 @@ export interface FileRoutesByFullPath {
   '/admin/reports': typeof AuthenticatedAdminReportsRoute
   '/admin/risk': typeof AuthenticatedAdminRiskRoute
   '/admin/sources': typeof AuthenticatedAdminSourcesRoute
+  '/admin/tools': typeof AuthenticatedAdminToolsRoute
   '/admin/translations': typeof AuthenticatedAdminTranslationsRoute
   '/api/private/account': typeof ApiPrivateAccountRoute
   '/api/private/ensemble': typeof ApiPrivateEnsembleRoute
@@ -432,6 +439,7 @@ export interface FileRoutesByTo {
   '/admin/reports': typeof AuthenticatedAdminReportsRoute
   '/admin/risk': typeof AuthenticatedAdminRiskRoute
   '/admin/sources': typeof AuthenticatedAdminSourcesRoute
+  '/admin/tools': typeof AuthenticatedAdminToolsRoute
   '/admin/translations': typeof AuthenticatedAdminTranslationsRoute
   '/api/private/account': typeof ApiPrivateAccountRoute
   '/api/private/ensemble': typeof ApiPrivateEnsembleRoute
@@ -489,6 +497,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/reports': typeof AuthenticatedAdminReportsRoute
   '/_authenticated/admin/risk': typeof AuthenticatedAdminRiskRoute
   '/_authenticated/admin/sources': typeof AuthenticatedAdminSourcesRoute
+  '/_authenticated/admin/tools': typeof AuthenticatedAdminToolsRoute
   '/_authenticated/admin/translations': typeof AuthenticatedAdminTranslationsRoute
   '/api/private/account': typeof ApiPrivateAccountRoute
   '/api/private/ensemble': typeof ApiPrivateEnsembleRoute
@@ -546,6 +555,7 @@ export interface FileRouteTypes {
     | '/admin/reports'
     | '/admin/risk'
     | '/admin/sources'
+    | '/admin/tools'
     | '/admin/translations'
     | '/api/private/account'
     | '/api/private/ensemble'
@@ -599,6 +609,7 @@ export interface FileRouteTypes {
     | '/admin/reports'
     | '/admin/risk'
     | '/admin/sources'
+    | '/admin/tools'
     | '/admin/translations'
     | '/api/private/account'
     | '/api/private/ensemble'
@@ -655,6 +666,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/reports'
     | '/_authenticated/admin/risk'
     | '/_authenticated/admin/sources'
+    | '/_authenticated/admin/tools'
     | '/_authenticated/admin/translations'
     | '/api/private/account'
     | '/api/private/ensemble'
@@ -958,6 +970,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminSourcesRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/tools': {
+      id: '/_authenticated/admin/tools'
+      path: '/tools'
+      fullPath: '/admin/tools'
+      preLoaderRoute: typeof AuthenticatedAdminToolsRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/translations': {
       id: '/_authenticated/admin/translations'
       path: '/translations'
@@ -1106,6 +1125,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminReportsRoute: typeof AuthenticatedAdminReportsRoute
   AuthenticatedAdminRiskRoute: typeof AuthenticatedAdminRiskRoute
   AuthenticatedAdminSourcesRoute: typeof AuthenticatedAdminSourcesRoute
+  AuthenticatedAdminToolsRoute: typeof AuthenticatedAdminToolsRoute
   AuthenticatedAdminTranslationsRoute: typeof AuthenticatedAdminTranslationsRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
@@ -1123,6 +1143,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminReportsRoute: AuthenticatedAdminReportsRoute,
     AuthenticatedAdminRiskRoute: AuthenticatedAdminRiskRoute,
     AuthenticatedAdminSourcesRoute: AuthenticatedAdminSourcesRoute,
+    AuthenticatedAdminToolsRoute: AuthenticatedAdminToolsRoute,
     AuthenticatedAdminTranslationsRoute: AuthenticatedAdminTranslationsRoute,
     AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   }

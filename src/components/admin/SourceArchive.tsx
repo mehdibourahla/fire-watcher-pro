@@ -10,7 +10,8 @@ export function SourceArchive() {
   const { t } = useTranslation("admin");
   const [source, setSource] = useState("");
   const [draft, setDraft] = useState("");
-  const captures = useQuery(sourceArchiveQuery(source));
+  const [errorsOnly, setErrorsOnly] = useState(false);
+  const captures = useQuery(sourceArchiveQuery(source, errorsOnly));
   const download = useMutation({ mutationFn: downloadSourcePayload });
   return (
     <section className="mt-8" aria-labelledby="source-archive-title">
@@ -44,6 +45,14 @@ export function SourceArchive() {
         >
           {t("sources.archive.filter")}
         </button>
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={errorsOnly}
+            onChange={(event) => setErrorsOnly(event.target.checked)}
+          />
+          {t("sources.archive.errorsOnly")}
+        </label>
       </form>
       {captures.isPending && (
         <p className="mt-2 text-sm">{t("sources.loading")}</p>

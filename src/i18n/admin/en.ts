@@ -61,6 +61,7 @@ export const adminEn = {
     reportedStatus: "Source status: {{status}}",
   },
   nav: {
+    tools: "Tools",
     ita: "ITA publications",
     overview: "Overview",
     sources: "Sources",
@@ -150,6 +151,11 @@ export const adminEn = {
     title: "Ideas",
     description:
       "Ideas sent from the Contribute page. Publish, reply or reject.",
+  },
+  tools: {
+    title: "Tools",
+    description:
+      "Diagnostics and recovery for administrators: archived source payloads, text interpretation retries, device push test and the ensemble weather preview.",
   },
   overview: {
     title: "Overview",
@@ -322,6 +328,42 @@ export const adminEn = {
     reason_other: "Other",
   },
   sources: {
+    allHealthy: "All sources are reporting normally",
+    unhealthy: "{{count}} source needs attention",
+    unhealthy_other: "{{count}} sources need attention",
+    colReason: "Why",
+    saved: "Saved",
+    noOpenIncidents: "No open incident.",
+    showResolved: "Show resolved ({{count}})",
+    hideResolved: "Hide resolved",
+    replayTitle: "Replay the {{source}} gap?",
+    replayHelp:
+      "The missing window is fetched again on the next run. Use it once the upstream is back.",
+    channel_fcm: "Push notifications",
+    channel_telegram: "Telegram",
+    state_healthy: "Healthy",
+    state_delayed: "Delayed",
+    state_degraded: "Degraded",
+    state_stale: "Stale",
+    state_paused: "Paused",
+    state_unavailable: "No data",
+    state_unknown: "Unknown",
+    gap_open: "Open",
+    gap_replaying: "Replaying",
+    gap_unrecoverable: "Unrecoverable",
+    reason_internal_error: "Internal error",
+    reason_data_delayed: "Data arriving late",
+    reason_credentials_missing: "Credentials missing",
+    reason_upstream_unreachable: "Upstream refused or unreachable",
+    reason_schema_invalid: "Unexpected data format",
+    reason_licence_invalid: "Licence not acceptable",
+    reason_run_delayed: "Run late",
+    reason_queue_delayed: "Queue backed up",
+    reason_lease_expired: "Worker lease expired",
+    reason_delivery_expired: "Messages expired before delivery",
+    reason_budget_exhausted: "Quota exhausted",
+    reason_disabled: "Disabled",
+    reason_network_error: "Network error",
     textRecovery: {
       title: "Text interpretation recovery",
       description:
@@ -334,6 +376,7 @@ export const adminEn = {
       exhausted: "Interpretation incomplete after {{count}} attempts.",
     },
     archive: {
+      errorsOnly: "Errors only (HTTP 400 and above)",
       title: "Raw source archive",
       description:
         "Latest 50 collection attempts. Original payloads are retained for analysis and reprocessing, with no automatic expiry. Times are UTC. Administrator access only.",

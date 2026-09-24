@@ -3770,7 +3770,7 @@ export type Database = {
       prune_reliability_history: { Args: never; Returns: Json };
 
       set_source_paused: {
-        Args: { _key: string; _paused: boolean };
+        Args: { _key: string; _paused: boolean; _reason?: string | null };
         Returns: undefined;
       };
       acknowledge_operational_incident: {
@@ -3799,7 +3799,7 @@ export type Database = {
         Returns: boolean;
       };
       set_delivery_channel_paused: {
-        Args: { _channel: string; _paused: boolean };
+        Args: { _channel: string; _paused: boolean; _reason?: string | null };
         Returns: undefined;
       };
       bump_official_incident: {

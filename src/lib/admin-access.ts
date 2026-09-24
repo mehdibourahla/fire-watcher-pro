@@ -115,6 +115,13 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     attention: [],
   },
   {
+    key: "tools",
+    path: "/admin/tools",
+    group: "admin",
+    roles: ["admin"],
+    attention: [],
+  },
+  {
     key: "audit",
     path: "/admin/audit",
     group: "admin",
