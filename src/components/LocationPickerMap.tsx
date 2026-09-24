@@ -77,12 +77,15 @@ export default function LocationPickerMap({
       "top-right",
     );
     const draw = () => {
-      if (radius.current === null || !map.isStyleLoaded()) return;
+      if (radius.current === null) return;
       const c = map.getCenter();
       paintArea(map, c.lat, c.lng, radius.current);
     };
+    map.on("load", draw);
     map.on("style.load", draw);
-    map.on("move", draw);
+    map.on("move", () => {
+      if (map.isStyleLoaded()) draw();
+    });
     map.on("moveend", (event) => {
       const c = map.getCenter();
       move.current({ lat: c.lat, lon: c.lng }, !!event.originalEvent);
