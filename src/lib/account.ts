@@ -65,6 +65,10 @@ export const zonesQuery = queryOptions({
 
 export const MAX_ZONES = 10;
 
+// the zone form prefilled this point until 2026-09-24; zones still on it were never placed
+export const isDefaultPoint = (zone: Pick<Zone, "lat" | "lon">) =>
+  zone.lat === 36.7 && zone.lon === 4.05;
+
 export type ZoneInput = Pick<
   Zone,
   | "name"

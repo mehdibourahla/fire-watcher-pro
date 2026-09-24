@@ -17,7 +17,12 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button, buttonVariants } from "@/components/ui/button";
 import type { Locale } from "@/i18n";
-import { deleteZone, setZoneActive, type Zone } from "@/lib/account";
+import {
+  deleteZone,
+  isDefaultPoint,
+  setZoneActive,
+  type Zone,
+} from "@/lib/account";
 import { unitName, type AdminUnit } from "@/lib/nadhir";
 
 export function ZoneCard({
@@ -72,6 +77,21 @@ export function ZoneCard({
         </div>
         <RiskChip level={zone.min_danger_level} />
       </div>
+      {isDefaultPoint(zone) ? (
+        <div
+          role="alert"
+          className="mt-3 rounded-lg px-3 py-2 text-sm"
+          style={{
+            backgroundColor: "var(--emergency-surface)",
+            color: "var(--emergency)",
+          }}
+        >
+          <p>{t("account.zoneDefaultPoint")}</p>
+          <Button size="sm" className="mt-2" onClick={onEdit}>
+            {t("account.zoneMove")}
+          </Button>
+        </div>
+      ) : null}
       <p className="mt-2 text-xs text-muted-foreground">
         {follows.length
           ? t("account.zoneFollows", { list: follows.join(" · ") })

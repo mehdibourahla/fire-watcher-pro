@@ -744,6 +744,9 @@ export const fr: Translation = {
     data: "Le code est en AGPL-3.0. Les données produites sont en CC-BY 4.0 avec attribution aux sources ci-dessous.",
   },
   alerts: {
+    defaultPointZones:
+      "Au moins une de vos zones est encore sur le point par défaut près de Tizi Ouzou : ses alertes décrivent cette zone-là, pas votre lieu.",
+    fixZones: "Corriger mes zones",
     title: "Mes alertes",
     subtitle: "Avertissements émis pour les lieux que vous surveillez.",
     checkNow: "Vérifier mes zones",
@@ -801,6 +804,9 @@ export const fr: Translation = {
     notifyFires: "Détections de feux",
     notifyRisk: "Prévision de danger",
     saveZone: "Enregistrer la zone",
+    zoneDefaultPoint:
+      "Cette zone est encore sur le point par défaut près de Tizi Ouzou : ses alertes décrivent cette zone-là. Déplacez-la sur votre lieu.",
+    zoneMove: "Déplacer cette zone",
     addFirstZone: "Ajouter votre première zone",
     noZonesTitle: "Aucune zone surveillée",
     editZone: "Modifier la zone",

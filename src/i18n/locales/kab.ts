@@ -731,6 +731,9 @@ export const kab: Translation = {
     data: "Tangalt n uɣawas d AGPL-3.0, isefka d CC-BY 4.0 s usmel n yiɣbula.",
   },
   alerts: {
+    defaultPointZones:
+      "Au moins une de vos zones est encore sur le point par défaut près de Tizi Ouzou : ses alertes décrivent cette zone-là, pas votre lieu.",
+    fixZones: "Corriger mes zones",
     title: "Ilɣa-inu",
     subtitle: "Ilɣa i d-yeffɣen ɣef yidgan i tetɛassaḍ.",
     checkNow: "Senqed temnaḍin-iw tura",
@@ -786,6 +789,9 @@ export const kab: Translation = {
     notifyFires: "Tifin n times",
     notifyRisk: "Aseɣwer n uyhil",
     saveZone: "Sekles tamnaḍt",
+    zoneDefaultPoint:
+      "Cette zone est encore sur le point par défaut près de Tizi Ouzou : ses alertes décrivent cette zone-là. Déplacez-la sur votre lieu.",
+    zoneMove: "Déplacer cette zone",
     addFirstZone: "Ajouter votre première zone",
     noZonesTitle: "Aucune zone surveillée",
     editZone: "Modifier la zone",
