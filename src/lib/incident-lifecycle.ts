@@ -6,7 +6,7 @@ import {
 export type Phase = "upcoming" | "live" | "fading" | "archived" | "ended";
 
 const HOUR = 3_600_000;
-const FIRE_LEASE_HOURS = 6;
+export const FIRE_LEASE_HOURS = 6;
 // fusion stops attaching new detections to a cluster silent this long
 const FIRE_ARCHIVE_HOURS = 24;
 const OFFICIAL_LEASE_HOURS = 24;

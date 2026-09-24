@@ -181,6 +181,22 @@ it("archives weather enrichment without cluster or user identifiers", async () =
   );
 });
 
+it("asks Open-Meteo for wind only on fires still live on the map", async () => {
+  const since: string[] = [];
+  const query = {
+    select: () => query,
+    in: () => query,
+    gte: (_: string, value: string) => (since.push(value), query),
+    order: () => query,
+    limit: async () => ({ data: [] }),
+  };
+  from.mockReturnValue(query);
+  const before = Date.now();
+  await expect(enrichClusterWinds()).resolves.toBe(0);
+  const age = (before - Date.parse(since[0]!)) / 3_600_000;
+  expect(age).toBeCloseTo(6, 1);
+});
+
 it("archives an ITA 304 before checkpointing or claiming pending extraction", async () => {
   const query = {
     select: () => query,
