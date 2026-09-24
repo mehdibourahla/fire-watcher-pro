@@ -50,6 +50,10 @@ describe("admin namespace", () => {
       "sources.channel_telegram",
       "sources.title",
       "sources.colSource",
+      "incidents.detail",
+      "incidents.tier_national",
+      "incidents.tier_wilaya",
+      "places.openMap",
     ]);
   });
 });

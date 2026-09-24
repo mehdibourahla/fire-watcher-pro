@@ -12,14 +12,26 @@ export type OpenArea = {
   verified_note: string | null;
 };
 
-export function openAreasQuery(verified: boolean) {
+export const OPEN_AREA_PAGE = 50;
+
+export function openAreasQuery(
+  verified: boolean,
+  search: string,
+  page: number,
+) {
   return queryOptions({
-    queryKey: ["admin", "places", "open-areas", verified],
+    queryKey: ["admin", "places", "open-areas", verified, search, page],
     queryFn: async (): Promise<OpenArea[]> => {
       let q = supabase
         .from("open_areas")
         .select("id, name, area_type, lat, lon, verified_at, verified_note")
-        .limit(100);
+        .order("name", { nullsFirst: false })
+        .range(
+          page * OPEN_AREA_PAGE,
+          page * OPEN_AREA_PAGE + OPEN_AREA_PAGE - 1,
+        );
+      if (search.trim())
+        q = q.ilike("name", `%${search.trim().replace(/[%_,()]/g, " ")}%`);
       q = verified
         ? q.not("verified_at", "is", null)
         : q.is("verified_at", null);

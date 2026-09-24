@@ -15,15 +15,12 @@ export type SnapshotRun = {
 export const snapshotRunsQuery = queryOptions({
   queryKey: ["admin", "risk", "runs"],
   queryFn: async (): Promise<SnapshotRun[]> => {
-    const { data, error } = await supabase
-      .from("risk_forecast_snapshot_runs")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(30);
+    const { data, error } = await supabase.rpc("list_risk_snapshot_runs");
     if (error) throw new Error(error.message);
     return (data ?? []) as SnapshotRun[];
   },
   staleTime: 30_000,
+  refetchInterval: 60_000,
 });
 
 export type PublicationCheckpoint = {
@@ -48,11 +45,12 @@ export const publicationCheckpointsQuery = queryOptions({
   staleTime: 30_000,
 });
 
-export async function publishSnapshot(run: SnapshotRun) {
+export async function publishSnapshot(run: SnapshotRun, reason: string | null) {
   const { error } = await supabase.rpc("operator_publish_risk_snapshot", {
     _snapshot_id: run.snapshot_id,
     _base_date: run.base_date,
     _scheduled_for: run.scheduled_for,
+    _reason: reason,
   });
   if (error) throw new Error(error.message);
 }

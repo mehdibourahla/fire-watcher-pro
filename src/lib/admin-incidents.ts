@@ -24,6 +24,12 @@ export type OfficialIncident = {
   as_of: string;
   evidence: string;
   unlisted_at: string | null;
+  place_text: string | null;
+  commune: { name_fr: string } | null;
+  wilaya: { name_fr: string } | null;
+  latest_mention: {
+    document: { url: string | null; published_at: string | null } | null;
+  } | null;
 };
 
 export const officialIncidentsQuery = queryOptions({
@@ -32,12 +38,12 @@ export const officialIncidentsQuery = queryOptions({
     const { data, error } = await supabase
       .from("official_incidents")
       .select(
-        "id, kind, status, precision, authority_tier, first_reported_at, last_reported_at, as_of, evidence, unlisted_at",
+        "id, kind, status, precision, authority_tier, first_reported_at, last_reported_at, as_of, evidence, unlisted_at, place_text, commune:admin_units!official_incidents_commune_id_fkey(name_fr), wilaya:admin_units!official_incidents_wilaya_id_fkey(name_fr), latest_mention:incident_mentions!official_incidents_latest_mention_fkey(document:source_documents(url, published_at))",
       )
       .order("last_reported_at", { ascending: false })
       .limit(100);
     if (error) throw new Error(error.message);
-    return (data ?? []) as OfficialIncident[];
+    return (data ?? []) as unknown as OfficialIncident[];
   },
   staleTime: 30_000,
 });

@@ -3973,6 +3973,18 @@ export type Database = {
         Args: { _id: string; _reason: string };
         Returns: undefined;
       };
+      list_risk_snapshot_runs: {
+        Args: never;
+        Returns: {
+          base_date: string;
+          created_at: string;
+          finished_at: string | null;
+          heartbeat_at: string;
+          scheduled_for: string;
+          snapshot_id: string;
+          status: string;
+        }[];
+      };
       moderate_citizen_report: {
         Args: {
           _cluster?: string | null;
