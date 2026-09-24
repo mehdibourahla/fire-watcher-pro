@@ -149,7 +149,7 @@ function ReportPage() {
       </p>
       {isModerator ? (
         <Link
-          to="/admin/queues"
+          to="/admin/reports"
           className="mt-3 inline-block text-sm font-medium text-primary"
         >
           {t("nav.moderation")}

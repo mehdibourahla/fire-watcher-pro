@@ -6,7 +6,7 @@ describe("authentication destination", () => {
   it.each([
     "/alerts",
     "/settings",
-    "/admin/queues",
+    "/admin/reports",
     "/report?kind=road_blocked#details",
   ])("preserves %s", (path) => {
     expect(authDestination(path)).toBe(path);

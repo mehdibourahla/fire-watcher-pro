@@ -197,6 +197,35 @@ export const adminAr = {
     published: "نُشر",
     expires: "يُعرض حتى",
   },
+  reportsPage: {
+    title: "بلاغات المواطنين",
+    description:
+      "مشاهدات مُرسلة من التطبيق. وافق على ما هو موثوق، واربطه بحريق قريب، وارفض الباقي.",
+    detail: "البلاغ",
+    placeholder: "اختر بلاغًا لمراجعته.",
+    openMap: "عرض على الخريطة",
+    observed: "وقت المشاهدة",
+    location: "الموقع",
+    nearbyFires: "الربط بحريق على بعد أقل من 50 كم",
+    noNearby:
+      "لا يوجد حريق مرصود بالأقمار الصناعية على بعد أقل من 50 كم خلال الأيام الثلاثة الأخيرة.",
+    km: "{{km}} كم",
+  },
+  translationsPage: {
+    title: "الترجمات",
+    description:
+      "اقتراحات المساهمين مجمّعة حسب النص. قبول اقتراح لا يغيّر التطبيق إلا بعد تشغيل apply:translations.",
+    locale: "اللغة",
+    allLocales: "كل اللغات",
+    source: "الإنجليزية",
+    current: "الحالي",
+    suggestions: "{{count}} اقتراح",
+    suggestions_other: "{{count}} اقتراحات",
+  },
+  ideasPage: {
+    title: "الأفكار",
+    description: "أفكار مُرسلة من صفحة المساهمة. انشر أو ردّ أو ارفض.",
+  },
   overview: {
     title: "نظرة عامة",
     description: "ما يحتاج إلى تدخّل الآن، من الأكثر استعجالًا إلى الأقل.",

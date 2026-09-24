@@ -25,11 +25,15 @@ const ORDER: { item: OverviewItem; tone: Tone; path: string }[] = [
   { item: "fires", tone: "warn", path: "/admin/fires" },
   { item: "risk_pending", tone: "warn", path: "/admin/risk" },
   { item: "delivery_backlog", tone: "warn", path: "/admin/broadcasts" },
-  { item: "citizen_reports", tone: "neutral", path: "/admin/queues" },
+  { item: "citizen_reports", tone: "neutral", path: "/admin/reports" },
   { item: "source_gaps", tone: "neutral", path: "/admin/sources" },
-  { item: "translations", tone: "neutral", path: "/admin/queues" },
-  { item: "ideas", tone: "neutral", path: "/admin/queues" },
-  { item: "translations_unapplied", tone: "neutral", path: "/admin/queues" },
+  { item: "translations", tone: "neutral", path: "/admin/translations" },
+  { item: "ideas", tone: "neutral", path: "/admin/ideas" },
+  {
+    item: "translations_unapplied",
+    tone: "neutral",
+    path: "/admin/translations",
+  },
 ];
 
 export const OVERVIEW_ITEMS = ORDER.map((entry) => entry.item);

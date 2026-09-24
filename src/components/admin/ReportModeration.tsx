@@ -1,0 +1,306 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { MapPin } from "lucide-react";
+import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
+
+import { QueryState } from "@/components/admin/kit/QueryState";
+import { SplitView } from "@/components/admin/kit/SplitView";
+import { StatusBadge, type Tone } from "@/components/admin/kit/StatusBadge";
+import { When } from "@/components/admin/kit/When";
+import { ReportPhoto } from "@/components/ReportPhoto";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { adminUnitsQuery, clustersQuery, type FireCluster } from "@/lib/nadhir";
+import {
+  moderateReport,
+  moderationQueueQuery,
+  type CitizenReport,
+  type ReportStatus,
+} from "@/lib/reports";
+import { cn } from "@/lib/utils";
+
+const FILTERS = ["pending", "approved", "rejected", "all"] as const;
+type Filter = (typeof FILTERS)[number];
+const STATUS_TONE: Record<ReportStatus, Tone> = {
+  pending: "warn",
+  approved: "ok",
+  rejected: "neutral",
+};
+const capital = (value: string) =>
+  value.charAt(0).toUpperCase() + value.slice(1);
+
+function distanceKm(
+  a: { lat: number; lon: number },
+  b: { lat: number; lon: number },
+) {
+  const rad = Math.PI / 180;
+  const dLat = (b.lat - a.lat) * rad;
+  const dLon = (b.lon - a.lon) * rad;
+  const h =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin(dLon / 2) ** 2;
+  return 12742 * Math.asin(Math.sqrt(h));
+}
+
+function Detail({
+  report,
+  fires,
+  onDone,
+}: {
+  report: CitizenReport;
+  fires: FireCluster[];
+  onDone: () => void;
+}) {
+  const { t } = useTranslation("admin");
+  const { t: tApp } = useTranslation();
+  const qc = useQueryClient();
+  const [note, setNote] = useState(report.moderation_note ?? "");
+  const [clusterId, setClusterId] = useState(report.cluster_id ?? "");
+  const nearby = useMemo(
+    () =>
+      fires
+        .map((fire) => ({ fire, km: distanceKm(report, fire) }))
+        .filter(({ km }) => km <= 50)
+        .sort((a, b) => a.km - b.km)
+        .slice(0, 8),
+    [fires, report],
+  );
+  const moderate = useMutation({
+    mutationFn: (status: ReportStatus) =>
+      moderateReport({
+        id: report.id,
+        status,
+        moderation_note: note.trim() || null,
+        cluster_id: clusterId || null,
+      }),
+    onSuccess: async (_, status) => {
+      toast.success(tApp(`reports.status${capital(status)}`));
+      await qc.invalidateQueries({ queryKey: ["reports"] });
+      await qc.invalidateQueries({ queryKey: ["admin", "attention"] });
+      onDone();
+    },
+  });
+
+  return (
+    <div className="space-y-5 text-sm">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <StatusBadge tone={STATUS_TONE[report.status]}>
+          {tApp(`reports.status${capital(report.status)}`)}
+        </StatusBadge>
+        {report.commune_id ? (
+          <a
+            className="inline-flex items-center gap-1 underline"
+            href={`/?area=${report.commune_id}`}
+          >
+            <MapPin aria-hidden className="size-3.5" />
+            {t("reportsPage.openMap")}
+          </a>
+        ) : null}
+      </div>
+      <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
+        <dt className="text-muted-foreground">{t("reportsPage.observed")}</dt>
+        <dd>
+          <When at={report.observed_at} />
+        </dd>
+        <dt className="text-muted-foreground">{t("reportsPage.location")}</dt>
+        <dd className="tabular-nums" dir="ltr">
+          {report.lat.toFixed(4)}, {report.lon.toFixed(4)}
+        </dd>
+      </dl>
+      {report.note ? (
+        <blockquote dir="auto" className="rounded-md bg-muted p-3">
+          {report.note}
+        </blockquote>
+      ) : null}
+      <ReportPhoto photo={report.photo_url} />
+      <fieldset>
+        <legend className="font-medium">{t("reportsPage.nearbyFires")}</legend>
+        {nearby.length === 0 ? (
+          <p className="mt-1 text-muted-foreground">
+            {t("reportsPage.noNearby")}
+          </p>
+        ) : (
+          <div className="mt-2 space-y-1">
+            <label className="flex items-center gap-2">
+              <input
+                type="radio"
+                name={`link-${report.id}`}
+                checked={clusterId === ""}
+                onChange={() => setClusterId("")}
+              />
+              {t("queues.linkNone")}
+            </label>
+            {nearby.map(({ fire, km }) => (
+              <label key={fire.id} className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  name={`link-${report.id}`}
+                  checked={clusterId === fire.id}
+                  onChange={() => setClusterId(fire.id)}
+                />
+                <span className="font-mono text-xs">{fire.short_id}</span>
+                <span className="text-muted-foreground">
+                  {t("reportsPage.km", { km: km.toFixed(1) })} ·{" "}
+                  <When at={fire.last_detected_at} />
+                </span>
+              </label>
+            ))}
+          </div>
+        )}
+      </fieldset>
+      <label className="block">
+        <span className="font-medium">{t("queues.modNote")}</span>
+        <Input
+          className="mt-1"
+          value={note}
+          onChange={(event) => setNote(event.target.value)}
+        />
+      </label>
+      {moderate.isError ? (
+        <p role="alert" className="text-destructive">
+          {moderate.error.message}
+        </p>
+      ) : null}
+      <div className="flex flex-wrap gap-2">
+        <Button
+          disabled={moderate.isPending}
+          onClick={() => moderate.mutate("approved")}
+        >
+          {t("queues.approve")}
+        </Button>
+        <Button
+          variant="outline"
+          disabled={moderate.isPending}
+          onClick={() => moderate.mutate("rejected")}
+        >
+          {t("queues.reject")}
+        </Button>
+        {report.status !== "pending" ? (
+          <Button
+            variant="ghost"
+            disabled={moderate.isPending}
+            onClick={() => moderate.mutate("pending")}
+          >
+            {t("queues.reopen")}
+          </Button>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+export function ReportModeration() {
+  const { t } = useTranslation("admin");
+  const { t: tApp } = useTranslation();
+  const queue = useQuery(moderationQueueQuery);
+  const clusters = useQuery(clustersQuery);
+  const units = useQuery(adminUnitsQuery);
+  const [filter, setFilter] = useState<Filter>("pending");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const communes = useMemo(
+    () => new Map((units.data ?? []).map((unit) => [unit.id, unit.name_fr])),
+    [units.data],
+  );
+  const selected =
+    queue.data?.find((report) => report.id === selectedId) ?? null;
+  const countOf = (value: Filter) =>
+    (queue.data ?? []).filter((r) => value === "all" || r.status === value)
+      .length;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap gap-2">
+        {FILTERS.map((value) => (
+          <Button
+            key={value}
+            size="sm"
+            variant={filter === value ? "default" : "outline"}
+            aria-pressed={filter === value}
+            onClick={() => setFilter(value)}
+          >
+            {t(`queues.filter${capital(value)}`)}
+            <span className="tabular-nums opacity-70">{countOf(value)}</span>
+          </Button>
+        ))}
+      </div>
+      <QueryState
+        query={queue}
+        isEmpty={(rows) =>
+          rows.filter((r) => filter === "all" || r.status === filter).length ===
+          0
+        }
+        empty={t("queues.queueEmpty")}
+      >
+        {(rows) => (
+          <SplitView
+            detailTitle={t("reportsPage.detail")}
+            placeholder={t("reportsPage.placeholder")}
+            onClose={() => setSelectedId(null)}
+            detail={
+              selected ? (
+                <Detail
+                  key={selected.id}
+                  report={selected}
+                  fires={clusters.data ?? []}
+                  onDone={() => setSelectedId(null)}
+                />
+              ) : null
+            }
+            list={
+              <ul className="divide-y divide-border overflow-hidden rounded-lg border border-border">
+                {rows
+                  .filter((r) => filter === "all" || r.status === filter)
+                  .map((report) => (
+                    <li key={report.id}>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedId(report.id)}
+                        className={cn(
+                          "block w-full px-4 py-3 text-start hover:bg-muted",
+                          report.id === selectedId && "bg-muted",
+                        )}
+                      >
+                        <span className="flex items-center gap-2">
+                          <StatusBadge
+                            tone={
+                              report.kind === "sighting"
+                                ? STATUS_TONE[report.status]
+                                : "bad"
+                            }
+                          >
+                            {report.kind === "sighting"
+                              ? tApp(`reports.status${capital(report.status)}`)
+                              : tApp(
+                                  report.kind === "road_blocked"
+                                    ? "survival.reportRoadBlocked"
+                                    : "survival.reportPersonTrapped",
+                                )}
+                          </StatusBadge>
+                          <span className="truncate text-sm font-medium">
+                            {tApp(
+                              `reports.sighting${capital(report.sighting)}`,
+                            )}{" "}
+                            · {tApp(`reports.size${capital(report.size_hint)}`)}
+                          </span>
+                          <span className="ms-auto shrink-0 text-xs text-muted-foreground">
+                            <When at={report.observed_at} />
+                          </span>
+                        </span>
+                        <span className="mt-1 block truncate text-xs text-muted-foreground">
+                          {(report.commune_id &&
+                            communes.get(report.commune_id)) ||
+                            `${report.lat.toFixed(3)}, ${report.lon.toFixed(3)}`}
+                          {report.note ? ` · ${report.note}` : ""}
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+              </ul>
+            }
+          />
+        )}
+      </QueryState>
+    </div>
+  );
+}

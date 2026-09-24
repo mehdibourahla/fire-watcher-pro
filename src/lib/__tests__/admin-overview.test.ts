@@ -26,7 +26,7 @@ describe("overview rows", () => {
       expect.objectContaining({
         item: "translations_unapplied",
         count: 4,
-        path: "/admin/queues",
+        path: "/admin/translations",
       }),
     ]);
   });

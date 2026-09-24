@@ -23,10 +23,10 @@ describe("admin access", () => {
     expect(canReachPanel(["moderator", "unknown"])).toBe(false);
   });
 
-  it("gives a translator the queues and nothing operational", () => {
+  it("gives a translator translations and nothing operational", () => {
     expect(sectionsFor(["translator"]).map((s) => s.key)).toEqual([
       "overview",
-      "queues",
+      "translations",
       "audit",
     ]);
   });
