@@ -4,6 +4,7 @@ import { initReactI18next } from "react-i18next";
 import { adminEn } from "./admin/en";
 import { adminAr } from "./admin/ar";
 import { adminKab } from "./admin/kab";
+import { overlay } from "./overlay";
 import { adminFr } from "./admin/fr";
 import { ar } from "./locales/ar";
 import { en } from "./locales/en";
@@ -55,7 +56,11 @@ if (!i18n.isInitialized) {
       ar: { translation: ar, admin: adminAr, weather: weatherAr },
       fr: { translation: fr, admin: adminFr, weather: weatherFr },
       en: { translation: en, admin: adminEn, weather: weatherEn },
-      kab: { translation: kab, admin: adminKab, weather: weatherFr },
+      kab: {
+        translation: kab,
+        admin: overlay(adminFr, adminKab),
+        weather: weatherFr,
+      },
     },
     lng: "ar",
     fallbackLng: "en",

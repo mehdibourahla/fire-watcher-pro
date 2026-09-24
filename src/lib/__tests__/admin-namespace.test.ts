@@ -39,6 +39,7 @@ describe("admin namespace", () => {
       "nav.triage",
       "nav.sources",
       "nav.incidents",
+      "groups.admin",
       "fires.reason",
       "sources.title",
       "sources.colSource",

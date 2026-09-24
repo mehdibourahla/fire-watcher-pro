@@ -19,7 +19,7 @@ Browser check against the local dev server and the isolated Supabase stack, seed
   - Drop the "operators resolve fires" policy.
   - `admin_attention_counts()` RPC.
   - pgTAP first.
-- [ ] **P1 Kit + shell.**
+- [x] **P1 Kit + shell.**
   - `components/admin/kit/*` (PageHeader, StatusBadge, ConfirmDialog, QueryState, SplitView, formatWhen).
   - Shell on the shadcn Sidebar with groups, role filtering and counts.
   - New section config.
