@@ -1,5 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -46,6 +46,7 @@ function Witness({ reportId }: { reportId: string }) {
     "idle" | "busy" | "seen" | "gone" | "signin"
   >("idle");
   const [error, setError] = useState<string | null>(null);
+  const here = useLocation({ select: (location) => location.href });
 
   async function vote(choice: "seen" | "gone") {
     setError(null);
@@ -94,7 +95,7 @@ function Witness({ reportId }: { reportId: string }) {
     return (
       <Link
         to="/auth"
-        search={{ returnTo: "/" }}
+        search={{ returnTo: here }}
         className="inline-flex min-h-11 items-center text-sm font-medium text-primary underline"
       >
         {t("reports.witnessSignIn")}

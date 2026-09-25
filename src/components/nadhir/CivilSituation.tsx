@@ -153,7 +153,7 @@ export function SituationCard({
           <Icon aria-hidden className="size-4 lg:size-5" />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+          <span className="block text-xs font-medium text-muted-foreground">
             {source(item)}
           </span>
           <span
@@ -336,7 +336,13 @@ export function SituationDetails({
                 <dt className="text-muted-foreground">
                   {t(`civilMap.${field}`)}
                 </dt>
-                <dd dir="auto">{item.data[field] || t("civilMap.unknown")}</dd>
+                <dd dir="auto">
+                  {item.data[field]
+                    ? t(`cap.${field}.${item.data[field]}`, {
+                        defaultValue: item.data[field],
+                      })
+                    : t("civilMap.unknown")}
+                </dd>
               </div>
             ))}
             {item.data.onset && (

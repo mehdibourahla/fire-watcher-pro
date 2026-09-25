@@ -951,7 +951,34 @@ export const kab: Translation = {
     guidanceCoast: "Forte secousse près de la mer : éloignez-vous du rivage.",
     note: "La magnitude et la position peuvent être révisées dans les premières heures. Il s'agit de la mesure du réseau sismique, pas d'une alerte officielle.",
   },
+  cap: {
+    severity: {
+      Extreme: "Extrême",
+      Severe: "Sévère",
+      Moderate: "Modérée",
+      Minor: "Mineure",
+      Unknown: "Inconnue",
+    },
+    certainty: {
+      Observed: "Observée",
+      Likely: "Probable",
+      Possible: "Possible",
+      Unlikely: "Improbable",
+      Unknown: "Inconnue",
+    },
+    urgency: {
+      Immediate: "Immédiate",
+      Expected: "Attendue",
+      Future: "Future",
+      Past: "Passée",
+      Unknown: "Inconnue",
+    },
+  },
   reports: {
+    mineError:
+      "Vos signalements n’ont pas pu être chargés. Vérifiez votre connexion, puis réessayez.",
+    placeUnavailable:
+      "Les noms de lieux n’ont pas pu être chargés. Votre signalement enregistre quand même la position exacte.",
     hazardName: {
       fire: "Feu ou fumée",
       flooding: "Inondation",
@@ -1062,7 +1089,7 @@ export const kab: Translation = {
     nextBadge: "Prochain badge : {{badge}}, {{have}} sur {{need}}",
     statConfirmed: "Signalements confirmés",
     statGiven: "Confirmations données",
-    statAlerted: "Personnes alertées",
+    statAlerted: "Personnes alertées dans l’application",
     howPoints:
       "Les points viennent seulement de ce que d’autres confirment : 10 quand votre signalement est confirmé, 3 quand vous confirmez un signalement qu’une autre personne confirme aussi.",
     state: {

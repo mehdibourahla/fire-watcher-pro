@@ -254,6 +254,10 @@ function ReportPage() {
             <p className="mt-2 text-sm font-medium">
               {unitName(commune, locale)}
             </p>
+          ) : units.isError ? (
+            <p role="status" className="mt-2 text-sm text-muted-foreground">
+              {t("reports.placeUnavailable")}
+            </p>
           ) : null}
           <StickyAction>
             <Button
@@ -473,9 +477,17 @@ function Home({ onStart }: { onStart: () => void }) {
             {t("common.loading")}
           </p>
         ) : mine.isError ? (
-          <p role="alert" className="mt-3 text-sm text-destructive">
-            {t("common.error")}
-          </p>
+          <div role="alert" className="mt-3 text-sm">
+            <p className="text-destructive">{t("reports.mineError")}</p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-2"
+              onClick={() => void mine.refetch()}
+            >
+              {t("common.retry")}
+            </Button>
+          </div>
         ) : mine.data.length === 0 ? (
           <p className="mt-3 text-sm text-muted-foreground">
             {t("reports.empty")}
