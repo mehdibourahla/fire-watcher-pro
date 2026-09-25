@@ -46,30 +46,32 @@ export async function handleUserPush(request: Request): Promise<Response> {
   )
     return json({ error: "Invalid request" }, 400);
 
+  const subscribe = body.action === "subscribe";
+  const device_hash = await sha256Hex(body.token);
+  // a registry row must never outlive the device's topic membership, or the drain reports "sent" to nobody
+  if (!subscribe) {
+    const removed = await supabaseAdmin
+      .from("user_push_devices")
+      .delete()
+      .eq("user_id", userId)
+      .eq("device_hash", device_hash);
+    if (removed.error) return json({ error: "Device not recorded" }, 503);
+  }
+
   try {
-    await fcmSubscribeTopics(
-      body.token,
-      [userTopic(userId)],
-      body.action === "subscribe",
-    );
+    await fcmSubscribeTopics(body.token, [userTopic(userId)], subscribe);
   } catch {
     return json({ error: "Push provider rejected the change" }, 502);
   }
 
-  const device_hash = await sha256Hex(body.token);
-  const recorded =
-    body.action === "subscribe"
-      ? await supabaseAdmin.from("user_push_devices").upsert({
-          user_id: userId,
-          device_hash,
-          updated_at: new Date().toISOString(),
-        })
-      : await supabaseAdmin
-          .from("user_push_devices")
-          .delete()
-          .eq("user_id", userId)
-          .eq("device_hash", device_hash);
-  if (recorded.error) return json({ error: "Device not recorded" }, 503);
+  if (subscribe) {
+    const recorded = await supabaseAdmin.from("user_push_devices").upsert({
+      user_id: userId,
+      device_hash,
+      updated_at: new Date().toISOString(),
+    });
+    if (recorded.error) return json({ error: "Device not recorded" }, 503);
+  }
   return json({ ok: true });
 }
 

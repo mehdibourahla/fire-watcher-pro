@@ -115,3 +115,12 @@ it("reports a push provider failure instead of pretending it worked", async () =
   expect(res.status).toBe(502);
   expect(mocks.upsert).not.toHaveBeenCalled();
 });
+
+it("keeps the device registered when its record cannot be removed", async () => {
+  mocks.deleteEq.mockResolvedValue({ error: { message: "db down" } });
+  const res = await handleUserPush(
+    request({ token: "device-token", action: "unsubscribe" }),
+  );
+  expect(res.status).toBe(503);
+  expect(mocks.subscribe).not.toHaveBeenCalled();
+});
