@@ -132,9 +132,9 @@ describe("fcmMessagesForOnm", () => {
     });
   });
 
-  it("links to the forecast surface", () => {
+  it("opens the forecast on the recipient's commune", () => {
     expect(messages[0]!.webpush.fcm_options.link).toBe(
-      "https://nadhir.app/forecast",
+      "https://nadhir.app/forecast?commune=1503",
     );
   });
 });

@@ -1,376 +1,268 @@
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { ChevronDown, Search } from "lucide-react";
-import { useMemo, useState } from "react";
+import { createFileRoute } from "@tanstack/react-router";
+import { ChevronDown } from "lucide-react";
+import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { DangerScale } from "@/components/nadhir/DangerScale";
+import { CommunePicker } from "@/components/forecast/CommunePicker";
+import { NationalOutlook } from "@/components/forecast/NationalOutlook";
+import { OutlookGrid, type Row } from "@/components/forecast/OutlookGrid";
 import { LazyDetails } from "@/components/LazyDetails";
-import { Explain } from "@/components/nadhir/Explain";
-import { RiskChip } from "@/components/nadhir/RiskChip";
-import { WeatherForecast } from "@/components/nadhir/WeatherForecast";
+import { DangerScale } from "@/components/nadhir/DangerScale";
 import { EmptyState, SkeletonList } from "@/components/nadhir/states";
+import { WeatherForecast } from "@/components/nadhir/WeatherForecast";
 import { RiskLegend } from "@/components/SiteChrome";
 import type { Locale } from "@/i18n";
+import { zonesQuery } from "@/lib/account";
+import { airForecastQuery } from "@/lib/air-quality";
+import {
+  airCells,
+  defaultCommune,
+  fireCells,
+  nationalRanking,
+  onmCells,
+  outlookDays,
+  weatherCells,
+} from "@/lib/forecast-outlook";
 import {
   adminUnitsQuery,
-  onmVigilanceQuery,
+  communeRiskForecastsQuery,
   effisDangerQuery,
   isStaleForecastDate,
+  onmVigilanceQuery,
   relativeTime,
-  riskForecastsQuery,
+  todayRiskForecastsQuery,
   unitName,
-  wilayaGroups,
   type AdminUnit,
 } from "@/lib/nadhir";
 import { pageMeta } from "@/lib/page-meta";
 
+type ForecastSearch = { commune?: string };
+
+const STORED_COMMUNE = "nadhir.forecast.commune";
+
+function storedCommune(): string | null {
+  try {
+    return localStorage.getItem(STORED_COMMUNE);
+  } catch {
+    return null;
+  }
+}
+
 export const Route = createFileRoute("/forecast")({
+  validateSearch: (search: Record<string, unknown>): ForecastSearch => {
+    // the router JSON-parses search values, so a plain ?commune=1503 arrives as a number
+    const raw = search["commune"];
+    const commune = Number.isInteger(raw) ? String(raw) : raw;
+    return typeof commune === "string" && /^[0-9A-Za-z-]{1,12}$/.test(commune)
+      ? { commune }
+      : {};
+  },
   head: () => ({
     meta: pageMeta("weather:metaTitle", "weather:metaDescription"),
   }),
   component: ForecastPage,
 });
 
-type Day = {
-  date: string;
-  fwi: number;
-  percentile: number | null;
-  level: number;
-  fuelLimited: boolean;
-};
-type Row = { commune: AdminUnit; days: Record<number, Day> };
-
-const rankedLevel = (r: Row) =>
-  r.days[0] && !r.days[0].fuelLimited ? r.days[0].level : 0;
-
-const HORIZONS = [0, 1, 2, 3, 4, 5];
+function rowOf<T, D>(
+  query: {
+    isPending: boolean;
+    isError: boolean;
+    data: D | undefined;
+    refetch: () => unknown;
+  },
+  cells: (data: D) => T[],
+): Row<T> {
+  if (query.isError) return { status: "error", retry: () => query.refetch() };
+  if (query.isPending || query.data === undefined) return { status: "loading" };
+  return { status: "ok", cells: cells(query.data) };
+}
 
 function ForecastPage() {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation("weather");
   const locale = i18n.language as Locale;
-  const [search, setSearch] = useState("");
-  const [pinned, setPinned] = useState<string | null>(null);
+  const search = Route.useSearch();
+  const navigate = Route.useNavigate();
+  const gridRef = useRef<HTMLHeadingElement>(null);
+  const [days] = useState(() => outlookDays(Date.now()));
 
-  const forecasts = useQuery(riskForecastsQuery);
   const units = useQuery(adminUnitsQuery);
-  const effis = useQuery(effisDangerQuery);
+  const zones = useQuery(zonesQuery);
   const onm = useQuery({ ...onmVigilanceQuery, retry: false });
+  const today = useQuery(todayRiskForecastsQuery);
+  const effis = useQuery(effisDangerQuery);
 
-  const rows = useMemo<Row[]>(() => {
-    const communes = (units.data ?? []).filter((u) => u.level === "commune");
-    const byCommune = new Map<string, Record<number, Day>>();
-    for (const f of forecasts.data ?? []) {
-      const entry = byCommune.get(f.commune_id) ?? {};
-      entry[f.horizon_days] = {
-        date: f.forecast_date,
-        fwi: f.fwi,
-        percentile: f.fwi_percentile,
-        level: f.danger_level,
-        fuelLimited: f.fuel_limited,
-      };
-      byCommune.set(f.commune_id, entry);
+  const communes = useMemo(
+    () => (units.data ?? []).filter((u) => u.level === "commune"),
+    [units.data],
+  );
+  const selected = useMemo(
+    () =>
+      defaultCommune(
+        communes,
+        search.commune,
+        zones.data ?? [],
+        storedCommune(),
+      ),
+    [communes, search.commune, zones.data],
+  );
+
+  const risk = useQuery({
+    ...communeRiskForecastsQuery(selected?.id ?? ""),
+    enabled: !!selected,
+  });
+  const air = useQuery(
+    airForecastQuery(
+      selected ? { lat: selected.lat, lon: selected.lon } : null,
+    ),
+  );
+
+  const pick = (commune: AdminUnit) => {
+    try {
+      localStorage.setItem(STORED_COMMUNE, commune.id);
+    } catch {
+      // storage can be unavailable (private mode); the URL still carries the choice
     }
-    return communes
-      .map((commune) => ({ commune, days: byCommune.get(commune.id) ?? {} }))
-      .filter((r) => Object.keys(r.days).length > 0)
-      .sort((a, b) => rankedLevel(b) - rankedLevel(a));
-  }, [forecasts.data, units.data]);
+    void navigate({ search: { commune: commune.code }, replace: true });
+  };
 
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return rows;
-    return rows.filter((r) =>
-      [
-        r.commune.name_ar,
-        r.commune.name_fr,
-        r.commune.name_en,
-        r.commune.name_kab,
-      ]
-        .filter(Boolean)
-        .some((n) => n!.toLowerCase().includes(q)),
-    );
-  }, [rows, search]);
+  const ranking = useMemo(
+    () =>
+      nationalRanking(units.data ?? [], today.data ?? [], onm.data ?? [], days),
+    [units.data, today.data, onm.data, days],
+  );
 
-  const featured = filtered.find((r) => r.commune.id === pinned) ?? filtered[0];
-
-  const grouped = useMemo(() => {
-    const byId = new Map(rows.map((r) => [r.commune.id, r]));
-    return wilayaGroups(units.data ?? [])
-      .map(({ wilaya, communes }) => {
-        const wRows = communes
-          .map((c) => byId.get(c.id))
-          .filter((r): r is Row => !!r)
-          .sort((a, b) => rankedLevel(b) - rankedLevel(a));
-        return {
-          wilaya,
-          rows: wRows,
-          maxLevel: wRows.reduce((m, r) => Math.max(m, rankedLevel(r)), 0),
-        };
-      })
-      .filter((g) => g.rows.length > 0)
-      .sort((a, b) => b.maxLevel - a.maxLevel);
-  }, [rows, units.data]);
-
-  const searching = search.trim().length > 0;
+  const wilaya = selected?.parent_id
+    ? units.data?.find((u) => u.id === selected.parent_id)
+    : null;
+  const place = selected
+    ? wilaya
+      ? `${unitName(selected, locale)}${t("outlook.separator")}${unitName(wilaya, locale)}`
+      : unitName(selected, locale)
+    : "";
+  const fireToday = risk.data?.find((r) => r.forecast_date === days[0]);
+  const effisToday = selected ? effis.data?.get(selected.id) : undefined;
 
   return (
     <div className="mx-auto max-w-[1200px] px-4 py-6">
-      <h1 className="text-2xl">{t("weather:pageTitle")}</h1>
-      <WeatherForecast />
-      <section aria-labelledby="fire-forecast-title" className="mt-8">
-        <h2 id="fire-forecast-title" className="text-xl">
-          {t("risk.title")}
-        </h2>
-        <p className="mt-1 text-sm text-muted-foreground">{t("risk.sixDay")}</p>
+      <h1 className="text-2xl">{t("pageTitle")}</h1>
 
-        {forecasts.isLoading ? (
-          <SkeletonList rows={2} className="mt-5" />
-        ) : featured ? (
-          <section className="card mt-5 p-5">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <p className="font-display text-xl">
-                  {unitName(featured.commune, locale)}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {t("risk.today")}
+      <div className="mt-5">
+        {units.isPending ? (
+          <SkeletonList rows={1} />
+        ) : (
+          <CommunePicker
+            units={units.data ?? []}
+            selected={selected}
+            onPick={pick}
+          />
+        )}
+      </div>
+
+      <section className="card mt-5 p-4 sm:p-5">
+        <h2 ref={gridRef} tabIndex={-1} className="sr-only">
+          {place || t("outlook.choosePlace")}
+        </h2>
+        {units.isPending ? (
+          <SkeletonList rows={4} />
+        ) : !selected ? (
+          <EmptyState
+            title={t("outlook.emptyTitle")}
+            body={t("outlook.emptyBody")}
+          />
+        ) : (
+          <>
+            <OutlookGrid
+              days={days}
+              place={place}
+              onm={rowOf(onm, (data) =>
+                onmCells(data, selected.parent_id ?? "", days),
+              )}
+              fire={rowOf(risk, (data) => fireCells(data, days))}
+              weather={rowOf(risk, (data) => weatherCells(data, days))}
+              air={rowOf(air, (data) => airCells(data, days))}
+            />
+            <p className="mt-4 max-w-3xl text-sm text-muted-foreground">
+              {t("outlook.notes")}
+            </p>
+
+            {fireToday ? (
+              <div className="mt-6 border-t border-border pt-5">
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <h3 className="font-display text-lg">
+                    {t("outlook.fireToday")}
+                  </h3>
+                  <RiskLegend className="max-w-xs" />
+                </div>
+                <DangerScale
+                  level={fireToday.danger_level}
+                  fwi={fireToday.fwi}
+                  percentile={fireToday.fwi_percentile}
+                  staleCaption={
+                    isStaleForecastDate(fireToday.forecast_date)
+                      ? t("translation:risk.staleAsOf", {
+                          time: relativeTime(
+                            `${fireToday.forecast_date}T00:00:00Z`,
+                            locale,
+                          ),
+                        })
+                      : null
+                  }
+                  guidance
+                  className="mt-4"
+                />
+                {fireToday.fuel_limited ? (
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    {t("translation:risk.fuelLimited")}
+                  </p>
+                ) : null}
+                <p className="mt-3 text-sm text-muted-foreground">
+                  {effisToday
+                    ? effisToday.danger_class === "masked"
+                      ? t("translation:risk.effisMasked")
+                      : t("translation:risk.effis", {
+                          class: t(
+                            `translation:risk.effisClass.${effisToday.danger_class}`,
+                          ),
+                        })
+                    : t("translation:risk.effisNone")}
                 </p>
               </div>
-              <RiskLegend className="max-w-xs" />
-            </div>
-
-            <DangerScale
-              level={featured.days[0]?.level ?? 1}
-              fwi={featured.days[0]?.fwi ?? 0}
-              percentile={featured.days[0]?.percentile ?? null}
-              staleCaption={
-                featured.days[0] && isStaleForecastDate(featured.days[0].date)
-                  ? t("risk.staleAsOf", {
-                      time: relativeTime(
-                        `${featured.days[0].date}T00:00:00Z`,
-                        locale,
-                      ),
-                    })
-                  : null
-              }
-              size="lg"
-              guidance
-              className="mt-4"
-            />
-
-            {featured.days[0]?.fuelLimited ? (
-              <p className="mt-2 text-sm text-muted-foreground">
-                {t("risk.fuelLimited")}
-              </p>
             ) : null}
 
-            {(onm.data ?? [])
-              .filter((w) => w.wilaya_id === featured.commune.parent_id)
-              .slice(0, 3)
-              .map((w) => (
-                <p
-                  key={w.cap_id}
-                  className="mt-3 border-t border-border pt-3 text-sm"
-                >
-                  <span className="font-medium">{t("risk.onmLabel")}:</span>{" "}
-                  {locale === "fr" && w.headline_fr ? w.headline_fr : w.title}{" "}
-                  <span className="tabular text-xs text-muted-foreground">
-                    ({relativeTime(w.sent, locale)})
-                  </span>
-                </p>
-              ))}
-
-            {(() => {
-              const row = effis.data?.get(featured.commune.id);
-              return (
-                <p className="mt-3 border-t border-border pt-3 text-sm text-muted-foreground">
-                  {row ? (
-                    <>
-                      {row.danger_class === "masked"
-                        ? t("risk.effisMasked")
-                        : t("risk.effis", {
-                            class: t(`risk.effisClass.${row.danger_class}`),
-                          })}{" "}
-                      <span className="tabular text-xs">
-                        ({relativeTime(row.created_at, locale)})
-                      </span>
-                    </>
-                  ) : (
-                    t("risk.effisNone")
-                  )}
-                </p>
-              );
-            })()}
-
-            <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-6">
-              {HORIZONS.map((h) => {
-                const day = featured.days[h];
-                return (
-                  <div key={h} className="card flex flex-col gap-2 p-2.5">
-                    <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-                      {h === 0 ? t("risk.today") : t("risk.dayLabel", { n: h })}
-                    </span>
-                    {day ? (
-                      <DangerScale
-                        level={day.level}
-                        fwi={day.fwi}
-                        percentile={day.percentile}
-                        size="sm"
-                      />
-                    ) : (
-                      <span className="text-sm text-muted-foreground">
-                        {t("common.none")}
-                      </span>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-        ) : null}
-
-        <div className="mt-6 flex items-center gap-2">
-          <div className="relative w-full max-w-xs">
-            <Search
-              aria-hidden
-              className="pointer-events-none absolute inset-inline-start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-              style={{ insetInlineStart: "0.75rem" }}
-            />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder={t("risk.searchCommune")}
-              aria-label={t("risk.searchCommune")}
-              className="w-full rounded-lg border border-border bg-surface py-2 pe-3 ps-9 text-sm outline-none focus:ring-2 focus:ring-ring"
-            />
-          </div>
-        </div>
-
-        {rows.length === 0 ? (
-          <EmptyState
-            title={t("risk.unavailableTitle")}
-            body={t("risk.unavailableBody")}
-            action={
-              <Link
-                to="/status"
-                className="text-sm font-medium text-primary underline"
-              >
-                {t("nav.status")}
-              </Link>
-            }
-            className="mt-4"
-          />
-        ) : filtered.length === 0 ? (
-          <EmptyState title={t("risk.noResults")} className="mt-4" />
-        ) : searching ? (
-          <ul className="mt-4 flex flex-col gap-2">
-            {filtered.map((row) => (
-              <li key={row.commune.id}>
-                <CommuneRow
-                  row={row}
-                  active={featured?.commune.id === row.commune.id}
-                  onPick={() => setPinned(row.commune.id)}
-                  locale={locale}
-                />
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <div className="mt-4 flex flex-col gap-2">
-            {grouped.map(({ wilaya, rows: wRows, maxLevel }) => (
-              <LazyDetails
-                key={wilaya.id}
-                className="card"
-                summaryClassName="flex cursor-pointer list-none flex-wrap items-center gap-x-4 gap-y-2 p-3 [&::-webkit-details-marker]:hidden"
-                summary={
-                  <>
-                    <ChevronDown
-                      aria-hidden
-                      className="size-4 shrink-0 text-muted-foreground"
-                    />
-                    <span className="min-w-40 flex-1 font-medium">
-                      {unitName(wilaya, locale)}
-                    </span>
-                    <span className="tabular text-xs text-muted-foreground">
-                      {t("risk.communeCount", { count: wRows.length })}
-                    </span>
-                    <span title={t("risk.groupWorst")}>
-                      <RiskChip level={maxLevel} />
-                    </span>
-                  </>
-                }
-              >
-                <ul className="divide-y divide-border border-t border-border">
-                  {wRows.map((row) => (
-                    <li key={row.commune.id}>
-                      <CommuneRow
-                        row={row}
-                        active={featured?.commune.id === row.commune.id}
-                        onPick={() => setPinned(row.commune.id)}
-                        locale={locale}
-                        flat
-                      />
-                    </li>
-                  ))}
-                </ul>
-              </LazyDetails>
-            ))}
-          </div>
+            <LazyDetails
+              key={selected.id}
+              className="mt-6 border-t border-border pt-4"
+              summaryClassName="flex min-h-11 cursor-pointer list-none items-center gap-2 font-medium [&::-webkit-details-marker]:hidden"
+              summary={
+                <>
+                  <ChevronDown aria-hidden className="size-4 shrink-0" />
+                  {t("outlook.hourly")}
+                </>
+              }
+            >
+              <WeatherForecast communeId={selected.id} />
+            </LazyDetails>
+          </>
         )}
       </section>
-    </div>
-  );
-}
 
-function CommuneRow({
-  row,
-  active,
-  onPick,
-  locale,
-  flat = false,
-}: {
-  row: Row;
-  active: boolean;
-  onPick: () => void;
-  locale: Locale;
-  flat?: boolean;
-}) {
-  const { t } = useTranslation();
-  return (
-    <button
-      type="button"
-      onClick={onPick}
-      aria-pressed={active}
-      className={`flex w-full flex-wrap items-center gap-x-4 gap-y-2 p-3 text-start transition-colors hover:bg-muted ${
-        flat ? "" : "card"
-      }`}
-    >
-      <span className="min-w-40 flex-1 font-medium">
-        {unitName(row.commune, locale)}
-      </span>
-      <span className="flex flex-wrap items-center gap-1.5">
-        {HORIZONS.map((h) => {
-          const day = row.days[h];
-          return day ? (
-            <RiskChip
-              key={h}
-              level={day.level}
-              showName={false}
-              fuelLimited={day.fuelLimited}
-            />
-          ) : (
-            <span key={h} className="px-1 text-xs text-muted-foreground">
-              —
-            </span>
-          );
-        })}
-      </span>
-      <Explain text={t("explain.fwi")}>
-        <span className="tabular text-sm text-muted-foreground">
-          {t("risk.fwi")} {row.days[0] ? row.days[0].fwi.toFixed(0) : "—"}
-        </span>
-      </Explain>
-    </button>
+      <NationalOutlook
+        rows={ranking}
+        loading={units.isPending || today.isPending || onm.isPending}
+        failed={units.isError || today.isError || onm.isError}
+        onRetry={() => {
+          void today.refetch();
+          void onm.refetch();
+        }}
+        onPick={(row) => {
+          const commune = communes.find((c) => c.id === row.targetCommuneId);
+          if (!commune) return;
+          pick(commune);
+          gridRef.current?.scrollIntoView({ block: "start" });
+          gridRef.current?.focus({ preventScroll: true });
+        }}
+      />
+    </div>
   );
 }

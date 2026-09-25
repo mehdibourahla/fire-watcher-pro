@@ -36,7 +36,7 @@ The cell shows the worse of the two, and names which pollutant set it.
 
 1. **Place.** A commune picker with search (existing name matching across ar/fr/en/kab). Default: the signed-in
    user's first zone commune, else the last commune picked on this device, else no commune. With none, the
-   grid area is an empty state that says "Choose a commune to see its next six days" and focuses the picker. The
+   grid area is an empty state that says "Choose a commune to see its next six days" under the picker. The
    current default (the alphabetically first commune) is dropped: it shows a place nobody chose.
 2. **Focal point: the grid.** Columns are days (today, tomorrow, weekday names), rows are the four hazards
    above. Each cell carries a level word plus its colour, never colour alone. Mobile: the grid scrolls sideways
@@ -49,7 +49,9 @@ The cell shows the worse of the two, and names which pollutant set it.
    the highest level. Dust is not ranked nationally: it is fetched per commune, not stored.
 
 The six-day per-commune fire danger table and its wilaya accordion are removed; the grid and the national
-ranking replace them. `RiskLegend` and `DangerScale` stay as the fire danger key.
+ranking replace them. `RiskLegend` and `DangerScale` stay as the fire danger key. The chosen commune travels in
+the URL (`?commune=<code>`), so ONM broadcast pushes open the recipient's own commune, and the mobile tab icon
+is a calendar, not a flame.
 
 ## States
 

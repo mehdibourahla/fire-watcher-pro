@@ -45,8 +45,8 @@ const QUALIFIED_KEYS = new Set(
 
 describe("locale parity", () => {
   it("weather translations cover each enabled language with French Kabyle fallback", () => {
-    expect(Object.keys(weatherAr).sort()).toEqual([...WEATHER_KEYS].sort());
-    expect(Object.keys(weatherFr).sort()).toEqual([...WEATHER_KEYS].sort());
+    expect(flatten(weatherAr).sort()).toEqual([...WEATHER_KEYS].sort());
+    expect(flatten(weatherFr).sort()).toEqual([...WEATHER_KEYS].sort());
     expect(i18n.getFixedT("kab", "weather")("pageTitle")).toBe(
       weatherFr.pageTitle,
     );
@@ -95,7 +95,6 @@ describe("head titles", () => {
 describe("counted labels", () => {
   const COUNTED = [
     "map.fireCount",
-    "risk.communeCount",
     "history.unlocated",
     "history.fireCount",
     "status.degradedCount",
@@ -106,7 +105,6 @@ describe("counted labels", () => {
     const t = i18n.getFixedT("en");
     expect(t("map.fireCount", { count: 1 })).toBe("1 fire");
     expect(t("map.fireCount", { count: 3 })).toBe("3 fires");
-    expect(t("risk.communeCount", { count: 1 })).toBe("1 commune");
     expect(t("history.fireCount", { count: 1 })).toBe("1 fire");
   });
 

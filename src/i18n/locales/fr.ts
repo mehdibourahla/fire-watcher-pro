@@ -583,40 +583,24 @@ export const fr: Translation = {
     nearest: "Distance au lieu habit\u00e9 connu le plus proche.",
   },
   risk: {
-    metaTitle: "Prévision du danger d'incendie — Nadhir Algérie",
-    metaDescription:
-      "Prévision sur six jours de l'indice forêt-météo et conseils clairs pour chaque commune couverte par Nadhir.",
-    title: "Prévision du danger d'incendie",
-    dayLabel: "J{{n}}",
     today: "Aujourd'hui",
     fwi: "IFM",
     staleAsOf:
-      "Ceci est la prévision de {{time}} — celle d'aujourd'hui n'a pas encore été publiée.",
+      "Ceci est la prévision de {{time}}. Celle d'aujourd'hui n'a pas encore été publiée.",
     percentile: "IFM plus élevé que {{pct}} % des années à cette date",
     level: "Niveau de danger",
-    searchCommune: "Rechercher une commune",
-    noResults: "Aucune commune ne correspond.",
-    unavailableTitle: "La prévision du danger d'incendie est indisponible",
-    unavailableBody:
-      "La dernière actualisation ne s'est pas terminée : aucune prévision n'est publiée pour le moment. Consultez la page d'état des sources.",
     legend: "Échelle de danger",
-    sixDay: "Perspective 6 jours",
     low: "Faible",
     moderate: "Modéré",
     high: "Élevé",
     very_high: "Très élevé",
     extreme: "Extrême",
-    communeCount: "{{count}} communes",
-    communeCount_one: "{{count}} commune",
-    communeCount_other: "{{count}} communes",
-    groupWorst: "Niveau de la commune la plus exposée de la wilaya",
     effis: "EFFIS/GWIS (autorité européenne) classe cette commune : {{class}}",
-    fuelLimited: "Non évalué — végétation combustible négligeable",
+    fuelLimited: "Non évalué : végétation combustible négligeable",
     effisMasked:
       "EFFIS n'évalue pas le terrain de cette commune (zone non végétalisée).",
-    onmLabel: "Vigilance officielle ONM",
     effisNone:
-      "Pas de comparaison EFFIS exploitable pour le moment — le produit européen est récupéré chaque jour et refusé quand son calcul échoue à nos contrôles de qualité.",
+      "Pas de comparaison EFFIS exploitable pour le moment : le produit européen est récupéré chaque jour et refusé quand son calcul échoue à nos contrôles de qualité.",
     effisClass: {
       low: "Faible",
       moderate: "Modéré",

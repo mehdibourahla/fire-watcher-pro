@@ -113,6 +113,11 @@ export type RiskForecast = {
   danger_level: number;
   fuel_limited: boolean;
   snapshot_id: string | null;
+  components?: {
+    temp_c?: number;
+    wind_kmh?: number;
+    rain_mm?: number;
+  } | null;
 };
 
 export type EffisDanger = {
@@ -686,9 +691,13 @@ export const recallDailyQuery = queryOptions({
   },
 });
 
-function riskQuery(todayOnly = false) {
+function riskQuery(todayOnly = false, communeId?: string) {
   return queryOptions({
-    queryKey: todayOnly ? ["risk_forecasts", "today"] : ["risk_forecasts"],
+    queryKey: communeId
+      ? ["risk_forecasts", "commune", communeId]
+      : todayOnly
+        ? ["risk_forecasts", "today"]
+        : ["risk_forecasts"],
     queryFn: async () => {
       const { data: checkpoint, error } = await supabase
         .from("risk_publication_checkpoint")
@@ -709,24 +718,27 @@ function riskQuery(todayOnly = false) {
           return `and(forecast_date.eq.${d},horizon_days.eq.${h})`;
         },
       );
-      return fetchAllPages<RiskForecast>((from, to) =>
-        supabase
+      const fields =
+        "id,commune_id,forecast_date,horizon_days,source,fwi,fwi_percentile,danger_level,fuel_limited,snapshot_id";
+      return fetchAllPages<RiskForecast>((from, to) => {
+        const query = supabase
           .rpc("current_risk_forecasts")
-          .select(
-            "id,commune_id,forecast_date,horizon_days,source,fwi,fwi_percentile,danger_level,fuel_limited,snapshot_id",
-          )
+          .select(communeId ? `${fields},components` : fields)
           .eq("source", "local_fwi")
           .eq("snapshot_id", publication.snapshotId)
-          .or(pairs.join(","))
+          .or(pairs.join(","));
+        return (communeId ? query.eq("commune_id", communeId) : query)
           .order("id")
-          .range(from, to),
-      );
+          .range(from, to);
+      });
     },
   });
 }
 
 export const riskForecastsQuery = riskQuery();
 export const todayRiskForecastsQuery = riskQuery(true);
+export const communeRiskForecastsQuery = (communeId: string) =>
+  riskQuery(false, communeId);
 
 export type FireConfirmation = {
   as_of: string;

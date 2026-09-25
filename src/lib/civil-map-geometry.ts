@@ -51,7 +51,7 @@ export function situationAreaId(item: Situation): string | null {
     : item.data.commune_id;
 }
 
-const ONM_EVENTS: Record<string, string> = {
+export const ONM_EVENTS: Record<string, string> = {
   Rain: "rain",
   Thunderstorm: "storm",
   Sandstorm: "sand",
