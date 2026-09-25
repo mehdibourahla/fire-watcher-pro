@@ -10,7 +10,12 @@ import type { FireLevel } from "@/lib/fire-confidence";
 import { fireFeatures } from "./map-fires";
 import type { RoadHint } from "@/lib/civil-map";
 import { cutSegment, type LonLat } from "@/lib/road-segment";
-import { DEFAULT_MAP_LAYERS, type MapLayers } from "./map-layers";
+import {
+  DEFAULT_MAP_LAYERS,
+  lightningTiles,
+  lightningWindow,
+  type MapLayers,
+} from "./map-layers";
 import { visibleMapFires } from "./map-fire-filter";
 import {
   badgeImage,
@@ -129,6 +134,21 @@ function cameraOffset({
   return [(left - right) / 2, (top - bottom) / 2];
 }
 function installLayers(map: maplibregl.Map) {
+  if (!map.getSource("lightning")) {
+    map.addSource("lightning", {
+      type: "raster",
+      tiles: [lightningTiles(lightningWindow(Date.now()))],
+      tileSize: 256,
+      attribution: "Lightning: EUMETSAT MTG",
+    });
+    map.addLayer({
+      id: "lightning-raster",
+      type: "raster",
+      source: "lightning",
+      layout: { visibility: "none" },
+      paint: { "raster-opacity": 0.85 },
+    });
+  }
   for (const symbol of SYMBOLS)
     for (const confidence of CONFIDENCES)
       for (const selected of [false, true]) {
@@ -435,6 +455,7 @@ export default function FireMap({
         new maplibregl.NavigationControl({ showCompass: false }),
         "bottom-left",
       );
+    let lightningShown = lightningWindow(Date.now());
     const sync = () => {
       if (!ready) return;
       const current = latest.current;
@@ -494,6 +515,18 @@ export default function FireMap({
               visible ? "visible" : "none",
             );
         }
+      }
+      map.setLayoutProperty(
+        "lightning-raster",
+        "visibility",
+        current.layers.lightning ? "visible" : "none",
+      );
+      const slot = lightningWindow(Date.now());
+      if (current.layers.lightning && slot !== lightningShown) {
+        lightningShown = slot;
+        (map.getSource("lightning") as maplibregl.RasterTileSource).setTiles([
+          lightningTiles(slot),
+        ]);
       }
     };
     syncRef.current = sync;

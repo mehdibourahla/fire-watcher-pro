@@ -73,6 +73,35 @@ const context: LiveContext = {
       expires_at: "2026-09-25T10:00:00Z",
     },
   ],
+  stations: [
+    {
+      station: "DAAE",
+      name: "Béjaïa Arpt",
+      lat: 36.71,
+      lon: 4.3,
+      observed_at: "2026-09-25T11:00:00Z",
+      visibility_m: 600,
+      weather: "SA",
+    },
+    {
+      station: "DAAG",
+      name: "Algiers Intl",
+      lat: 36.69,
+      lon: 3.21,
+      observed_at: "2026-09-25T11:00:00Z",
+      visibility_m: 600,
+      weather: "SA",
+    },
+    {
+      station: "DAAS",
+      name: "Sétif Arpt",
+      lat: 36.18,
+      lon: 5.32,
+      observed_at: "2026-09-25T11:00:00Z",
+      visibility_m: 9999,
+      weather: null,
+    },
+  ],
   citizen: [
     {
       id: "seen",
@@ -116,6 +145,7 @@ describe("zoneStatus", () => {
       official: 1,
       road: [{ id: "r1", summary: "Accident RN12" }],
       citizen: [{ id: "seen", hazard: "flooding" }],
+      sandstorms: [{ station: "DAAE", name: "Béjaïa Arpt", visibility_m: 600 }],
     });
   });
 
@@ -127,6 +157,12 @@ describe("zoneStatus", () => {
         context,
         NOW,
       ),
-    ).toEqual({ weather: [], official: 1, road: [], citizen: [] });
+    ).toEqual({
+      weather: [],
+      official: 1,
+      road: [],
+      citizen: [],
+      sandstorms: [],
+    });
   });
 });

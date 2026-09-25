@@ -340,6 +340,7 @@ export function FireDetailPage({ shortId }: { shortId: string }) {
               official: false,
               reports: false,
               unverified: true,
+              lightning: false,
             }}
             center={[cluster.lon, cluster.lat]}
             zoom={10}

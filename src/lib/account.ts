@@ -75,7 +75,7 @@ export const liveZoneContextQuery = queryOptions({
   queryFn: async (): Promise<LiveContext> => {
     const now = new Date().toISOString();
     const since = new Date(Date.now() - 72 * 3_600_000).toISOString();
-    const [weather, official, road, citizen] = await Promise.all([
+    const [weather, official, road, citizen, stations] = await Promise.all([
       supabase
         .from("onm_vigilance")
         .select("id, event, severity, expires, wilaya_id, polygon")
@@ -102,8 +102,11 @@ export const liveZoneContextQuery = queryOptions({
         .gt("witnesses", 0)
         .gt("expires_at", now)
         .limit(1000),
+      supabase
+        .from("airport_weather")
+        .select("station, name, lat, lon, observed_at, visibility_m, weather"),
     ]);
-    for (const result of [weather, official, road, citizen])
+    for (const result of [weather, official, road, citizen, stations])
       if (result.error) throw new Error(result.error.message);
     return {
       weather: (weather.data ?? []).flatMap((w) =>
@@ -121,6 +124,7 @@ export const liveZoneContextQuery = queryOptions({
       ),
       official: official.data ?? [],
       road: road.data ?? [],
+      stations: stations.data ?? [],
       citizen: (citizen.data ?? []).flatMap((c) =>
         c.id && c.lat !== null && c.lon !== null && c.expires_at
           ? [

@@ -758,6 +758,51 @@ export type Database = {
           },
         ];
       };
+      airport_weather: {
+        Row: {
+          fetched_at: string;
+          gust_kt: number | null;
+          lat: number;
+          lon: number;
+          name: string | null;
+          observed_at: string;
+          raw: string;
+          station: string;
+          temp_c: number | null;
+          visibility_m: number | null;
+          weather: string | null;
+          wind_kt: number | null;
+        };
+        Insert: {
+          fetched_at?: string;
+          gust_kt?: number | null;
+          lat: number;
+          lon: number;
+          name?: string | null;
+          observed_at: string;
+          raw: string;
+          station: string;
+          temp_c?: number | null;
+          visibility_m?: number | null;
+          weather?: string | null;
+          wind_kt?: number | null;
+        };
+        Update: {
+          fetched_at?: string;
+          gust_kt?: number | null;
+          lat?: number;
+          lon?: number;
+          name?: string | null;
+          observed_at?: string;
+          raw?: string;
+          station?: string;
+          temp_c?: number | null;
+          visibility_m?: number | null;
+          weather?: string | null;
+          wind_kt?: number | null;
+        };
+        Relationships: [];
+      };
       alerts: {
         Row: {
           body: string;

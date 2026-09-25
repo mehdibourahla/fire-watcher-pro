@@ -30,6 +30,7 @@ import { ingestFirms } from "./firms.server";
 import { fuseDetections } from "./fusion.server";
 import { ingestOnm } from "./onm.server";
 import { ingestEmsc } from "./emsc.server";
+import { ingestMetar } from "./metar.server";
 import {
   flagPersistentCandidates,
   screenPersistentSources,
@@ -45,6 +46,7 @@ export const RUNTIME_CONTRACT_KEYS = [
   "s3_slstr",
   "onm",
   "emsc",
+  "metar",
   "persistent_screen",
   "fusion",
   "openmeteo_wind",
@@ -67,6 +69,7 @@ export type SourceRunnerDependencies = {
   ingestS3: typeof ingestS3;
   ingestOnm: typeof ingestOnm;
   ingestEmsc: typeof ingestEmsc;
+  ingestMetar: typeof ingestMetar;
   screenPersistentSources: typeof screenPersistentSources;
   fuseDetections: typeof fuseDetections;
   flagPersistentCandidates: typeof flagPersistentCandidates;
@@ -260,6 +263,19 @@ export function createSourceRunners(
         qualityChecks: { outside_algeria: run.outside },
       };
     },
+    metar: async (job) => {
+      const run = await dependencies.ingestMetar();
+      const health = adapterHealth({ accepted: run.stored, error: run.error });
+      return {
+        ...baseReport(job),
+        ...health,
+        ...coveredInterval(job, health.outcome === "succeeded"),
+        recordsSeen: run.fetched,
+        recordsInserted: run.stored,
+        recordsRejected: 0,
+        qualityChecks: { stations: run.stored },
+      };
+    },
     persistent_screen: async (job) => {
       const run = await dependencies.screenPersistentSources();
       const complete = run.registry > 0;
@@ -443,6 +459,7 @@ const sourceRunnerDependencies: SourceRunnerDependencies = {
   ingestS3,
   ingestOnm,
   ingestEmsc,
+  ingestMetar,
   screenPersistentSources,
   fuseDetections,
   flagPersistentCandidates,

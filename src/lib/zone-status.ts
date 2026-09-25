@@ -1,5 +1,6 @@
 import { ONM_EVENTS } from "@/lib/civil-map-geometry";
 import { haversineKm } from "@/lib/nadhir";
+import { isSandstorm } from "@/lib/ingest/metar";
 import {
   officialConcernsZone,
   ONM_SEVERITY,
@@ -32,6 +33,15 @@ export type LiveContext = {
     expires_at: string;
     witnesses: number;
   }[];
+  stations: {
+    station: string;
+    name: string | null;
+    lat: number;
+    lon: number;
+    observed_at: string;
+    visibility_m: number | null;
+    weather: string | null;
+  }[];
 };
 
 export type ZoneStatus = {
@@ -39,6 +49,7 @@ export type ZoneStatus = {
   official: number;
   road: { id: string; summary: string }[];
   citizen: { id: string; hazard: string | null }[];
+  sandstorms: { station: string; name: string; visibility_m: number }[];
 };
 
 // an official report stays current for 72 h, the same window its zone alert uses
@@ -98,10 +109,27 @@ export function zoneStatus(
         .map((c) => ({ id: c.id, hazard: c.hazard }))
     : [];
 
+  // an airport measurement is weather the zone may already be under, so it follows the weather switch
+  const sandstorms = follows.weather
+    ? context.stations
+        .filter(
+          (s) =>
+            isSandstorm(s) &&
+            Date.parse(s.observed_at) > nowMs - 3 * 3_600_000 &&
+            haversineKm(area.lat, area.lon, s.lat, s.lon) <= 50,
+        )
+        .map((s) => ({
+          station: s.station,
+          name: s.name ?? s.station,
+          visibility_m: s.visibility_m!,
+        }))
+    : [];
+
   return {
     weather: [...weather.values()].sort((a, b) => b.level - a.level),
     official,
     road,
     citizen,
+    sandstorms,
   };
 }

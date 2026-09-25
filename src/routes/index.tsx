@@ -71,6 +71,7 @@ import {
   situationSummary,
 } from "@/lib/civil-map";
 import { earthquakesQuery } from "@/lib/earthquakes";
+import { airportWeatherQuery } from "@/lib/airport-weather";
 import { parseMapSearch, type MapSearch } from "@/lib/civil-map-search";
 import { readSubscription } from "@/lib/push";
 import { pageMeta } from "@/lib/page-meta";
@@ -114,6 +115,7 @@ function LiveMapPage() {
   const fires = useQuery({ ...clustersQuery, ...REFRESH });
   const official = useQuery({ ...officialIncidentsQuery, ...REFRESH });
   const earthquakes = useQuery({ ...earthquakesQuery, ...REFRESH });
+  const stations = useQuery({ ...airportWeatherQuery, ...REFRESH });
   const reports = useQuery({ ...hazardReportsQuery, ...REFRESH });
   const warnings = useQuery({ ...onmVigilanceQuery, ...REFRESH });
   const danger = useQuery({ ...todayRiskForecastsQuery, ...REFRESH });
@@ -265,6 +267,7 @@ function LiveMapPage() {
         reports: reports.data ?? [],
         warnings: warnings.data ?? [],
         earthquakes: earthquakes.data ?? [],
+        stations: stations.data ?? [],
         publications: selectedPublication.data
           ? [
               ...(publications.data ?? []).filter(
@@ -561,6 +564,7 @@ function LiveMapPage() {
             official: true,
             reports: true,
             unverified: search.candidates,
+            lightning: search.lightning,
           }}
           selectedShortId={
             selected?.source === "satellite" ? selected.data.short_id : null
@@ -572,7 +576,9 @@ function LiveMapPage() {
             selected?.source === "onm" ? selected.data.id : null
           }
           selectedReportId={
-            selected?.source === "civil" || selected?.source === "seismic"
+            selected?.source === "civil" ||
+            selected?.source === "seismic" ||
+            selected?.source === "station"
               ? selected.id
               : selected?.source === "citizen"
                 ? selected.data.id
@@ -582,7 +588,9 @@ function LiveMapPage() {
           onSelectOfficial={(id) => select(`official:${id}`)}
           onSelectReport={(id) =>
             select(
-              id.startsWith("civil:") || id.startsWith("quake:")
+              id.startsWith("civil:") ||
+                id.startsWith("quake:") ||
+                id.startsWith("station:")
                 ? id
                 : `report:${id}`,
             )
@@ -1052,6 +1060,14 @@ function LiveMapPage() {
                     />
                     {t("civilMap.showEnded")}
                   </label>
+                  <label className="flex min-h-11 items-center gap-3 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={search.lightning}
+                      onChange={(e) => update({ lightning: e.target.checked })}
+                    />
+                    {t("civilMap.showLightning")}
+                  </label>
                   <div className="space-y-3 border-t pt-4 text-xs leading-relaxed text-muted-foreground">
                     {[
                       "satelliteLegend",
@@ -1059,6 +1075,7 @@ function LiveMapPage() {
                       "tintLegend",
                       "officialLegend",
                       "weatherLegend",
+                      "lightningLegend",
                       "citizenLegend",
                       "publicationNotice",
                     ].map((key) => (
