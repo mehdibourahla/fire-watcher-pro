@@ -914,7 +914,33 @@ export const ar: Translation = {
     guidanceCoast: "هزة قوية قرب البحر: ابتعد عن الشاطئ.",
     note: "قد تُعدَّل القوة والموقع خلال الساعات الأولى. هذا قياس الشبكة الزلزالية وليس تحذيرًا رسميًا.",
   },
+  cap: {
+    severity: {
+      Extreme: "قصوى",
+      Severe: "شديدة",
+      Moderate: "متوسطة",
+      Minor: "طفيفة",
+      Unknown: "غير معروفة",
+    },
+    certainty: {
+      Observed: "مرصودة",
+      Likely: "مرجّحة",
+      Possible: "ممكنة",
+      Unlikely: "مستبعدة",
+      Unknown: "غير معروفة",
+    },
+    urgency: {
+      Immediate: "فورية",
+      Expected: "متوقعة",
+      Future: "مستقبلية",
+      Past: "منقضية",
+      Unknown: "غير معروفة",
+    },
+  },
   reports: {
+    mineError: "تعذّر تحميل بلاغاتك. تحقّق من اتصالك ثم أعد المحاولة.",
+    placeUnavailable:
+      "تعذّر تحميل أسماء الأماكن. يسجّل بلاغك مع ذلك الموقع الدقيق.",
     hazardName: {
       fire: "حريق أو دخان",
       flooding: "فيضان",
@@ -1020,7 +1046,7 @@ export const ar: Translation = {
     nextBadge: "الشارة التالية: {{badge}}، {{have}} من {{need}}",
     statConfirmed: "بلاغات مؤكَّدة",
     statGiven: "تأكيدات قدّمتها",
-    statAlerted: "أشخاص تم تنبيههم",
+    statAlerted: "أشخاص نُبّهوا داخل التطبيق",
     howPoints:
       "النقاط تأتي فقط مما يؤكده الآخرون: 10 عندما يتأكد بلاغك، و3 عندما تؤكد بلاغًا أكده شخص آخر أيضًا.",
     state: {

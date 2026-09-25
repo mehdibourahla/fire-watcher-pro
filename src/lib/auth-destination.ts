@@ -15,6 +15,7 @@ export function authDestination(value: unknown): string {
     return "/zones";
   const path = value.split(/[?#]/, 1)[0] ?? "";
   if (
+    path !== "/" &&
     !/^\/(zones|alerts|settings|webhooks|report)\/?$/.test(path) &&
     !ADMIN_PATHS.has(path.replace(/(.)\/$/, "$1"))
   )

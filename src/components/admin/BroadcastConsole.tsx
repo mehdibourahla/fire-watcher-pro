@@ -265,8 +265,8 @@ function Relay() {
             value={form.severity}
             onChange={(e) => setForm({ ...form, severity: e.target.value })}
           >
-            <option value="Severe">Severe</option>
-            <option value="Extreme">Extreme</option>
+            <option value="Severe">{t("cap.severity.Severe")}</option>
+            <option value="Extreme">{t("cap.severity.Extreme")}</option>
           </select>
         </label>
       </div>

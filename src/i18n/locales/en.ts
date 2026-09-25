@@ -942,7 +942,34 @@ export const en = {
     guidanceCoast: "Strong shaking by the sea: move away from the shore.",
     note: "Magnitude and position can be revised in the first hours. This is the seismic network's measurement, not an official warning.",
   },
+  cap: {
+    severity: {
+      Extreme: "Extreme",
+      Severe: "Severe",
+      Moderate: "Moderate",
+      Minor: "Minor",
+      Unknown: "Unknown",
+    },
+    certainty: {
+      Observed: "Observed",
+      Likely: "Likely",
+      Possible: "Possible",
+      Unlikely: "Unlikely",
+      Unknown: "Unknown",
+    },
+    urgency: {
+      Immediate: "Immediate",
+      Expected: "Expected",
+      Future: "Future",
+      Past: "Past",
+      Unknown: "Unknown",
+    },
+  },
   reports: {
+    mineError:
+      "Your reports could not be loaded. Check your connection, then try again.",
+    placeUnavailable:
+      "Place names could not be loaded. Your report still records the exact position.",
     hazardName: {
       fire: "Fire or smoke",
       flooding: "Flooding",
@@ -1052,7 +1079,7 @@ export const en = {
     nextBadge: "Next badge: {{badge}}, {{have}} of {{need}}",
     statConfirmed: "Reports confirmed",
     statGiven: "Confirmations you gave",
-    statAlerted: "People alerted",
+    statAlerted: "People alerted in the app",
     howPoints:
       "Points come only from what others confirm: 10 when your report is confirmed, 3 when you confirm a report that someone else confirms too.",
     state: {

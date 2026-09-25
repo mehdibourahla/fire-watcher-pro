@@ -8,6 +8,7 @@ describe("authentication destination", () => {
     "/settings",
     "/admin/reports",
     "/report?kind=road_blocked#details",
+    "/?event=report:0c000000-0000-4000-8000-000000000001",
   ])("preserves %s", (path) => {
     expect(authDestination(path)).toBe(path);
   });
