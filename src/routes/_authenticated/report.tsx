@@ -237,7 +237,8 @@ function ReportPage() {
               size="sm"
               onClick={locate}
               disabled={located === "busy"}
-              className="absolute start-3 top-3 z-10 bg-surface"
+              // MapLibre pins its zoom buttons top-right in both directions
+              className="absolute left-3 top-3 z-10 bg-surface"
             >
               <LocateFixed aria-hidden />
               {located === "busy"
