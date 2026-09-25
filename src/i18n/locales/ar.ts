@@ -1368,6 +1368,15 @@ export const ar: Translation = {
     colCommunes: "البلديات",
     chooseWilaya: "اختر ولاية",
     sourcePlaceholder: "مثال: الحماية المدنية، ولاية تيزي وزو",
+    pushTitle: "إشعارات تنبيهات المناطق، آخر 7 أيام",
+    pushNote:
+      "«مستلَم» يعني أن الهاتف أبلغ بوصول الإشعار. غياب الإيصال لا يثبت أنه لم يُعرض: قد لا يُبلغ متصفح مغلق.",
+    pushEmpty: "لا إشعارات تنبيهات مناطق في آخر 7 أيام.",
+    pushDay: "اليوم",
+    pushSent: "مُرسَل",
+    pushReceived: "مستلَم",
+    pushNoDevice: "بلا جهاز",
+    pushFailed: "فشل",
   },
   push: {
     bannerLive: "تنبيه ساري في بلديتك",

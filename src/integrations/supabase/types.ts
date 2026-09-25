@@ -774,6 +774,7 @@ export type Database = {
           payload: Json | null;
           push_attempts: number;
           push_claimed_at: string | null;
+          push_received_at: string | null;
           push_state: string;
           read_at: string | null;
           severity: number;
@@ -798,6 +799,7 @@ export type Database = {
           payload?: Json | null;
           push_attempts?: number;
           push_claimed_at?: string | null;
+          push_received_at?: string | null;
           push_state?: string;
           read_at?: string | null;
           severity?: number;
@@ -822,6 +824,7 @@ export type Database = {
           payload?: Json | null;
           push_attempts?: number;
           push_claimed_at?: string | null;
+          push_received_at?: string | null;
           push_state?: string;
           read_at?: string | null;
           severity?: number;
@@ -3670,6 +3673,16 @@ export type Database = {
       };
     };
     Functions: {
+      admin_push_delivery: {
+        Args: { _days?: number };
+        Returns: {
+          day: string;
+          failed: number;
+          no_device: number;
+          received: number;
+          sent: number;
+        }[];
+      };
       onm_alert_keys: {
         Args: { _ids: string[] };
         Returns: {

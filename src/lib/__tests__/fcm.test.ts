@@ -173,30 +173,43 @@ describe("fcmMessageForAlert", () => {
   };
 
   it("sends a zone alert to its owner's own topic", () => {
-    expect(fcmMessageForAlert(alert).topic).toBe(userTopic("u1"));
+    expect(fcmMessageForAlert(alert, "r").topic).toBe(userTopic("u1"));
     expect(userTopic("u1")).toBe("v1.user.u1");
   });
 
   it("tags by hazard so a commune broadcast of the same hazard collapses into it", () => {
-    expect(fcmMessageForAlert(alert).webpush.notification.tag).toBe("onm1");
+    expect(fcmMessageForAlert(alert, "r").webpush.notification.tag).toBe(
+      "onm1",
+    );
     expect(
-      fcmMessageForAlert({ ...alert, source_id: null, cluster_id: "c9" })
+      fcmMessageForAlert({ ...alert, source_id: null, cluster_id: "c9" }, "r")
         .webpush.notification.tag,
     ).toBe("c9");
   });
 
+  it("carries the alert id and its receipt for the device to confirm arrival", () => {
+    expect(fcmMessageForAlert(alert, "sig").data).toEqual({
+      alert_id: "a1",
+      kind: "weather",
+      receipt: "sig",
+    });
+  });
+
   it("opens the fire page for a fire alert and the inbox otherwise", () => {
-    expect(fcmMessageForAlert(alert).webpush.fcm_options.link).toBe(
+    expect(fcmMessageForAlert(alert, "r").webpush.fcm_options.link).toBe(
       "https://nadhir.app/alerts",
     );
     expect(
-      fcmMessageForAlert({
-        ...alert,
-        kind: "fire",
-        source_id: null,
-        cluster_id: "c9",
-        payload: { short_id: "DZ1" },
-      }).webpush.fcm_options.link,
+      fcmMessageForAlert(
+        {
+          ...alert,
+          kind: "fire",
+          source_id: null,
+          cluster_id: "c9",
+          payload: { short_id: "DZ1" },
+        },
+        "r",
+      ).webpush.fcm_options.link,
     ).toBe("https://nadhir.app/fire/DZ1");
   });
 });

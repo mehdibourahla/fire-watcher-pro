@@ -8,6 +8,24 @@ const FIREBASE_WEB_CONFIG = {
   appId: "1:1038175256338:web:39579a97bd7e255211bdcb",
 };
 
+// a second push listener runs beside the SDK's: it only reports arrival, the SDK still shows the notification
+self.addEventListener("push", (event) => {
+  let data;
+  try {
+    data = event.data?.json()?.data;
+  } catch {
+    return;
+  }
+  if (!data?.alert_id || !data?.receipt) return;
+  event.waitUntil(
+    fetch("/api/public/push-receipt", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ alert_id: data.alert_id, receipt: data.receipt }),
+    }).catch(() => undefined),
+  );
+});
+
 if (FIREBASE_WEB_CONFIG.apiKey) {
   importScripts(
     "https://www.gstatic.com/firebasejs/12.0.0/firebase-app-compat.js",

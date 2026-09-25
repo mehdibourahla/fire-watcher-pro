@@ -52,6 +52,17 @@ const settingsQuery = queryOptions({
   refetchInterval: 30_000,
 });
 
+const zonePushesQuery = queryOptions({
+  queryKey: ["admin", "push-delivery"],
+  queryFn: async () => {
+    const { data, error } = await supabase.rpc("admin_push_delivery", {
+      _days: 7,
+    });
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  },
+});
+
 const auditQuery = queryOptions({
   queryKey: ["broadcast_audit"],
   queryFn: getBroadcastAudit,
@@ -405,6 +416,55 @@ function Audit() {
   );
 }
 
+function ZonePushes() {
+  const { t } = useTranslation();
+  const days = useQuery(zonePushesQuery);
+  return (
+    <section>
+      <h2 className="font-medium">{t("broadcastAdmin.pushTitle")}</h2>
+      <p className="mb-3 text-sm text-muted-foreground">
+        {t("broadcastAdmin.pushNote")}
+      </p>
+      <QueryState
+        query={days}
+        isEmpty={(rows) => rows.length === 0}
+        empty={t("broadcastAdmin.pushEmpty")}
+      >
+        {(rows) => (
+          <div className="overflow-x-auto rounded-lg border border-border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t("broadcastAdmin.pushDay")}</TableHead>
+                  <TableHead>{t("broadcastAdmin.pushSent")}</TableHead>
+                  <TableHead>{t("broadcastAdmin.pushReceived")}</TableHead>
+                  <TableHead>{t("broadcastAdmin.pushNoDevice")}</TableHead>
+                  <TableHead>{t("broadcastAdmin.pushFailed")}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {rows.map((row) => (
+                  <TableRow key={row.day}>
+                    <TableCell className="tabular-nums">{row.day}</TableCell>
+                    <TableCell className="tabular-nums">{row.sent}</TableCell>
+                    <TableCell className="tabular-nums">
+                      {row.received}
+                    </TableCell>
+                    <TableCell className="tabular-nums">
+                      {row.no_device}
+                    </TableCell>
+                    <TableCell className="tabular-nums">{row.failed}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </QueryState>
+    </section>
+  );
+}
+
 export function BroadcastConsole() {
   const { t } = useTranslation();
   const roles = useQuery(myRolesQuery);
@@ -423,6 +483,7 @@ export function BroadcastConsole() {
       />
       <KillSwitch />
       <Relay />
+      <ZonePushes />
       <Audit />
     </section>
   );

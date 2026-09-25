@@ -51,6 +51,7 @@ import { Route as ApiPrivateEnsembleRouteImport } from './routes/api/private/ens
 import { Route as ApiPrivatePushTestRouteImport } from './routes/api/private/push-test'
 import { Route as ApiPrivateReportPublishRouteImport } from './routes/api/private/report-publish'
 import { Route as ApiPrivateUserPushRouteImport } from './routes/api/private/user-push'
+import { Route as ApiPublicPushReceiptRouteImport } from './routes/api/public/push-receipt'
 import { Route as ContributeLanguageLocaleRouteImport } from './routes/contribute_.language.$locale'
 import { Route as ApiInternalSourceJobsRunRouteImport } from './routes/api/internal/source-jobs/run'
 import { Route as ApiPublicContributeIdeaRouteImport } from './routes/api/public/contribute/idea'
@@ -283,6 +284,11 @@ const ApiPrivateUserPushRoute = ApiPrivateUserPushRouteImport.update({
   path: '/api/private/user-push',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicPushReceiptRoute = ApiPublicPushReceiptRouteImport.update({
+  id: '/api/public/push-receipt',
+  path: '/api/public/push-receipt',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ContributeLanguageLocaleRoute =
   ContributeLanguageLocaleRouteImport.update({
     id: '/contribute_/language/$locale',
@@ -404,6 +410,7 @@ export interface FileRoutesByFullPath {
   '/api/private/push-test': typeof ApiPrivatePushTestRoute
   '/api/private/report-publish': typeof ApiPrivateReportPublishRoute
   '/api/private/user-push': typeof ApiPrivateUserPushRoute
+  '/api/public/push-receipt': typeof ApiPublicPushReceiptRoute
   '/contribute/language/$locale': typeof ContributeLanguageLocaleRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/api/internal/source-jobs/run': typeof ApiInternalSourceJobsRunRoute
@@ -460,6 +467,7 @@ export interface FileRoutesByTo {
   '/api/private/push-test': typeof ApiPrivatePushTestRoute
   '/api/private/report-publish': typeof ApiPrivateReportPublishRoute
   '/api/private/user-push': typeof ApiPrivateUserPushRoute
+  '/api/public/push-receipt': typeof ApiPublicPushReceiptRoute
   '/contribute/language/$locale': typeof ContributeLanguageLocaleRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/api/internal/source-jobs/run': typeof ApiInternalSourceJobsRunRoute
@@ -520,6 +528,7 @@ export interface FileRoutesById {
   '/api/private/push-test': typeof ApiPrivatePushTestRoute
   '/api/private/report-publish': typeof ApiPrivateReportPublishRoute
   '/api/private/user-push': typeof ApiPrivateUserPushRoute
+  '/api/public/push-receipt': typeof ApiPublicPushReceiptRoute
   '/contribute_/language/$locale': typeof ContributeLanguageLocaleRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/api/internal/source-jobs/run': typeof ApiInternalSourceJobsRunRoute
@@ -580,6 +589,7 @@ export interface FileRouteTypes {
     | '/api/private/push-test'
     | '/api/private/report-publish'
     | '/api/private/user-push'
+    | '/api/public/push-receipt'
     | '/contribute/language/$locale'
     | '/admin/'
     | '/api/internal/source-jobs/run'
@@ -636,6 +646,7 @@ export interface FileRouteTypes {
     | '/api/private/push-test'
     | '/api/private/report-publish'
     | '/api/private/user-push'
+    | '/api/public/push-receipt'
     | '/contribute/language/$locale'
     | '/admin'
     | '/api/internal/source-jobs/run'
@@ -695,6 +706,7 @@ export interface FileRouteTypes {
     | '/api/private/push-test'
     | '/api/private/report-publish'
     | '/api/private/user-push'
+    | '/api/public/push-receipt'
     | '/contribute_/language/$locale'
     | '/_authenticated/admin/'
     | '/api/internal/source-jobs/run'
@@ -732,6 +744,7 @@ export interface RootRouteChildren {
   ApiPrivatePushTestRoute: typeof ApiPrivatePushTestRoute
   ApiPrivateReportPublishRoute: typeof ApiPrivateReportPublishRoute
   ApiPrivateUserPushRoute: typeof ApiPrivateUserPushRoute
+  ApiPublicPushReceiptRoute: typeof ApiPublicPushReceiptRoute
   ContributeLanguageLocaleRoute: typeof ContributeLanguageLocaleRoute
   ApiInternalSourceJobsRunRoute: typeof ApiInternalSourceJobsRunRoute
   ApiPublicContributeIdeaRoute: typeof ApiPublicContributeIdeaRoute
@@ -1045,6 +1058,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPrivateUserPushRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/push-receipt': {
+      id: '/api/public/push-receipt'
+      path: '/api/public/push-receipt'
+      fullPath: '/api/public/push-receipt'
+      preLoaderRoute: typeof ApiPublicPushReceiptRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/contribute_/language/$locale': {
       id: '/contribute_/language/$locale'
       path: '/contribute/language/$locale'
@@ -1251,6 +1271,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPrivatePushTestRoute: ApiPrivatePushTestRoute,
   ApiPrivateReportPublishRoute: ApiPrivateReportPublishRoute,
   ApiPrivateUserPushRoute: ApiPrivateUserPushRoute,
+  ApiPublicPushReceiptRoute: ApiPublicPushReceiptRoute,
   ContributeLanguageLocaleRoute: ContributeLanguageLocaleRoute,
   ApiInternalSourceJobsRunRoute: ApiInternalSourceJobsRunRoute,
   ApiPublicContributeIdeaRoute: ApiPublicContributeIdeaRoute,

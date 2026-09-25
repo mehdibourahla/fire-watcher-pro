@@ -1410,6 +1410,15 @@ export const en = {
     colCommunes: "Communes",
     chooseWilaya: "Choose a wilaya",
     sourcePlaceholder: "e.g. Protection Civile, Wilaya de Tizi Ouzou",
+    pushTitle: "Zone alert pushes, last 7 days",
+    pushNote:
+      "Received means the phone reported the push arriving. A missing receipt does not prove it was not shown: a closed browser may not report.",
+    pushEmpty: "No zone alert pushes in the last 7 days.",
+    pushDay: "Day",
+    pushSent: "Sent",
+    pushReceived: "Received",
+    pushNoDevice: "No device",
+    pushFailed: "Failed",
   },
   push: {
     bannerLive: "Active alert in your commune",
