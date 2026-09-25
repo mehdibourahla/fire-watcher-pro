@@ -41,6 +41,17 @@ describe("civil map symbol contracts", () => {
         expected,
       );
   });
+  it("draws a citizen report by its classified category, a fire sighting staying an observation", () => {
+    expect(symbolFor("reports", { source: "citizen", category: "road" })).toBe(
+      "road",
+    );
+    expect(symbolFor("reports", { source: "citizen", category: "fire" })).toBe(
+      "observation",
+    );
+    expect(
+      symbolFor("reports", { source: "citizen", category: "weather" }),
+    ).toBe("observation");
+  });
   it("distinguishes citizen observations, road obstruction and rescue from official fire", () => {
     expect(symbolFor("reports", { kind: "sighting", sighting: "flames" })).toBe(
       "observation",
