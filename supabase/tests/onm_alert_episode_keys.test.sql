@@ -1,6 +1,6 @@
 begin;
 set local search_path = public, extensions;
-select plan(10);
+select plan(11);
 
 create function pg_temp.warn(_cap text, _event text, _severity text, _onset interval, _expires interval, _sent interval)
 returns void language sql as $$
@@ -39,6 +39,12 @@ insert into public.onm_vigilance(cap_id,title,event,severity,urgency,certainty,o
   on conflict (cap_id) do update set title = excluded.title;
 select is(pg_temp.key('batch-2'), pg_temp.key('batch-1'),
   'a renewal arriving in the same feed batch as its predecessor joins its episode');
+
+select pg_temp.warn('tie-severe', 'Snow', 'Severe', '0 hours', '6 hours', '-1 hour');
+select pg_temp.warn('tie-moderate', 'Snow', 'Moderate', '0 hours', '6 hours', '-1 hour');
+select pg_temp.warn('tie-next', 'Snow', 'Moderate', '3 hours', '9 hours', '0 hours');
+select is(pg_temp.key('tie-next'), (select episode_id || ':3' from public.onm_vigilance where cap_id = 'tie-severe'),
+  'two warnings sent in the same second pass on the higher severity');
 
 select is((select episode_peak from public.onm_vigilance where cap_id = 'ep-first'), 2::smallint,
   'the first warning of an episode carries its own severity');

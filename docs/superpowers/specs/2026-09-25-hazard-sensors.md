@@ -34,7 +34,9 @@ recently sent warning of the same area and event whose validity overlaps, else s
 Zone weather alerts key on `weather:<episode_id>:<episode_peak>`. A renewal stays silent, an
 escalation alerts, a downgrade stays silent, as broadcasts already do. Nothing is recomputed
 later, so send order, onset order and episode length cannot change a key. Existing rows are
-backfilled in send order; no alert key is rewritten, so there is no deploy race.
+backfilled in send order. Existing alert keys are not rewritten (a rewrite would race the deploy,
+since the migration runs before the new code): a warning already alerted under the old key and
+still valid at deploy can alert once more, so deploy when no alerted warning is live.
 
 **Push receipts.** "Sent" today means FCM accepted it; FCM also accepts a topic with no
 device. Each push carries its alert id and a server HMAC of it. A plain `push` listener in

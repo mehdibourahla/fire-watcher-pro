@@ -28,7 +28,8 @@ language sql stable set search_path = '' as $$
       and v.event = _warning.event
       and coalesce(v.onset, v.sent) <= coalesce(_warning.expires, _warning.onset, _warning.sent)
       and coalesce(_warning.onset, _warning.sent) <= coalesce(v.expires, v.onset, v.sent)
-    order by v.sent desc, v.id desc
+    -- warnings sent in the same second: prefer the higher peak so an escalation is never lost
+    order by v.sent desc, v.episode_peak desc, v.id desc
     limit 1
   ) p on true
 $$;
