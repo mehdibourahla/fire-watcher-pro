@@ -23,6 +23,7 @@ import {
   moderationQueueQuery,
   type CitizenReport,
   type ReportStatus,
+  ReportMutationError,
 } from "@/lib/reports";
 import { cn } from "@/lib/utils";
 
@@ -237,7 +238,11 @@ function Detail({
       </label>
       {moderate.isError ? (
         <p role="alert" className="text-destructive">
-          {moderate.error.message}
+          {t(
+            moderate.error instanceof ReportMutationError
+              ? moderate.error.message
+              : "reportsPage.moderateFailed",
+          )}
         </p>
       ) : null}
       <div className="flex flex-wrap gap-2">

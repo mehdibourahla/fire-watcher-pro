@@ -353,7 +353,7 @@ export const kab: Translation = {
     updated: "Vérifié {{time}}",
     loading: "Chargement…",
     refresh: "Actualiser",
-    offline: "Hors ligne — données enregistrées disponibles",
+    offline: "Hors ligne. Affichage des données enregistrées sur cet appareil.",
     mapUnavailable:
       "Carte indisponible. Consultez les situations dans la liste.",
     list: "Liste",
@@ -486,7 +486,7 @@ export const kab: Translation = {
       "Ur d-tettwabdar ara deg ulɣu n {{when}}. Tɣellist Tagdudant ur tessufuɣ ara taggara n walɣu i yal taɣiwant, ihi mačči d assekni belli times texsi.",
     viewPost: "Wali asuffeɣ aneṣli",
     disclaimer:
-      "Yettwaɣ-d seg ubadu unṣib s tseddi n uneɣmis — tamnaḍt yettwaɣummen d taɣiwant, mačči d times. Nadhir ur yernu acemma i uḍris.",
+      "Yettwaɣ-d seg ubadu unṣib s tseddi n uneɣmis. Tamnaḍt yettwaɣummen d taɣiwant, mačči d times. Nadhir ur yernu acemma i uḍris.",
     statuses: {
       ongoing: "Yettkemmil",
       contained: "Yettwaḥbes",

@@ -199,7 +199,7 @@ function Relay() {
   const ready = !!form.source.trim() && !!form.body.trim() && !!wilaya;
   const field = "mt-1 block w-full";
   const select =
-    "mt-1 h-9 w-full rounded-md border border-input bg-background px-3 text-sm";
+    "mt-1 h-9 w-full rounded-md border border-input bg-background px-3 text-sm pointer-coarse:h-11";
 
   return (
     <section className="space-y-4 rounded-lg border border-border p-4">

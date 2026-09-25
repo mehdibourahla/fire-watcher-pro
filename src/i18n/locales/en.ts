@@ -348,7 +348,7 @@ export const en = {
     updated: "Checked {{time}}",
     loading: "Loading…",
     refresh: "Refresh",
-    offline: "Offline — showing available saved data",
+    offline: "Offline. Showing the data saved on this device.",
     mapUnavailable: "Map unavailable. Use the list to browse situations.",
     list: "List",
     map: "Map",
@@ -480,7 +480,7 @@ export const en = {
       "Not named in the bulletin of {{when}}. Protection Civile does not publish a per-commune all-clear, so this is not a sign the fire is out.",
     viewPost: "View the original post",
     disclaimer:
-      "Relayed from an official channel, shown at the precision of the report — the shaded area is the commune, not the fire. Nadhir adds nothing to the wording.",
+      "Relayed from an official channel, shown at the precision of the report. The shaded area is the commune, not the fire. Nadhir adds nothing to the wording.",
     statuses: {
       ongoing: "Ongoing",
       contained: "Contained",

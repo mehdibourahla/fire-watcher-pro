@@ -70,13 +70,31 @@ async function registrationToken(): Promise<string> {
   return token;
 }
 
+export class PushTestError extends Error {
+  override name = "PushTestError";
+}
+
+export function pushTestErrorKey(status: number) {
+  const reason =
+    status === 401
+      ? "signIn"
+      : status === 403
+        ? "forbidden"
+        : status === 429
+          ? "wait"
+          : status === 400 || status === 413
+            ? "invalid"
+            : "unavailable";
+  return `sources.pushTestErrors.${reason}`;
+}
+
 export async function testPushOnThisDevice(): Promise<string> {
   if (!pushSupported() || Notification.permission !== "granted")
-    throw new Error("Enable notifications on this device first.");
+    throw new PushTestError("sources.pushTestErrors.notifications");
   const { supabase } = await import("@/integrations/supabase/client");
   const { data, error } = await supabase.auth.getSession();
   if (error || !data.session)
-    throw new Error("Sign in with your admin account first.");
+    throw new PushTestError("sources.pushTestErrors.signIn");
   const token = await registrationToken();
   const response = await fetch("/api/private/push-test", {
     method: "POST",
@@ -87,16 +105,11 @@ export async function testPushOnThisDevice(): Promise<string> {
     body: JSON.stringify({ token }),
     signal: AbortSignal.timeout(45000),
   });
-  if (!response.ok) {
-    const body = (await response.json().catch(() => null)) as {
-      error?: string;
-    } | null;
-    throw new Error(body?.error ?? "Push test failed");
-  }
+  if (!response.ok) throw new PushTestError(pushTestErrorKey(response.status));
   return ((await response.json()) as { testId: string }).testId;
 }
 
-export async function pushTestArrival(testId: string, sentAt: number) {
+export async function pushTestArrival(testId: string) {
   const { supabase } = await import("@/integrations/supabase/client");
   const { data, error } = await supabase
     .from("push_test_receipts")
@@ -104,10 +117,7 @@ export async function pushTestArrival(testId: string, sentAt: number) {
     .eq("id", testId)
     .single();
   if (error) throw new Error(error.message);
-  return {
-    receivedAt: data.received_at,
-    expired: Date.now() - sentAt > 60_000,
-  };
+  return data.received_at;
 }
 
 async function callSubscribeApi(

@@ -131,6 +131,10 @@ export const adminEn = {
     expires: "Shown until",
   },
   reportsPage: {
+    moderateForbidden:
+      "You no longer have moderator access. Ask an administrator.",
+    moderateGone: "This report no longer exists. Refresh the queue.",
+    moderateFailed: "The decision was not saved. Try again.",
     title: "Citizen reports",
     description:
       "Reports sent from the app. An automatic check publishes the clear ones. Decide on what it held, the private ones and the ones witnesses say are gone.",
@@ -464,6 +468,17 @@ export const adminEn = {
     pushTestReceived: "Received on this device at {{time}}.",
     pushTestUnconfirmed:
       "No arrival reported within a minute. The browser may deliver it later, or this device blocks background delivery.",
+    pushTestCheckFailed:
+      "The push was sent, but its arrival could not be checked. Reload the page to check again.",
+    pushTestErrors: {
+      notifications: "Turn on notifications for Nadhir on this device first.",
+      signIn: "Sign in again with your admin account.",
+      forbidden: "Only administrators can run this test.",
+      wait: "At most two tests per minute. Wait a minute and try again.",
+      invalid:
+        "This device's push registration is not valid. Turn notifications off and on again.",
+      unavailable: "The push service did not answer. Try again in a moment.",
+    },
     ensemble: {
       title: "Ensemble weather preview",
       description:

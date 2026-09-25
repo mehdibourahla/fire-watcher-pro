@@ -33,6 +33,19 @@ export const adminKab = {
     pushTestReceived: "Reçu sur cet appareil à {{time}}.",
     pushTestUnconfirmed:
       "Aucune arrivée signalée en une minute. Le navigateur peut la livrer plus tard, ou cet appareil bloque la réception en arrière-plan.",
+    pushTestCheckFailed:
+      "La notification est partie, mais son arrivée n'a pas pu être vérifiée. Rechargez la page pour vérifier à nouveau.",
+    pushTestErrors: {
+      notifications:
+        "Activez d'abord les notifications de Nadhir sur cet appareil.",
+      signIn: "Reconnectez-vous avec votre compte administrateur.",
+      forbidden: "Seuls les administrateurs peuvent lancer ce test.",
+      wait: "Deux tests par minute au plus. Attendez une minute puis réessayez.",
+      invalid:
+        "L'inscription de cet appareil aux notifications n'est pas valide. Désactivez puis réactivez les notifications.",
+      unavailable:
+        "Le service de notification n'a pas répondu. Réessayez dans un instant.",
+    },
     ensemble: {
       title: "Askan n tegnawt s ugraw",
       description:

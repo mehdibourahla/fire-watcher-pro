@@ -403,13 +403,13 @@ export function SituationDetails({
               <dt>{t("fire.area")}</dt>
               <dd>
                 {item.data.est_area_ha == null
-                  ? "—"
+                  ? t("common.notRecorded")
                   : `${Math.round(item.data.est_area_ha)} ha`}
               </dd>
               <dt>{t("fire.peakFrp")}</dt>
               <dd>
                 {item.data.max_frp_mw == null
-                  ? "—"
+                  ? t("common.notRecorded")
                   : `${item.data.max_frp_mw} MW`}
               </dd>
             </dl>
