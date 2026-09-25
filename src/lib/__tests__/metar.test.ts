@@ -36,6 +36,13 @@ describe("parseMetar", () => {
     );
   });
 
+  it("skips a station code the table would refuse instead of failing the batch", () => {
+    const odd = { ...sample[0], icaoId: "DA1" };
+    expect(parseMetar([odd, ...sample]).map((r) => r.station)).not.toContain(
+      "DA1",
+    );
+  });
+
   it("fails loudly on an unexpected answer", () => {
     expect(() => parseMetar({ data: [] })).toThrow(/unexpected/);
   });

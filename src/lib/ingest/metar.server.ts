@@ -9,6 +9,13 @@ const METAR_URL =
 export type MetarRun = { fetched: number; stored: number; error?: string };
 
 const store = {
+  latest: async (): Promise<Map<string, string>> => {
+    const { data, error } = await supabaseAdmin
+      .from("airport_weather")
+      .select("station, observed_at");
+    if (error) throw new Error(`airport_weather read failed: ${error.message}`);
+    return new Map((data ?? []).map((r) => [r.station, r.observed_at]));
+  },
   fetch: () =>
     archivedFetch("metar", "metar_json", METAR_URL, {
       signal: AbortSignal.timeout(20_000),
@@ -30,7 +37,13 @@ export async function ingestMetar(
   const res = await deps.fetch();
   if (res.status === 204) return { fetched: 0, stored: 0 };
   if (!res.ok) return { fetched: 0, stored: 0, error: `METAR ${res.status}` };
-  const rows = parseMetar(await res.json());
+  const parsed = parseMetar(await res.json());
+  const stored = await deps.latest();
+  // a report that arrives late must not replace the newer one already kept
+  const rows = parsed.filter((row) => {
+    const previous = stored.get(row.station);
+    return !previous || Date.parse(row.observed_at) > Date.parse(previous);
+  });
   if (rows.length) await deps.upsert(rows);
-  return { fetched: rows.length, stored: rows.length };
+  return { fetched: parsed.length, stored: rows.length };
 }

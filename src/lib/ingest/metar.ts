@@ -33,7 +33,7 @@ export function parseMetar(body: unknown): AirportWeather[] {
     const raw = row["rawOb"];
     if (
       typeof station !== "string" ||
-      !station.startsWith("DA") ||
+      !/^DA[A-Z]{2}$/.test(station) ||
       typeof raw !== "string" ||
       !finite(row["obsTime"]) ||
       !finite(row["lat"]) ||
