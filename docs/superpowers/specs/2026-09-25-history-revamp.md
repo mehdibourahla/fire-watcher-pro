@@ -14,11 +14,11 @@ warnings and road incidents. The page's job: what happened, where, and how often
 
 ## Data (prod, 2026-09-25)
 
-| Hazard | Source | Records since | Unit counted |
-| --- | --- | --- | --- |
-| Fire | `fire_clusters`, real states only | 2026-08-28 | one detected fire |
-| Weather | new view `onm_warning_history` | 2026-08-30 | one ONM warning per wilaya: 10,093 rows collapse to ~510 once re-issues (same event, severity and onset) merge |
-| Road | `civil_publications`, hazard road, not withdrawn | 2026-09-21 | one published incident |
+| Hazard  | Source                                           | Records since | Unit counted                                                                                                   |
+| ------- | ------------------------------------------------ | ------------- | -------------------------------------------------------------------------------------------------------------- |
+| Fire    | `fire_clusters`, real states only                | 2026-08-28    | one detected fire                                                                                              |
+| Weather | new view `onm_warning_history`                   | 2026-08-30    | one ONM warning per wilaya: 10,093 rows collapse to ~510 once re-issues (same event, severity and onset) merge |
+| Road    | `civil_publications`, hazard road, not withdrawn | 2026-09-21    | one published incident                                                                                         |
 
 Official Civil Protection reports (`official_incidents`, 87, all fire kinds) are shown as a fire statistic, not a
 separate hazard, so a fire is never counted twice. Authority warnings and citizen hazard reports have no rows.
@@ -40,8 +40,8 @@ The view uses `security_invoker`, so it can never read more than `onm_vigilance`
 
 ## States
 
-Each source loads and fails on its own; a failed source says which hazard is missing and offers a retry while the
-others render. Filtering to nothing says so and names the filter.
+Sources load together and fail on their own: a failed source says which hazard is missing and offers a retry
+while the others render. Filtering to nothing says so and names the filter.
 
 ## Out of scope
 

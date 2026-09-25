@@ -78,6 +78,7 @@ export const weatherEn = {
     },
     airBy: "from {{pollutant}}",
     rowError: "Could not load this row.",
+    placesError: "The list of communes could not be loaded.",
     notes:
       "ONM issues warnings about a day ahead, so later days stay open. Weather is the model value at noon. Air is the 24-hour average from the CAMS model, compared with WHO guidelines.",
     fireToday: "Fire danger today",
@@ -215,6 +216,7 @@ export const weatherFr: typeof weatherEn = {
     },
     airBy: "due aux {{pollutant}}",
     rowError: "Impossible de charger cette ligne.",
+    placesError: "La liste des communes n’a pas pu être chargée.",
     notes:
       "L’ONM émet ses vigilances environ un jour à l’avance : les jours suivants restent ouverts. La météo est la valeur du modèle à midi. L’air est la moyenne sur 24 heures du modèle CAMS, comparée aux lignes directrices de l’OMS.",
     fireToday: "Danger d’incendie aujourd’hui",
@@ -349,6 +351,7 @@ export const weatherAr: typeof weatherEn = {
     },
     airBy: "بسبب {{pollutant}}",
     rowError: "تعذر تحميل هذا الصف.",
+    placesError: "تعذر تحميل قائمة البلديات.",
     notes:
       "يصدر الديوان الوطني للأرصاد الجوية تنبيهاته قبل يوم تقريبًا، لذلك تبقى الأيام اللاحقة مفتوحة. الطقس هو قيمة النموذج عند الظهر. الهواء هو متوسط 24 ساعة من نموذج CAMS مقارنة بإرشادات منظمة الصحة العالمية.",
     fireToday: "خطر الحرائق اليوم",

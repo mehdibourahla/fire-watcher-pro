@@ -9,7 +9,11 @@ import { NationalOutlook } from "@/components/forecast/NationalOutlook";
 import { OutlookGrid, type Row } from "@/components/forecast/OutlookGrid";
 import { LazyDetails } from "@/components/LazyDetails";
 import { DangerScale } from "@/components/nadhir/DangerScale";
-import { EmptyState, SkeletonList } from "@/components/nadhir/states";
+import {
+  EmptyState,
+  ErrorState,
+  SkeletonList,
+} from "@/components/nadhir/states";
 import { WeatherForecast } from "@/components/nadhir/WeatherForecast";
 import { RiskLegend } from "@/components/SiteChrome";
 import type { Locale } from "@/i18n";
@@ -165,6 +169,11 @@ function ForecastPage() {
         </h2>
         {units.isPending ? (
           <SkeletonList rows={4} />
+        ) : units.isError ? (
+          <ErrorState
+            body={t("outlook.placesError")}
+            onRetry={() => void units.refetch()}
+          />
         ) : !selected ? (
           <EmptyState
             title={t("outlook.emptyTitle")}

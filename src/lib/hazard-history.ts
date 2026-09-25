@@ -114,7 +114,11 @@ export function buckets(records: HistoryRecord[], nowMs: number) {
 
   const rows = new Map<string, Bucket>();
   let cursor = keyOf(first);
-  const last = keyOf(new Date(nowMs).toISOString());
+  const latest = records.reduce(
+    (max, r) => (r.at > max ? r.at : max),
+    new Date(nowMs).toISOString(),
+  );
+  const last = keyOf(latest);
   while (cursor <= last) {
     rows.set(cursor, {
       start: cursor,
@@ -182,8 +186,10 @@ export function wilayaRanking(
   return { ranked, unlocated };
 }
 
+// road summaries are third-party text; a leading = + - @ would run as a spreadsheet formula
 const csvCell = (value: string | number) => {
-  const text = String(value);
+  const raw = String(value);
+  const text = /^[=+\-@]/.test(raw) ? `'${raw}` : raw;
   return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
 };
 

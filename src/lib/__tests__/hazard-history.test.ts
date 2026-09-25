@@ -151,4 +151,38 @@ describe("hazard history", () => {
       'road,r1,2026-09-21T16:00:00Z,Tizi Ouzou,"Accident, RN12"',
     );
   });
+
+  it("keeps a warning dated after this week in the chart", () => {
+    const ahead = weatherRecords([
+      {
+        id: "o9",
+        wilaya_id: "w-batna",
+        event: "Rain",
+        severity: "Moderate",
+        starts_at: "2026-10-02T08:00:00Z",
+      },
+    ]);
+    const { rows } = buckets(
+      [...records, ...ahead],
+      Date.parse("2026-09-25T12:00:00Z"),
+    );
+    expect(rows.at(-1)).toMatchObject({ start: "2026-09-28", weather: 1 });
+  });
+
+  it("never lets exported text run as a spreadsheet formula", () => {
+    const [row] = roadRecords(
+      [
+        {
+          id: "r9",
+          area_id: "c-akbil",
+          published_at: "2026-09-22T10:00:00Z",
+          summary: '=HYPERLINK("http://x")',
+        },
+      ],
+      units,
+    );
+    expect(historyCsv([row!], units).split("\n")[1]).toBe(
+      'road,r9,2026-09-22T10:00:00Z,Tizi Ouzou,"\'=HYPERLINK(""http://x"")"',
+    );
+  });
 });
