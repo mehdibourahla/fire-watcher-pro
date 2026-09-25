@@ -1365,16 +1365,16 @@ export const fr: Translation = {
     privacyTitle: "Politique de confidentialité",
     privacy_collect_title: "Données conservées",
     privacy_collect_body:
-      "Un compte contient votre e-mail, un nom d'affichage et un téléphone facultatifs, votre langue, vos préférences d'alerte et vos zones de surveillance. Les signalements conservent les coordonnées et le texte envoyés.",
+      "Un compte contient votre adresse e-mail, un nom d'affichage et un numéro de téléphone facultatifs, votre langue, vos préférences d'alerte et les zones de veille que vous créez. Un signalement citoyen enregistre la catégorie choisie, le point placé, ce que vous avez écrit et une photo facultative. Quand vous confirmez le signalement d'une autre personne, nous enregistrons votre vote ; votre position est comparée à celle du signalement puis n'est pas conservée.",
     privacy_use_title: "Utilisation",
     privacy_use_body:
-      "Uniquement pour déterminer les alertes qui vous concernent et les livrer sur les canaux activés. Ni publicité, ni profilage.",
+      "Uniquement pour décider quelles alertes vous envoyer, les transmettre sur les canaux que vous avez activés et publier les signalements citoyens. Ni publicité, ni profilage, ni mesure d'audience.",
     privacy_retention_title: "Durée",
     privacy_retention_body:
-      "Vous pouvez supprimer les alertes de votre fil et votre compte dans les paramètres. La suppression du compte retire les données personnelles, zones, alertes, webhooks et photos de signalement. Les journaux opérationnels sont conservés sans identifiants personnels.",
+      "Vous pouvez supprimer des alertes de votre fil et supprimer votre compte dans les Paramètres. La suppression du compte efface les données personnelles, les zones, les alertes, les points de terminaison webhook, vos signalements citoyens avec leurs photos et vos confirmations. Les journaux d'audit opérationnels sont conservés sans identifiants personnels. Un signalement citoyen quitte la carte publique 6 heures après son envoi, ou jusqu'à 24 heures quand des personnes sur place le confirment.",
     privacy_sharing_title: "Partage",
     privacy_sharing_body:
-      "Des prestataires traitent les données nécessaires au fonctionnement de Nadhir : Supabase gère les comptes et l’authentification, Resend transmet les e-mails liés au compte et Google assure la connexion si vous choisissez cette méthode. L’API et la carte publiques n’exposent ni vos zones, ni vos alertes, ni votre identité. Les signalements approuvés sont affichés sans votre nom.",
+      "Des prestataires traitent les données nécessaires au fonctionnement de Nadhir : Cloudflare héberge le site, Supabase gère les comptes et les données, Resend envoie les e-mails du compte, Google gère la connexion si vous choisissez cette méthode et envoie les notifications push via Firebase, et OpenRouter transmet le texte d'un signalement citoyen au modèle Gemini de Google, qui le vérifie avant publication. Cette vérification reçoit la catégorie, la commune et vos mots, jamais votre compte ni votre position exacte. L'API publique et la carte n'exposent ni vos zones, ni vos alertes, ni votre identité. Un signalement citoyen publié montre sa catégorie, un court résumé neutre, le point où il a été placé, son heure et le nombre de personnes qui l'ont confirmé ; jamais votre nom, vos mots tels quels ni votre photo.",
     privacy_rights_title: "Vos droits",
     privacy_rights_body:
       "Vous pouvez consulter, corriger et supprimer vos données depuis la page Réglages.",
