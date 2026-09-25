@@ -505,7 +505,7 @@ describe("zone hazard alerts reach the alert table", () => {
           onset: "2026-09-08T15:00:00Z",
           title: "Rain Severe warning for the wilaya: ALGER",
           headline_fr: null,
-          polygon: null,
+          area: null,
           wilaya_id: "w16",
           expires: "2026-09-09T12:00:00Z",
           episode_id: "ep1",

@@ -78,7 +78,9 @@ export const liveZoneContextQuery = queryOptions({
     const [weather, official, road, citizen, stations] = await Promise.all([
       supabase
         .from("onm_vigilance")
-        .select("id, event, severity, expires, wilaya_id, polygon")
+        .select(
+          "id, event, severity, expires, wilaya_id, area:onm_areas(polygon)",
+        )
         .is("superseded_at", null)
         .gt("expires", now)
         .lte("sent", now)
@@ -109,14 +111,14 @@ export const liveZoneContextQuery = queryOptions({
     for (const result of [weather, official, road, citizen, stations])
       if (result.error) throw new Error(result.error.message);
     return {
-      weather: (weather.data ?? []).flatMap((w) =>
+      weather: (weather.data ?? []).flatMap(({ area, ...w }) =>
         w.expires
           ? [
               {
                 ...w,
                 expires: w.expires,
-                polygon: Array.isArray(w.polygon)
-                  ? (w.polygon as [number, number][])
+                polygon: Array.isArray(area?.polygon)
+                  ? (area.polygon as [number, number][])
                   : null,
               },
             ]
@@ -124,7 +126,19 @@ export const liveZoneContextQuery = queryOptions({
       ),
       official: official.data ?? [],
       road: road.data ?? [],
-      stations: stations.data ?? [],
+      stations: (stations.data ?? []).flatMap((s) =>
+        s.station && s.lat !== null && s.lon !== null && s.observed_at
+          ? [
+              {
+                ...s,
+                station: s.station,
+                lat: s.lat,
+                lon: s.lon,
+                observed_at: s.observed_at,
+              },
+            ]
+          : [],
+      ),
       citizen: (citizen.data ?? []).flatMap((c) =>
         c.id && c.lat !== null && c.lon !== null && c.expires_at
           ? [

@@ -3,6 +3,7 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 const mocks = vi.hoisted(() => ({ results: [] as unknown[], fetch: vi.fn() }));
 vi.mock("@/integrations/supabase/client.server", () => ({
   supabaseAdmin: {
+    rpc: async () => mocks.results.shift(),
     from: () => {
       const q: Record<string, unknown> = {
         then: (resolve: (v: unknown) => unknown) =>

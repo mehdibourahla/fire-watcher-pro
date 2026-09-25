@@ -43,27 +43,24 @@ addresses that observed gap. No synthetic public alerts were sent during verific
 
 ## Retention
 
-Hourly maintenance processes at most 5,000 terminal source runs and 5,000 resolved
-operational incidents older than 180 days per invocation. Runs referenced by source gaps,
-unfinished runs, open incidents, checkpoints and snapshot/product data remain intact.
-Incident age is measured from resolution; run age from completion.
-
-Before removal, daily UTC counts are accumulated transactionally in
-`source_run_archive_daily` and `incident_archive_daily`. Run totals also preserve
-`records_seen`. These aggregates are visible only to operators/admins and the service role.
-Idempotency keys remain privately in `source_run_retired_keys`: reusing a retired key is
-rejected, preventing removal of old evidence from making a duplicate execution look new.
-Maintenance and keyed run inserts share a transaction lock to close that race.
-Each nonempty maintenance batch records its counts in the admin audit.
+Nothing is purged. Source runs and jobs, like the other bulk tables, move to Parquet files in
+the private `cold-archive` bucket after 90 days (jobs after 92), one file per table and UTC
+day, and leave Postgres only once the stored file reads back with the same rows. Runs that
+resolved a gap, unfinished runs and jobs something still points at stay hot. Operational
+incidents stay hot. The manifest is `cold_exports`; the design is
+[the cold archive spec](superpowers/specs/2026-09-25-cold-archive.md).
+Archived run idempotency keys remain in `source_run_retired_keys`: reusing one is rejected,
+so removing old evidence cannot make a duplicate execution look new. Archiving and keyed
+run inserts share a transaction lock to close that race.
 
 ## Release checks
 
-1. Verify an ordinary account and an operator cannot pause a source or run maintenance.
+1. Verify an ordinary account and an operator cannot pause a source or archive a day.
 2. On a local database, pause a fixture source and confirm its queued job cannot be claimed.
    Resume twice; verify eligibility returns and only actual transitions add audit rows.
-3. Seed old/recent/running/referenced evidence locally. Run maintenance twice and verify
-   exact aggregate counts, retained references, and rejection of an old idempotency key.
-4. After deployment, inspect the named hourly cron and its result without purging manually.
+3. Seed old/recent/running/referenced evidence locally. Run `bun run archive:cold` twice and
+   verify the manifest, retained references, and rejection of an old idempotency key.
+4. After deployment, read the Cold archive workflow's result; never delete by hand.
    Verify source health and the Sources controls using read-only checks.
 
 Production outage/recovery drills require a chosen source and maintenance window. Do not

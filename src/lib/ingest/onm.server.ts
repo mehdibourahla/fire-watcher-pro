@@ -153,15 +153,16 @@ export async function backfillCapDetails(): Promise<{
       failed++;
       continue;
     }
-    const { error: upErr } = await supabaseAdmin
-      .from("onm_vigilance")
-      .update({
-        headline_fr: detail.headline_fr,
-        instruction_fr: detail.instruction_fr,
-        polygon: detail.polygon,
-        cap_detail_fetched_at: new Date().toISOString(),
-      })
-      .eq("id", row.id);
+    const { error: upErr } = await supabaseAdmin.rpc("store_onm_detail", {
+      _id: row.id,
+      ...(detail.headline_fr === null
+        ? {}
+        : { _headline_fr: detail.headline_fr }),
+      ...(detail.instruction_fr === null
+        ? {}
+        : { _instruction_fr: detail.instruction_fr }),
+      ...(detail.polygon === null ? {} : { _polygon: detail.polygon }),
+    });
     if (!upErr) filled += 1;
     else failed++;
   }

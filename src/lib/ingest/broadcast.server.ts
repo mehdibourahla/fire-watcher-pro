@@ -827,7 +827,14 @@ async function relayOnmWarnings(): Promise<number> {
       .filter((warning) => onmWarningIsCurrent(warning, Date.parse(nowIso))),
     relayed,
   );
-  for (const warning of suppressed)
+  const { data: logged, error: loggedError } = suppressed.length
+    ? await supabaseAdmin.rpc("onm_suppressions_logged", {
+        _ids: suppressed.map((w) => w.id),
+      })
+    : { data: [], error: null };
+  if (loggedError) throw new Error(loggedError.message);
+  const loggedIds = new Set(logged);
+  for (const warning of suppressed.filter((w) => !loggedIds.has(w.id)))
     await auditRow({
       action: "suppressed",
       reason: "onm_duplicate",

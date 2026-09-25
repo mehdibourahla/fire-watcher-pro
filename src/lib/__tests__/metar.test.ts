@@ -5,12 +5,14 @@ import { isSandstorm, parseMetar } from "@/lib/ingest/metar";
 import sample from "./fixtures/metar-sample.json";
 
 describe("parseMetar", () => {
-  it("keeps the newest report per Algerian airport", () => {
-    const rows = parseMetar(sample);
-    expect(rows.map((r) => r.station)).toEqual(["DAAJ", "DAAG", "DAAT"]);
-    expect(rows.find((r) => r.station === "DAAG")?.observed_at).toBe(
-      new Date(1790355600 * 1000).toISOString(),
-    );
+  it("keeps every Algerian report once, older ones included", () => {
+    const rows = parseMetar([...sample, sample[0]]);
+    expect(rows.map((r) => `${r.station} ${r.observed_at}`)).toEqual([
+      "DAAJ 2026-09-25T17:00:00.000Z",
+      "DAAG 2026-09-25T15:30:00.000Z",
+      "DAAG 2026-09-25T17:00:00.000Z",
+      "DAAT 2026-09-25T17:00:00.000Z",
+    ]);
   });
 
   it("reads visibility in metres from the report itself", () => {
