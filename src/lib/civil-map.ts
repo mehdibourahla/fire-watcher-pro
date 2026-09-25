@@ -13,6 +13,7 @@ import {
   type Confidence,
   type FireLevel,
 } from "./fire-confidence";
+import type { HazardCategory } from "./civil-map-search";
 import type { HazardReport } from "./open-areas";
 import {
   isSandstorm,
@@ -38,8 +39,6 @@ import {
   type Phase,
 } from "./incident-lifecycle";
 
-export type HazardCategory =
-  "all" | "fire" | "weather" | "road" | "earthquake" | "other";
 type SituationBase = {
   id: string;
   category: Exclude<HazardCategory, "all">;
