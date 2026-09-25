@@ -15,6 +15,11 @@ import {
 } from "./fire-confidence";
 import type { HazardReport } from "./open-areas";
 import {
+  isSandstorm,
+  STATION_FRESH_HOURS,
+  type AirportWeather,
+} from "./airport-weather";
+import {
   QUAKE_NEARBY_RADIUS_KM,
   QUAKE_WINDOW_HOURS,
   type Earthquake,
@@ -55,6 +60,7 @@ export type Situation = SituationBase &
     | { source: "onm"; data: OnmVigilance }
     | { source: "civil"; data: CivilPublication }
     | { source: "seismic"; data: Earthquake }
+    | { source: "station"; data: AirportWeather }
   );
 type SituationInput = {
   fires: FireCluster[];
@@ -63,6 +69,7 @@ type SituationInput = {
   warnings: OnmVigilance[];
   publications?: CivilPublication[];
   earthquakes?: Earthquake[];
+  stations?: AirportWeather[];
   danger?: ReadonlyMap<string, number>;
   units: AdminUnit[];
   now: number;
@@ -75,6 +82,8 @@ type SituationFilters = {
 };
 
 export const CITIZEN_NEARBY_RADIUS_KM = 20;
+// an airport observation speaks for the plain around it, not for the next valley
+export const STATION_NEARBY_RADIUS_KM = 50;
 
 export function selectedSituation(
   items: Situation[],
@@ -103,6 +112,7 @@ export function buildSituations({
   warnings,
   publications = [],
   earthquakes = [],
+  stations = [],
   danger = new Map(),
   units,
   now,
@@ -213,6 +223,23 @@ export function buildSituations({
       areaId: null,
       wilayaId: null,
       phase: quakePhase(data, now),
+      confidence: "corroborated",
+      candidate: false,
+      data,
+    });
+  }
+  for (const data of stations) {
+    if (!isSandstorm(data) || !recent(data.observed_at, STATION_FRESH_HOURS))
+      continue;
+    items.push({
+      id: `station:${data.station}`,
+      source: "station",
+      category: "weather",
+      at: data.observed_at,
+      ...coordinates(data),
+      areaId: null,
+      wilayaId: null,
+      phase: "live",
       confidence: "corroborated",
       candidate: false,
       data,
@@ -349,11 +376,17 @@ export function filterSituations(
     )
       return false;
     if (!area) return true;
-    if (item.source === "citizen" || item.source === "seismic") {
+    if (
+      item.source === "citizen" ||
+      item.source === "seismic" ||
+      item.source === "station"
+    ) {
       const radius =
         item.source === "seismic"
           ? QUAKE_NEARBY_RADIUS_KM
-          : CITIZEN_NEARBY_RADIUS_KM;
+          : item.source === "station"
+            ? STATION_NEARBY_RADIUS_KM
+            : CITIZEN_NEARBY_RADIUS_KM;
       return (
         item.lat !== null &&
         item.lon !== null &&

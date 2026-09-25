@@ -47,6 +47,7 @@ export function symbolFor(
   if (kind === "official") return "official";
   if (kind === "warnings") return "weather";
   if (properties["source"] === "seismic") return "quake";
+  if (properties["source"] === "station") return "weather";
   // citizen features carry the classifier's category, not the tapped kind
   if (properties["source"] === "citizen")
     return properties["category"] === "road" ? "road" : "observation";

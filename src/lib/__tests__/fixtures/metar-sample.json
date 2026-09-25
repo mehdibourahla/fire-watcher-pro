@@ -1,0 +1,147 @@
+[
+ {
+  "icaoId": "DAAJ",
+  "receiptTime": "2026-09-25T17:06:29.646Z",
+  "obsTime": 1790355600,
+  "reportTime": "2026-09-25T17:00:00.000Z",
+  "temp": 27,
+  "dewp": 17,
+  "wdir": 100,
+  "wspd": 5,
+  "visib": 4.35,
+  "altim": 1017,
+  "qcField": 0,
+  "wxString": "TS",
+  "metarType": "METAR",
+  "rawOb": "METAR DAAJ 251700Z 10005KT 7000 TS FEW040CB SCT046 27/17 Q1017",
+  "lat": 24.286,
+  "lon": 9.464,
+  "elev": 962,
+  "name": "Djanet/Tiska Arpt, IL, DZ",
+  "cover": "SCT",
+  "clouds": [
+   {
+    "cover": "FEW",
+    "base": 4000
+   },
+   {
+    "cover": "SCT",
+    "base": 4600
+   }
+  ],
+  "fltCat": "MVFR"
+ },
+ {
+  "icaoId": "DAAG",
+  "receiptTime": "2026-09-25T15:36:18.157Z",
+  "obsTime": 1790350200,
+  "reportTime": "2026-09-25T15:30:00.000Z",
+  "temp": 27,
+  "dewp": 21,
+  "wdir": 340,
+  "wspd": 7,
+  "visib": "6+",
+  "altim": 1018,
+  "qcField": 0,
+  "metarType": "METAR",
+  "rawOb": "METAR DAAG 251530Z 34007KT 9999 FEW020 27/21 Q1018",
+  "lat": 36.691,
+  "lon": 3.215,
+  "elev": 18,
+  "name": "Algiers Intl, BM, DZ",
+  "cover": "FEW",
+  "clouds": [
+   {
+    "cover": "FEW",
+    "base": 2000
+   }
+  ],
+  "fltCat": "VFR"
+ },
+ {
+  "icaoId": "DAAG",
+  "receiptTime": "2026-09-25T17:06:38.041Z",
+  "obsTime": 1790355600,
+  "reportTime": "2026-09-25T17:00:00.000Z",
+  "temp": 26,
+  "dewp": 21,
+  "wdir": 350,
+  "wspd": 6,
+  "visib": "6+",
+  "altim": 1019,
+  "qcField": 0,
+  "metarType": "METAR",
+  "rawOb": "METAR DAAG 251700Z 35006KT 9999 SCT020 26/21 Q1019",
+  "lat": 36.691,
+  "lon": 3.215,
+  "elev": 18,
+  "name": "Algiers Intl, BM, DZ",
+  "cover": "SCT",
+  "clouds": [
+   {
+    "cover": "SCT",
+    "base": 2000
+   }
+  ],
+  "fltCat": "VFR"
+ },
+ {
+  "icaoId": "DAAT",
+  "receiptTime": "2026-09-25T17:06:38.067Z",
+  "obsTime": 1790355600,
+  "reportTime": "2026-09-25T17:00:00.000Z",
+  "temp": 30,
+  "dewp": 4,
+  "wdir": 230,
+  "wspd": 11,
+  "visib": 0.25,
+  "altim": 1019,
+  "qcField": 0,
+  "metarType": "METAR",
+  "rawOb": "METAR DAAT 251600Z 36025G35KT 0400 SA VV005 32/05 Q1010",
+  "lat": 22.824,
+  "lon": 5.452,
+  "elev": 1372,
+  "name": "Tamanrasset/Aguenar-Hadj Bei Arpt, TA, DZ",
+  "cover": "SCT",
+  "clouds": [
+   {
+    "cover": "SCT",
+    "base": 4600
+   },
+   {
+    "cover": "SCT",
+    "base": 10000
+   }
+  ],
+  "fltCat": "VFR",
+  "wxString": "SA"
+ },
+ {
+  "icaoId": "GMMX",
+  "receiptTime": "2026-09-25T17:03:06.841Z",
+  "obsTime": 1790355600,
+  "reportTime": "2026-09-25T17:00:00.000Z",
+  "temp": 37,
+  "dewp": 11,
+  "wdir": 330,
+  "wspd": 5,
+  "visib": "6+",
+  "altim": 1016,
+  "qcField": 16,
+  "metarType": "METAR",
+  "rawOb": "METAR GMMX 251700Z 33005KT 270V030 9999 FEW033 37/11 Q1016 NOSIG",
+  "lat": 31.607,
+  "lon": -8.036,
+  "elev": 465,
+  "name": "Marrakesh/Menara Intl, ME, MA",
+  "cover": "FEW",
+  "clouds": [
+   {
+    "cover": "FEW",
+    "base": 3300
+   }
+  ],
+  "fltCat": "VFR"
+ }
+]

@@ -14,6 +14,7 @@ import type {
   OfficialIncident,
   OnmVigilance,
 } from "../nadhir";
+import type { AirportWeather } from "../airport-weather";
 import type { Earthquake } from "../earthquakes";
 import type { HazardReport } from "../open-areas";
 
@@ -161,6 +162,38 @@ const quake = (over: Partial<Earthquake> = {}): Earthquake => ({
   commune_id: "c1",
   offshore: false,
   ...over,
+});
+
+describe("airport sandstorms on the map", () => {
+  const station = (over: Partial<AirportWeather> = {}): AirportWeather => ({
+    station: "DAAE",
+    name: "Béjaïa Arpt",
+    lat: 36.71,
+    lon: 5.07,
+    observed_at: at(1),
+    temp_c: 30,
+    wind_kt: 25,
+    gust_kt: 35,
+    visibility_m: 600,
+    weather: "SA",
+    raw: "METAR DAAE 161100Z 36025G35KT 0600 SA 30/05 Q1010",
+    ...over,
+  });
+
+  it("shows a fresh sandstorm measured at an airport, and nothing for ordinary weather", () => {
+    const items = build({
+      stations: [
+        station({}),
+        station({ station: "DAAG", weather: null, visibility_m: 9999 }),
+        station({ station: "DAAT", observed_at: at(5) }),
+      ],
+    });
+    expect(
+      items
+        .filter((i) => i.source === "station")
+        .map((i) => [i.id, i.category]),
+    ).toEqual([["station:DAAE", "weather"]]);
+  });
 });
 
 describe("earthquakes on the map", () => {

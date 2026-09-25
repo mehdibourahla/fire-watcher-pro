@@ -75,6 +75,12 @@ export function ZoneCard({
         ...status.road
           .slice(0, 2)
           .map((r) => t("account.zoneNowRoad", { summary: r.summary })),
+        ...status.sandstorms.map((s) =>
+          t("account.zoneNowSandstorm", {
+            airport: s.name,
+            m: s.visibility_m,
+          }),
+        ),
         ...status.citizen.slice(0, 2).map((c) =>
           t("account.zoneNowCitizen", {
             hazard: t(`reports.hazardName.${c.hazard ?? "other"}`),

@@ -16,6 +16,7 @@ it("preserves shareable place, record and supported filters", () => {
     hazard: "weather",
     ended: true,
     candidates: true,
+    lightning: false,
   });
 });
 it("discards invalid search types and rejects truthy false strings", () => {
@@ -27,7 +28,12 @@ it("discards invalid search types and rejects truthy false strings", () => {
       ended: "false",
       candidates: 1,
     }),
-  ).toEqual({ hazard: "all", ended: false, candidates: false });
+  ).toEqual({
+    hazard: "all",
+    ended: false,
+    candidates: false,
+    lightning: false,
+  });
 });
 
 it("preserves civil publication links while keeping historical items hidden by default", () => {
@@ -38,5 +44,6 @@ it("preserves civil publication links while keeping historical items hidden by d
     hazard: "all",
     ended: false,
     candidates: false,
+    lightning: false,
   });
 });

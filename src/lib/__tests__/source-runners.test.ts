@@ -80,6 +80,7 @@ function dependencies() {
       unmatched: 0,
       detailed: 2,
     }),
+    ingestMetar: vi.fn().mockResolvedValue({ fetched: 31, stored: 31 }),
     ingestEmsc: vi.fn().mockResolvedValue({
       fetched: 3,
       stored: 1,

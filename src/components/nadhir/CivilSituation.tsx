@@ -15,6 +15,7 @@ import { relativeTime, unitName, type AdminUnit } from "@/lib/nadhir";
 import { OfficialIncidentDetail } from "./OfficialIncidentDetail";
 import { HazardReportDetail } from "./HazardReportDetail";
 import { QuakeDetail } from "./QuakeDetail";
+import { AirportDetail } from "./AirportDetail";
 import { civilPublicationLifecycle } from "@/lib/civil-publication";
 import { adviceFor, weatherAdviceQuery } from "@/lib/weather-advice";
 
@@ -39,6 +40,7 @@ export function useSituationLabels(units: AdminUnit[], now: number) {
       return unitName(item.data.commune ?? item.data.wilaya, locale);
     if (item.source === "civil" && item.data.area)
       return unitName(item.data.area, locale);
+    if (item.source === "station") return item.data.name ?? item.data.station;
     const near =
       (item.source === "citizen" || item.source === "seismic") &&
       units.find((u) => u.id === item.data.commune_id);
@@ -58,7 +60,9 @@ export function useSituationLabels(units: AdminUnit[], now: number) {
             ? `${t(`reports.hazardName.${item.data.hazard ?? "other"}`)} · ${place(item)}`
             : item.source === "seismic"
               ? `${t("quake.title", { mag: item.data.magnitude.toFixed(1) })} · ${place(item)}`
-              : `${t(`civilMap.${item.category}`)} · ${place(item)}`;
+              : item.source === "station"
+                ? t("station.sandstorm", { airport: place(item) })
+                : `${t(`civilMap.${item.category}`)} · ${place(item)}`;
   const source = (item: Situation) =>
     t(
       item.source === "official" && item.data.authority_tier === "media"
@@ -71,6 +75,7 @@ export function useSituationLabels(units: AdminUnit[], now: number) {
               onm: "civilMap.sourceOnm",
               civil: "civilMap.sourceMedia",
               seismic: "civilMap.sourceSeismic",
+              station: "civilMap.sourceAirport",
             } as const
           )[item.source],
     );
@@ -100,6 +105,8 @@ export function useSituationLabels(units: AdminUnit[], now: number) {
       );
     if (item.source === "seismic")
       return t("quake.recordedBy", { network: item.data.network ?? "EMSC" });
+    if (item.source === "station")
+      return t("station.visibility", { m: item.data.visibility_m });
     if (item.source === "citizen")
       return item.data.witnesses
         ? t("reports.witnessCount", { count: item.data.witnesses })
@@ -220,6 +227,8 @@ export function SituationDetails({
     );
   if (item.source === "citizen")
     return <HazardReportDetail report={item.data} locale={locale} now={now} />;
+  if (item.source === "station")
+    return <AirportDetail report={item.data} locale={locale} now={now} />;
   if (item.source === "seismic")
     return (
       <QuakeDetail

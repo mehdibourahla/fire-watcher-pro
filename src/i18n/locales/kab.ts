@@ -368,6 +368,7 @@ export const kab: Translation = {
     sourceCitizen: "Signalement citoyen",
     sourceOnm: "Vigilance ONM",
     sourceSeismic: "Réseau sismique",
+    sourceAirport: "Observation d'aéroport",
     heatSignal: "Signal thermique satellite",
     heatSignalShort: "Signal thermique",
     probable: "Feu probable",
@@ -379,6 +380,7 @@ export const kab: Translation = {
     upcoming: "À venir",
     current: "En cours",
     showEnded: "Inclure les situations terminées et historiques",
+    showLightning: "Foudre (10 dernières minutes)",
     showCandidates: "Inclure les observations non vérifiées",
     source: "Source",
     observedAt: "Observé",
@@ -406,6 +408,8 @@ export const kab: Translation = {
       "Teinte jaune, orange ou rouge : niveau de vigilance de l’ONM sur la wilaya ; hachures : période à venir",
     officialLegend: "Incidents attribués à une source officielle",
     weatherLegend: "Vigilances officielles de l’ONM pour le territoire indiqué",
+    lightningLegend:
+      "La foudre montre où l'imageur d'éclairs MTG d'EUMETSAT a vu des éclairs dans sa dernière fenêtre de 10 minutes, avec quelques minutes de retard. C'est une observation, pas une alerte.",
     citizenLegend: "Signalements citoyens, sans vérification indépendante",
     close: "Fermer",
     area: "Lieu",
@@ -911,10 +915,24 @@ export const kab: Translation = {
       "{{count}} signalements de la Protection civile ces dernières 72 heures",
     zoneNowRoad: "Route : {{summary}}",
     zoneNowCitizen: "Signalement citoyen confirmé sur place : {{hazard}}",
+    zoneNowSandstorm:
+      "Tempête de sable mesurée à {{airport}}, visibilité {{m}} m",
     zoneNothingNow:
       "Rien d’actif en ce moment pour les aléas suivis par cette zone.",
     zoneNowUnavailable:
       "L’état en direct est indisponible. Vos alertes arrivent toujours.",
+  },
+  station: {
+    eyebrow: "Observation d'aéroport",
+    sandstorm: "Tempête de sable mesurée à {{airport}}",
+    visibility: "Visibilité {{m}} m",
+    visibilityLabel: "Visibilité",
+    metres: "{{m}} m",
+    observed: "Observé",
+    wind: "Vent",
+    windKt: "{{kt}} nœuds",
+    windGusts: "{{kt}} nœuds, rafales {{gust}} nœuds",
+    note: "Mesuré à l'aéroport et relayé par le NOAA Aviation Weather Center. Une mesure, pas une prévision ni une alerte.",
   },
   quake: {
     title: "Séisme M{{mag}}",

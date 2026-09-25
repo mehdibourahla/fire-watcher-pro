@@ -4,6 +4,7 @@ export type MapSearch = {
   hazard: "all" | "fire" | "weather" | "road" | "earthquake" | "other";
   ended: boolean;
   candidates: boolean;
+  lightning: boolean;
 };
 
 export function parseMapSearch(input: Record<string, unknown>): MapSearch {
@@ -24,5 +25,6 @@ export function parseMapSearch(input: Record<string, unknown>): MapSearch {
     hazard,
     ended: input["ended"] === true || input["ended"] === "true",
     candidates: input["candidates"] === true || input["candidates"] === "true",
+    lightning: input["lightning"] === true || input["lightning"] === "true",
   };
 }
