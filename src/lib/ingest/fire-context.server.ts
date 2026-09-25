@@ -1,3 +1,4 @@
+import { FIRE_KINDS } from "@/lib/text-sources/merge";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import {
   hasSightingNear,
@@ -35,6 +36,7 @@ async function officialLinks(clusters: readonly ContextCluster[]) {
     supabaseAdmin
       .from("official_incidents")
       .select("wilaya_id, commune_id, authority_tier, first_reported_at")
+      .in("kind", [...FIRE_KINDS])
       .is("commune_id", null)
       .neq("authority_tier", "media")
       .gte(

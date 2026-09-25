@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { fetchAllPages } from "@/lib/paginate";
 import type { OnmHistoryRow, RoadHistoryRow } from "@/lib/hazard-history";
 import type { AnyLocale, Locale } from "@/i18n";
+import type { IncidentKind, IncidentStatus } from "@/lib/text-sources/merge";
 import {
   withProcessingHealth,
   type SourceHealth,
@@ -609,8 +610,7 @@ export function isStaleForecastDate(
   return forecastDate < new Date(now).toISOString().slice(0, 10);
 }
 
-export type OfficialIncidentStatus =
-  "ongoing" | "contained" | "extinguished" | "monitoring" | "unknown";
+export type OfficialIncidentStatus = IncidentStatus;
 
 type NamedUnit = {
   name_ar: string;
@@ -625,7 +625,7 @@ export type OfficialIncident = {
   id: string;
   wilaya_id: string;
   commune_id: string | null;
-  kind: "vegetation" | "agricultural" | "urban" | "unknown";
+  kind: IncidentKind;
   status: OfficialIncidentStatus;
   precision: "commune" | "wilaya" | "place";
   authority_tier: "national" | "wilaya" | "forestry" | "media";

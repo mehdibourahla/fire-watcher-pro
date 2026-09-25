@@ -110,9 +110,12 @@ confirms a fire on its own evidence, however strong.
 _Avoid_: fusion-confirmed, satellite-confirmed
 
 **Official Incident**:
-The authority's own object: a fire named in an official source, resolved to a commune, with the
-authority's status vocabulary and timestamp. It exists whether or not a Fire matches it, and
-matching one to a Fire confirms the Fire without merging the two.
+The authority's own object: a fire, flood, cut road, collapse or storm damage named in an
+official source, resolved to a commune, with the authority's status vocabulary and timestamp.
+It exists whether or not a Fire matches it; only a fire incident matched to a Fire confirms the
+Fire, without merging the two. A past accident or rescue is not an Official Incident: it says
+nothing about a continuing danger. A non-fire incident fades after 12 h unless reported again,
+and only the authority's own "cleared" ends it.
 _Avoid_: report (reserved for citizens), cluster
 
 ### Alerting

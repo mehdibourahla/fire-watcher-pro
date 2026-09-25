@@ -398,6 +398,7 @@ export const ar: Translation = {
     citizenLegend: "بلاغات مواطنين لم يتم التحقق منها بشكل مستقل",
     close: "إغلاق",
     area: "المنطقة",
+    dgpcAdvice: "توصيات الحماية المدنية",
     noInstructions: "لا تتوفر تعليمات رسمية من هذا المصدر",
     savedPlaces: "الأماكن المحفوظة",
     savePlace: "حفظ هذا المكان",
@@ -478,7 +479,11 @@ export const ar: Translation = {
       extinguished: "تم إخماده",
       monitoring: "تحت المراقبة",
       unknown: "غير محدد",
+      cleared: "انتهى",
     },
+    hazard: "الخطر",
+    disclaimerHazard:
+      "منقول عن الحماية المدنية بدقة البلاغ: المنطقة المظللة هي البلدية وليست المكان الدقيق. لا يضيف نذير شيئًا إلى النص.",
   },
   fire: {
     nearSettlement: "على بعد {{km}} كم من {{settlement}}",

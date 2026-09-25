@@ -60,7 +60,26 @@ describe("officialPhase", () => {
     hours: number,
     unlisted_at: string | null = null,
   ) =>
-    officialPhase({ status, last_reported_at: ago(hours), unlisted_at }, NOW);
+    officialPhase(
+      { kind: "vegetation", status, last_reported_at: ago(hours), unlisted_at },
+      NOW,
+    );
+
+  it("gives a flood or cut road half a day, and ends it when the authority clears it", () => {
+    const road = (status: string, hours: number) =>
+      officialPhase(
+        {
+          kind: "road",
+          status,
+          last_reported_at: ago(hours),
+          unlisted_at: null,
+        },
+        NOW,
+      );
+    expect(road("ongoing", 11.9)).toBe("live");
+    expect(road("ongoing", 12)).toBe("fading");
+    expect(road("cleared", 1)).toBe("ended");
+  });
 
   it.each([
     [23.9, "live"],

@@ -587,6 +587,12 @@ export const adminFr: AdminTranslation = {
     status_extinguished: "Éteint",
     status_monitoring: "Sous surveillance",
     status_unknown: "Inconnu",
+    kind_flood: "Inondation",
+    kind_road: "Route",
+    kind_structure: "Bâtiment",
+    kind_storm: "Dégâts de tempête",
+    kind_other: "Autre danger",
+    status_cleared: "Levé",
   },
   places: {
     search: "Chercher un lieu…",

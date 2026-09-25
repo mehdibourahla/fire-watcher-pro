@@ -35,11 +35,13 @@ const context: HazardContext = {
       wilaya_id: "w16",
       expires: "2026-09-25T18:00:00Z",
       alert_key: "weather:onm1:2",
+      advice: null,
     },
   ],
   official: [
     {
       id: "dgpc1",
+      kind: "vegetation",
       commune_id: null,
       wilaya_id: "w16",
       place_text: "Alger",
@@ -113,6 +115,21 @@ describe("hazardAlerts", () => {
     }));
     expect(rows.some((r) => r.kind === "weather" && r.severity === 4)).toBe(
       true,
+    );
+  });
+
+  it("adds Protection Civile's own advice after ONM's words", () => {
+    const advised = {
+      ...context,
+      weather: [
+        { ...context.weather[0]!, advice: "Évitez les abords des oueds" },
+      ],
+    };
+    const weather = hazardAlerts([zone], advised, awake).rows.find(
+      (r) => r.kind === "weather",
+    )!;
+    expect(weather.body).toBe(
+      "ONM : « Orages modérés sur Alger » Protection civile : « Évitez les abords des oueds »",
     );
   });
 
@@ -227,6 +244,24 @@ describe("hazardAlerts", () => {
     expect(rows.filter((r) => r.kind === "road").map((r) => r.user_id)).toEqual(
       ["u1", "u2"],
     );
+  });
+});
+
+describe("Protection Civile incidents", () => {
+  it("names the hazard the authority reported", () => {
+    const flood = {
+      ...context,
+      weather: [],
+      authority: [],
+      road: [],
+      official: [{ ...context.official[0]!, kind: "flood" }],
+    };
+    const { rows } = hazardAlerts([zone], flood, () => ({
+      locale: "en",
+      quiet: false,
+      minLevel: 1,
+    }));
+    expect(rows[0]!.body).toBe("Protection Civile report, Alger: Flooding.");
   });
 });
 

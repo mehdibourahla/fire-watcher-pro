@@ -16,6 +16,7 @@ import {
 import type { HazardReport } from "./open-areas";
 import type { CivilPublication } from "./civil-publication";
 import { parseDestination, parseRoadRef } from "./road-ref";
+import { isFireKind } from "./text-sources/merge";
 import {
   firePhase,
   isVisibleByDefault,
@@ -118,7 +119,10 @@ export function buildSituations({
       data,
     });
   }
-  const linked = singleCandidateLinks(official, fires);
+  const linked = singleCandidateLinks(
+    official.filter((o) => isFireKind(o.kind)),
+    fires,
+  );
   for (const data of fires) {
     if (data.state === "false_positive" || !recent(data.last_detected_at, 72))
       continue;
@@ -160,7 +164,7 @@ export function buildSituations({
     items.push({
       id: `official:${data.id}`,
       source: "official",
-      category: "fire",
+      category: OFFICIAL_CATEGORY[data.kind] ?? "fire",
       at: data.last_reported_at,
       ...coordinates(commune ?? data.wilaya ?? byId.get(data.wilaya_id)),
       areaId: commune ? data.commune_id : data.wilaya_id,
@@ -220,7 +224,9 @@ export function situationSummary(items: Situation[]) {
   // a satellite fire is confirmed by the very DGPC incident listed beside it
   const officialAreas = new Set(
     live.flatMap((item) =>
-      item.source === "official" && item.confidence === "official"
+      item.source === "official" &&
+      item.confidence === "official" &&
+      item.category === "fire"
         ? [item.areaId]
         : [],
     ),
@@ -241,7 +247,11 @@ export function situationSummary(items: Situation[]) {
       else if (!officialAreas.has(item.areaId)) summary.confirmedFires += 1;
     } else if (item.source === "onm") {
       if (item.data.wilaya_id) wilayas.add(item.data.wilaya_id);
-    } else if (item.source !== "official" || item.confidence !== "official")
+    } else if (
+      item.source !== "official" ||
+      item.confidence !== "official" ||
+      item.category !== "fire"
+    )
       summary[item.category === "road" ? "roads" : "reports"] += 1;
   }
   summary.warningWilayas = wilayas.size;
@@ -372,6 +382,15 @@ export function findPlaces(
     )
     .slice(0, 12);
 }
+
+const OFFICIAL_CATEGORY: Partial<Record<string, "weather" | "road" | "other">> =
+  {
+    flood: "weather",
+    storm: "weather",
+    road: "road",
+    structure: "other",
+    other: "other",
+  };
 
 const REPORT_CATEGORY: Record<string, "fire" | "weather" | "road" | "other"> = {
   fire: "fire",

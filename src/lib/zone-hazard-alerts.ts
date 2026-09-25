@@ -40,9 +40,11 @@ export type HazardContext = {
     wilaya_id: string | null;
     expires: string;
     alert_key: string;
+    advice: string | null;
   }[];
   official: {
     id: string;
+    kind: string;
     commune_id: string | null;
     wilaya_id: string | null;
     place_text: string | null;
@@ -93,6 +95,7 @@ export type HazardAlertRow = {
 type Copy = Record<
   | "weatherTitle"
   | "weatherBody"
+  | "weatherAdvice"
   | "officialTitle"
   | "officialBody"
   | "authorityTitle"
@@ -109,8 +112,9 @@ type Copy = Record<
 const FR: Copy = {
   weatherTitle: "Vigilance ONM pour {{zone}}",
   weatherBody: "ONM : « {{text}} »",
+  weatherAdvice: " Protection civile : « {{advice}} »",
   officialTitle: "Signalement de la Protection civile pour {{zone}}",
-  officialBody: "La Protection civile signale un incident à {{place}}.",
+  officialBody: "Signalement de la Protection civile, {{place}} : {{hazard}}.",
   authorityTitle: "Avertissement officiel pour {{zone}}",
   authorityBody: "{{source}} : « {{text}} »",
   roadTitle: "Incident routier près de {{zone}}",
@@ -128,8 +132,9 @@ const COPY: Record<string, Copy> = {
   en: {
     weatherTitle: "ONM warning for {{zone}}",
     weatherBody: "ONM: “{{text}}”",
+    weatherAdvice: " Protection Civile: “{{advice}}”",
     officialTitle: "Protection Civile report for {{zone}}",
-    officialBody: "Protection Civile reports an incident in {{place}}.",
+    officialBody: "Protection Civile report, {{place}}: {{hazard}}.",
     authorityTitle: "Official warning for {{zone}}",
     authorityBody: "{{source}}: “{{text}}”",
     roadTitle: "Road incident near {{zone}}",
@@ -147,8 +152,9 @@ const COPY: Record<string, Copy> = {
   ar: {
     weatherTitle: "تحذير الديوان الوطني للأرصاد الجوية لـ {{zone}}",
     weatherBody: "الديوان الوطني للأرصاد الجوية: «{{text}}»",
+    weatherAdvice: " الحماية المدنية: «{{advice}}»",
     officialTitle: "بلاغ الحماية المدنية بخصوص {{zone}}",
-    officialBody: "تبلغ الحماية المدنية عن حادث في {{place}}.",
+    officialBody: "بلاغ الحماية المدنية، {{place}}: {{hazard}}.",
     authorityTitle: "تحذير رسمي بخصوص {{zone}}",
     authorityBody: "{{source}}: «{{text}}»",
     roadTitle: "حادث مروري قرب {{zone}}",
@@ -167,6 +173,16 @@ const HAZARD_NAMES: Record<string, Translation["reports"]["hazardName"]> = {
   en: en.reports.hazardName,
   fr: fr.reports.hazardName,
   kab: kab.reports.hazardName,
+};
+
+const OFFICIAL_HAZARD_NAME: Partial<
+  Record<string, keyof Translation["reports"]["hazardName"]>
+> = {
+  flood: "flooding",
+  road: "road_blocked",
+  structure: "structural",
+  storm: "storm_damage",
+  other: "other",
 };
 
 const AUTHORITY_SEVERITY: Record<string, number> = { Severe: 4, Extreme: 5 };
@@ -238,9 +254,13 @@ export function hazardAlerts(
             severity,
             dedupe_key: warning.alert_key,
             title: fill(copy.weatherTitle, { zone: zone.name }),
-            body: fill(copy.weatherBody, {
-              text: warning.headline_fr ?? warning.title,
-            }),
+            body:
+              fill(copy.weatherBody, {
+                text: warning.headline_fr ?? warning.title,
+              }) +
+              (warning.advice
+                ? fill(copy.weatherAdvice, { advice: warning.advice })
+                : ""),
             source_table: "onm_vigilance",
             source_id: warning.id,
             payload: {
@@ -264,6 +284,8 @@ export function hazardAlerts(
             title: fill(copy.officialTitle, { zone: zone.name }),
             body: fill(copy.officialBody, {
               place: incident.place_text ?? zone.name,
+              hazard:
+                hazardNames[OFFICIAL_HAZARD_NAME[incident.kind] ?? "fire"],
             }),
             source_table: "official_incidents",
             source_id: incident.id,

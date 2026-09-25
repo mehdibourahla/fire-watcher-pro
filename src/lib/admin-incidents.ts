@@ -10,6 +10,7 @@ export const INCIDENT_STATUSES = [
   "extinguished",
   "monitoring",
   "unknown",
+  "cleared",
 ] as const;
 
 export type IncidentStatus = (typeof INCIDENT_STATUSES)[number];

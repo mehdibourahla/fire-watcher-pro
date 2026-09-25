@@ -30,6 +30,7 @@ import {
 import { drainAlertPushes } from "@/lib/alert-push.server";
 import { publishWaitingReports } from "@/lib/report-publication.server";
 import { officialPhase } from "@/lib/incident-lifecycle";
+import { adviceFor } from "@/lib/weather-advice";
 import { hazardAlerts, type HazardContext } from "@/lib/zone-hazard-alerts";
 
 type Copy = {
@@ -258,13 +259,14 @@ async function loadHazardContext(
       polygon: unknown;
       wilaya_id: string | null;
       expires: string | null;
+      sent: string;
       episode_id: string;
       episode_peak: number;
     }>((from, to) =>
       supabaseAdmin
         .from("onm_vigilance")
         .select(
-          "id, severity, event, onset, title, headline_fr, polygon, wilaya_id, expires, episode_id, episode_peak",
+          "id, severity, event, onset, title, headline_fr, polygon, wilaya_id, expires, sent, episode_id, episode_peak",
         )
         .is("superseded_at", null)
         .gt("expires", iso)
@@ -275,7 +277,7 @@ async function loadHazardContext(
     supabaseAdmin
       .from("official_incidents")
       .select(
-        "id, commune_id, wilaya_id, place_text, status, last_reported_at, unlisted_at",
+        "id, kind, commune_id, wilaya_id, place_text, status, last_reported_at, unlisted_at",
       )
       .is("unlisted_at", null),
     supabaseAdmin
@@ -296,6 +298,12 @@ async function loadHazardContext(
   ]);
   for (const result of [units, weather, official, authority, road])
     if (result.error) throw new Error(result.error.message);
+  const { data: advice, error: adviceError } = await supabaseAdmin
+    .from("official_weather_advice")
+    .select("id, advice, wilaya_ids, valid_from, valid_to, created_at")
+    .gt("created_at", new Date(now.getTime() - 3 * 86_400_000).toISOString())
+    .limit(500);
+  if (adviceError) throw new Error(adviceError.message);
 
   const reports = await fetchAllPages<{
     id: string;
@@ -350,6 +358,7 @@ async function loadHazardContext(
                 ...w,
                 expires: w.expires,
                 alert_key: `weather:${episode}:${peak}`,
+                advice: adviceFor(w, advice ?? [])?.advice ?? null,
                 polygon: Array.isArray(w.polygon)
                   ? (w.polygon as [number, number][])
                   : null,
