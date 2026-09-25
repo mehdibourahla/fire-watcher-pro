@@ -827,21 +827,13 @@ async function relayOnmWarnings(): Promise<number> {
       .filter((warning) => onmWarningIsCurrent(warning, Date.parse(nowIso))),
     relayed,
   );
-  const loggedIds = new Set<string | null>();
-  // one audit row per warning; ids go in the URL, so look them up in batches
-  for (let i = 0; i < suppressed.length; i += 100) {
-    const { data: logged, error: loggedError } = await supabaseAdmin
-      .from("broadcast_audit")
-      .select("onm_vigilance_id")
-      .eq("action", "suppressed")
-      .eq("reason", "onm_duplicate")
-      .in(
-        "onm_vigilance_id",
-        suppressed.slice(i, i + 100).map((w) => w.id),
-      );
-    if (loggedError) throw new Error(loggedError.message);
-    for (const row of logged) loggedIds.add(row.onm_vigilance_id);
-  }
+  const { data: logged, error: loggedError } = suppressed.length
+    ? await supabaseAdmin.rpc("onm_suppressions_logged", {
+        _ids: suppressed.map((w) => w.id),
+      })
+    : { data: [], error: null };
+  if (loggedError) throw new Error(loggedError.message);
+  const loggedIds = new Set(logged);
   for (const warning of suppressed.filter((w) => !loggedIds.has(w.id)))
     await auditRow({
       action: "suppressed",

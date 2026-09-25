@@ -3820,6 +3820,7 @@ export type Database = {
       };
     };
     Functions: {
+      onm_suppressions_logged: { Args: { _ids: string[] }; Returns: string[] };
       store_onm_detail: {
         Args: {
           _headline_fr?: string;
