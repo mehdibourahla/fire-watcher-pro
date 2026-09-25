@@ -8,7 +8,13 @@ import { EmptyState, ErrorState, Skeleton } from "@/components/nadhir/states";
 import { Button } from "@/components/ui/button";
 import { ZoneCard } from "@/components/zones/ZoneCard";
 import { ZoneEditor } from "@/components/zones/ZoneEditor";
-import { MAX_ZONES, zonesQuery, type Zone } from "@/lib/account";
+import {
+  liveZoneContextQuery,
+  MAX_ZONES,
+  zonesQuery,
+  type Zone,
+} from "@/lib/account";
+import { zoneStatus } from "@/lib/zone-status";
 import {
   LIVE_STATES,
   adminUnitsQuery,
@@ -26,6 +32,8 @@ export function ZonesPage() {
   const zones = useQuery(zonesQuery);
   const units = useQuery(adminUnitsQuery);
   const clusters = useQuery(clustersQuery);
+  const liveContext = useQuery(liveZoneContextQuery);
+  const [statusAt] = useState(() => Date.now());
   const [editing, setEditing] = useState<Zone | null>(null);
   const [open, setOpen] = useState(!!start);
 
@@ -102,14 +110,37 @@ export function ZonesPage() {
               .map((c) => haversineKm(zone.lat, zone.lon, c.lat, c.lon))
               .filter((km) => km <= zone.radius_km)
               .sort((a, b) => a - b);
+            const commune = zone.commune_id
+              ? unitById.get(zone.commune_id)
+              : undefined;
             return (
               <ZoneCard
                 key={zone.id}
                 zone={zone}
-                commune={
-                  zone.commune_id ? unitById.get(zone.commune_id) : undefined
-                }
+                commune={commune}
                 nearby={{ count: inside.length, nearestKm: inside[0] ?? null }}
+                status={
+                  liveContext.data
+                    ? zoneStatus(
+                        {
+                          weather: zone.notify_weather,
+                          official: zone.notify_official,
+                          road: zone.notify_road,
+                        },
+                        {
+                          lat: zone.lat,
+                          lon: zone.lon,
+                          radius_km: zone.radius_km,
+                          commune_id: zone.commune_id,
+                          communeCode: commune?.code ?? null,
+                          wilayaId: commune?.parent_id ?? null,
+                        },
+                        liveContext.data,
+                        statusAt,
+                      )
+                    : null
+                }
+                statusFailed={liveContext.isError}
                 prepareOffline={index === 0}
                 onEdit={() => edit(zone)}
               />

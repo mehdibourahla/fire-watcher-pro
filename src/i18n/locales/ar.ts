@@ -826,7 +826,6 @@ export const ar: Translation = {
     deleteZoneTitle: "حذف {{name}}؟",
     deleteZoneBody: "لن تصلك تنبيهات عن هذا المكان بعد الآن.",
     noZones: "لا توجد مناطق بعد. أضف قريتك أو مزرعتك أو غابتك لتصلك الإنذارات.",
-    zoneClear: "لا يوجد حريق نشط داخل هذه المنطقة حالياً.",
     zoneFires_one: "حريق نشط واحد في هذه المنطقة، أقربها على بعد {{km}} كم.",
     zoneFires_other:
       "{{count}} حرائق نشطة في هذه المنطقة، أقربها على بعد {{km}} كم.",
@@ -861,6 +860,14 @@ export const ar: Translation = {
     deleteLastAdmin: "عيّن مسؤولاً آخر قبل حذف حسابك.",
     zoneSaveFailed: "تعذر حفظ هذه المنطقة. تحقق من اتصالك وأعد المحاولة.",
     zonesLoadFailed: "تعذر تحميل مناطقك. تحقق من اتصالك وأعد المحاولة.",
+    zoneNowWeather: "تنبيه الأرصاد الجوية: {{level}}، {{event}}، حتى {{time}}",
+    zoneNowOfficial: "{{count}} بلاغات من الحماية المدنية خلال آخر 72 ساعة",
+    zoneNowOfficial_one: "بلاغ واحد من الحماية المدنية خلال آخر 72 ساعة",
+    zoneNowOfficial_other:
+      "{{count}} بلاغًا من الحماية المدنية خلال آخر 72 ساعة",
+    zoneNowRoad: "الطريق: {{summary}}",
+    zoneNothingNow: "لا شيء نشط حاليًا للمخاطر التي تتابعها هذه المنطقة.",
+    zoneNowUnavailable: "الحالة المباشرة غير متاحة. ما زالت تنبيهاتك تصلك.",
   },
   reports: {
     title: "الإبلاغ عن حريق",

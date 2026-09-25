@@ -14,11 +14,11 @@ warnings and road incidents. The page's job: what happened, where, and how often
 
 ## Data (prod, 2026-09-25)
 
-| Hazard  | Source                                           | Records since | Unit counted                                                                                                   |
-| ------- | ------------------------------------------------ | ------------- | -------------------------------------------------------------------------------------------------------------- |
-| Fire    | `fire_clusters`, real states only                | 2026-08-28    | one detected fire                                                                                              |
-| Weather | new view `onm_warning_history`                   | 2026-08-30    | one ONM warning per wilaya: 10,093 rows collapse to ~510 once re-issues (same event, severity and onset) merge |
-| Road    | `civil_publications`, hazard road, not withdrawn | 2026-09-21    | one published incident                                                                                         |
+| Hazard  | Source                                           | Records since | Unit counted                                                                                                                                                                                                             |
+| ------- | ------------------------------------------------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Fire    | `fire_clusters`, real states only                | 2026-08-28    | one detected fire                                                                                                                                                                                                        |
+| Weather | new view `onm_warning_history`                   | 2026-08-30    | one ONM warning episode per wilaya: 10,093 rows are 2,202 episodes, because ONM renews a live warning with a later onset and overlapping windows are one warning (the first count, ~510, read only the first 1,000 rows) |
+| Road    | `civil_publications`, hazard road, not withdrawn | 2026-09-21    | one published incident                                                                                                                                                                                                   |
 
 Official Civil Protection reports (`official_incidents`, 87, all fire kinds) are shown as a fire statistic, not a
 separate hazard, so a fire is never counted twice. Authority warnings and citizen hazard reports have no rows.

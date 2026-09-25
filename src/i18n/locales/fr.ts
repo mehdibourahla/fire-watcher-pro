@@ -867,7 +867,6 @@ export const fr: Translation = {
     deleteZoneBody: "Vous ne recevrez plus d'alertes pour ce lieu.",
     noZones:
       "Aucune zone. Ajoutez votre village, ferme ou forêt pour recevoir des alertes.",
-    zoneClear: "Aucun feu actif dans cette zone actuellement.",
     zoneFires_one:
       "{{count}} feu actif dans cette zone, le plus proche à {{km}} km.",
     zoneFires_other:
@@ -910,6 +909,18 @@ export const fr: Translation = {
       "Cette zone n’a pas pu être enregistrée. Vérifiez votre connexion et réessayez.",
     zonesLoadFailed:
       "Vos zones n’ont pas pu être chargées. Vérifiez votre connexion et réessayez.",
+    zoneNowWeather: "Vigilance ONM : {{level}}, {{event}}, jusqu’à {{time}}",
+    zoneNowOfficial:
+      "{{count}} signalements de la Protection civile ces dernières 72 heures",
+    zoneNowOfficial_one:
+      "1 signalement de la Protection civile ces dernières 72 heures",
+    zoneNowOfficial_other:
+      "{{count}} signalements de la Protection civile ces dernières 72 heures",
+    zoneNowRoad: "Route : {{summary}}",
+    zoneNothingNow:
+      "Rien d’actif en ce moment pour les aléas suivis par cette zone.",
+    zoneNowUnavailable:
+      "L’état en direct est indisponible. Vos alertes arrivent toujours.",
   },
   reports: {
     title: "Signaler un feu",

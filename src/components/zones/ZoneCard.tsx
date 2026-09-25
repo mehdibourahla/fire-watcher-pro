@@ -25,23 +25,58 @@ import {
   type Zone,
   zoneFailureKey,
 } from "@/lib/account";
-import { unitName, type AdminUnit } from "@/lib/nadhir";
+import { intlLocale, unitName, type AdminUnit } from "@/lib/nadhir";
+import type { ZoneStatus } from "@/lib/zone-status";
 
 export function ZoneCard({
   zone,
   commune,
   nearby,
+  status,
+  statusFailed,
   prepareOffline,
   onEdit,
 }: {
   zone: Zone;
   commune: AdminUnit | undefined;
   nearby: { count: number; nearestKm: number | null };
+  status: ZoneStatus | null;
+  statusFailed: boolean;
   prepareOffline: boolean;
   onEdit: () => void;
 }) {
   const { t, i18n } = useTranslation();
   const qc = useQueryClient();
+  const until = new Intl.DateTimeFormat(intlLocale(i18n.language as Locale), {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Africa/Algiers",
+  });
+  const now = status
+    ? [
+        ...(zone.notify_fires && nearby.count && nearby.nearestKm !== null
+          ? [
+              t("account.zoneFires", {
+                count: nearby.count,
+                km: nearby.nearestKm.toFixed(1),
+              }),
+            ]
+          : []),
+        ...status.weather.map((w) =>
+          t("account.zoneNowWeather", {
+            level: t(`weather:outlook.onmLevel.${w.level}`),
+            event: t(`weather:outlook.event.${w.event}`),
+            time: until.format(new Date(w.until)),
+          }),
+        ),
+        ...(status.official
+          ? [t("account.zoneNowOfficial", { count: status.official })]
+          : []),
+        ...status.road
+          .slice(0, 2)
+          .map((r) => t("account.zoneNowRoad", { summary: r.summary })),
+      ]
+    : [];
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -104,14 +139,23 @@ export function ZoneCard({
           ? t("account.zoneFollows", { list: follows.join(" · ") })
           : t("account.zoneFollowsNothing")}
       </p>
-      <p className="mt-3 text-sm">
-        {nearby.count === 0 || nearby.nearestKm === null
-          ? t("account.zoneClear")
-          : t("account.zoneFires", {
-              count: nearby.count,
-              km: nearby.nearestKm.toFixed(1),
-            })}
-      </p>
+      {statusFailed ? (
+        <p className="mt-3 text-sm text-muted-foreground">
+          {t("account.zoneNowUnavailable")}
+        </p>
+      ) : status ? (
+        now.length ? (
+          <ul className="mt-3 space-y-1 text-sm">
+            {now.map((line) => (
+              <li key={line} className="line-clamp-2">
+                {line}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-3 text-sm">{t("account.zoneNothingNow")}</p>
+        )
+      ) : null}
       {!zone.active ? (
         <p className="mt-1 text-xs text-muted-foreground">
           {t("account.paused")}

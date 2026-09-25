@@ -846,7 +846,6 @@ export const en = {
     deleteZoneBody: "You will stop receiving alerts for this place.",
     noZones:
       "No zones yet. Add your village, farm or forest to start receiving warnings.",
-    zoneClear: "No active fire inside this zone right now.",
     zoneFires_one:
       "{{count}} active fire in this zone, nearest {{km}} km away.",
     zoneFires_other:
@@ -888,6 +887,15 @@ export const en = {
       "This zone could not be saved. Check your connection and try again.",
     zonesLoadFailed:
       "Your zones could not be loaded. Check your connection and try again.",
+    zoneNowWeather: "ONM warning: {{level}}, {{event}}, until {{time}}",
+    zoneNowOfficial: "{{count}} Civil Protection reports in the last 72 hours",
+    zoneNowOfficial_one: "1 Civil Protection report in the last 72 hours",
+    zoneNowOfficial_other:
+      "{{count}} Civil Protection reports in the last 72 hours",
+    zoneNowRoad: "Road: {{summary}}",
+    zoneNothingNow:
+      "Nothing active right now for the hazards this zone follows.",
+    zoneNowUnavailable: "Live status is unavailable. Your alerts still arrive.",
   },
   reports: {
     title: "Report a fire",

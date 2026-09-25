@@ -1,6 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
+import type { LiveContext } from "@/lib/zone-status";
 
 export type Profile = {
   id: string;
@@ -63,6 +64,56 @@ export const zonesQuery = queryOptions({
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     return (data ?? []) as unknown as Zone[];
+  },
+});
+
+export const liveZoneContextQuery = queryOptions({
+  queryKey: ["zones", "live-context"],
+  refetchInterval: 300_000,
+  queryFn: async (): Promise<LiveContext> => {
+    const now = new Date().toISOString();
+    const since = new Date(Date.now() - 72 * 3_600_000).toISOString();
+    const [weather, official, road] = await Promise.all([
+      supabase
+        .from("onm_vigilance")
+        .select("id, event, severity, expires, wilaya_id, polygon")
+        .is("superseded_at", null)
+        .gt("expires", now)
+        .lte("sent", now)
+        .limit(1000),
+      supabase
+        .from("official_incidents")
+        .select("id, commune_id, wilaya_id, last_reported_at")
+        .is("unlisted_at", null)
+        .gt("last_reported_at", since)
+        .limit(1000),
+      supabase
+        .from("civil_publications")
+        .select("id, area_id, summary, expires_at")
+        .eq("hazard", "road")
+        .eq("state", "published")
+        .gt("expires_at", now)
+        .limit(1000),
+    ]);
+    for (const result of [weather, official, road])
+      if (result.error) throw new Error(result.error.message);
+    return {
+      weather: (weather.data ?? []).flatMap((w) =>
+        w.expires
+          ? [
+              {
+                ...w,
+                expires: w.expires,
+                polygon: Array.isArray(w.polygon)
+                  ? (w.polygon as [number, number][])
+                  : null,
+              },
+            ]
+          : [],
+      ),
+      official: official.data ?? [],
+      road: road.data ?? [],
+    };
   },
 });
 
