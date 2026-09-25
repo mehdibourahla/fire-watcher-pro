@@ -34,6 +34,7 @@ const context: HazardContext = {
       polygon: null,
       wilaya_id: "w16",
       expires: "2026-09-25T18:00:00Z",
+      alert_key: "weather:onm1:2",
     },
   ],
   official: [
@@ -74,11 +75,7 @@ describe("hazardAlerts", () => {
   it("raises one alert per matching hazard with a stable key and its source", () => {
     const { rows } = hazardAlerts([zone], context, awake);
     expect(rows.map((r) => [r.kind, r.dedupe_key, r.source_table])).toEqual([
-      [
-        "weather",
-        "weather:Thunderstorm:Moderate:2026-09-25T06:00:00Z",
-        "onm_vigilance",
-      ],
+      ["weather", "weather:onm1:2", "onm_vigilance"],
       ["official", "official:dgpc1", "official_incidents"],
       ["official", "official:auth1", "authority_warnings"],
       ["road", "road:road1", "civil_publications"],
@@ -183,7 +180,12 @@ describe("hazardAlerts", () => {
       ...context,
       weather: [
         context.weather[0]!,
-        { ...context.weather[0]!, id: "onm2", severity: "Severe" },
+        {
+          ...context.weather[0]!,
+          id: "onm2",
+          severity: "Severe",
+          alert_key: "weather:onm1:3",
+        },
       ],
     };
     const keys = new Set(

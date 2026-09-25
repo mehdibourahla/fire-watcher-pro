@@ -294,6 +294,16 @@ async function loadHazardContext(
   ]);
   for (const result of [units, weather, official, authority, road])
     if (result.error) throw new Error(result.error.message);
+  const current = (weather.data ?? []).filter((w) => w.expires);
+  const { data: keys, error: keysError } = current.length
+    ? await supabaseAdmin.rpc("onm_alert_keys", {
+        _ids: current.map((w) => w.id),
+      })
+    : { data: [], error: null };
+  if (keysError) throw new Error(keysError.message);
+  const keyOf = new Map(
+    (keys ?? []).map((k) => [k.warning_id, k.alert_key] as const),
+  );
   const reports = await fetchAllPages<{
     id: string;
     user_id: string;
@@ -339,19 +349,18 @@ async function loadHazardContext(
         { code: u.code, wilayaId: u.parent_id },
       ]),
     ),
-    weather: (weather.data ?? []).flatMap((w) =>
-      w.expires
-        ? [
-            {
-              ...w,
-              expires: w.expires,
-              polygon: Array.isArray(w.polygon)
-                ? (w.polygon as [number, number][])
-                : null,
-            },
-          ]
-        : [],
-    ),
+    weather: current.map((w) => {
+      const alertKey = keyOf.get(w.id);
+      if (!alertKey) throw new Error(`No ONM alert key for ${w.id}`);
+      return {
+        ...w,
+        expires: w.expires!,
+        alert_key: alertKey,
+        polygon: Array.isArray(w.polygon)
+          ? (w.polygon as [number, number][])
+          : null,
+      };
+    }),
     official: (official.data ?? []).filter(
       (i) => officialPhase(i, now.getTime()) === "live",
     ),

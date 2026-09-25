@@ -1,12 +1,23 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const { fromMock, drainWebhookDeliveries } = vi.hoisted(() => ({
+const { fromMock, rpcMock, drainWebhookDeliveries } = vi.hoisted(() => ({
   fromMock: vi.fn(),
+  // a lone warning is its own episode; 3 is the Severe rank in onm_alert_keys
+  rpcMock: vi.fn(async (name: string, args: { _ids: string[] }) => {
+    if (name !== "onm_alert_keys") throw new Error(`unexpected rpc ${name}`);
+    return {
+      data: args._ids.map((id) => ({
+        warning_id: id,
+        alert_key: `weather:${id}:3`,
+      })),
+      error: null,
+    };
+  }),
   drainWebhookDeliveries: vi.fn(async () => ({ sent: 0, failed: 0 })),
 }));
 
 vi.mock("@/integrations/supabase/client.server", () => ({
-  supabaseAdmin: { from: fromMock },
+  supabaseAdmin: { from: fromMock, rpc: rpcMock },
 }));
 
 vi.mock("@/lib/webhooks.server", () => ({ drainWebhookDeliveries }));
@@ -516,7 +527,7 @@ describe("zone hazard alerts reach the alert table", () => {
         kind: "weather",
         source_table: "onm_vigilance",
         source_id: "onm1",
-        dedupe_key: "weather:Rain:Severe:2026-09-08T15:00:00Z",
+        dedupe_key: "weather:onm1:3",
       }),
     ]);
   });

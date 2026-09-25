@@ -3670,6 +3670,13 @@ export type Database = {
       };
     };
     Functions: {
+      onm_alert_keys: {
+        Args: { _ids: string[] };
+        Returns: {
+          alert_key: string;
+          warning_id: string;
+        }[];
+      };
       supersede_onm_absent: {
         Args: { _feed_cap_ids: string[]; _feed_sent: string };
         Returns: number;
