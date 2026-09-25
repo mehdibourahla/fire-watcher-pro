@@ -34,6 +34,13 @@ import {
   hazardIcons,
   useSituationLabels,
 } from "@/components/nadhir/CivilSituation";
+import {
+  LayersPanel,
+  PlaceSearchResults,
+  SituationDetailView,
+  SituationList,
+  SourcesPanel,
+} from "@/components/nadhir/MapPanelViews";
 import { MapSurvivalPrompt } from "@/components/nadhir/MapSurvivalPrompt";
 import { WeatherForecast } from "@/components/nadhir/WeatherForecast";
 import { SubscribeSheet } from "@/components/nadhir/SubscribeSheet";
@@ -67,12 +74,15 @@ import {
   nearestPlace,
   selectedSituation,
   CITIZEN_NEARBY_RADIUS_KM,
-  type HazardCategory,
   situationSummary,
 } from "@/lib/civil-map";
 import { earthquakesQuery } from "@/lib/earthquakes";
 import { airportWeatherQuery } from "@/lib/airport-weather";
-import { parseMapSearch, type MapSearch } from "@/lib/civil-map-search";
+import {
+  HAZARD_CATEGORIES,
+  parseMapSearch,
+  type MapSearch,
+} from "@/lib/civil-map-search";
 import { readSubscription } from "@/lib/push";
 import { pageMeta } from "@/lib/page-meta";
 import type { Locale } from "@/i18n";
@@ -91,14 +101,6 @@ const REFRESH = {
   retry: 1,
 } as const;
 const SAVED_KEY = "nadhir.map.saved-places";
-const categories: HazardCategory[] = [
-  "all",
-  "fire",
-  "weather",
-  "road",
-  "earthquake",
-  "other",
-];
 
 function LiveMapPage() {
   const { t, i18n } = useTranslation();
@@ -290,6 +292,8 @@ function LiveMapPage() {
       warnings.data,
       publications.data,
       selectedPublication.data,
+      earthquakes.data,
+      stations.data,
       allUnits,
       now,
     ],
@@ -791,7 +795,7 @@ function LiveMapPage() {
                     className="map-scroll mt-1.5 flex gap-1.5 overflow-x-auto overflow-y-hidden lg:mt-3 lg:py-1"
                     aria-label={t("civilMap.filters")}
                   >
-                    {categories.map((category) => {
+                    {HAZARD_CATEGORIES.map((category) => {
                       const Icon = hazardIcons[category];
                       return (
                         <button
@@ -852,284 +856,79 @@ function LiveMapPage() {
 
               {panelView === "list" &&
                 (searchOpen ? (
-                  <div id="map-place-results">
-                    <div className="flex items-center justify-between">
-                      <button
-                        type="button"
-                        onClick={() => chooseArea(null)}
-                        className="min-h-11 text-sm font-semibold"
-                      >
-                        {t("civilMap.allAreas")}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setSearchOpen(false)}
-                        aria-label={t("common.close")}
-                        className="flex size-11 items-center justify-center"
-                      >
-                        <X className="size-4" />
-                      </button>
-                    </div>
-                    {!query && saved.length > 0 && (
-                      <>
-                        <p className="py-2 text-xs text-muted-foreground">
-                          {t("civilMap.savedPlaces")}
-                        </p>
-                        {allUnits
-                          .filter((u) => saved.includes(u.id))
-                          .map((u) => (
-                            <button
-                              type="button"
-                              key={u.id}
-                              onClick={() => chooseArea(u)}
-                              className="flex min-h-12 w-full items-center gap-2 rounded-xl px-3 text-start text-sm hover:bg-muted"
-                            >
-                              <Bookmark className="size-4" />
-                              {unitName(u, locale)}
-                            </button>
-                          ))}
-                      </>
-                    )}
-                    {units.isPending ? (
-                      <p>{t("civilMap.loading")}</p>
-                    ) : units.isError ? (
-                      <p role="status">{t("civilMap.error")}</p>
-                    ) : query && !places.length ? (
-                      <p className="py-4 text-sm">
-                        {t("civilMap.searchEmpty")}
-                      </p>
-                    ) : (
-                      places.map((u) => (
-                        <button
-                          type="button"
-                          key={u.id}
-                          onClick={() => chooseArea(u)}
-                          className="flex min-h-12 w-full items-center justify-between gap-2 rounded-xl px-3 text-start text-sm hover:bg-muted"
-                        >
-                          <span>{unitName(u, locale)}</span>
-                          <span className="text-xs text-muted-foreground">
-                            {u.code}
-                          </span>
-                        </button>
-                      ))
-                    )}
-                  </div>
+                  <PlaceSearchResults
+                    query={query}
+                    saved={saved}
+                    allUnits={allUnits}
+                    places={places}
+                    unitsState={units.status}
+                    locale={locale}
+                    onChoose={chooseArea}
+                    onClose={() => setSearchOpen(false)}
+                  />
                 ) : (
-                  <>
-                    {area && (
-                      <p className="mb-3 text-xs text-muted-foreground">
-                        {t("civilMap.nearbyScope", {
-                          km: CITIZEN_NEARBY_RADIUS_KM,
-                        })}
-                      </p>
-                    )}
-                    {loading && (
-                      <p
-                        role="status"
-                        className="mb-3 flex items-center gap-2 text-sm"
-                      >
-                        <LoaderCircle className="size-4 animate-spin" />
-                        {t("civilMap.loading")}
-                      </p>
-                    )}
-                    {!loading && !visible.length && (
-                      <div className="rounded-2xl bg-muted/40 p-5">
-                        <h2 className="font-sans text-sm font-medium">
-                          {t(
-                            queries.every((q) => q.isError)
-                              ? "civilMap.error"
-                              : "civilMap.noSituations",
-                          )}
-                        </h2>
-                        <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                          {t("civilMap.noSituationsBody")}
-                        </p>
-                      </div>
-                    )}
-                    <div className="space-y-5">
-                      {[
-                        { key: "officialGroup", items: officialItems },
-                        { key: "observationsGroup", items: observedItems },
-                      ]
-                        .filter((group) => group.items.length)
-                        .map((group) => (
-                          <section key={group.key}>
-                            <h2 className="mb-3 font-sans text-xs font-semibold text-muted-foreground">
-                              {t(`civilMap.${group.key}`)}
-                            </h2>
-                            <div className="space-y-2 lg:space-y-3">
-                              {group.items.map((item) => (
-                                <SituationCard
-                                  key={item.id}
-                                  item={item}
-                                  units={allUnits}
-                                  now={now}
-                                  selected={item.id === search.event}
-                                  onSelect={() => select(item.id)}
-                                />
-                              ))}
-                            </div>
-                          </section>
-                        ))}
-                    </div>
-                    <div className="mt-4">
-                      <BroadcastBanner />
-                    </div>
-                  </>
+                  <SituationList
+                    scoped={!!area}
+                    loading={loading}
+                    failed={queries.every((q) => q.isError)}
+                    officialItems={officialItems}
+                    observedItems={observedItems}
+                    units={allUnits}
+                    now={now}
+                    selectedId={search.event}
+                    onSelect={select}
+                  />
                 ))}
 
-              {panelView === "detail" &&
-                (selected ? (
-                  <>
-                    {selectedAreaId && (
-                      <p className="mb-4 rounded-xl bg-muted p-3 text-xs leading-relaxed">
-                        {t(
-                          [
+              {panelView === "detail" && (
+                <SituationDetailView
+                  selected={selected}
+                  boundaryNote={
+                    !selectedAreaId
+                      ? null
+                      : [
                             ...mapOfficial.features,
                             ...mapWarnings.features,
                             ...mapReports.features,
                           ].some(
                             (feature) => feature.properties?.["area"] === true,
                           )
-                            ? "civilMap.reportedBoundary"
-                            : "civilMap.boundaryUnavailable",
-                        )}
-                      </p>
-                    )}
-                    <SituationDetails
-                      item={selected}
-                      units={allUnits}
-                      now={now}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => void share()}
-                      className="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border text-sm"
-                    >
-                      <Share2 className="size-4" />
-                      {t("civilMap.share")}
-                    </button>
-                  </>
-                ) : (
-                  <p>
-                    {t(
-                      loading ||
-                        (!!selectedCivilId && selectedPublication.isPending)
-                        ? "civilMap.loading"
-                        : selectedCivilId && selectedPublication.isError
-                          ? "civilMap.error"
-                          : "civilMap.detailUnavailable",
-                    )}
-                  </p>
-                ))}
+                        ? "civilMap.reportedBoundary"
+                        : "civilMap.boundaryUnavailable"
+                  }
+                  units={allUnits}
+                  now={now}
+                  fallback={
+                    loading ||
+                    (!!selectedCivilId && selectedPublication.isPending)
+                      ? "civilMap.loading"
+                      : selectedCivilId && selectedPublication.isError
+                        ? "civilMap.error"
+                        : "civilMap.detailUnavailable"
+                  }
+                  onShare={() => void share()}
+                />
+              )}
 
               {panelView === "layers" && (
-                <div className="space-y-5">
-                  <div className="grid grid-cols-2 gap-2">
-                    {categories.map((category) => {
-                      const Icon = hazardIcons[category];
-                      return (
-                        <button
-                          type="button"
-                          key={category}
-                          aria-pressed={search.hazard === category}
-                          onClick={() =>
-                            update({ hazard: category, event: undefined })
-                          }
-                          className={`flex min-h-12 items-center gap-2 rounded-xl border px-3 text-sm ${search.hazard === category ? "border-primary bg-primary/10" : "bg-surface"}`}
-                        >
-                          <Icon className="size-4" />
-                          {t(`civilMap.${category}`)}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <label className="flex min-h-11 items-center gap-3 text-sm">
-                    <input
-                      type="checkbox"
-                      checked={search.candidates}
-                      onChange={(e) => update({ candidates: e.target.checked })}
-                    />
-                    {t("civilMap.showCandidates")}
-                  </label>
-                  <label className="flex min-h-11 items-center gap-3 text-sm">
-                    <input
-                      type="checkbox"
-                      checked={search.ended}
-                      onChange={(e) => update({ ended: e.target.checked })}
-                    />
-                    {t("civilMap.showEnded")}
-                  </label>
-                  <label className="flex min-h-11 items-center gap-3 text-sm">
-                    <input
-                      type="checkbox"
-                      checked={search.lightning}
-                      onChange={(e) => update({ lightning: e.target.checked })}
-                    />
-                    {t("civilMap.showLightning")}
-                  </label>
-                  <div className="space-y-3 border-t pt-4 text-xs leading-relaxed text-muted-foreground">
-                    {[
-                      "satelliteLegend",
-                      "colorLegend",
-                      "tintLegend",
-                      "officialLegend",
-                      "weatherLegend",
-                      "lightningLegend",
-                      "citizenLegend",
-                      "publicationNotice",
-                    ].map((key) => (
-                      <p key={key}>{t(`civilMap.${key}`)}</p>
-                    ))}
-                  </div>
-                </div>
+                <LayersPanel
+                  search={search}
+                  onChange={(next) => update(next)}
+                />
               )}
 
               {panelView === "sources" && (
-                <div className="space-y-4">
-                  <ul>
-                    {(health.data ?? [])
-                      .filter((source) => relevantKeys.has(source.key))
-                      .map((source) => (
-                        <SourceHealth
-                          key={source.key}
-                          source={source}
-                          locale={locale}
-                        />
-                      ))}
-                  </ul>
-                  <p className="text-sm">
-                    {t(limited ? "civilMap.limited" : "civilMap.sourceTime")}
-                  </p>
-                  {Number.isFinite(checkedAt) && (
-                    <p className="text-xs text-muted-foreground">
-                      {t("civilMap.updated", {
-                        time: relativeTime(
-                          new Date(checkedAt).toISOString(),
-                          locale,
-                          now,
-                        ),
-                      })}
-                    </p>
+                <SourcesPanel
+                  sources={(health.data ?? []).filter((source) =>
+                    relevantKeys.has(source.key),
                   )}
-                  <button
-                    type="button"
-                    onClick={refresh}
-                    disabled={refreshing}
-                    className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border text-sm"
-                  >
-                    <RefreshCw
-                      className={`size-4 ${refreshing ? "animate-spin" : ""}`}
-                    />
-                    {t("civilMap.refresh")}
-                  </button>
-                  <Link
-                    to="/status"
-                    className="flex min-h-11 items-center text-sm underline"
-                  >
-                    {t("civilMap.coverage")}
-                  </Link>
-                </div>
+                  limited={limited}
+                  checkedAt={checkedAt}
+                  now={now}
+                  locale={locale}
+                  refreshing={refreshing}
+                  onRefresh={refresh}
+                />
               )}
 
               {panelView === "forecast" && (
