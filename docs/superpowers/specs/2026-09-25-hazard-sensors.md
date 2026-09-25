@@ -83,7 +83,7 @@ items with every evidence span verbatim, 2 relays with advice kept verbatim, 4 t
 non-JSON answers retried by the pipeline.
 Non-fire incidents live 12 h from their as-of time, then fade; `cleared` from the authority
 ends them. They appear on the map under their category and alert zones through the existing
-`notify_official` switch, worded "Protection Civile reports ... at <time>".
+`notify_official` switch, worded "Protection Civile report, <place>: <hazard>".
 Weather advice is stored per ONM warning it matches (same wilaya, overlapping validity) and is
 shown and pushed verbatim, attributed to Protection Civile, beside ONM's own text.
 
