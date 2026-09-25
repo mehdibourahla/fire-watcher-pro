@@ -27,7 +27,7 @@ function visibilityMetres(raw: string, miles: unknown): number | null {
 export function parseMetar(body: unknown): AirportWeather[] {
   if (!Array.isArray(body))
     throw new Error("aviationweather returned an unexpected shape");
-  const latest = new Map<string, AirportWeather>();
+  const reports = new Map<string, AirportWeather>();
   for (const row of body as Record<string, unknown>[]) {
     const station = row["icaoId"];
     const raw = row["rawOb"];
@@ -41,9 +41,7 @@ export function parseMetar(body: unknown): AirportWeather[] {
     )
       continue;
     const observed_at = new Date(row["obsTime"] * 1000).toISOString();
-    const previous = latest.get(station);
-    if (previous && previous.observed_at >= observed_at) continue;
-    latest.set(station, {
+    reports.set(`${station} ${observed_at}`, {
       station,
       name:
         typeof row["name"] === "string"
@@ -62,7 +60,7 @@ export function parseMetar(body: unknown): AirportWeather[] {
       raw,
     });
   }
-  return [...latest.values()];
+  return [...reports.values()];
 }
 
 // WMO dust and sand phenomena; under 1 km is a duststorm or sandstorm, above it haze

@@ -7,7 +7,7 @@ set local role service_role;
 insert into onm_vigilance(id,cap_id,title,event,severity,urgency,certainty,sent,area_desc,cap_url)
 values('19000000-0000-4000-8000-000000000001','test.cap-completion','Original authority title','Rain','Moderate','Expected','Likely',now(),'ALGER','https://ametvigilance.meteo.dz/CAPs/fixture.xml');
 select is((select count(*) from onm_vigilance where id='19000000-0000-4000-8000-000000000001' and cap_detail_fetched_at is null),1::bigint,'new CAP remains pending');
-update onm_vigilance set cap_detail_fetched_at=now(),instruction_fr='Original authority instruction',polygon='[[3,36],[4,36],[3,36]]' where id='19000000-0000-4000-8000-000000000001';
+update onm_vigilance set cap_detail_fetched_at=now(),instruction_fr='Original authority instruction' where id='19000000-0000-4000-8000-000000000001';
 select is((select count(*) from onm_vigilance where id='19000000-0000-4000-8000-000000000001' and cap_detail_fetched_at is null),0::bigint,'successful detail without headline leaves pending queue');
 select is((select headline_fr from onm_vigilance where id='19000000-0000-4000-8000-000000000001'),null::text,'no fabricated headline');
 select is((select title from onm_vigilance where id='19000000-0000-4000-8000-000000000001'),'Original authority title','original summary retained');

@@ -34,6 +34,102 @@ export type Database = {
   };
   public: {
     Tables: {
+      airport_observations: {
+        Row: {
+          fetched_at: string;
+          gust_kt: number | null;
+          id: string;
+          lat: number;
+          lon: number;
+          name: string | null;
+          observed_at: string;
+          raw: string;
+          station: string;
+          temp_c: number | null;
+          visibility_m: number | null;
+          weather: string | null;
+          wind_kt: number | null;
+        };
+        Insert: {
+          fetched_at?: string;
+          gust_kt?: number | null;
+          id?: string;
+          lat: number;
+          lon: number;
+          name?: string | null;
+          observed_at: string;
+          raw: string;
+          station: string;
+          temp_c?: number | null;
+          visibility_m?: number | null;
+          weather?: string | null;
+          wind_kt?: number | null;
+        };
+        Update: {
+          fetched_at?: string;
+          gust_kt?: number | null;
+          id?: string;
+          lat?: number;
+          lon?: number;
+          name?: string | null;
+          observed_at?: string;
+          raw?: string;
+          station?: string;
+          temp_c?: number | null;
+          visibility_m?: number | null;
+          weather?: string | null;
+          wind_kt?: number | null;
+        };
+        Relationships: [];
+      };
+      cold_exports: {
+        Row: {
+          bytes: number | null;
+          day: string;
+          exported_at: string;
+          key_digest: string | null;
+          path: string | null;
+          rows: number;
+          sha256: string | null;
+          table_name: string;
+        };
+        Insert: {
+          bytes?: number | null;
+          day: string;
+          exported_at?: string;
+          key_digest?: string | null;
+          path?: string | null;
+          rows: number;
+          sha256?: string | null;
+          table_name: string;
+        };
+        Update: {
+          bytes?: number | null;
+          day?: string;
+          exported_at?: string;
+          key_digest?: string | null;
+          path?: string | null;
+          rows?: number;
+          sha256?: string | null;
+          table_name?: string;
+        };
+        Relationships: [];
+      };
+      onm_areas: {
+        Row: {
+          id: string;
+          polygon: Json;
+        };
+        Insert: {
+          id: string;
+          polygon: Json;
+        };
+        Update: {
+          id?: string;
+          polygon?: Json;
+        };
+        Relationships: [];
+      };
       civil_decisions: {
         Row: {
           attempt: number;
@@ -507,67 +603,6 @@ export type Database = {
         };
         Relationships: [];
       };
-      incident_archive_daily: {
-        Row: {
-          contract_key: string;
-          day: string;
-          incidents: number;
-          reason_code: string;
-        };
-        Insert: {
-          contract_key: string;
-          day: string;
-          incidents: number;
-          reason_code: string;
-        };
-        Update: {
-          contract_key?: string;
-          day?: string;
-          incidents?: number;
-          reason_code?: string;
-        };
-        Relationships: [];
-      };
-
-      source_run_archive_daily: {
-        Row: {
-          contract_key: string;
-          day: string;
-          outcome: string;
-          records_seen: number;
-          runs: number;
-        };
-        Insert: {
-          contract_key: string;
-          day: string;
-          outcome: string;
-          records_seen: number;
-          runs: number;
-        };
-        Update: {
-          contract_key?: string;
-          day?: string;
-          outcome?: string;
-          records_seen?: number;
-          runs?: number;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "source_run_archive_daily_contract_key_fkey";
-            columns: ["contract_key"];
-            isOneToOne: false;
-            referencedRelation: "source_contracts";
-            referencedColumns: ["key"];
-          },
-          {
-            foreignKeyName: "source_run_archive_daily_contract_key_fkey";
-            columns: ["contract_key"];
-            isOneToOne: false;
-            referencedRelation: "source_health";
-            referencedColumns: ["key"];
-          },
-        ];
-      };
 
       source_run_retired_keys: {
         Row: {
@@ -758,51 +793,7 @@ export type Database = {
           },
         ];
       };
-      airport_weather: {
-        Row: {
-          fetched_at: string;
-          gust_kt: number | null;
-          lat: number;
-          lon: number;
-          name: string | null;
-          observed_at: string;
-          raw: string;
-          station: string;
-          temp_c: number | null;
-          visibility_m: number | null;
-          weather: string | null;
-          wind_kt: number | null;
-        };
-        Insert: {
-          fetched_at?: string;
-          gust_kt?: number | null;
-          lat: number;
-          lon: number;
-          name?: string | null;
-          observed_at: string;
-          raw: string;
-          station: string;
-          temp_c?: number | null;
-          visibility_m?: number | null;
-          weather?: string | null;
-          wind_kt?: number | null;
-        };
-        Update: {
-          fetched_at?: string;
-          gust_kt?: number | null;
-          lat?: number;
-          lon?: number;
-          name?: string | null;
-          observed_at?: string;
-          raw?: string;
-          station?: string;
-          temp_c?: number | null;
-          visibility_m?: number | null;
-          weather?: string | null;
-          wind_kt?: number | null;
-        };
-        Relationships: [];
-      };
+
       alerts: {
         Row: {
           body: string;
@@ -2279,6 +2270,7 @@ export type Database = {
         Row: {
           cap_detail_fetched_at: string | null;
           area_desc: string;
+          area_id: string | null;
           cap_id: string;
           cap_url: string | null;
           certainty: string;
@@ -2291,7 +2283,6 @@ export type Database = {
           id: string;
           instruction_fr: string | null;
           onset: string | null;
-          polygon: Json | null;
           sent: string;
           superseded_at: string | null;
           severity: string;
@@ -2302,6 +2293,7 @@ export type Database = {
         Insert: {
           cap_detail_fetched_at?: string | null;
           area_desc: string;
+          area_id?: string | null;
           cap_id: string;
           cap_url?: string | null;
           certainty: string;
@@ -2314,7 +2306,6 @@ export type Database = {
           id?: string;
           instruction_fr?: string | null;
           onset?: string | null;
-          polygon?: Json | null;
           sent: string;
           superseded_at?: string | null;
           severity: string;
@@ -2325,6 +2316,7 @@ export type Database = {
         Update: {
           cap_detail_fetched_at?: string | null;
           area_desc?: string;
+          area_id?: string | null;
           cap_id?: string;
           cap_url?: string | null;
           certainty?: string;
@@ -2337,7 +2329,6 @@ export type Database = {
           id?: string;
           instruction_fr?: string | null;
           onset?: string | null;
-          polygon?: Json | null;
           sent?: string;
           superseded_at?: string | null;
           severity?: string;
@@ -2346,6 +2337,13 @@ export type Database = {
           wilaya_id?: string | null;
         };
         Relationships: [
+          {
+            foreignKeyName: "onm_vigilance_area_id_fkey";
+            columns: ["area_id"];
+            isOneToOne: false;
+            referencedRelation: "onm_areas";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "onm_vigilance_wilaya_id_fkey";
             columns: ["wilaya_id"];
@@ -3627,6 +3625,23 @@ export type Database = {
       };
     };
     Views: {
+      airport_weather: {
+        Row: {
+          fetched_at: string | null;
+          gust_kt: number | null;
+          lat: number | null;
+          lon: number | null;
+          name: string | null;
+          observed_at: string | null;
+          raw: string | null;
+          station: string | null;
+          temp_c: number | null;
+          visibility_m: number | null;
+          weather: string | null;
+          wind_kt: number | null;
+        };
+        Relationships: [];
+      };
       onm_wilaya_outlines: {
         Row: {
           polygon: Json | null;
@@ -3805,6 +3820,28 @@ export type Database = {
       };
     };
     Functions: {
+      store_onm_detail: {
+        Args: {
+          _headline_fr?: string;
+          _id: string;
+          _instruction_fr?: string;
+          _polygon?: Json;
+        };
+        Returns: undefined;
+      };
+      cold_pending_days: { Args: { _table: string }; Returns: string[] };
+      cold_archive_commit: {
+        Args: {
+          _bytes?: number;
+          _day: string;
+          _key_digest?: string;
+          _path?: string;
+          _rows: number;
+          _sha256?: string;
+          _table: string;
+        };
+        Returns: number;
+      };
       admin_push_delivery: {
         Args: { _days?: number };
         Returns: {
@@ -4042,7 +4079,6 @@ export type Database = {
         };
         Returns: number;
       };
-      prune_reliability_history: { Args: never; Returns: Json };
 
       set_source_paused: {
         Args: { _key: string; _paused: boolean; _reason?: string | null };

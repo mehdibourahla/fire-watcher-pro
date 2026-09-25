@@ -7,11 +7,20 @@ const state = vi.hoisted(() => ({
 }));
 vi.mock("@/integrations/supabase/client.server", () => ({
   supabaseAdmin: {
+    rpc: async (_name: string, args: Record<string, unknown>) => {
+      if (state.failWrite) return { error: { message: "write unavailable" } };
+      Object.assign(
+        state.rows.find((row) => row["id"] === args["_id"])!,
+        {
+          headline_fr: args["_headline_fr"] ?? null,
+          cap_detail_fetched_at: new Date().toISOString(),
+        },
+      );
+      return { error: null };
+    },
     from: () => {
       let nullField = "";
       let batch = Infinity;
-      let patch: Record<string, unknown> | null = null;
-      let id = "";
       const query = {
         select: () => query,
         is: (field: string) => {
@@ -24,26 +33,7 @@ vi.mock("@/integrations/supabase/client.server", () => ({
           batch = count;
           return query;
         },
-        update: (value: Record<string, unknown>) => {
-          patch = value;
-          return query;
-        },
-        eq: (_field: string, value: string) => {
-          id = value;
-          return query;
-        },
         then: (resolve: (result: unknown) => unknown) => {
-          if (patch) {
-            if (state.failWrite)
-              return Promise.resolve({
-                error: { message: "write unavailable" },
-              }).then(resolve);
-            Object.assign(
-              state.rows.find((row) => row["id"] === id)!,
-              patch,
-            );
-            return Promise.resolve({ error: null }).then(resolve);
-          }
           return Promise.resolve({
             data: state.rows
               .filter((row) => row[nullField] == null)

@@ -260,7 +260,7 @@ async function loadHazardContext(
       onset: string | null;
       title: string;
       headline_fr: string | null;
-      polygon: unknown;
+      area: { polygon: unknown } | null;
       wilaya_id: string | null;
       expires: string | null;
       sent: string;
@@ -270,7 +270,7 @@ async function loadHazardContext(
       supabaseAdmin
         .from("onm_vigilance")
         .select(
-          "id, severity, event, onset, title, headline_fr, polygon, wilaya_id, expires, sent, episode_id, episode_peak",
+          "id, severity, event, onset, title, headline_fr, area:onm_areas(polygon), wilaya_id, expires, sent, episode_id, episode_peak",
         )
         .is("superseded_at", null)
         .gt("expires", iso)
@@ -362,7 +362,7 @@ async function loadHazardContext(
       ]),
     ),
     weather: (weather.data ?? []).flatMap(
-      ({ episode_id: episode, episode_peak: peak, ...w }) =>
+      ({ episode_id: episode, episode_peak: peak, area, ...w }) =>
         w.expires
           ? [
               {
@@ -370,8 +370,8 @@ async function loadHazardContext(
                 expires: w.expires,
                 alert_key: `weather:${episode}:${peak}`,
                 advice: adviceFor(w, advice ?? [])?.advice ?? null,
-                polygon: Array.isArray(w.polygon)
-                  ? (w.polygon as [number, number][])
+                polygon: Array.isArray(area?.polygon)
+                  ? (area.polygon as [number, number][])
                   : null,
               },
             ]
