@@ -52,6 +52,7 @@ export type Zone = {
   notify_official: boolean;
   notify_road: boolean;
   notify_citizen: boolean;
+  notify_earthquake: boolean;
   active: boolean;
   created_at: string;
 };
@@ -155,6 +156,7 @@ export const ZONE_HAZARDS = [
   { key: "notify_official", label: "account.notifyOfficial" },
   { key: "notify_road", label: "account.notifyRoad" },
   { key: "notify_citizen", label: "account.notifyCitizen" },
+  { key: "notify_earthquake", label: "account.notifyEarthquake" },
 ] as const;
 
 export type ZoneHazardKey = (typeof ZONE_HAZARDS)[number]["key"];

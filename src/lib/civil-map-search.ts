@@ -1,7 +1,7 @@
 export type MapSearch = {
   area?: string | undefined;
   event?: string | undefined;
-  hazard: "all" | "fire" | "weather" | "road" | "other";
+  hazard: "all" | "fire" | "weather" | "road" | "earthquake" | "other";
   ended: boolean;
   candidates: boolean;
 };
@@ -13,7 +13,7 @@ export function parseMapSearch(input: Record<string, unknown>): MapSearch {
       : undefined;
   const area = text(input["area"]);
   const event = text(input["event"]);
-  const hazard = ["fire", "weather", "road", "other"].includes(
+  const hazard = ["fire", "weather", "road", "earthquake", "other"].includes(
     String(input["hazard"]),
   )
     ? (input["hazard"] as MapSearch["hazard"])

@@ -25,6 +25,7 @@ export type HazardZone = {
   notify_official: boolean;
   notify_road: boolean;
   notify_citizen: boolean;
+  notify_earthquake: boolean;
 };
 
 export type HazardContext = {
@@ -76,19 +77,29 @@ export type HazardContext = {
     expires_at: string;
     witnesses: string[];
   }[];
+  earthquakes: {
+    id: string;
+    occurred_at: string;
+    lat: number;
+    lon: number;
+    magnitude: number;
+    network: string | null;
+    offshore: boolean;
+  }[];
 };
 
 export type HazardAlertRow = {
   user_id: string;
   zone_id: string;
-  kind: "weather" | "official" | "road" | "citizen";
+  kind: "weather" | "official" | "road" | "citizen" | "earthquake";
   severity: number;
   commune_id: string | null;
   dedupe_key: string;
   title: string;
   body: string;
-  source_table: string;
-  source_id: string;
+  // an EMSC event id is not a uuid, so earthquakes keep their identity in the key and payload
+  source_table: string | null;
+  source_id: string | null;
   payload: Record<string, unknown>;
 };
 
@@ -105,7 +116,9 @@ type Copy = Record<
   | "citizenTitle"
   | "citizenQuote"
   | "citizenBodyOne"
-  | "citizenBodyMany",
+  | "citizenBodyMany"
+  | "quakeTitle"
+  | "quakeBody",
   string
 >;
 
@@ -126,6 +139,9 @@ const FR: Copy = {
     "{{quote}}Confirmé par une personne sur place. Non vérifié par les autorités.",
   citizenBodyMany:
     "{{quote}}Confirmé par {{count}} personnes sur place. Non vérifié par les autorités.",
+  quakeTitle: "Séisme M{{mag}} près de {{zone}}",
+  quakeBody:
+    "Enregistré par le réseau sismique EMSC ({{network}}), à {{km}} km de {{zone}}. Si vous l'avez ressenti, éloignez-vous des bâtiments endommagés et appelez le 14 pour tout blessé.",
 };
 
 const COPY: Record<string, Copy> = {
@@ -146,6 +162,9 @@ const COPY: Record<string, Copy> = {
       "{{quote}}Confirmed by one person nearby. Not verified by authorities.",
     citizenBodyMany:
       "{{quote}}Confirmed by {{count}} people nearby. Not verified by authorities.",
+    quakeTitle: "Earthquake M{{mag}} near {{zone}}",
+    quakeBody:
+      "Recorded by the EMSC seismic network ({{network}}), {{km}} km from {{zone}}. If you felt it, keep away from damaged buildings and call 14 for anyone injured.",
   },
   fr: FR,
   kab: FR,
@@ -165,6 +184,9 @@ const COPY: Record<string, Copy> = {
     citizenBodyOne: "{{quote}}أكّده شخص واحد في المكان. لم تتحقق منه السلطات.",
     citizenBodyMany:
       "{{quote}}أكّده {{count}} أشخاص في المكان. لم تتحقق منه السلطات.",
+    quakeTitle: "زلزال بقوة {{mag}} قرب {{zone}}",
+    quakeBody:
+      "سجّلته شبكة الرصد الزلزالي EMSC ({{network}}) على بعد {{km}} كم من {{zone}}. إن شعرت به، ابتعد عن المباني المتضررة واتصل بالرقم 14 لأي مصاب.",
   },
 };
 
@@ -184,6 +206,9 @@ const OFFICIAL_HAZARD_NAME: Partial<
   storm: "storm_damage",
   other: "other",
 };
+
+export const QUAKE_ALERT_MAGNITUDE = 4;
+export const QUAKE_ALERT_KM = 100;
 
 const AUTHORITY_SEVERITY: Record<string, number> = { Severe: 4, Extreme: 5 };
 
@@ -386,6 +411,40 @@ export function hazardAlerts(
             },
           },
           false,
+        );
+      }
+
+    if (zone.notify_earthquake)
+      for (const quake of context.earthquakes) {
+        if (quake.magnitude < QUAKE_ALERT_MAGNITUDE) continue;
+        const km = haversineKm(zone.lat, zone.lon, quake.lat, quake.lon);
+        if (km > QUAKE_ALERT_KM) continue;
+        const vars = {
+          mag: quake.magnitude.toFixed(1),
+          zone: zone.name,
+          km: km.toFixed(0),
+          network: quake.network ?? "EMSC",
+        };
+        add(
+          {
+            kind: "earthquake",
+            severity: quake.magnitude >= 5 ? 4 : 3,
+            dedupe_key: `earthquake:${quake.id}`,
+            title: fill(copy.quakeTitle, vars),
+            body: fill(copy.quakeBody, vars),
+            source_table: null,
+            source_id: null,
+            payload: {
+              magnitude: quake.magnitude,
+              occurred_at: quake.occurred_at,
+              offshore: quake.offshore,
+              expires_at: new Date(
+                Date.parse(quake.occurred_at) + 72 * HOUR,
+              ).toISOString(),
+              map_event: `quake:${quake.id}`,
+            },
+          },
+          quake.magnitude >= 5,
         );
       }
   }

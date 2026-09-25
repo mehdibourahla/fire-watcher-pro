@@ -172,6 +172,7 @@ const KIND_LABEL: Record<Alert["kind"], string> = {
   official: "alerts.kindOfficial",
   road: "alerts.kindRoad",
   citizen: "alerts.kindCitizen",
+  earthquake: "alerts.kindEarthquake",
 };
 
 function AlertCard({

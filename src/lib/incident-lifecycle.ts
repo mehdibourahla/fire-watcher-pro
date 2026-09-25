@@ -88,6 +88,11 @@ export function officialPhase(
   return phase === "live" && incident.unlisted_at !== null ? "fading" : phase;
 }
 
+// an earthquake is an instant: news for hours, context for three days
+export function quakePhase(quake: { occurred_at: string }, now: number): Phase {
+  return byAge(ageHours(quake.occurred_at, now), 6, ARCHIVE_HOURS);
+}
+
 // witnesses extend a report, so its own expiry, not its age, decides its phase
 export function reportPhase(
   report: { expires_at: string | null; observed_at: string },

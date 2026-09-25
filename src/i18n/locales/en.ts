@@ -338,6 +338,7 @@ export const en = {
     fire: "Fire",
     weather: "Weather",
     road: "Road",
+    earthquake: "Earthquake",
     other: "Other",
     noSituations: "No current reports in available sources",
     noSituationsBody:
@@ -360,6 +361,7 @@ export const en = {
     sourceOfficial: "Official source",
     sourceCitizen: "Citizen report",
     sourceOnm: "ONM warning",
+    sourceSeismic: "Seismic network",
     heatSignal: "Satellite heat signal",
     heatSignalShort: "Heat signal",
     probable: "Probable fire",
@@ -755,6 +757,7 @@ export const en = {
     kindOfficial: "Official",
     kindRoad: "Road",
     kindCitizen: "Citizen",
+    kindEarthquake: "Earthquake",
     stateCurrentNotice: "Current notice",
     stateNoticeOver: "Notice period over — this is not an all-clear",
     openMap: "Show on the map",
@@ -821,6 +824,7 @@ export const en = {
     notifyOfficial: "Official warnings (Protection Civile)",
     notifyRoad: "Road incidents",
     notifyCitizen: "Citizen reports confirmed by people nearby",
+    notifyEarthquake: "Earthquakes of magnitude 4 or more within 100 km",
     devicePush: "Alerts on this device when Nadhir is closed",
     devicePushHint:
       "Sends your zone alerts to this phone or computer, even when Nadhir is closed. Turn it on on each device you use.",
@@ -903,6 +907,24 @@ export const en = {
     zoneNothingNow:
       "Nothing active right now for the hazards this zone follows.",
     zoneNowUnavailable: "Live status is unavailable. Your alerts still arrive.",
+  },
+  quake: {
+    title: "Earthquake M{{mag}}",
+    eyebrow: "Seismic measurement",
+    recordedBy: "Recorded by EMSC ({{network}})",
+    magnitude: "Magnitude",
+    depth: "Depth",
+    depthKm: "{{km}} km",
+    time: "Time",
+    network: "Network",
+    guidanceTitle: "If you felt it",
+    guidanceShaking:
+      "During an aftershock: drop to the ground, take cover under a sturdy table and hold on until the shaking stops.",
+    guidanceAfter:
+      "Once it stops: leave damaged buildings, do not use lifts, and shut off the gas if you smell it.",
+    guidanceCall: "Call 14 for anyone injured or trapped.",
+    guidanceCoast: "Strong shaking by the sea: move away from the shore.",
+    note: "Magnitude and position can be revised in the first hours. This is the seismic network's measurement, not an official warning.",
   },
   reports: {
     hazardName: {

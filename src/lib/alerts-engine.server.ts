@@ -31,7 +31,11 @@ import { drainAlertPushes } from "@/lib/alert-push.server";
 import { publishWaitingReports } from "@/lib/report-publication.server";
 import { officialPhase } from "@/lib/incident-lifecycle";
 import { adviceFor } from "@/lib/weather-advice";
-import { hazardAlerts, type HazardContext } from "@/lib/zone-hazard-alerts";
+import {
+  hazardAlerts,
+  QUAKE_ALERT_MAGNITUDE,
+  type HazardContext,
+} from "@/lib/zone-hazard-alerts";
 
 type Copy = {
   fireTitle: string;
@@ -304,6 +308,13 @@ async function loadHazardContext(
     .gt("created_at", new Date(now.getTime() - 3 * 86_400_000).toISOString())
     .limit(500);
   if (adviceError) throw new Error(adviceError.message);
+  // an earthquake is news for hours, not days: a zone created today is not told about yesterday's
+  const { data: earthquakes, error: quakeError } = await supabaseAdmin
+    .from("earthquakes")
+    .select("id, occurred_at, lat, lon, magnitude, network, offshore")
+    .gte("magnitude", QUAKE_ALERT_MAGNITUDE)
+    .gt("occurred_at", new Date(now.getTime() - 3 * 3_600_000).toISOString());
+  if (quakeError) throw new Error(quakeError.message);
 
   const reports = await fetchAllPages<{
     id: string;
@@ -371,6 +382,10 @@ async function loadHazardContext(
     ),
     authority: authority.data ?? [],
     road: road.data ?? [],
+    earthquakes: (earthquakes ?? []).map((q) => ({
+      ...q,
+      magnitude: Number(q.magnitude),
+    })),
     citizen: reports.map((r) => ({
       id: r.id,
       reporter: r.user_id,

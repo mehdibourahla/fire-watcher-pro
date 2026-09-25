@@ -125,12 +125,17 @@ export function civilMapGeoJSON(
       result[
         item.source === "onm"
           ? "warnings"
-          : item.source === "citizen" || item.source === "civil"
+          : item.source === "citizen" ||
+              item.source === "civil" ||
+              item.source === "seismic"
             ? "reports"
             : "official"
       ];
     const properties = {
-      id: item.source === "civil" ? item.id : item.data.id,
+      id:
+        item.source === "civil" || item.source === "seismic"
+          ? item.id
+          : item.data.id,
       situationId: item.id,
       category: item.category,
       source: item.source,
@@ -140,7 +145,9 @@ export function civilMapGeoJSON(
           ? item.data.severity
           : item.source === "civil"
             ? item.data.state
-            : item.data.status,
+            : item.source === "seismic"
+              ? item.data.magnitude.toFixed(1)
+              : item.data.status,
       selected: item.id === selectedId,
       confidence: item.confidence,
       precision:

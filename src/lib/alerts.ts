@@ -5,7 +5,14 @@ import { supabase } from "@/integrations/supabase/client";
 export type Alert = {
   id: string;
   zone_id: string | null;
-  kind: "fire" | "risk" | "weather" | "official" | "road" | "citizen";
+  kind:
+    | "fire"
+    | "risk"
+    | "weather"
+    | "official"
+    | "road"
+    | "citizen"
+    | "earthquake";
   severity: number;
   cluster_id: string | null;
   commune_id: string | null;

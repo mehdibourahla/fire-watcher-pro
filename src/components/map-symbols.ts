@@ -10,6 +10,7 @@ export const SYMBOLS = [
   "rescue",
   "observation",
   "weather",
+  "quake",
 ] as const;
 export type MapSymbol = (typeof SYMBOLS)[number];
 export const CONFIDENCES = ["official", "corroborated", "single"] as const;
@@ -24,6 +25,7 @@ const paths: Record<MapSymbol, string> = {
     "M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0",
   weather:
     "M7 16H6a4 4 0 0 1-1-8 6 6 0 0 1 11-2 5 5 0 0 1 2 10h-1M13 11l-4 7h5l-3 5",
+  quake: "M2 12h4l2-6 4 12 3-9 2 3h5",
 };
 // only an authority is red; Nadhir's own evidence tops out at orange
 const colors: Record<Confidence, string> = {
@@ -44,6 +46,7 @@ export function symbolFor(
 ): MapSymbol {
   if (kind === "official") return "official";
   if (kind === "warnings") return "weather";
+  if (properties["source"] === "seismic") return "quake";
   // citizen features carry the classifier's category, not the tapped kind
   if (properties["source"] === "citizen")
     return properties["category"] === "road" ? "road" : "observation";
