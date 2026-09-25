@@ -2160,6 +2160,8 @@ export type Database = {
           cap_url: string | null;
           certainty: string;
           created_at: string;
+          episode_id: string;
+          episode_peak: number;
           event: string;
           expires: string | null;
           headline_fr: string | null;
@@ -2181,6 +2183,8 @@ export type Database = {
           cap_url?: string | null;
           certainty: string;
           created_at?: string;
+          episode_id?: string;
+          episode_peak?: number;
           event: string;
           expires?: string | null;
           headline_fr?: string | null;
@@ -2202,6 +2206,8 @@ export type Database = {
           cap_url?: string | null;
           certainty?: string;
           created_at?: string;
+          episode_id?: string;
+          episode_peak?: number;
           event?: string;
           expires?: string | null;
           headline_fr?: string | null;
@@ -3681,13 +3687,6 @@ export type Database = {
           no_device: number;
           received: number;
           sent: number;
-        }[];
-      };
-      onm_alert_keys: {
-        Args: { _ids: string[] };
-        Returns: {
-          alert_key: string;
-          warning_id: string;
         }[];
       };
       supersede_onm_absent: {

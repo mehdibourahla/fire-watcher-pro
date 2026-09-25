@@ -10,13 +10,10 @@ export const Route = createFileRoute("/api/public/push-receipt")({
       },
       POST: async ({ request }) => {
         const { recordPushReceipt } = await import("@/lib/push-receipt.server");
-        let body: unknown;
-        try {
-          body = await request.json();
-        } catch {
-          return new Response(null, { status: 400 });
-        }
-        const outcome = await recordPushReceipt(body);
+        const { readJsonBody } = await import("@/lib/request-body.server");
+        const read = await readJsonBody(request, 1024);
+        if ("error" in read) return new Response(null, { status: read.status });
+        const outcome = await recordPushReceipt(read.body);
         return new Response(null, {
           status:
             outcome === "recorded" ? 204 : outcome === "forged" ? 403 : 400,

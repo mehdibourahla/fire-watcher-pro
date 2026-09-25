@@ -258,11 +258,13 @@ async function loadHazardContext(
       polygon: unknown;
       wilaya_id: string | null;
       expires: string | null;
+      episode_id: string;
+      episode_peak: number;
     }>((from, to) =>
       supabaseAdmin
         .from("onm_vigilance")
         .select(
-          "id, severity, event, onset, title, headline_fr, polygon, wilaya_id, expires",
+          "id, severity, event, onset, title, headline_fr, polygon, wilaya_id, expires, episode_id, episode_peak",
         )
         .is("superseded_at", null)
         .gt("expires", iso)
@@ -294,16 +296,7 @@ async function loadHazardContext(
   ]);
   for (const result of [units, weather, official, authority, road])
     if (result.error) throw new Error(result.error.message);
-  const current = (weather.data ?? []).filter((w) => w.expires);
-  const { data: keys, error: keysError } = current.length
-    ? await supabaseAdmin.rpc("onm_alert_keys", {
-        _ids: current.map((w) => w.id),
-      })
-    : { data: [], error: null };
-  if (keysError) throw new Error(keysError.message);
-  const keyOf = new Map(
-    (keys ?? []).map((k) => [k.warning_id, k.alert_key] as const),
-  );
+
   const reports = await fetchAllPages<{
     id: string;
     user_id: string;
@@ -349,18 +342,21 @@ async function loadHazardContext(
         { code: u.code, wilayaId: u.parent_id },
       ]),
     ),
-    weather: current.map((w) => {
-      const alertKey = keyOf.get(w.id);
-      if (!alertKey) throw new Error(`No ONM alert key for ${w.id}`);
-      return {
-        ...w,
-        expires: w.expires!,
-        alert_key: alertKey,
-        polygon: Array.isArray(w.polygon)
-          ? (w.polygon as [number, number][])
-          : null,
-      };
-    }),
+    weather: (weather.data ?? []).flatMap(
+      ({ episode_id: episode, episode_peak: peak, ...w }) =>
+        w.expires
+          ? [
+              {
+                ...w,
+                expires: w.expires,
+                alert_key: `weather:${episode}:${peak}`,
+                polygon: Array.isArray(w.polygon)
+                  ? (w.polygon as [number, number][])
+                  : null,
+              },
+            ]
+          : [],
+    ),
     official: (official.data ?? []).filter(
       (i) => officialPhase(i, now.getTime()) === "live",
     ),
