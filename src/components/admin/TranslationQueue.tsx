@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -9,6 +14,7 @@ import {
   moderateSuggestion,
   suggestionQueueQuery,
   type SuggestionStatus,
+  suggestionCountsQuery,
 } from "@/lib/translate";
 
 const STATUSES: SuggestionStatus[] = ["pending", "accepted", "rejected"];
@@ -18,9 +24,12 @@ const capital = (value: string) =>
 export function TranslationQueue() {
   const { t } = useTranslation("admin");
   const qc = useQueryClient();
-  const queue = useQuery(suggestionQueueQuery);
   const [status, setStatus] = useState<SuggestionStatus>("pending");
   const [locale, setLocale] = useState<string>("all");
+  const queue = useInfiniteQuery(
+    suggestionQueueQuery(status, locale === "all" ? null : locale),
+  );
+  const counts = useQuery(suggestionCountsQuery);
 
   const act = useMutation({
     mutationFn: (input: { id: string; status: SuggestionStatus }) =>
@@ -31,11 +40,8 @@ export function TranslationQueue() {
     },
   });
 
-  const all = queue.data ?? [];
-  const locales = [...new Set(all.map((s) => s.locale))].sort();
-  const rows = all.filter(
-    (s) => s.status === status && (locale === "all" || s.locale === locale),
-  );
+  const rows = queue.data ?? [];
+  const locales = counts.data?.locales ?? [];
   const groups = [
     ...rows
       .reduce((map, s) => {
@@ -45,12 +51,7 @@ export function TranslationQueue() {
       }, new Map<string, typeof rows>())
       .values(),
   ];
-  const countOf = (value: SuggestionStatus) =>
-    new Set(
-      all
-        .filter((s) => s.status === value)
-        .map((s) => `${s.locale}:${s.key_path}`),
-    ).size;
+  const countOf = (value: SuggestionStatus) => counts.data?.strings[value] ?? 0;
 
   return (
     <div className="space-y-4">

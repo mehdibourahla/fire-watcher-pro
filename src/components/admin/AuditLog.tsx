@@ -159,18 +159,6 @@ export function AuditLog() {
                 />
               ))}
             </ul>
-            {entries.hasNextPage ? (
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={entries.isFetchingNextPage}
-                onClick={() => void entries.fetchNextPage()}
-              >
-                {entries.isFetchingNextPage
-                  ? t("kit.working")
-                  : t("audit.more")}
-              </Button>
-            ) : null}
           </>
         )}
       </QueryState>

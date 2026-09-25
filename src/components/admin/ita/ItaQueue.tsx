@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import { ExternalLink } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -12,15 +12,14 @@ import { When } from "@/components/admin/kit/When";
 import { Button } from "@/components/ui/button";
 import {
   civilAttentionQuery,
+  type CivilAttention,
   dismissCivilInvestigation,
 } from "@/lib/admin-ita";
 import { cn } from "@/lib/utils";
 import { AgentReasoning } from "./AgentReasoning";
 import { PublicationForm } from "./PublicationForm";
 
-type Work = Awaited<
-  ReturnType<NonNullable<ReturnType<typeof civilAttentionQuery>["queryFn"]>>
->[number];
+type Work = CivilAttention;
 
 function Detail({ work, onDone }: { work: Work; onDone: () => void }) {
   const { t } = useTranslation("admin");
@@ -91,7 +90,7 @@ function Detail({ work, onDone }: { work: Work; onDone: () => void }) {
 
 export function ItaQueue() {
   const { t } = useTranslation("admin");
-  const queue = useQuery(civilAttentionQuery(0));
+  const queue = useInfiniteQuery(civilAttentionQuery);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const selected = queue.data?.find((work) => work.id === selectedId) ?? null;
   return (

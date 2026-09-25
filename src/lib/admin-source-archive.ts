@@ -1,17 +1,21 @@
-import { queryOptions } from "@tanstack/react-query";
+import { infiniteQueryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { archivePayloadName } from "./source-archive-export";
+import { firstPage, nextOffset, pageRange, pageRows } from "@/lib/paging";
 
 export const sourceArchiveQuery = (source: string, errorsOnly = false) =>
-  queryOptions({
+  infiniteQueryOptions({
     queryKey: ["admin", "source-archive", source, errorsOnly],
-    queryFn: async () => {
+    initialPageParam: firstPage,
+    getNextPageParam: nextOffset,
+    select: pageRows,
+    queryFn: async ({ pageParam }) => {
       let query = supabase
         .from("source_captures")
         .select("*")
         .order("requested_at", { ascending: false })
         .order("id")
-        .limit(50);
+        .range(...pageRange(pageParam));
       if (source) query = query.eq("source_key", source);
       if (errorsOnly) query = query.gte("http_status", 400);
       const { data, error } = await query;

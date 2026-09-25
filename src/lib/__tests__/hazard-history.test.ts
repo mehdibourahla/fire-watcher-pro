@@ -1,15 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
-import {
-  buckets,
-  coverage,
-  fireRecords,
-  historyCsv,
-  roadRecords,
-  weatherRecords,
-  wilayaRanking,
-} from "@/lib/hazard-history";
-import type { AdminUnit, FireCluster } from "@/lib/nadhir";
+vi.mock("@/integrations/supabase/client", () => ({ supabase: {} }));
+
+import { historyCsv, historyRecord } from "@/lib/hazard-history";
+import type { AdminUnit } from "@/lib/nadhir";
 
 const unit = (o: Partial<AdminUnit>): AdminUnit => ({
   id: "x",
@@ -33,114 +27,71 @@ const units = [
   unit({ id: "c-akbil", parent_id: "w-tizi" }),
 ];
 
-const cluster = (o: Partial<FireCluster>) =>
-  ({
-    id: "f1",
-    short_id: "DZ1",
-    state: "extinguished",
-    first_detected_at: "2026-09-02T10:00:00Z",
-    est_area_ha: 12,
-    wilaya_id: "w-tizi",
+const row = (o: Partial<Parameters<typeof historyRecord>[0]>) =>
+  historyRecord({
+    id: "x",
+    hazard: "road",
+    at: "2026-09-22T10:00:00Z",
+    wilaya_id: null,
+    short_id: null,
+    area_ha: 0,
+    state: null,
+    event: null,
+    severity: null,
+    summary: null,
     ...o,
-  }) as FireCluster;
+  });
 
 const records = [
-  ...fireRecords([
-    cluster({}),
-    cluster({ id: "f2", state: "false_positive" }),
-    cluster({
-      id: "f3",
-      first_detected_at: "2026-09-10T09:00:00Z",
-      est_area_ha: 30,
-    }),
-  ]),
-  ...weatherRecords([
-    {
-      id: "o1",
-      wilaya_id: "w-batna",
-      event: "Thunderstorm",
-      severity: "Severe",
-      starts_at: "2026-08-31T23:30:00Z",
-    },
-  ]),
-  ...roadRecords(
-    [
-      {
-        id: "r1",
-        area_id: "c-akbil",
-        published_at: "2026-09-21T16:00:00Z",
-        summary: "Accident, RN12",
-      },
-      {
-        id: "r2",
-        area_id: "gone",
-        published_at: "2026-09-22T16:00:00Z",
-        summary: "x",
-      },
-    ],
-    units,
-  ),
+  row({
+    id: "f1",
+    hazard: "fire",
+    at: "2026-09-02T10:00:00Z",
+    wilaya_id: "w-tizi",
+    short_id: "DZ1",
+    area_ha: 12,
+    state: "extinguished",
+  }),
+  row({
+    id: "o1",
+    hazard: "weather",
+    at: "2026-08-31T23:30:00Z",
+    wilaya_id: "w-batna",
+    event: "Thunderstorm",
+    severity: "Severe",
+  }),
+  row({
+    id: "o2",
+    hazard: "weather",
+    at: "2026-08-30T23:30:00Z",
+    wilaya_id: "w-batna",
+    event: "Fog",
+    severity: "Moderate",
+  }),
+  row({
+    id: "r1",
+    hazard: "road",
+    at: "2026-09-21T16:00:00Z",
+    wilaya_id: "w-tizi",
+    summary: "Accident, RN12",
+  }),
 ];
 
 describe("hazard history", () => {
-  it("drops screened-out fires and maps each record to its wilaya", () => {
+  it("maps server rows to records, weather events to the map's categories", () => {
     expect(records.map((r) => [r.id, r.hazard, r.wilayaId])).toEqual([
       ["f1", "fire", "w-tizi"],
-      ["f3", "fire", "w-tizi"],
       ["o1", "weather", "w-batna"],
+      ["o2", "weather", "w-batna"],
       ["r1", "road", "w-tizi"],
-      ["r2", "road", null],
     ]);
-    expect(records[2]!.weather).toEqual({ event: "storm", severity: "Severe" });
-  });
-
-  it("states when each hazard's records start", () => {
-    expect(coverage(records)).toEqual({
-      fire: "2026-09-02T10:00:00Z",
-      weather: "2026-08-31T23:30:00Z",
-      road: "2026-09-21T16:00:00Z",
+    expect(records[0]!.fire).toEqual({
+      shortId: "DZ1",
+      areaHa: 12,
+      state: "extinguished",
     });
-  });
-
-  it("buckets by Algiers week and keeps empty weeks", () => {
-    const { granularity, rows } = buckets(
-      records,
-      Date.parse("2026-09-25T12:00:00Z"),
-    );
-    expect(granularity).toBe("week");
-    expect(rows.map((r) => r.start)).toEqual([
-      "2026-08-31",
-      "2026-09-07",
-      "2026-09-14",
-      "2026-09-21",
-    ]);
-    expect(rows[0]).toMatchObject({ fire: 1, weather: 1, burnedHa: 12 });
-    expect(rows[2]).toMatchObject({ fire: 0, weather: 0, road: 0 });
-    expect(rows[3]!.road).toBe(2);
-  });
-
-  it("switches to months once the archive is long", () => {
-    const { granularity, rows } = buckets(
-      records,
-      Date.parse("2027-02-01T12:00:00Z"),
-    );
-    expect(granularity).toBe("month");
-    expect(rows[0]!.start).toBe("2026-09-01");
-  });
-
-  it("ranks wilayas by records, or by burned area for fire alone, and counts the unlocated", () => {
-    const all = wilayaRanking(records, units, false);
-    expect(all.ranked.map((t) => [t.wilaya.id, t.total])).toEqual([
-      ["w-tizi", 3],
-      ["w-batna", 1],
-    ]);
-    expect(all.unlocated).toBe(1);
-    const fire = wilayaRanking(
-      records.filter((r) => r.hazard === "fire"),
-      units,
-      true,
-    );
-    expect(fire.ranked[0]!.burnedHa).toBe(42);
+    expect(records[1]!.weather).toEqual({ event: "storm", severity: "Severe" });
+    expect(records[2]!.weather?.event).toBe("other");
   });
 
   it("exports one CSV for every hazard and quotes commas", () => {
@@ -152,32 +103,9 @@ describe("hazard history", () => {
     );
   });
 
-  it("keeps a warning dated after this week in the chart", () => {
-    const ahead = weatherRecords([
-      {
-        id: "o9",
-        wilaya_id: "w-batna",
-        event: "Rain",
-        severity: "Moderate",
-        starts_at: "2026-10-02T08:00:00Z",
-      },
-    ]);
-    const { rows } = buckets(
-      [...records, ...ahead],
-      Date.parse("2026-09-25T12:00:00Z"),
-    );
-    expect(rows.at(-1)).toMatchObject({ start: "2026-09-28", weather: 1 });
-  });
-
   it("neutralises a leading tab or carriage return too", () => {
-    const rows = roadRecords(
-      ["\t=1+1", "\r@SUM(A1)"].map((summary, i) => ({
-        id: `t${i}`,
-        area_id: "c-akbil",
-        published_at: "2026-09-22T10:00:00Z",
-        summary,
-      })),
-      units,
+    const rows = ["\t=1+1", "\r@SUM(A1)"].map((summary, i) =>
+      row({ id: `t${i}`, wilaya_id: "w-tizi", summary }),
     );
     const lines = historyCsv(rows, units).split("\n");
     expect(lines[1]!.endsWith(",'\t=1+1")).toBe(true);
@@ -185,18 +113,12 @@ describe("hazard history", () => {
   });
 
   it("never lets exported text run as a spreadsheet formula", () => {
-    const [row] = roadRecords(
-      [
-        {
-          id: "r9",
-          area_id: "c-akbil",
-          published_at: "2026-09-22T10:00:00Z",
-          summary: '=HYPERLINK("http://x")',
-        },
-      ],
-      units,
-    );
-    expect(historyCsv([row!], units).split("\n")[1]).toBe(
+    const formula = row({
+      id: "r9",
+      wilaya_id: "w-tizi",
+      summary: '=HYPERLINK("http://x")',
+    });
+    expect(historyCsv([formula], units).split("\n")[1]).toBe(
       'road,r9,2026-09-22T10:00:00Z,Tizi Ouzou,"\'=HYPERLINK(""http://x"")"',
     );
   });

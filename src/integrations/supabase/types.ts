@@ -3646,6 +3646,21 @@ export type Database = {
       };
     };
     Views: {
+      hazard_history: {
+        Row: {
+          area_ha: number | null;
+          at: string | null;
+          event: string | null;
+          hazard: string | null;
+          id: string | null;
+          severity: string | null;
+          short_id: string | null;
+          state: string | null;
+          summary: string | null;
+          wilaya_id: string | null;
+        };
+        Relationships: [];
+      };
       airport_weather: {
         Row: {
           fetched_at: string | null;
@@ -3841,6 +3856,40 @@ export type Database = {
       };
     };
     Functions: {
+      hazard_history_summary: {
+        Args: {
+          _hazard?: string;
+          _now?: string;
+          _official_kinds?: string[];
+          _wilaya?: string;
+          _year?: number;
+        };
+        Returns: Json;
+      };
+      translation_queue_counts: { Args: never; Returns: Json };
+      idea_queue_counts: { Args: never; Returns: Json };
+      member_counts_for_admin: { Args: never; Returns: Json };
+      list_members_page: {
+        Args: {
+          _limit?: number;
+          _offset?: number;
+          _role?: string;
+          _search?: string;
+          _sort?: string;
+        };
+        Returns: {
+          created_at: string;
+          display_name: string;
+          email: string;
+          id: string;
+          last_sign_in_at: string;
+          locale: string;
+          matching: number;
+          report_count: number;
+          roles: Database["public"]["Enums"]["app_role"][];
+          zone_count: number;
+        }[];
+      };
       onm_suppressions_logged: { Args: { _ids: string[] }; Returns: string[] };
       store_onm_detail: {
         Args: {
@@ -4459,7 +4508,7 @@ export type Database = {
         Returns: boolean;
       };
       list_contribution_ideas_for_moderation: {
-        Args: never;
+        Args: { _limit?: number; _offset?: number; _status?: string };
         Returns: {
           contact: string | null;
           created_at: string;
@@ -4470,6 +4519,10 @@ export type Database = {
           moderated_by: string | null;
           moderation_note: string | null;
           published_at: string | null;
+          replied_at: string | null;
+          replied_by: string | null;
+          reply: string | null;
+          reply_author_kind: string | null;
           score: number;
           status: string;
         }[];
@@ -4499,7 +4552,12 @@ export type Database = {
         Returns: Json;
       };
       list_translation_suggestions_for_moderation: {
-        Args: never;
+        Args: {
+          _limit?: number;
+          _locale?: string;
+          _offset?: number;
+          _status?: string;
+        };
         Returns: {
           created_at: string;
           current_text: string;

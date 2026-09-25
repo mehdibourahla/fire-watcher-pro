@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  useInfiniteQuery,
+} from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import {
   ArrowRight,
@@ -34,6 +39,8 @@ import {
 import { getDeficits } from "@/lib/contribute.functions";
 import { pageMeta } from "@/lib/page-meta";
 import { cn } from "@/lib/utils";
+import { pageRows } from "@/lib/paging";
+import { LoadMore } from "@/components/LoadMore";
 
 export const Route = createFileRoute("/contribute")({
   head: () => ({
@@ -324,7 +331,7 @@ function CodeSection() {
 function Board() {
   const { t } = useTranslation();
   const qc = useQueryClient();
-  const ideas = useQuery(publishedIdeasQuery);
+  const ideas = useInfiniteQuery(publishedIdeasQuery);
   const [mine, setMine] = useState<Record<string, number>>({});
 
   const vote = useMutation({
@@ -351,7 +358,7 @@ function Board() {
     },
   });
 
-  const rows = ideas.data ?? [];
+  const rows = pageRows(ideas.data);
 
   return (
     <section className="mt-24">
@@ -382,65 +389,68 @@ function Board() {
           </p>
         </div>
       ) : (
-        <ul className="mt-6 flex flex-col gap-3">
-          {rows.map((idea) => {
-            const voted = mine[idea.id] ?? 0;
-            return (
-              <li key={idea.id} className="card flex items-start gap-5 p-5">
-                <div className="flex w-11 shrink-0 flex-col items-center">
-                  <button
-                    type="button"
-                    aria-label={t("contribute.voteUp")}
-                    disabled={vote.isPending}
-                    onClick={() => vote.mutate({ id: idea.id, value: 1 })}
-                    className="rounded-md p-1.5 text-faint transition-colors hover:bg-muted disabled:opacity-50"
-                  >
-                    <ThumbsUp
-                      aria-hidden
-                      className={cn(
-                        "size-4",
-                        voted === 1 && "text-[var(--accent)]",
-                      )}
-                    />
-                  </button>
-                  <span className="font-display tabular text-lg font-semibold">
-                    {idea.score}
-                  </span>
-                  <button
-                    type="button"
-                    aria-label={t("contribute.voteDown")}
-                    disabled={vote.isPending}
-                    onClick={() => vote.mutate({ id: idea.id, value: -1 })}
-                    className="rounded-md p-1.5 text-faint transition-colors hover:bg-muted disabled:opacity-50"
-                  >
-                    <ThumbsDown
-                      aria-hidden
-                      className={cn(
-                        "size-4",
-                        voted === -1 && "text-[var(--accent)]",
-                      )}
-                    />
-                  </button>
-                </div>
-                <div className="flex flex-1 flex-col gap-2">
-                  <p className="text-[15px] font-medium leading-relaxed">
-                    {idea.message}
-                  </p>
-                  <div className="flex flex-wrap items-center gap-2.5">
-                    <span className="rounded-md bg-[var(--accent-tint)] px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-[var(--accent)]">
-                      {t(`contribute.lane${cap(idea.lane)}`)}
+        <>
+          <ul className="mt-6 flex flex-col gap-3">
+            {rows.map((idea) => {
+              const voted = mine[idea.id] ?? 0;
+              return (
+                <li key={idea.id} className="card flex items-start gap-5 p-5">
+                  <div className="flex w-11 shrink-0 flex-col items-center">
+                    <button
+                      type="button"
+                      aria-label={t("contribute.voteUp")}
+                      disabled={vote.isPending}
+                      onClick={() => vote.mutate({ id: idea.id, value: 1 })}
+                      className="rounded-md p-1.5 text-faint transition-colors hover:bg-muted disabled:opacity-50"
+                    >
+                      <ThumbsUp
+                        aria-hidden
+                        className={cn(
+                          "size-4",
+                          voted === 1 && "text-[var(--accent)]",
+                        )}
+                      />
+                    </button>
+                    <span className="font-display tabular text-lg font-semibold">
+                      {idea.score}
                     </span>
-                    {voted !== 0 ? (
-                      <span className="text-xs font-medium text-[var(--accent)]">
-                        {t("contribute.voted")}
-                      </span>
-                    ) : null}
+                    <button
+                      type="button"
+                      aria-label={t("contribute.voteDown")}
+                      disabled={vote.isPending}
+                      onClick={() => vote.mutate({ id: idea.id, value: -1 })}
+                      className="rounded-md p-1.5 text-faint transition-colors hover:bg-muted disabled:opacity-50"
+                    >
+                      <ThumbsDown
+                        aria-hidden
+                        className={cn(
+                          "size-4",
+                          voted === -1 && "text-[var(--accent)]",
+                        )}
+                      />
+                    </button>
                   </div>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
+                  <div className="flex flex-1 flex-col gap-2">
+                    <p className="text-[15px] font-medium leading-relaxed">
+                      {idea.message}
+                    </p>
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      <span className="rounded-md bg-[var(--accent-tint)] px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-[var(--accent)]">
+                        {t(`contribute.lane${cap(idea.lane)}`)}
+                      </span>
+                      {voted !== 0 ? (
+                        <span className="text-xs font-medium text-[var(--accent)]">
+                          {t("contribute.voted")}
+                        </span>
+                      ) : null}
+                    </div>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+          <LoadMore query={ideas} />
+        </>
       )}
 
       <p className="mt-4 text-xs leading-relaxed text-faint">

@@ -4,7 +4,6 @@ import type { Geometry } from "geojson";
 import { isInAlgeriaNorth } from "@/lib/ingest/geo";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchAllPages } from "@/lib/paginate";
-import type { OnmHistoryRow, RoadHistoryRow } from "@/lib/hazard-history";
 import type { AnyLocale, Locale } from "@/i18n";
 import {
   FIRE_KINDS,
@@ -349,72 +348,6 @@ export const clustersQuery = queryOptions({
 });
 
 /** History is an archive, so it must not inherit the live map's 72h window. */
-export const historyClustersQuery = queryOptions({
-  queryKey: ["clusters", "history"],
-  queryFn: async () => {
-    const page = 1000;
-    const all: FireCluster[] = [];
-    for (let i = 0; i < 10; i += 1) {
-      const { data, error } = await supabase
-        .from("fire_clusters")
-        .select(FIRE_CLUSTER_FIELDS)
-        .neq("state", "false_positive")
-        .order("first_detected_at", { ascending: false })
-        .range(i * page, i * page + page - 1);
-      if (error) throw new Error(error.message);
-      const rows = (data ?? []) as unknown as FireCluster[];
-      all.push(...rows);
-      if (rows.length < page) break;
-    }
-    return all;
-  },
-});
-
-export const onmHistoryQuery = queryOptions({
-  queryKey: ["onm_warning_history"],
-  queryFn: () =>
-    fetchAllPages<OnmHistoryRow>((from, to) =>
-      supabase
-        .from("onm_warning_history")
-        .select("id, wilaya_id, event, severity, starts_at")
-        .order("starts_at", { ascending: false })
-        .order("id")
-        .range(from, to),
-    ),
-});
-
-export const roadHistoryQuery = queryOptions({
-  queryKey: ["civil_publications", "road", "history"],
-  queryFn: () =>
-    fetchAllPages<RoadHistoryRow>((from, to) =>
-      supabase
-        .from("civil_publications")
-        .select("id, area_id, published_at, summary")
-        .eq("hazard", "road")
-        .eq("state", "published")
-        .order("published_at", { ascending: false })
-        .order("id")
-        .range(from, to),
-    ),
-});
-
-export const officialHistoryQuery = queryOptions({
-  queryKey: ["official_incidents", "history"],
-  queryFn: () =>
-    fetchAllPages<{
-      id: string;
-      wilaya_id: string | null;
-      first_reported_at: string;
-    }>((from, to) =>
-      supabase
-        .from("official_incidents")
-        .select("id, wilaya_id, first_reported_at")
-        .in("kind", [...FIRE_KINDS])
-        .is("unlisted_at", null)
-        .order("id")
-        .range(from, to),
-    ),
-});
 
 export const adminUnitsQuery = queryOptions({
   queryKey: ["admin_units"],

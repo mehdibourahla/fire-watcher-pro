@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  useInfiniteQuery,
+} from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useTranslation } from "react-i18next";
@@ -7,6 +12,8 @@ import type { Locale } from "@/i18n";
 import {
   alertFiresQuery,
   alertsQuery,
+  markAllAlertsRead,
+  unreadAlertsQuery,
   deleteAlerts,
   markAlertsRead,
   type Alert,
@@ -19,6 +26,8 @@ import { RiskChip } from "@/components/nadhir/RiskChip";
 import { riskSolid } from "@/components/nadhir/risk-visuals";
 import { relativeTime } from "@/lib/nadhir";
 import { titledMeta } from "@/lib/page-meta";
+import { pageRows } from "@/lib/paging";
+import { LoadMore } from "@/components/LoadMore";
 
 export const Route = createFileRoute("/_authenticated/alerts")({
   head: () => ({
@@ -35,7 +44,8 @@ function AlertsPage() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language as Locale;
   const qc = useQueryClient();
-  const alerts = useQuery(alertsQuery);
+  const alerts = useInfiniteQuery(alertsQuery);
+  const unreadCount = useQuery(unreadAlertsQuery);
   const zones = useQuery(zonesQuery);
   const check = useServerFn(runMyAlertCheck);
 
@@ -50,11 +60,7 @@ function AlertsPage() {
     onSuccess: invalidate,
   });
   const allReadMutation = useMutation({
-    mutationFn: () =>
-      markAlertsRead(
-        (alerts.data ?? []).filter((a) => !a.read_at).map((a) => a.id),
-        true,
-      ),
+    mutationFn: markAllAlertsRead,
     onSuccess: invalidate,
   });
   const checkMutation = useMutation({
@@ -62,8 +68,8 @@ function AlertsPage() {
     onSuccess: invalidate,
   });
 
-  const rows = alerts.data ?? [];
-  const unread = rows.filter((a) => !a.read_at).length;
+  const rows = pageRows(alerts.data);
+  const unread = unreadCount.data ?? 0;
   const groups = groupAlerts(rows);
   const fires = useQuery(
     alertFiresQuery(
@@ -140,26 +146,29 @@ function AlertsPage() {
           </Link>
         </div>
       ) : (
-        <ul className="mt-6 space-y-3">
-          {groups.map((group) => (
-            <AlertCard
-              key={group.key}
-              group={group}
-              phase={groupPhase(group, fires.data ?? new Map(), now)}
-              locale={locale}
-              zoneName={zoneName(group.latest.zone_id)}
-              onToggleRead={() =>
-                readMutation.mutate({
-                  ids: group.messages.map((m) => m.id),
-                  read: group.unread > 0,
-                })
-              }
-              onDelete={() =>
-                deleteMutation.mutate(group.messages.map((m) => m.id))
-              }
-            />
-          ))}
-        </ul>
+        <>
+          <ul className="mt-6 space-y-3">
+            {groups.map((group) => (
+              <AlertCard
+                key={group.key}
+                group={group}
+                phase={groupPhase(group, fires.data ?? new Map(), now)}
+                locale={locale}
+                zoneName={zoneName(group.latest.zone_id)}
+                onToggleRead={() =>
+                  readMutation.mutate({
+                    ids: group.messages.map((m) => m.id),
+                    read: group.unread > 0,
+                  })
+                }
+                onDelete={() =>
+                  deleteMutation.mutate(group.messages.map((m) => m.id))
+                }
+              />
+            ))}
+          </ul>
+          <LoadMore query={alerts} />
+        </>
       )}
     </main>
   );

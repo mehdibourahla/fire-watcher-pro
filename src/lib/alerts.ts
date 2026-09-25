@@ -1,6 +1,7 @@
-import { queryOptions } from "@tanstack/react-query";
+import { queryOptions, infiniteQueryOptions } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
+import { firstPage, nextOffset, pageRange } from "@/lib/paging";
 
 export type Alert = {
   id: string;
@@ -32,18 +33,41 @@ export type Alert = {
   created_at: string;
 };
 
-export const alertsQuery = queryOptions({
+export const alertsQuery = infiniteQueryOptions({
   queryKey: ["alerts"],
-  queryFn: async () => {
+  initialPageParam: firstPage,
+  getNextPageParam: nextOffset,
+  queryFn: async ({ pageParam }) => {
     const { data, error } = await supabase
       .from("alerts")
       .select("*")
       .order("created_at", { ascending: false })
-      .limit(200);
+      .order("id", { ascending: false })
+      .range(...pageRange(pageParam));
     if (error) throw new Error(error.message);
     return (data ?? []) as unknown as Alert[];
   },
 });
+
+export const unreadAlertsQuery = queryOptions({
+  queryKey: ["alerts", "unread"],
+  queryFn: async () => {
+    const { count, error } = await supabase
+      .from("alerts")
+      .select("id", { count: "exact", head: true })
+      .is("read_at", null);
+    if (error) throw new Error(error.message);
+    return count ?? 0;
+  },
+});
+
+export async function markAllAlertsRead() {
+  const { error } = await supabase
+    .from("alerts")
+    .update({ read_at: new Date().toISOString() })
+    .is("read_at", null);
+  if (error) throw new Error(error.message);
+}
 
 export const alertFiresQuery = (ids: string[]) => {
   const sorted = [...new Set(ids)].sort();

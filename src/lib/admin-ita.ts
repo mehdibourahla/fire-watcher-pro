@@ -1,8 +1,9 @@
-import { queryOptions } from "@tanstack/react-query";
+import { infiniteQueryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ItaExtractionSchema } from "@/lib/text-sources/ita-extraction";
 import { StoredCivilDecisionSchema } from "@/lib/civil-agent";
 import type { Json } from "@/integrations/supabase/types";
+import { firstPage, nextOffset, pageRange, pageRows } from "@/lib/paging";
 
 const parseHistory = (
   decisions: {
@@ -19,62 +20,78 @@ const parseHistory = (
       decision: StoredCivilDecisionSchema.parse(entry.decision),
     }));
 
-export const civilAttentionQuery = (page = 0) =>
-  queryOptions({
-    queryKey: ["admin", "civil-attention", page],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("civil_investigations")
-        .select(
-          "id,report_id,incident_index,state,error,updated_at,civil_decisions(decision,attempt,created_at,trace),report:ita_reports!inner(source_page,source_url,published_at,body,extraction,civil_publications(incident_index))",
-        )
-        .in("state", ["review", "failed"])
-        .order("updated_at")
-        .order("id")
-        .range(page * 50, page * 50 + 49);
-      if (error) throw new Error(error.message);
-      return data.map((work) => {
-        const history = parseHistory(work.civil_decisions);
-        const extraction = ItaExtractionSchema.parse(work.report.extraction);
-        return {
-          ...work,
-          history,
-          latest: history[0]?.decision ?? null,
-          summary: extraction.incidents[work.incident_index]?.summary_fr ?? "",
-        };
-      });
-    },
-    staleTime: 30_000,
-    refetchInterval: 30_000,
+async function fetchCivilAttention(offset: number) {
+  const { data, error } = await supabase
+    .from("civil_investigations")
+    .select(
+      "id,report_id,incident_index,state,error,updated_at,civil_decisions(decision,attempt,created_at,trace),report:ita_reports!inner(source_page,source_url,published_at,body,extraction,civil_publications(incident_index))",
+    )
+    .in("state", ["review", "failed"])
+    .order("updated_at")
+    .order("id")
+    .range(...pageRange(offset));
+  if (error) throw new Error(error.message);
+  return data.map((work) => {
+    const history = parseHistory(work.civil_decisions);
+    const extraction = ItaExtractionSchema.parse(work.report.extraction);
+    return {
+      ...work,
+      history,
+      latest: history[0]?.decision ?? null,
+      summary: extraction.incidents[work.incident_index]?.summary_fr ?? "",
+    };
   });
+}
+
+export type CivilAttention = Awaited<
+  ReturnType<typeof fetchCivilAttention>
+>[number];
+
+export const civilAttentionQuery = infiniteQueryOptions({
+  queryKey: ["admin", "civil-attention"],
+  initialPageParam: firstPage,
+  getNextPageParam: nextOffset,
+  select: pageRows,
+  queryFn: ({ pageParam }) => fetchCivilAttention(pageParam),
+  staleTime: 30_000,
+  refetchInterval: 30_000,
+});
+
+async function fetchItaReports(offset: number, exhaustedOnly: boolean) {
+  let query = supabase
+    .from("ita_reports")
+    .select(
+      "id, source_page, source_url, published_at, fetched_at, body, extraction, extraction_error, extraction_attempts, civil_publications(id, incident_index, state), civil_investigations(id, incident_index, state, error, civil_decisions(decision, attempt, created_at, trace))",
+    )
+    .order("fetched_at", { ascending: false })
+    .order("id")
+    .range(...pageRange(offset));
+  if (exhaustedOnly)
+    query = query.is("extraction", null).gte("extraction_attempts", 5);
+  const { data, error } = await query;
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((row) => ({
+    ...row,
+    extraction:
+      row.extraction === null
+        ? null
+        : ItaExtractionSchema.parse(row.extraction),
+    civil_investigations: row.civil_investigations.map((work) => ({
+      ...work,
+      history: parseHistory(work.civil_decisions),
+    })),
+  }));
+}
+
+export type ItaReport = Awaited<ReturnType<typeof fetchItaReports>>[number];
 
 export const itaReportsQuery = (exhaustedOnly = false) =>
-  queryOptions({
+  infiniteQueryOptions({
     queryKey: ["admin", "ita", "feed", exhaustedOnly],
-    queryFn: async () => {
-      let query = supabase
-        .from("ita_reports")
-        .select(
-          "id, source_page, source_url, published_at, fetched_at, body, extraction, extraction_error, extraction_attempts, civil_publications(id, incident_index, state), civil_investigations(id, incident_index, state, error, civil_decisions(decision, attempt, created_at, trace))",
-        )
-        .order("fetched_at", { ascending: false })
-        .limit(50);
-      if (exhaustedOnly)
-        query = query.is("extraction", null).gte("extraction_attempts", 5);
-      const { data, error } = await query;
-      if (error) throw new Error(error.message);
-      return (data ?? []).map((row) => ({
-        ...row,
-        extraction:
-          row.extraction === null
-            ? null
-            : ItaExtractionSchema.parse(row.extraction),
-        civil_investigations: row.civil_investigations.map((work) => ({
-          ...work,
-          history: parseHistory(work.civil_decisions),
-        })),
-      }));
-    },
+    initialPageParam: firstPage,
+    getNextPageParam: nextOffset,
+    select: pageRows,
+    queryFn: ({ pageParam }) => fetchItaReports(pageParam, exhaustedOnly),
     staleTime: 30_000,
     refetchInterval: 30_000,
   });

@@ -1,6 +1,13 @@
-import { queryOptions } from "@tanstack/react-query";
+import { queryOptions, infiniteQueryOptions } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
+import {
+  PAGE_SIZE,
+  firstPage,
+  nextOffset,
+  pageRange,
+  pageRows,
+} from "@/lib/paging";
 
 export const LANES = [
   "local",
@@ -98,28 +105,45 @@ export function percent(done: number, total: number): number {
   return Math.max(0, Math.min(100, Math.round((done / total) * 100)));
 }
 
-export const publishedIdeasQuery = queryOptions({
+export const publishedIdeasQuery = infiniteQueryOptions({
   queryKey: ["contribution-ideas", "published"],
-  queryFn: async () => {
+  initialPageParam: firstPage,
+  getNextPageParam: nextOffset,
+  queryFn: async ({ pageParam }) => {
     const { data, error } = await supabase
       .from("published_contribution_ideas")
       .select("id, lane, message, score, published_at")
       .order("score", { ascending: false })
       .order("published_at", { ascending: false })
-      .limit(50);
+      .order("id")
+      .range(...pageRange(pageParam));
     if (error) throw new Error(error.message);
     return (data ?? []) as unknown as PublishedIdea[];
   },
 });
 
-export const ideaQueueQuery = queryOptions({
-  queryKey: ["contribution-ideas", "queue"],
+export const ideaQueueQuery = (status: IdeaStatus) =>
+  infiniteQueryOptions({
+    queryKey: ["contribution-ideas", "queue", status],
+    initialPageParam: firstPage,
+    getNextPageParam: nextOffset,
+    select: pageRows,
+    queryFn: async ({ pageParam }) => {
+      const { data, error } = await supabase.rpc(
+        "list_contribution_ideas_for_moderation",
+        { _status: status, _offset: pageParam, _limit: PAGE_SIZE },
+      );
+      if (error) throw new Error(error.message);
+      return (data ?? []) as unknown as ContributionIdea[];
+    },
+  });
+
+export const ideaCountsQuery = queryOptions({
+  queryKey: ["contribution-ideas", "counts"],
   queryFn: async () => {
-    const { data, error } = await supabase.rpc(
-      "list_contribution_ideas_for_moderation",
-    );
+    const { data, error } = await supabase.rpc("idea_queue_counts");
     if (error) throw new Error(error.message);
-    return (data ?? []) as unknown as ContributionIdea[];
+    return data as Partial<Record<IdeaStatus, number>>;
   },
 });
 

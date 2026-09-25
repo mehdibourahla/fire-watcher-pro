@@ -327,7 +327,6 @@ export const adminEn = {
     byYou: "by you",
     aRole: "a role",
     someone: "a member",
-    more: "Load older entries",
     action: {
       authority_warning_relay: "Relayed an authority warning",
       fire_resolve: "Resolved a fire",

@@ -73,6 +73,8 @@ export const kab: Translation = {
     changePassword: "Définir ou modifier le mot de passe",
   },
   common: {
+    loadMore: "Afficher plus",
+    showMore: "Afficher {{count}} de plus (reste : {{remaining}})",
     close: "Belaɛ",
     cancel: "Annuler",
     dismiss: "Ffer",

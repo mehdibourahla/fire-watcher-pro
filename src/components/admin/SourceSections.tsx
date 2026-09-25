@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  useInfiniteQuery,
+} from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -282,7 +287,7 @@ export function Delivery() {
 
 export function Incidents() {
   const { t } = useTranslation("admin");
-  const incidents = useQuery(operationalIncidentsQuery);
+  const incidents = useInfiniteQuery(operationalIncidentsQuery);
   const invalidate = useInvalidate();
   const [showResolved, setShowResolved] = useState(false);
   const acknowledge = useMutation({
@@ -367,7 +372,7 @@ export function Incidents() {
 
 export function Gaps() {
   const { t } = useTranslation("admin");
-  const gaps = useQuery(openGapsQuery);
+  const gaps = useInfiniteQuery(openGapsQuery);
   const invalidate = useInvalidate();
   return (
     <QueryState

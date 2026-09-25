@@ -1,7 +1,8 @@
-import { queryOptions } from "@tanstack/react-query";
+import { queryOptions, infiniteQueryOptions } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
 import { withProcessingHealth } from "./source-health";
+import { firstPage, nextOffset, pageRange, pageRows } from "@/lib/paging";
 
 export type SourceHealthRow = {
   processing_only?: boolean;
@@ -67,9 +68,12 @@ export type SourceGap = {
   detected_at: string;
 };
 
-export const openGapsQuery = queryOptions({
+export const openGapsQuery = infiniteQueryOptions({
   queryKey: ["admin", "sources", "gaps"],
-  queryFn: async (): Promise<SourceGap[]> => {
+  initialPageParam: firstPage,
+  getNextPageParam: nextOffset,
+  select: pageRows,
+  queryFn: async ({ pageParam }): Promise<SourceGap[]> => {
     const { data, error } = await supabase
       .from("source_gaps")
       .select(
@@ -77,7 +81,8 @@ export const openGapsQuery = queryOptions({
       )
       .neq("state", "resolved")
       .order("detected_at", { ascending: false })
-      .limit(100);
+      .order("id")
+      .range(...pageRange(pageParam));
     if (error) throw new Error(error.message);
     return (data ?? []) as SourceGap[];
   },
@@ -126,9 +131,12 @@ export type OperationalIncident = {
   resolved_at: string | null;
 };
 
-export const operationalIncidentsQuery = queryOptions({
+export const operationalIncidentsQuery = infiniteQueryOptions({
   queryKey: ["admin", "sources", "incidents"],
-  queryFn: async (): Promise<OperationalIncident[]> => {
+  initialPageParam: firstPage,
+  getNextPageParam: nextOffset,
+  select: pageRows,
+  queryFn: async ({ pageParam }): Promise<OperationalIncident[]> => {
     const { data, error } = await supabase
       .from("operational_incidents")
       .select(
@@ -136,7 +144,8 @@ export const operationalIncidentsQuery = queryOptions({
       )
       .order("resolved_at", { ascending: false, nullsFirst: true })
       .order("last_seen_at", { ascending: false })
-      .limit(100);
+      .order("id")
+      .range(...pageRange(pageParam));
     if (error) throw new Error(error.message);
     return (data ?? []) as OperationalIncident[];
   },

@@ -1,10 +1,11 @@
-import { queryOptions } from "@tanstack/react-query";
+import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 
 import { ar } from "@/i18n/locales/ar";
 import { en } from "@/i18n/locales/en";
 import { fr } from "@/i18n/locales/fr";
 import { kab } from "@/i18n/locales/kab";
 import { supabase } from "@/integrations/supabase/client";
+import { PAGE_SIZE, firstPage, pageRows } from "@/lib/paging";
 
 export const REVIEWABLE = ["ar", "fr", "kab"] as const;
 export type ReviewableLocale = (typeof REVIEWABLE)[number];
@@ -193,14 +194,43 @@ export type TranslationSuggestion = {
   moderation_note: string | null;
 };
 
-export const suggestionQueueQuery = queryOptions({
-  queryKey: ["translation-suggestions", "queue"],
+const stringsIn = (page: TranslationSuggestion[]) =>
+  new Set(page.map((s) => `${s.locale}:${s.key_path}`)).size;
+
+export const suggestionQueueQuery = (
+  status: SuggestionStatus,
+  locale: string | null,
+) =>
+  infiniteQueryOptions({
+    queryKey: ["translation-suggestions", "queue", status, locale],
+    initialPageParam: firstPage,
+    getNextPageParam: (last: TranslationSuggestion[], pages) =>
+      stringsIn(last) < PAGE_SIZE ? null : pages.length * PAGE_SIZE,
+    select: pageRows,
+    queryFn: async ({ pageParam }) => {
+      const { data, error } = await supabase.rpc(
+        "list_translation_suggestions_for_moderation",
+        {
+          _status: status,
+          ...(locale ? { _locale: locale } : {}),
+          _offset: pageParam,
+          _limit: PAGE_SIZE,
+        },
+      );
+      if (error) throw new Error(error.message);
+      return (data ?? []) as unknown as TranslationSuggestion[];
+    },
+  });
+
+export const suggestionCountsQuery = queryOptions({
+  queryKey: ["translation-suggestions", "counts"],
   queryFn: async () => {
-    const { data, error } = await supabase.rpc(
-      "list_translation_suggestions_for_moderation",
-    );
+    const { data, error } = await supabase.rpc("translation_queue_counts");
     if (error) throw new Error(error.message);
-    return (data ?? []) as unknown as TranslationSuggestion[];
+    return data as {
+      strings: Partial<Record<SuggestionStatus, number>>;
+      locales: string[];
+    };
   },
 });
 

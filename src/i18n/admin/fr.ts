@@ -335,7 +335,6 @@ export const adminFr: AdminTranslation = {
     byYou: "par vous",
     aRole: "un rôle",
     someone: "un membre",
-    more: "Charger les entrées plus anciennes",
     action: {
       authority_warning_relay: "A relayé un avertissement officiel",
       fire_resolve: "A clôturé un feu",

@@ -69,6 +69,8 @@ export const en = {
     changePassword: "Set or change password",
   },
   common: {
+    loadMore: "Show more",
+    showMore: "Show {{count}} more · {{remaining}} left",
     close: "Close",
     cancel: "Cancel",
     dismiss: "Dismiss",

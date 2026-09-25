@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  useInfiniteQuery,
+} from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowLeft,
@@ -33,6 +38,8 @@ import {
   type ReportKind,
   type ReportPhotoDraft,
 } from "@/lib/reports";
+import { pageRows } from "@/lib/paging";
+import { LoadMore } from "@/components/LoadMore";
 
 type ReportSearch = { kind?: ReportKind };
 
@@ -444,7 +451,8 @@ function Home({ onStart }: { onStart: () => void }) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language as Locale;
   const qc = useQueryClient();
-  const mine = useQuery(myReportsQuery);
+  const mine = useInfiniteQuery(myReportsQuery);
+  const myReports = pageRows(mine.data);
   const remove = useMutation({
     mutationFn: deleteReport,
     onSuccess: () => void qc.invalidateQueries({ queryKey: ["reports"] }),
@@ -488,21 +496,24 @@ function Home({ onStart }: { onStart: () => void }) {
               {t("common.retry")}
             </Button>
           </div>
-        ) : mine.data.length === 0 ? (
+        ) : myReports.length === 0 ? (
           <p className="mt-3 text-sm text-muted-foreground">
             {t("reports.empty")}
           </p>
         ) : (
-          <ul className="mt-3 space-y-2">
-            {mine.data.map((r) => (
-              <ReportRow
-                key={r.id}
-                report={r}
-                locale={locale}
-                onDelete={() => remove.mutate(r.id)}
-              />
-            ))}
-          </ul>
+          <>
+            <ul className="mt-3 space-y-2">
+              {myReports.map((r) => (
+                <ReportRow
+                  key={r.id}
+                  report={r}
+                  locale={locale}
+                  onDelete={() => remove.mutate(r.id)}
+                />
+              ))}
+            </ul>
+            <LoadMore query={mine} />
+          </>
         )}
       </section>
       <p className="text-sm text-muted-foreground">

@@ -591,7 +591,6 @@ export const adminAr: AdminTranslation = {
     byYou: "بواسطتك",
     aRole: "دوراً",
     someone: "عضو",
-    more: "تحميل إدخالات أقدم",
     action: {
       authority_warning_relay: "أعاد نشر تحذير رسمي",
       fire_resolve: "أغلق حريقاً",

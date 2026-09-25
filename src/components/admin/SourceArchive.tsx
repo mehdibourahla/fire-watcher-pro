@@ -1,17 +1,18 @@
 import { useState } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useInfiniteQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import {
   downloadSourcePayload,
   sourceArchiveQuery,
 } from "@/lib/admin-source-archive";
+import { LoadMore } from "@/components/LoadMore";
 
 export function SourceArchive() {
   const { t } = useTranslation("admin");
   const [source, setSource] = useState("");
   const [draft, setDraft] = useState("");
   const [errorsOnly, setErrorsOnly] = useState(false);
-  const captures = useQuery(sourceArchiveQuery(source, errorsOnly));
+  const captures = useInfiniteQuery(sourceArchiveQuery(source, errorsOnly));
   const download = useMutation({ mutationFn: downloadSourcePayload });
   return (
     <section className="mt-8" aria-labelledby="source-archive-title">
@@ -106,6 +107,7 @@ export function SourceArchive() {
           </details>
         ))}
       </div>
+      <LoadMore query={captures} />
     </section>
   );
 }

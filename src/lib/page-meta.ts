@@ -16,9 +16,15 @@ export function pageMeta(
   ];
 }
 
-export function titledMeta(pageTitleKey: string, descriptionKey?: string) {
+export function titledMeta(
+  pageTitleKey: string,
+  descriptionKey?: string,
+  params?: Record<string, string>,
+) {
   const t = headTranslator();
-  const title = t("meta.titleTemplate", { page: t(pageTitleKey) });
+  const title = t("meta.titleTemplate", {
+    page: t(pageTitleKey, params ?? {}),
+  });
   const meta: Record<string, string>[] = [
     { title },
     { property: "og:title", content: title },

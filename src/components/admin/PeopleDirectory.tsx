@@ -1,5 +1,9 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import {
+  useInfiniteQuery,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
@@ -34,7 +38,9 @@ import {
   applyRoleChanges,
   currentUserIdQuery,
   GRANTABLE_ROLES,
-  membersQuery,
+  memberCountsQuery,
+  membersPageQuery,
+  type MemberSort,
   roleChanges,
   roleMutationErrorKey,
   type AppRole,
@@ -44,7 +50,6 @@ import {
 import { cn } from "@/lib/utils";
 
 type RoleFilter = AppRole | "none" | null;
-type Sort = "newest" | "oldest" | "email";
 
 const heldRoles = (member: Member) =>
   member.roles.filter((role) => GRANTABLE_ROLES.includes(role));
@@ -262,47 +267,30 @@ function MemberPanel({
 
 export function PeopleDirectory() {
   const { t } = useTranslation("admin");
-  const members = useQuery(membersQuery);
+  const [search, setSearch] = useState("");
+  const [needle, setNeedle] = useState("");
+  const [roleFilter, setRoleFilter] = useState<RoleFilter>(null);
+  const [sort, setSort] = useState<MemberSort>("newest");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  useEffect(() => {
+    const timer = window.setTimeout(() => setNeedle(search.trim()), 250);
+    return () => window.clearTimeout(timer);
+  }, [search]);
+  const members = useInfiniteQuery(membersPageQuery(needle, roleFilter, sort));
+  const counts = useQuery(memberCountsQuery);
   const adminCount = useQuery(adminCountQuery);
   const me = useQuery(currentUserIdQuery);
-  const [search, setSearch] = useState("");
-  const [roleFilter, setRoleFilter] = useState<RoleFilter>(null);
-  const [sort, setSort] = useState<Sort>("newest");
-  const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const q = search.trim().toLowerCase();
-  const all = members.data ?? [];
-  const rows = all
-    .filter(
-      (m) =>
-        !q ||
-        (m.display_name ?? "").toLowerCase().includes(q) ||
-        m.email.toLowerCase().includes(q) ||
-        m.id.toLowerCase().includes(q),
-    )
-    .filter((m) =>
-      roleFilter === null
-        ? true
-        : roleFilter === "none"
-          ? heldRoles(m).length === 0
-          : m.roles.includes(roleFilter),
-    )
-    .sort((a, b) =>
-      sort === "email"
-        ? a.email.localeCompare(b.email)
-        : sort === "oldest"
-          ? a.created_at.localeCompare(b.created_at)
-          : b.created_at.localeCompare(a.created_at),
-    );
-  const selected = all.find((m) => m.id === selectedId) ?? null;
+  const rows = members.data ?? [];
+  const selected = rows.find((m) => m.id === selectedId) ?? null;
 
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground">
         {t("people.counts", {
-          total: all.length,
-          withRole: all.filter((m) => heldRoles(m).length > 0).length,
-          shown: rows.length,
+          total: counts.data?.total ?? 0,
+          withRole: counts.data?.with_role ?? 0,
+          shown: rows[0]?.matching ?? 0,
         })}
       </p>
       <div className="flex flex-wrap items-center gap-2">
@@ -317,7 +305,7 @@ export function PeopleDirectory() {
           aria-label={t("people.sort")}
           className="h-8 rounded-md border border-input bg-background px-2 text-sm"
           value={sort}
-          onChange={(event) => setSort(event.target.value as Sort)}
+          onChange={(event) => setSort(event.target.value as MemberSort)}
         >
           <option value="newest">{t("people.sortNewest")}</option>
           <option value="oldest">{t("people.sortOldest")}</option>
