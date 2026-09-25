@@ -1,6 +1,7 @@
-import { queryOptions } from "@tanstack/react-query";
+import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
+import { PAGE_SIZE, firstPage, nextOffset, pageRows } from "@/lib/paging";
 
 export type AppRole =
   | "admin"
@@ -109,6 +110,40 @@ export const membersQuery = queryOptions({
     const { data, error } = await supabase.rpc("list_members_for_admin");
     if (error) throw new Error(error.message);
     return (data ?? []) as Member[];
+  },
+});
+
+export type MemberSort = "newest" | "oldest" | "email";
+
+export const membersPageQuery = (
+  search: string,
+  role: AppRole | "none" | null,
+  sort: MemberSort,
+) =>
+  infiniteQueryOptions({
+    queryKey: ["roles", "members", "page", search, role, sort],
+    initialPageParam: firstPage,
+    getNextPageParam: nextOffset,
+    select: pageRows,
+    queryFn: async ({ pageParam }) => {
+      const { data, error } = await supabase.rpc("list_members_page", {
+        ...(search ? { _search: search } : {}),
+        ...(role ? { _role: role } : {}),
+        _sort: sort,
+        _offset: pageParam,
+        _limit: PAGE_SIZE,
+      });
+      if (error) throw new Error(error.message);
+      return (data ?? []) as (Member & { matching: number })[];
+    },
+  });
+
+export const memberCountsQuery = queryOptions({
+  queryKey: ["roles", "members", "counts"],
+  queryFn: async () => {
+    const { data, error } = await supabase.rpc("member_counts_for_admin");
+    if (error) throw new Error(error.message);
+    return data as { total: number; with_role: number };
   },
 });
 

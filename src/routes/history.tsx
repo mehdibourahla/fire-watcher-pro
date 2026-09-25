@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Download } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -20,27 +20,25 @@ import {
   SkeletonList,
 } from "@/components/nadhir/states";
 import type { Locale } from "@/i18n";
+import { LoadMore } from "@/components/LoadMore";
+import { ONM_EVENTS } from "@/lib/civil-map-geometry";
 import {
-  buckets,
-  coverage,
-  fireRecords,
+  allHistoryRecords,
   HAZARDS,
   historyCsv,
-  roadRecords,
-  weatherRecords,
-  wilayaRanking,
+  historyRecordsQuery,
+  historySummaryQuery,
+  recentRoadsQuery,
   type Hazard,
+  type HistoryFilters,
   type HistoryRecord,
 } from "@/lib/hazard-history";
 import {
   adminUnitsQuery,
   algiersTime,
-  historyClustersQuery,
   intlLocale,
-  officialHistoryQuery,
-  onmHistoryQuery,
-  roadHistoryQuery,
   unitName,
+  type AdminUnit,
 } from "@/lib/nadhir";
 import { pageMeta } from "@/lib/page-meta";
 import { ONM_SEVERITY } from "@/lib/zone-hazards";
@@ -51,47 +49,42 @@ export const Route = createFileRoute("/history")({
   }),
   loader: ({ context }) =>
     Promise.all([
-      context.queryClient.ensureQueryData(historyClustersQuery),
+      context.queryClient.ensureQueryData(historySummaryQuery(ALL)),
+      context.queryClient.ensureInfiniteQueryData(historyRecordsQuery(ALL)),
       context.queryClient.ensureQueryData(adminUnitsQuery),
     ]),
   component: HistoryPage,
 });
 
-const SHOWN = 300;
-const yearOf = (iso: string) => new Date(iso).getUTCFullYear();
+const ALL: HistoryFilters = { hazard: null, wilayaId: null, year: null };
 
 function HistoryPage() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language as Locale;
-  const clusters = useQuery(historyClustersQuery);
   const units = useQuery(adminUnitsQuery);
-  const onm = useQuery(onmHistoryQuery);
-  const road = useQuery(roadHistoryQuery);
-  const official = useQuery(officialHistoryQuery);
-  const [now] = useState(() => Date.now());
 
   const [hazard, setHazard] = useState<"all" | Hazard>("all");
   const [wilayaId, setWilayaId] = useState("all");
   const [year, setYear] = useState<"all" | number>("all");
+  const filters: HistoryFilters = {
+    hazard: hazard === "all" ? null : hazard,
+    wilayaId: wilayaId === "all" ? null : wilayaId,
+    year: year === "all" ? null : year,
+  };
+  const summary = useQuery(historySummaryQuery(filters));
+  const records = useInfiniteQuery(historyRecordsQuery(filters));
+  const inView: Hazard[] = hazard === "all" ? HAZARDS : [hazard];
+  const roads = useQuery({
+    ...recentRoadsQuery(filters),
+    enabled: inView.includes("road"),
+  });
 
-  const sources = { fire: clusters, weather: onm, road } as const;
-  const failed = HAZARDS.filter((h) => sources[h].isError);
-  const loading = units.isPending || HAZARDS.some((h) => sources[h].isPending);
-
-  const records = useMemo(
-    () =>
-      [
-        ...fireRecords(clusters.data ?? []),
-        ...weatherRecords(onm.data ?? []),
-        ...roadRecords(road.data ?? [], units.data ?? []),
-      ].sort((a, b) => b.at.localeCompare(a.at)),
-    [clusters.data, onm.data, road.data, units.data],
-  );
-  const since = useMemo(() => coverage(records), [records]);
-  const years = useMemo(
-    () => [...new Set(records.map((r) => yearOf(r.at)))].sort((a, b) => b - a),
-    [records],
-  );
+  const failed = summary.isError;
+  const loading = units.isPending || summary.isPending;
+  const rows = records.data ?? [];
+  const total = summary.data?.total ?? 0;
+  const since = summary.data?.coverage ?? {};
+  const years = summary.data?.years ?? [];
   const wilayas = useMemo(
     () => (units.data ?? []).filter((u) => u.level === "wilaya"),
     [units.data],
@@ -100,30 +93,30 @@ function HistoryPage() {
     () => new Map(wilayas.map((w) => [w.id, unitName(w, locale)])),
     [wilayas, locale],
   );
-
-  const inView: Hazard[] = hazard === "all" ? HAZARDS : [hazard];
-  const filtered = useMemo(
-    () =>
-      records.filter(
-        (r) =>
-          (hazard === "all" || r.hazard === hazard) &&
-          (wilayaId === "all" || r.wilayaId === wilayaId) &&
-          (year === "all" || yearOf(r.at) === year),
-      ),
-    [records, hazard, wilayaId, year],
-  );
-  const chart = useMemo(() => buckets(filtered, now), [filtered, now]);
-  const ranking = useMemo(
-    () => wilayaRanking(filtered, units.data ?? [], hazard === "fire"),
-    [filtered, units.data, hazard],
-  );
-  const fires = filtered.filter((r) => r.hazard === "fire");
-  const burned = fires.reduce((sum, r) => sum + (r.fire?.areaHa ?? 0), 0);
-  const officialCount = (official.data ?? []).filter(
-    (o) =>
-      (wilayaId === "all" || o.wilaya_id === wilayaId) &&
-      (year === "all" || yearOf(o.first_reported_at) === year),
-  ).length;
+  const chart = {
+    granularity: summary.data?.granularity ?? ("week" as const),
+    rows: summary.data?.buckets ?? [],
+  };
+  const byId = new Map<string, AdminUnit>(wilayas.map((w) => [w.id, w]));
+  const ranking = {
+    ranked: (summary.data?.ranking ?? []).flatMap((row) => {
+      const wilaya = byId.get(row.wilayaId);
+      return wilaya
+        ? [
+            {
+              wilaya,
+              counts: { fire: row.fire, weather: row.weather, road: row.road },
+              total: row.total,
+              burnedHa: row.burnedHa,
+            },
+          ]
+        : [];
+    }),
+    unlocated: summary.data?.unlocated ?? 0,
+  };
+  const fireCount = summary.data?.fires ?? 0;
+  const burned = summary.data?.burnedHa ?? 0;
+  const officialCount = summary.data?.official ?? 0;
   const cumulative = useMemo(() => {
     let running = 0;
     return chart.rows.map((row) => {
@@ -148,17 +141,22 @@ function HistoryPage() {
     .join(locale === "ar" ? "، " : ", ");
 
   const events = new Map<string, number>();
+  for (const [event, count] of Object.entries(summary.data?.events ?? {})) {
+    const key = ONM_EVENTS[event] ?? "other";
+    events.set(key, (events.get(key) ?? 0) + count);
+  }
   const severities = new Map<number, number>();
-  for (const r of filtered)
-    if (r.weather) {
-      events.set(r.weather.event, (events.get(r.weather.event) ?? 0) + 1);
-      const level = ONM_SEVERITY[r.weather.severity] ?? 1;
-      severities.set(level, (severities.get(level) ?? 0) + 1);
-    }
+  for (const [severity, count] of Object.entries(
+    summary.data?.severities ?? {},
+  )) {
+    const level = ONM_SEVERITY[severity] ?? 1;
+    severities.set(level, (severities.get(level) ?? 0) + count);
+  }
 
-  function exportCsv() {
+  async function exportCsv() {
+    const all = await allHistoryRecords(filters);
     const url = URL.createObjectURL(
-      new Blob([historyCsv(filtered, units.data ?? [])], {
+      new Blob([historyCsv(all, units.data ?? [])], {
         type: "text/csv",
       }),
     );
@@ -186,7 +184,7 @@ function HistoryPage() {
         <button
           type="button"
           onClick={exportCsv}
-          disabled={filtered.length === 0}
+          disabled={total === 0}
           className="flex min-h-11 items-center gap-2 rounded-md border border-border px-3 text-sm hover:bg-muted disabled:opacity-50"
         >
           <Download aria-hidden className="size-4" />
@@ -258,20 +256,22 @@ function HistoryPage() {
         </p>
       ) : null}
 
-      {failed.map((h) => (
+      {failed ? (
         <ErrorState
-          key={h}
           body={t("history.sourceError", {
-            hazard: t(`history.hazard.${h}`),
+            hazard:
+              hazard === "all"
+                ? t("history.allHazards")
+                : t(`history.hazard.${hazard}`),
           })}
-          onRetry={() => void sources[h].refetch()}
+          onRetry={() => void summary.refetch()}
           className="mt-3"
         />
-      ))}
+      ) : null}
 
       {loading ? (
         <SkeletonList rows={3} className="mt-5" />
-      ) : filtered.length === 0 ? (
+      ) : total === 0 ? (
         <EmptyState title={t("history.empty")} className="mt-5" />
       ) : (
         <>
@@ -281,14 +281,11 @@ function HistoryPage() {
             hazards={inView}
           />
 
-          {inView.includes("fire") && fires.length ? (
+          {inView.includes("fire") && fireCount ? (
             <section className="mt-6">
               <h2 className="text-lg">{t("history.fireTitle")}</h2>
               <div className="mt-3 grid gap-2.5 sm:grid-cols-3">
-                <StatCard
-                  label={t("history.totalFires")}
-                  value={fires.length}
-                />
+                <StatCard label={t("history.totalFires")} value={fireCount} />
                 <StatCard
                   explain={t("explain.area")}
                   label={t("history.burnedArea")}
@@ -297,11 +294,7 @@ function HistoryPage() {
                 <StatCard
                   label={t("history.officialReports")}
                   value={
-                    official.isSuccess
-                      ? officialCount
-                      : official.isError
-                        ? t("common.unavailable")
-                        : "…"
+                    summary.isSuccess ? officialCount : t("common.unavailable")
                   }
                 />
               </div>
@@ -382,25 +375,21 @@ function HistoryPage() {
             </section>
           ) : null}
 
-          {inView.includes("road") &&
-          filtered.some((r) => r.hazard === "road") ? (
+          {inView.includes("road") && roads.data?.length ? (
             <section className="mt-6">
               <h2 className="text-lg">{t("history.roadTitle")}</h2>
               <ul className="mt-3 divide-y divide-border border-y border-border text-sm">
-                {filtered
-                  .filter((r) => r.hazard === "road")
-                  .slice(0, 5)
-                  .map((r) => (
-                    <li key={r.id} className="py-2.5">
-                      <p>{r.road?.summary}</p>
-                      <p className="mt-0.5 text-xs text-muted-foreground">
-                        {algiersTime(r.at)}
-                        {r.wilayaId && wilayaName.get(r.wilayaId)
-                          ? ` · ${wilayaName.get(r.wilayaId)}`
-                          : ""}
-                      </p>
-                    </li>
-                  ))}
+                {roads.data.map((r) => (
+                  <li key={r.id} className="py-2.5">
+                    <p>{r.road?.summary}</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      {algiersTime(r.at)}
+                      {r.wilayaId && wilayaName.get(r.wilayaId)
+                        ? ` · ${wilayaName.get(r.wilayaId)}`
+                        : ""}
+                    </p>
+                  </li>
+                ))}
               </ul>
               <p className="mt-2 text-xs text-muted-foreground">
                 {t("history.roadNote")}
@@ -493,7 +482,7 @@ function HistoryPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.slice(0, SHOWN).map((r) => (
+                  {rows.map((r) => (
                     <tr
                       key={`${r.hazard}:${r.id}`}
                       className="border-t border-border align-top"
@@ -523,12 +512,10 @@ function HistoryPage() {
                 </tbody>
               </table>
             </div>
-            {filtered.length > SHOWN ? (
+            <LoadMore query={records} />
+            {records.hasNextPage ? (
               <p className="mt-2 text-xs text-muted-foreground">
-                {t("history.recordsShown", {
-                  shown: SHOWN,
-                  total: filtered.length,
-                })}
+                {t("history.recordsShown", { shown: rows.length, total })}
               </p>
             ) : null}
           </section>

@@ -1,7 +1,13 @@
 import { queryOptions, infiniteQueryOptions } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
-import { firstPage, nextOffset, pageRange } from "@/lib/paging";
+import {
+  PAGE_SIZE,
+  firstPage,
+  nextOffset,
+  pageRange,
+  pageRows,
+} from "@/lib/paging";
 
 export const LANES = [
   "local",
@@ -116,14 +122,28 @@ export const publishedIdeasQuery = infiniteQueryOptions({
   },
 });
 
-export const ideaQueueQuery = queryOptions({
-  queryKey: ["contribution-ideas", "queue"],
+export const ideaQueueQuery = (status: IdeaStatus) =>
+  infiniteQueryOptions({
+    queryKey: ["contribution-ideas", "queue", status],
+    initialPageParam: firstPage,
+    getNextPageParam: nextOffset,
+    select: pageRows,
+    queryFn: async ({ pageParam }) => {
+      const { data, error } = await supabase.rpc(
+        "list_contribution_ideas_for_moderation",
+        { _status: status, _offset: pageParam, _limit: PAGE_SIZE },
+      );
+      if (error) throw new Error(error.message);
+      return (data ?? []) as unknown as ContributionIdea[];
+    },
+  });
+
+export const ideaCountsQuery = queryOptions({
+  queryKey: ["contribution-ideas", "counts"],
   queryFn: async () => {
-    const { data, error } = await supabase.rpc(
-      "list_contribution_ideas_for_moderation",
-    );
+    const { data, error } = await supabase.rpc("idea_queue_counts");
     if (error) throw new Error(error.message);
-    return (data ?? []) as unknown as ContributionIdea[];
+    return data as Partial<Record<IdeaStatus, number>>;
   },
 });
 

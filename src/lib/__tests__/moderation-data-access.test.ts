@@ -83,9 +83,12 @@ describe("contribution idea data boundaries", () => {
     rpcMock.mockResolvedValue({ data: [{ id: "idea-1" }], error: null });
     fromMock.mockReturnValue(query({ data: [], error: null }));
 
-    await expect(runQuery(ideaQueueQuery)).resolves.toEqual([{ id: "idea-1" }]);
+    await expect(runQuery(ideaQueueQuery("pending"))).resolves.toEqual([
+      { id: "idea-1" },
+    ]);
     expect(rpcMock).toHaveBeenCalledWith(
       "list_contribution_ideas_for_moderation",
+      expect.objectContaining({ _status: "pending" }),
     );
     expect(fromMock).not.toHaveBeenCalledWith("contribution_ideas");
   });
@@ -97,7 +100,7 @@ describe("contribution idea data boundaries", () => {
     });
     fromMock.mockReturnValue(query({ data: [], error: null }));
 
-    await expect(runQuery(ideaQueueQuery)).rejects.toThrow(
+    await expect(runQuery(ideaQueueQuery("pending"))).rejects.toThrow(
       "moderation_role_required",
     );
   });
@@ -139,11 +142,12 @@ describe("translation moderation data boundaries", () => {
     rpcMock.mockResolvedValue({ data: [{ id: "suggestion-1" }], error: null });
     fromMock.mockReturnValue(query({ data: [], error: null }));
 
-    await expect(runQuery(suggestionQueueQuery)).resolves.toEqual([
-      { id: "suggestion-1" },
-    ]);
+    await expect(
+      runQuery(suggestionQueueQuery("pending", null)),
+    ).resolves.toEqual([{ id: "suggestion-1" }]);
     expect(rpcMock).toHaveBeenCalledWith(
       "list_translation_suggestions_for_moderation",
+      expect.objectContaining({ _status: "pending" }),
     );
     expect(fromMock).not.toHaveBeenCalledWith("translation_suggestions");
   });
@@ -155,9 +159,9 @@ describe("translation moderation data boundaries", () => {
     });
     fromMock.mockReturnValue(query({ data: [], error: null }));
 
-    await expect(runQuery(suggestionQueueQuery)).rejects.toThrow(
-      "moderation_role_required",
-    );
+    await expect(
+      runQuery(suggestionQueueQuery("pending", null)),
+    ).rejects.toThrow("moderation_role_required");
   });
 
   it("sends translation decisions through the actor-attributing RPC", async () => {

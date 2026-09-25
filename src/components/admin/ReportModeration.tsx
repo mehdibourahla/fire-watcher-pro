@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { MapPin } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -20,37 +25,21 @@ import {
 } from "@/lib/nadhir";
 import {
   moderateReport,
-  moderationQueueQuery,
   type CitizenReport,
   type ReportStatus,
   ReportMutationError,
+  moderationQueueQuery,
+  moderationCountsQuery,
+  REPORT_QUEUE_FILTERS,
+  type ReportQueueFilter,
 } from "@/lib/reports";
 import { cn } from "@/lib/utils";
 
-const FILTERS = [
-  "attention",
-  "pending",
-  "approved",
-  "rejected",
-  "all",
-] as const;
-type Filter = (typeof FILTERS)[number];
 const STATUS_TONE: Record<ReportStatus, Tone> = {
   pending: "warn",
   approved: "ok",
   rejected: "neutral",
 };
-
-// mirrors admin_attention_counts so the list and the badge agree
-const needsDecision = (r: CitizenReport, now: number) =>
-  r.status === "pending" &&
-  !!r.expires_at &&
-  Date.parse(r.expires_at) > now &&
-  (r.publish_state !== "published" || !!r.flagged_at);
-
-const matches = (r: CitizenReport, filter: Filter, now: number) =>
-  filter === "all" ||
-  (filter === "attention" ? needsDecision(r, now) : r.status === filter);
 
 function Verdict({ report }: { report: CitizenReport }) {
   const { t } = useTranslation("admin");
@@ -276,11 +265,11 @@ function Detail({
 export function ReportModeration() {
   const { t } = useTranslation("admin");
   const { t: tApp, i18n } = useTranslation();
-  const queue = useQuery(moderationQueueQuery);
+  const [filter, setFilter] = useState<ReportQueueFilter>("attention");
+  const queue = useInfiniteQuery(moderationQueueQuery(filter));
+  const counts = useQuery(moderationCountsQuery);
   const clusters = useQuery(clustersQuery);
   const units = useQuery(adminUnitsQuery);
-  const [filter, setFilter] = useState<Filter>("attention");
-  const now = Date.now();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const communes = useMemo(
     () =>
@@ -294,13 +283,12 @@ export function ReportModeration() {
   );
   const selected =
     queue.data?.find((report) => report.id === selectedId) ?? null;
-  const countOf = (value: Filter) =>
-    (queue.data ?? []).filter((r) => matches(r, value, now)).length;
+  const countOf = (value: ReportQueueFilter) => counts.data?.[value] ?? 0;
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2">
-        {FILTERS.map((value) => (
+        {REPORT_QUEUE_FILTERS.map((value) => (
           <Button
             key={value}
             size="sm"
@@ -315,7 +303,7 @@ export function ReportModeration() {
       </div>
       <QueryState
         query={queue}
-        isEmpty={(rows) => !rows.some((r) => matches(r, filter, now))}
+        isEmpty={(rows) => rows.length === 0}
         empty={t("queues.queueEmpty")}
       >
         {(rows) => (
@@ -335,41 +323,39 @@ export function ReportModeration() {
             }
             list={
               <ul className="divide-y divide-border overflow-hidden rounded-lg border border-border">
-                {rows
-                  .filter((r) => matches(r, filter, now))
-                  .map((report) => (
-                    <li key={report.id}>
-                      <button
-                        type="button"
-                        onClick={() => setSelectedId(report.id)}
-                        className={cn(
-                          "block w-full px-4 py-3 text-start hover:bg-muted",
-                          report.id === selectedId && "bg-muted",
-                        )}
-                      >
-                        <span className="flex items-center gap-2">
-                          <Verdict report={report} />
-                          <span className="truncate text-sm font-medium">
-                            {tApp(hazardLabel(report))}
-                          </span>
-                          <span className="ms-auto shrink-0 text-xs text-muted-foreground">
-                            <When at={report.observed_at} />
-                          </span>
+                {rows.map((report) => (
+                  <li key={report.id}>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedId(report.id)}
+                      className={cn(
+                        "block w-full px-4 py-3 text-start hover:bg-muted",
+                        report.id === selectedId && "bg-muted",
+                      )}
+                    >
+                      <span className="flex items-center gap-2">
+                        <Verdict report={report} />
+                        <span className="truncate text-sm font-medium">
+                          {tApp(hazardLabel(report))}
                         </span>
-                        <span className="mt-1 block truncate text-xs text-muted-foreground">
-                          {(report.commune_id &&
-                            communes.get(report.commune_id)) ||
-                            `${report.lat.toFixed(3)}, ${report.lon.toFixed(3)}`}
-                          {report.note ? (
-                            <>
-                              {" · "}
-                              <bdi>{report.note}</bdi>
-                            </>
-                          ) : null}
+                        <span className="ms-auto shrink-0 text-xs text-muted-foreground">
+                          <When at={report.observed_at} />
                         </span>
-                      </button>
-                    </li>
-                  ))}
+                      </span>
+                      <span className="mt-1 block truncate text-xs text-muted-foreground">
+                        {(report.commune_id &&
+                          communes.get(report.commune_id)) ||
+                          `${report.lat.toFixed(3)}, ${report.lon.toFixed(3)}`}
+                        {report.note ? (
+                          <>
+                            {" · "}
+                            <bdi>{report.note}</bdi>
+                          </>
+                        ) : null}
+                      </span>
+                    </button>
+                  </li>
+                ))}
               </ul>
             }
           />

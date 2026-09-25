@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -9,8 +14,10 @@ import {
   replyToIdea,
   type IdeaStatus,
   type ReplyAuthorKind,
+  ideaCountsQuery,
 } from "@/lib/contribute";
 import { relativeTime } from "@/lib/nadhir";
+import { LoadMore } from "@/components/LoadMore";
 
 function laneKey(lane: string) {
   return `contribute.lane${lane.charAt(0).toUpperCase()}${lane.slice(1)}`;
@@ -19,8 +26,9 @@ function laneKey(lane: string) {
 export function IdeaQueue({ locale }: { locale: Locale }) {
   const { t } = useTranslation("admin");
   const qc = useQueryClient();
-  const queue = useQuery(ideaQueueQuery);
   const [filter, setFilter] = useState<IdeaStatus>("pending");
+  const queue = useInfiniteQuery(ideaQueueQuery(filter));
+  const counts = useQuery(ideaCountsQuery);
 
   const act = useMutation({
     mutationFn: ({ id, status }: { id: string; status: IdeaStatus }) =>
@@ -28,9 +36,8 @@ export function IdeaQueue({ locale }: { locale: Locale }) {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["contribution-ideas"] }),
   });
 
-  const rows = (queue.data ?? []).filter((i) => i.status === filter);
-  const countOf = (s: IdeaStatus) =>
-    (queue.data ?? []).filter((i) => i.status === s).length;
+  const rows = queue.data ?? [];
+  const countOf = (s: IdeaStatus) => counts.data?.[s] ?? 0;
 
   const filters: { key: IdeaStatus; label: string }[] = [
     { key: "pending", label: t("queues.filterPending") },
@@ -68,79 +75,84 @@ export function IdeaQueue({ locale }: { locale: Locale }) {
           {t("queues.ideasEmpty")}
         </p>
       ) : (
-        <ul className="mt-6 space-y-3">
-          {rows.map((idea) => (
-            <li key={idea.id} className="card flex flex-col gap-3 p-4">
-              <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                <span className="rounded-md bg-[var(--accent-tint)] px-2 py-0.5 font-semibold text-[var(--accent)]">
-                  {t(laneKey(idea.lane))}
-                </span>
-                <span>{relativeTime(idea.created_at, locale)}</span>
-                <span aria-hidden>·</span>
-                <span>
-                  {idea.contact
-                    ? t("queues.contactLeft")
-                    : t("queues.noContact")}
-                </span>
-                <span aria-hidden>·</span>
-                <span>{idea.locale}</span>
-              </div>
+        <>
+          <ul className="mt-6 space-y-3">
+            {rows.map((idea) => (
+              <li key={idea.id} className="card flex flex-col gap-3 p-4">
+                <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                  <span className="rounded-md bg-[var(--accent-tint)] px-2 py-0.5 font-semibold text-[var(--accent)]">
+                    {t(laneKey(idea.lane))}
+                  </span>
+                  <span>{relativeTime(idea.created_at, locale)}</span>
+                  <span aria-hidden>·</span>
+                  <span>
+                    {idea.contact
+                      ? t("queues.contactLeft")
+                      : t("queues.noContact")}
+                  </span>
+                  <span aria-hidden>·</span>
+                  <span>{idea.locale}</span>
+                </div>
 
-              <p className="whitespace-pre-line text-sm leading-relaxed">
-                {idea.message}
-              </p>
+                <p className="whitespace-pre-line text-sm leading-relaxed">
+                  {idea.message}
+                </p>
 
-              {idea.contact ? (
-                <p className="text-xs text-muted-foreground">{idea.contact}</p>
-              ) : null}
+                {idea.contact ? (
+                  <p className="text-xs text-muted-foreground">
+                    {idea.contact}
+                  </p>
+                ) : null}
 
-              <div className="flex flex-wrap gap-2 border-t border-border pt-3">
-                {idea.status === "published" ? (
+                <div className="flex flex-wrap gap-2 border-t border-border pt-3">
+                  {idea.status === "published" ? (
+                    <button
+                      type="button"
+                      disabled={act.isPending}
+                      onClick={() =>
+                        act.mutate({ id: idea.id, status: "pending" })
+                      }
+                      className="rounded-md border border-border px-3 py-1.5 text-xs disabled:opacity-50"
+                    >
+                      {t("queues.unpublish")}
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled={act.isPending}
+                      onClick={() =>
+                        act.mutate({ id: idea.id, status: "published" })
+                      }
+                      className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground disabled:opacity-50"
+                    >
+                      {t("queues.publish")}
+                    </button>
+                  )}
                   <button
                     type="button"
                     disabled={act.isPending}
                     onClick={() =>
-                      act.mutate({ id: idea.id, status: "pending" })
+                      act.mutate({ id: idea.id, status: "rejected" })
                     }
-                    className="rounded-md border border-border px-3 py-1.5 text-xs disabled:opacity-50"
+                    className="rounded-md border border-border px-3 py-1.5 text-xs text-[var(--emergency)] disabled:opacity-50"
                   >
-                    {t("queues.unpublish")}
+                    {t("queues.reject")}
                   </button>
-                ) : (
                   <button
                     type="button"
                     disabled={act.isPending}
-                    onClick={() =>
-                      act.mutate({ id: idea.id, status: "published" })
-                    }
-                    className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground disabled:opacity-50"
+                    onClick={() => act.mutate({ id: idea.id, status: "spam" })}
+                    className="rounded-md border border-border px-3 py-1.5 text-xs text-[var(--emergency)] disabled:opacity-50"
                   >
-                    {t("queues.publish")}
+                    {t("queues.spam")}
                   </button>
-                )}
-                <button
-                  type="button"
-                  disabled={act.isPending}
-                  onClick={() =>
-                    act.mutate({ id: idea.id, status: "rejected" })
-                  }
-                  className="rounded-md border border-border px-3 py-1.5 text-xs text-[var(--emergency)] disabled:opacity-50"
-                >
-                  {t("queues.reject")}
-                </button>
-                <button
-                  type="button"
-                  disabled={act.isPending}
-                  onClick={() => act.mutate({ id: idea.id, status: "spam" })}
-                  className="rounded-md border border-border px-3 py-1.5 text-xs text-[var(--emergency)] disabled:opacity-50"
-                >
-                  {t("queues.spam")}
-                </button>
-              </div>
-              <IdeaReply idea={idea} locale={locale} />
-            </li>
-          ))}
-        </ul>
+                </div>
+                <IdeaReply idea={idea} locale={locale} />
+              </li>
+            ))}
+          </ul>
+          <LoadMore query={queue} />
+        </>
       )}
     </section>
   );

@@ -1,23 +1,18 @@
+import {
+  infiniteQueryOptions,
+  queryOptions,
+  type InfiniteData,
+} from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
 import { ONM_EVENTS } from "@/lib/civil-map-geometry";
-import type { AdminUnit, FireCluster } from "@/lib/nadhir";
+import type { AdminUnit } from "@/lib/nadhir";
+import { fetchAllPages } from "@/lib/paginate";
+import { PAGE_SIZE, firstPage, nextOffset, pageRange } from "@/lib/paging";
+import { FIRE_KINDS } from "@/lib/text-sources/merge";
 
 export type Hazard = "fire" | "weather" | "road";
 export const HAZARDS: Hazard[] = ["fire", "weather", "road"];
-
-export type OnmHistoryRow = {
-  id: string;
-  wilaya_id: string | null;
-  event: string;
-  severity: string;
-  starts_at: string;
-};
-
-export type RoadHistoryRow = {
-  id: string;
-  area_id: string;
-  published_at: string;
-  summary: string;
-};
 
 export type HistoryRecord = {
   id: string;
@@ -29,162 +24,129 @@ export type HistoryRecord = {
   road?: { summary: string };
 };
 
-const REAL_FIRE_STATES = new Set([
-  "active",
-  "unconfirmed",
-  "contained_guess",
-  "extinguished",
-]);
-
-export function fireRecords(clusters: FireCluster[]): HistoryRecord[] {
-  return clusters
-    .filter((c) => REAL_FIRE_STATES.has(c.state))
-    .map((c) => ({
-      id: c.id,
-      hazard: "fire",
-      at: c.first_detected_at,
-      wilayaId: c.wilaya_id,
-      fire: { shortId: c.short_id, areaHa: c.est_area_ha ?? 0, state: c.state },
-    }));
-}
-
-export function weatherRecords(rows: OnmHistoryRow[]): HistoryRecord[] {
-  return rows.map((w) => ({
-    id: w.id,
-    hazard: "weather",
-    at: w.starts_at,
-    wilayaId: w.wilaya_id,
-    weather: { event: ONM_EVENTS[w.event] ?? "other", severity: w.severity },
-  }));
-}
-
-export function roadRecords(
-  rows: RoadHistoryRow[],
-  units: AdminUnit[],
-): HistoryRecord[] {
-  const byId = new Map(units.map((u) => [u.id, u]));
-  return rows.map((r) => {
-    const area = byId.get(r.area_id);
-    return {
-      id: r.id,
-      hazard: "road",
-      at: r.published_at,
-      wilayaId: area
-        ? area.level === "wilaya"
-          ? area.id
-          : area.parent_id
-        : null,
-      road: { summary: r.summary },
-    };
-  });
-}
-
-export function coverage(records: HistoryRecord[]) {
-  const first: Partial<Record<Hazard, string>> = {};
-  for (const r of records)
-    if (!first[r.hazard] || r.at < first[r.hazard]!) first[r.hazard] = r.at;
-  return first;
-}
-
-const DAY = 86_400_000;
-const HOUR = 3_600_000;
-// Algeria keeps UTC+1 all year; buckets follow the local calendar
-const localDay = (iso: string) =>
-  new Date(Date.parse(iso) + HOUR).toISOString().slice(0, 10);
-
-function weekStart(day: string): string {
-  const ms = Date.parse(`${day}T00:00:00Z`);
-  const monday = (new Date(ms).getUTCDay() + 6) % 7;
-  return new Date(ms - monday * DAY).toISOString().slice(0, 10);
-}
-
 export type Bucket = { start: string } & Record<Hazard, number> & {
     burnedHa: number;
   };
 
-export function buckets(records: HistoryRecord[], nowMs: number) {
-  const first = records.reduce<string | null>(
-    (min, r) => (min === null || r.at < min ? r.at : min),
-    null,
-  );
-  if (!first) return { granularity: "week" as const, rows: [] as Bucket[] };
-  const weekly = nowMs - Date.parse(first) <= 120 * DAY;
-  const keyOf = (iso: string) =>
-    weekly ? weekStart(localDay(iso)) : `${localDay(iso).slice(0, 7)}-01`;
-
-  const rows = new Map<string, Bucket>();
-  let cursor = keyOf(first);
-  const latest = records.reduce(
-    (max, r) => (r.at > max ? r.at : max),
-    new Date(nowMs).toISOString(),
-  );
-  const last = keyOf(latest);
-  while (cursor <= last) {
-    rows.set(cursor, {
-      start: cursor,
-      fire: 0,
-      weather: 0,
-      road: 0,
-      burnedHa: 0,
-    });
-    const d = new Date(`${cursor}T00:00:00Z`);
-    if (weekly) d.setUTCDate(d.getUTCDate() + 7);
-    else d.setUTCMonth(d.getUTCMonth() + 1);
-    cursor = d.toISOString().slice(0, 10);
-  }
-  for (const r of records) {
-    const b = rows.get(keyOf(r.at));
-    if (!b) continue;
-    b[r.hazard] += 1;
-    b.burnedHa += r.fire?.areaHa ?? 0;
-  }
-  return {
-    granularity: weekly ? ("week" as const) : ("month" as const),
-    rows: [...rows.values()],
-  };
-}
-
-export type WilayaTally = {
-  wilaya: AdminUnit;
-  counts: Record<Hazard, number>;
-  total: number;
-  burnedHa: number;
+export type HistoryFilters = {
+  hazard: Hazard | null;
+  wilayaId: string | null;
+  year: number | null;
 };
 
-export function wilayaRanking(
-  records: HistoryRecord[],
-  units: AdminUnit[],
-  byBurnedArea: boolean,
-) {
-  const wilayas = new Map(
-    units.filter((u) => u.level === "wilaya").map((u) => [u.id, u]),
-  );
-  const tallies = new Map<string, WilayaTally>();
-  let unlocated = 0;
-  for (const r of records) {
-    const wilaya = r.wilayaId ? wilayas.get(r.wilayaId) : undefined;
-    if (!wilaya) {
-      unlocated += 1;
-      continue;
-    }
-    const tally = tallies.get(wilaya.id) ?? {
-      wilaya,
-      counts: { fire: 0, weather: 0, road: 0 },
-      total: 0,
-      burnedHa: 0,
+export type HistorySummary = {
+  total: number;
+  fires: number;
+  burnedHa: number;
+  granularity: "week" | "month";
+  buckets: Bucket[];
+  ranking: ({ wilayaId: string; total: number; burnedHa: number } & Record<
+    Hazard,
+    number
+  >)[];
+  unlocated: number;
+  events: Record<string, number>;
+  severities: Record<string, number>;
+  coverage: Partial<Record<Hazard, string>>;
+  years: number[];
+  official: number;
+};
+
+type HistoryRow = Database["public"]["Views"]["hazard_history"]["Row"];
+
+const COLUMNS =
+  "id, hazard, at, wilaya_id, short_id, area_ha, state, event, severity, summary";
+
+export function historyRecord(row: HistoryRow): HistoryRecord {
+  const base = {
+    id: row.id!,
+    hazard: row.hazard as Hazard,
+    at: row.at!,
+    wilayaId: row.wilaya_id,
+  };
+  if (row.hazard === "fire")
+    return {
+      ...base,
+      fire: {
+        shortId: row.short_id ?? "",
+        areaHa: row.area_ha ?? 0,
+        state: row.state ?? "",
+      },
     };
-    tally.counts[r.hazard] += 1;
-    tally.total += 1;
-    tally.burnedHa += r.fire?.areaHa ?? 0;
-    tallies.set(wilaya.id, tally);
-  }
-  const ranked = [...tallies.values()]
-    .sort((a, b) =>
-      byBurnedArea ? b.burnedHa - a.burnedHa : b.total - a.total,
-    )
-    .slice(0, 10);
-  return { ranked, unlocated };
+  if (row.hazard === "weather")
+    return {
+      ...base,
+      weather: {
+        event: ONM_EVENTS[row.event ?? ""] ?? "other",
+        severity: row.severity ?? "",
+      },
+    };
+  return { ...base, road: { summary: row.summary ?? "" } };
 }
+
+function filtered(filters: HistoryFilters) {
+  let query = supabase.from("hazard_history").select(COLUMNS);
+  if (filters.hazard) query = query.eq("hazard", filters.hazard);
+  if (filters.wilayaId) query = query.eq("wilaya_id", filters.wilayaId);
+  if (filters.year)
+    query = query
+      .gte("at", `${filters.year}-01-01T00:00:00Z`)
+      .lt("at", `${filters.year + 1}-01-01T00:00:00Z`);
+  return query.order("at", { ascending: false }).order("id");
+}
+
+export const historyRecordsQuery = (filters: HistoryFilters) =>
+  infiniteQueryOptions({
+    queryKey: ["history", "records", filters],
+    initialPageParam: firstPage,
+    getNextPageParam: nextOffset,
+    select: (data: InfiniteData<HistoryRow[]>) =>
+      data.pages.flat().map((row) => historyRecord(row)),
+    queryFn: async ({ pageParam }): Promise<HistoryRow[]> => {
+      const { data, error } = await filtered(filters).range(
+        ...pageRange(pageParam),
+      );
+      if (error) throw new Error(error.message);
+      return data;
+    },
+  });
+
+export const recentRoadsQuery = (filters: HistoryFilters) =>
+  queryOptions({
+    queryKey: ["history", "roads", filters],
+    queryFn: async () => {
+      const { data, error } = await filtered({
+        ...filters,
+        hazard: "road",
+      }).limit(5);
+      if (error) throw new Error(error.message);
+      return data.map(historyRecord);
+    },
+  });
+
+export const historySummaryQuery = (filters: HistoryFilters) =>
+  queryOptions({
+    queryKey: ["history", "summary", filters],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("hazard_history_summary", {
+        ...(filters.hazard ? { _hazard: filters.hazard } : {}),
+        ...(filters.wilayaId ? { _wilaya: filters.wilayaId } : {}),
+        ...(filters.year ? { _year: filters.year } : {}),
+        _official_kinds: [...FIRE_KINDS],
+      });
+      if (error) throw new Error(error.message);
+      return data as unknown as HistorySummary;
+    },
+  });
+
+export async function allHistoryRecords(filters: HistoryFilters) {
+  const rows = await fetchAllPages<HistoryRow>((from, to) =>
+    filtered(filters).range(from, to),
+  );
+  return rows.map(historyRecord);
+}
+
+export const historyPageSize = PAGE_SIZE;
 
 // road summaries are third-party text; a leading = + - @ tab or CR would run as a spreadsheet formula
 const csvCell = (value: string | number) => {

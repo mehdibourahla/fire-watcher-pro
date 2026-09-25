@@ -71,6 +71,7 @@ export const unappliedTranslationsQuery = queryOptions({
   queryFn: async () => {
     const { data, error } = await supabase.rpc(
       "list_translation_suggestions_for_moderation",
+      { _status: "accepted" },
     );
     if (error) throw new Error(error.message);
     return (data ?? []).filter((row) => {
