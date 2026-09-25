@@ -90,7 +90,7 @@ export type FcmDeviceTest = {
   token: string;
   notification: { title: string; body: string };
   webpush: { headers: { TTL: string }; fcm_options: { link: string } };
-  data: { kind: "test" };
+  data: { kind: "test"; test_id: string; receipt: string };
 };
 
 export async function fcmSend(

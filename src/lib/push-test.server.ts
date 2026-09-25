@@ -1,5 +1,6 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { fcmConfigured, fcmSend } from "@/lib/ingest/fcm.server";
+import { testPushReceipt } from "@/lib/push-receipt.server";
 import { readJsonBody } from "@/lib/request-body.server";
 
 const json = (body: unknown, status = 200) =>
@@ -48,6 +49,14 @@ export async function handlePushTest(request: Request): Promise<Response> {
       body.token.length > 4096
     )
       return json({ error: "Invalid device token" }, 400);
+    const row = await supabaseAdmin
+      .from("push_test_receipts")
+      .insert({ user_id: auth.data.user.id })
+      .select("id")
+      .single();
+    if (row.error) return json({ error: "Push test unavailable" }, 503);
+    const testId = row.data.id;
+    const receipt = await testPushReceipt(testId);
     try {
       // Give the tester time to background the iPhone web app.
       await new Promise((resolve) => setTimeout(resolve, 3000));
@@ -61,12 +70,16 @@ export async function handlePushTest(request: Request): Promise<Response> {
           headers: { TTL: "60" },
           fcm_options: { link: "https://nadhir.app/admin/sources" },
         },
-        data: { kind: "test" },
+        data: {
+          kind: "test",
+          test_id: testId,
+          receipt,
+        },
       });
     } catch {
       return json({ error: "Push provider rejected the test" }, 502);
     }
-    return json({ accepted: true });
+    return json({ accepted: true, testId });
   } catch {
     return json({ error: "Push test unavailable" }, 503);
   }

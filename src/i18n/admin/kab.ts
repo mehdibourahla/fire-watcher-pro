@@ -29,7 +29,10 @@ export const adminKab = {
     pushTestButton: "Sekyed ibenk-a",
     pushTestWaiting: "Tuzzna. Uɣal ɣer ugdil agejdan",
     pushTestAccepted:
-      "Amefki yeqbel asekyed. Sentem ma tban-d telɣut deg yibenk-ik.",
+      "Le fournisseur a accepté le test. En attente du signalement d'arrivée par cet appareil.",
+    pushTestReceived: "Reçu sur cet appareil à {{time}}.",
+    pushTestUnconfirmed:
+      "Aucune arrivée signalée en une minute. Le navigateur peut la livrer plus tard, ou cet appareil bloque la réception en arrière-plan.",
     ensemble: {
       title: "Askan n tegnawt s ugraw",
       description:

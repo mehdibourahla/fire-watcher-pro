@@ -4,14 +4,24 @@ const mocks = vi.hoisted(() => ({
   getUser: vi.fn(),
   rpc: vi.fn(),
   send: vi.fn(),
+  insert: vi.fn(),
 }));
 vi.mock("@/integrations/supabase/client.server", () => ({
-  supabaseAdmin: { auth: { getUser: mocks.getUser }, rpc: mocks.rpc },
+  supabaseAdmin: {
+    auth: { getUser: mocks.getUser },
+    rpc: mocks.rpc,
+    from: () => ({
+      insert: (row: unknown) => ({
+        select: () => ({ single: () => mocks.insert(row) }),
+      }),
+    }),
+  },
 }));
 vi.mock("@/lib/ingest/fcm.server", () => ({
   fcmSend: mocks.send,
   fcmConfigured: () => true,
 }));
+import { testPushReceipt } from "@/lib/push-receipt.server";
 import { handlePushTest } from "@/lib/push-test.server";
 
 const request = (
@@ -25,17 +35,22 @@ const request = (
   });
 beforeEach(() => {
   vi.resetAllMocks();
+  vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "service-key");
   mocks.getUser.mockResolvedValue({
     data: { user: { id: "admin-id" } },
     error: null,
   });
   mocks.rpc.mockResolvedValue({ data: true, error: null });
   mocks.send.mockResolvedValue(undefined);
+  mocks.insert.mockResolvedValue({ data: { id: testId }, error: null });
 });
+const testId = "0c000000-0000-4000-8000-000000000001";
 it("sends fixed test content to one token with admin and quota checks", async () => {
   const response = await handlePushTest(request());
   expect(response.status).toBe(200);
   expect(response.headers.get("cache-control")).toBe("private, no-store");
+  expect(await response.json()).toEqual({ accepted: true, testId });
+  expect(mocks.insert).toHaveBeenCalledWith({ user_id: "admin-id" });
   expect(mocks.rpc).toHaveBeenCalledWith("has_any_role", {
     _user_id: "admin-id",
     _roles: ["admin"],
@@ -48,9 +63,18 @@ it("sends fixed test content to one token with admin and quota checks", async ()
   expect(mocks.send).toHaveBeenCalledOnce();
   expect(mocks.send.mock.calls[0]![0]).toMatchObject({
     token: "device-registration-token",
-    data: { kind: "test" },
+    data: {
+      kind: "test",
+      test_id: testId,
+      receipt: await testPushReceipt(testId, "service-key"),
+    },
   });
   expect(mocks.send.mock.calls[0]![0]).not.toHaveProperty("topic");
+});
+it("sends nothing when the test cannot be recorded", async () => {
+  mocks.insert.mockResolvedValue({ data: null, error: { message: "offline" } });
+  expect((await handlePushTest(request())).status).toBe(503);
+  expect(mocks.send).not.toHaveBeenCalled();
 });
 it("rejects missing authentication", async () => {
   expect((await handlePushTest(request({}, false))).status).toBe(401);
