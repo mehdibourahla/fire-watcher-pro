@@ -28,6 +28,7 @@ import {
   type ZoneStateEvent,
 } from "@/lib/zone-lifecycle";
 import { drainAlertPushes } from "@/lib/alert-push.server";
+import { publishWaitingReports } from "@/lib/report-publication.server";
 import { officialPhase } from "@/lib/incident-lifecycle";
 import { hazardAlerts, type HazardContext } from "@/lib/zone-hazard-alerts";
 
@@ -322,6 +323,7 @@ async function loadHazardContext(
 }
 
 export async function evaluateAlerts(userId?: string): Promise<AlertRun> {
+  if (!userId) await publishWaitingReports();
   let zoneQuery = supabaseAdmin.from("zones").select("*").eq("active", true);
   if (userId) zoneQuery = zoneQuery.eq("user_id", userId);
   const { data: zones, error: zonesError } = await zoneQuery;

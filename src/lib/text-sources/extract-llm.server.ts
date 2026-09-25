@@ -75,7 +75,7 @@ export type OpenRouterRequest = {
   messages: { role: "system" | "user"; content: string }[];
   response_format: {
     type: "json_schema";
-    json_schema: { name: string; strict: true; schema: typeof RESPONSE_SCHEMA };
+    json_schema: { name: string; strict: true; schema: object };
   };
   temperature: number;
   max_tokens: number;
@@ -96,12 +96,12 @@ Kinds: vegetation (forest, scrub, maquis), agricultural (crops, hay, orchards, p
 Leave commune null when only a locality or a wilaya is named. place is a named locality, never a generic setting or vegetation type: forest, palm grove (واحة نخيل), crops and hay are kinds, so leave place null unless an actual place name follows. A wilaya distribution line such as ولاية بسكرة 01 (حريق واحة نخيل) is one agricultural fire in that wilaya with commune and place null. Names stay in the post's language and spelling. count is the number of fires the sentence attributes to that location, at least 1.`;
 
 // cheaper models sometimes wrap the object in a markdown fence despite the schema
-function stripFence(content: string): string {
+export function stripFence(content: string): string {
   const m = /^\s*```(?:json)?\s*([\s\S]*?)\s*```\s*$/.exec(content);
   return m ? m[1]! : content;
 }
 
-async function completeWithOpenRouter(
+export async function completeWithOpenRouter(
   apiKey: string,
   request: OpenRouterRequest,
 ): Promise<{ content: string }> {
