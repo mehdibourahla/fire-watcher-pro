@@ -148,6 +148,7 @@ export function hazardAlerts(
   },
 ) {
   const rows: HazardAlertRow[] = [];
+  const raised = new Set<string>();
   let suppressed = 0;
 
   for (const zone of zones) {
@@ -169,10 +170,14 @@ export function hazardAlerts(
       row: Omit<HazardAlertRow, "user_id" | "zone_id" | "commune_id">,
       breaksThrough: boolean,
     ) => {
+      // a hazard covered by several of one person's zones is one alert for that person
+      const once = `${zone.user_id}|${row.dedupe_key}`;
+      if (raised.has(once)) return;
       if (quiet && !breaksThrough) {
         suppressed += 1;
         return;
       }
+      raised.add(once);
       rows.push({
         ...row,
         user_id: zone.user_id,
@@ -191,7 +196,7 @@ export function hazardAlerts(
             kind: "weather",
             severity,
             // ONM re-issues an unchanged warning under a new id many times a day
-            dedupe_key: `weather:${zone.id}:${warning.event}:${warning.severity}:${warning.onset ?? warning.expires}`,
+            dedupe_key: `weather:${warning.event}:${warning.severity}:${warning.onset ?? warning.expires}`,
             title: fill(copy.weatherTitle, { zone: zone.name }),
             body: fill(copy.weatherBody, {
               text: warning.headline_fr ?? warning.title,
@@ -215,7 +220,7 @@ export function hazardAlerts(
           {
             kind: "official",
             severity: 4,
-            dedupe_key: `official:${zone.id}:${incident.id}`,
+            dedupe_key: `official:${incident.id}`,
             title: fill(copy.officialTitle, { zone: zone.name }),
             body: fill(copy.officialBody, {
               place: incident.place_text ?? zone.name,
@@ -236,7 +241,7 @@ export function hazardAlerts(
           {
             kind: "official",
             severity: AUTHORITY_SEVERITY[warning.severity] ?? 4,
-            dedupe_key: `official:${zone.id}:${warning.id}`,
+            dedupe_key: `official:${warning.id}`,
             title: fill(copy.authorityTitle, { zone: zone.name }),
             body: fill(copy.authorityBody, {
               source: warning.source,
@@ -261,7 +266,7 @@ export function hazardAlerts(
           {
             kind: "road",
             severity: 2,
-            dedupe_key: `road:${zone.id}:${publication.id}`,
+            dedupe_key: `road:${publication.id}`,
             title: fill(copy.roadTitle, { zone: zone.name }),
             body: fill(copy.roadBody, {
               text: publication.summary,
