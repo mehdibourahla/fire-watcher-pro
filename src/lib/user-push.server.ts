@@ -55,5 +55,30 @@ export async function handleUserPush(request: Request): Promise<Response> {
   } catch {
     return json({ error: "Push provider rejected the change" }, 502);
   }
+
+  const device_hash = await sha256Hex(body.token);
+  const recorded =
+    body.action === "subscribe"
+      ? await supabaseAdmin.from("user_push_devices").upsert({
+          user_id: userId,
+          device_hash,
+          updated_at: new Date().toISOString(),
+        })
+      : await supabaseAdmin
+          .from("user_push_devices")
+          .delete()
+          .eq("user_id", userId)
+          .eq("device_hash", device_hash);
+  if (recorded.error) return json({ error: "Device not recorded" }, 503);
   return json({ ok: true });
+}
+
+async function sha256Hex(value: string): Promise<string> {
+  const digest = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(value),
+  );
+  return [...new Uint8Array(digest)]
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
 }

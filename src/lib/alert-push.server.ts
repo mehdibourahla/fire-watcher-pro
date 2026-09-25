@@ -15,10 +15,11 @@ export type ClaimedPush = {
   push_claimed_at: string;
 };
 
-type PushState = "sent" | "pending" | "failed";
+type PushState = "sent" | "pending" | "failed" | "no_device";
 
 const MAX_ATTEMPTS = 5;
 const CLAIM_LOST = "alert push claim lost";
+const DEVICE_TTL_MS = 60 * 86_400_000;
 
 const store = {
   configured: fcmConfigured,
@@ -28,6 +29,16 @@ const store = {
     });
     if (error) throw new Error(error.message);
     return (data ?? []) as ClaimedPush[];
+  },
+  devices: async (userIds: string[]): Promise<Set<string>> => {
+    if (!userIds.length) return new Set();
+    const { data, error } = await supabaseAdmin
+      .from("user_push_devices")
+      .select("user_id")
+      .in("user_id", userIds)
+      .gt("updated_at", new Date(Date.now() - DEVICE_TTL_MS).toISOString());
+    if (error) throw new Error(error.message);
+    return new Set((data ?? []).map((row) => row.user_id));
   },
   send: (row: ClaimedPush) => fcmSend(fcmMessageForAlert(row)),
   finish: async (row: ClaimedPush, state: PushState) => {
@@ -47,26 +58,36 @@ export async function drainAlertPushes(
   dependencies: Partial<typeof store> = {},
 ) {
   const deps = { ...store, ...dependencies };
-  if (!deps.configured()) return { pushed: 0, pushFailed: 0, claimsLost: 0 };
+  if (!deps.configured())
+    return { pushed: 0, pushFailed: 0, noDevice: 0, claimsLost: 0 };
   let pushed = 0;
   let pushFailed = 0;
+  let noDevice = 0;
   let claimsLost = 0;
-  for (const row of await deps.claim()) {
+  const rows = await deps.claim();
+  const reachable = await deps.devices([
+    ...new Set(rows.map((row) => row.user_id)),
+  ]);
+  for (const row of rows) {
     let state: PushState = "sent";
-    try {
-      await deps.send(row);
-    } catch {
-      pushFailed++;
-      state = row.push_attempts >= MAX_ATTEMPTS ? "failed" : "pending";
+    if (!reachable.has(row.user_id)) state = "no_device";
+    else {
+      try {
+        await deps.send(row);
+      } catch {
+        pushFailed++;
+        state = row.push_attempts >= MAX_ATTEMPTS ? "failed" : "pending";
+      }
     }
     try {
       await deps.finish(row, state);
       if (state === "sent") pushed++;
+      if (state === "no_device") noDevice++;
     } catch (failure) {
       if (!(failure instanceof Error && failure.message === CLAIM_LOST))
         throw failure;
       claimsLost++;
     }
   }
-  return { pushed, pushFailed, claimsLost };
+  return { pushed, pushFailed, noDevice, claimsLost };
 }
