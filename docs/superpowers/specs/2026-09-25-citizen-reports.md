@@ -33,6 +33,10 @@ sandstorm, landslide, snow_ice, structural, hazmat, other.
   is retried by the alerts engine run.
 - Public view `hazard_reports` shows only published, unrejected, unexpired reports, without reporter, raw note or
   photo, and never person trapped.
+- The report's commune is set by the database from the pin (nearest commune centre within 50 km), never taken
+  from the client, because the map shows it as "near <commune>". It stays a label, not membership.
+- Moderators are counted only the reports that need a decision: held, waiting, private, or flagged, while
+  unexpired. Published reports need no one.
 
 ## Witnesses
 
@@ -46,8 +50,10 @@ sandstorm, landslide, snow_ice, structural, hazmat, other.
 ## Alerts
 
 New zone switch "Citizen reports" (on by default) and alert kind `citizen`. A zone is alerted once per person
-about a corroborated, published report inside its radius. Push copy names it a citizen report confirmed by N
-people, not verified by authorities.
+about a corroborated, published, unflagged report inside its radius, never the reporter or someone who already
+confirmed it. Push copy names it a citizen report confirmed by N people, not verified by authorities. It waits
+for quiet hours to end. Zone cards list the same reports under "active now". Webhooks cannot subscribe to
+`citizen`: these stay inside the app.
 
 ## Rewards
 
