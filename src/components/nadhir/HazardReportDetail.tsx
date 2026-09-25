@@ -95,7 +95,7 @@ function Witness({ reportId }: { reportId: string }) {
       <Link
         to="/auth"
         search={{ returnTo: "/" }}
-        className="text-sm font-medium text-primary underline"
+        className="inline-flex min-h-11 items-center text-sm font-medium text-primary underline"
       >
         {t("reports.witnessSignIn")}
       </Link>

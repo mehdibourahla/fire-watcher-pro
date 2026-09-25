@@ -228,7 +228,14 @@ export async function moderateReport(input: {
     _note: input.moderation_note ?? null,
     _cluster: input.cluster_id,
   });
-  if (error) throw new Error(error.message);
+  if (error)
+    throw new ReportMutationError(
+      error.message.includes("report_moderator_role_required")
+        ? "reportsPage.moderateForbidden"
+        : error.message.includes("report_not_found")
+          ? "reportsPage.moderateGone"
+          : "reportsPage.moderateFailed",
+    );
 }
 
 const REPORT_PHOTO_BUCKET = "report-photos";

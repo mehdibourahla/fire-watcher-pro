@@ -133,6 +133,10 @@ export const adminFr: AdminTranslation = {
     expires: "Affichée jusqu'à",
   },
   reportsPage: {
+    moderateForbidden:
+      "Vous n'avez plus l'accès modérateur. Demandez à un administrateur.",
+    moderateGone: "Ce signalement n'existe plus. Actualisez la file.",
+    moderateFailed: "La décision n'a pas été enregistrée. Réessayez.",
     title: "Signalements citoyens",
     description:
       "Signalements envoyés depuis l'application. Une vérification automatique publie les plus clairs. Tranchez ceux qu'elle a retenus, les signalements privés et ceux que des témoins disent terminés.",
@@ -472,6 +476,19 @@ export const adminFr: AdminTranslation = {
     pushTestReceived: "Reçu sur cet appareil à {{time}}.",
     pushTestUnconfirmed:
       "Aucune arrivée signalée en une minute. Le navigateur peut la livrer plus tard, ou cet appareil bloque la réception en arrière-plan.",
+    pushTestCheckFailed:
+      "La notification est partie, mais son arrivée n'a pas pu être vérifiée. Rechargez la page pour vérifier à nouveau.",
+    pushTestErrors: {
+      notifications:
+        "Activez d'abord les notifications de Nadhir sur cet appareil.",
+      signIn: "Reconnectez-vous avec votre compte administrateur.",
+      forbidden: "Seuls les administrateurs peuvent lancer ce test.",
+      wait: "Deux tests par minute au plus. Attendez une minute puis réessayez.",
+      invalid:
+        "L'inscription de cet appareil aux notifications n'est pas valide. Désactivez puis réactivez les notifications.",
+      unavailable:
+        "Le service de notification n'a pas répondu. Réessayez dans un instant.",
+    },
     ensemble: {
       title: "Aperçu météo d’ensemble",
       description:
