@@ -20,11 +20,12 @@ const buttonVariants = cva(
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
       },
+      // touch screens get the 44 px tap target; mouse layouts keep their density
       size: {
-        default: "h-9 px-4 py-2",
-        sm: "h-8 rounded-md px-3 text-xs",
-        lg: "h-10 rounded-md px-8",
-        icon: "h-9 w-9",
+        default: "h-9 px-4 py-2 pointer-coarse:h-11",
+        sm: "h-8 rounded-md px-3 text-xs pointer-coarse:h-11",
+        lg: "h-10 rounded-md px-8 pointer-coarse:h-11",
+        icon: "h-9 w-9 pointer-coarse:size-11",
       },
     },
     defaultVariants: {

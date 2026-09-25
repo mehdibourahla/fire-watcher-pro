@@ -54,7 +54,7 @@ export function AreaPicker({
     wilaya?: string | null;
   }) =>
     area.wilaya
-      ? `${area.name_fr} — ${area.wilaya}`
+      ? `${area.name_fr}, ${area.wilaya}`
       : `${area.name_fr} (${t("ita.wilaya")})`;
 
   return (

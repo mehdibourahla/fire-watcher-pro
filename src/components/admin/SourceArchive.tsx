@@ -81,8 +81,9 @@ export function SourceArchive() {
               · {t(`sources.archive.${capture.status}`)}
             </summary>
             <p className="mt-2 text-xs">
-              {capture.media_type ?? "—"} · {capture.byte_length ?? 0} bytes ·
-              HTTP {capture.http_status ?? "—"}
+              {capture.media_type ?? t("empty.unknown")} ·{" "}
+              {capture.byte_length ?? 0} bytes · HTTP{" "}
+              {capture.http_status ?? t("empty.unknown")}
             </p>
             {capture.error_code && (
               <p className="mt-1 text-destructive">{capture.error_code}</p>

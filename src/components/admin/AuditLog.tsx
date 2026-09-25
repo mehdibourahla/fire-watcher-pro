@@ -20,9 +20,9 @@ import {
 import { myRolesQuery } from "@/lib/reports";
 import { currentUserIdQuery, membersQuery, type Member } from "@/lib/roles";
 
-const shown = (value: Json | null) =>
+const shown = (value: Json | null, none: string) =>
   value === null
-    ? "—"
+    ? none
     : typeof value === "string"
       ? value
       : JSON.stringify(value);
@@ -81,7 +81,8 @@ function Entry({
             <div key={change.key} className="contents">
               <dt className="font-mono">{change.key}</dt>
               <dd className="break-all">
-                {shown(change.before)} → {shown(change.after)}
+                {shown(change.before, t("empty.none"))} →{" "}
+                {shown(change.after, t("empty.none"))}
               </dd>
             </div>
           ))}

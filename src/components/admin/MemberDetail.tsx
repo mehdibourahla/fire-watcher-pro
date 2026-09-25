@@ -26,7 +26,7 @@ export function MemberDetail({ userId }: { userId: string }) {
               <dt>{t("people.phoneOnFile")}</dt>
               <dd>{yesNo(d.has_phone)}</dd>
               <dt>{t("people.minDanger")}</dt>
-              <dd>{d.min_danger_level ?? "—"}</dd>
+              <dd>{d.min_danger_level ?? t("empty.notSet")}</dd>
             </dl>
             <p className="mt-1 text-muted-foreground">
               {t("people.alertsReceived", { count: d.alerts_received })}

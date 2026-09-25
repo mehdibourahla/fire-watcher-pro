@@ -335,7 +335,7 @@ export function EmergencyNumbers({ compact = false }: { compact?: boolean }) {
     >
       <h2
         className="flex items-center gap-2 font-medium"
-        style={{ color: "var(--emergency)", fontFamily: "inherit" }}
+        style={{ color: "var(--emergency-ink)", fontFamily: "inherit" }}
       >
         <TriangleAlert aria-hidden className="size-4" />
         {t("emergency.title")}
@@ -347,7 +347,7 @@ export function EmergencyNumbers({ compact = false }: { compact?: boolean }) {
             <a
               href={`tel:${n.number}`}
               className="tabular font-semibold underline underline-offset-2"
-              style={{ color: "var(--emergency)" }}
+              style={{ color: "var(--emergency-ink)" }}
             >
               {n.number}
             </a>
@@ -426,7 +426,7 @@ export function DegradedBanner({ onDismiss }: { onDismiss?: () => void }) {
       className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs"
       style={{
         backgroundColor: "var(--emergency-surface)",
-        color: "var(--emergency)",
+        color: "var(--emergency-ink)",
       }}
     >
       <TriangleAlert aria-hidden className="size-3.5 shrink-0" />

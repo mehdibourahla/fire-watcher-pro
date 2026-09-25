@@ -78,6 +78,9 @@ Application rules — these are the fix:
 - Every appearance of a level carries **numeral + name + icon**. Required by §15,
   and it is the secondary encoding that legitimises the orange↔red pair sitting
   in the 8–15 ΔE band. A level must never be communicated by colour alone.
+- Icons come from `lucide-react` (2026-09-25 reason): icons here are a functional second encoding,
+  not decoration, so they need one stroke weight that stays legible at 14 px inside chips and
+  matches the shadcn controls around them; one complete set gives that, several would not.
 
 ### Chrome
 

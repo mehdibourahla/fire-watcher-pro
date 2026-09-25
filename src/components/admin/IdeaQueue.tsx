@@ -72,7 +72,7 @@ export function IdeaQueue({ locale }: { locale: Locale }) {
           {rows.map((idea) => (
             <li key={idea.id} className="card flex flex-col gap-3 p-4">
               <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                <span className="rounded-md bg-[var(--accent-tint)] px-2 py-0.5 font-semibold uppercase tracking-wider text-[var(--accent)]">
+                <span className="rounded-md bg-[var(--accent-tint)] px-2 py-0.5 font-semibold text-[var(--accent)]">
                   {t(laneKey(idea.lane))}
                 </span>
                 <span>{relativeTime(idea.created_at, locale)}</span>

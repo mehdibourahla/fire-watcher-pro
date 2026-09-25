@@ -74,6 +74,7 @@
 
   --emergency: #d40924;
   --emergency-surface: #fceced;
+  --emergency-ink: var(--emergency);
 
   --risk-1: #30ad51;
   --risk-2: #e4af00;
@@ -111,8 +112,10 @@
   --accent-ink: #04231d;
   --accent-tint: #10312a;
 
-  --emergency: #ee3b3b;
+  /* nudged from #ee3b3b: small red text and destructive buttons need 4.5:1 on --surface */
+  --emergency: #f04444;
   --emergency-surface: #341e20;
+  --emergency-ink: #f9baba;
 
   --risk-1: #46c865;
   --risk-2: #f7ce21;

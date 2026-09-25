@@ -1,4 +1,11 @@
 export const adminEn = {
+  empty: {
+    notSet: "Not set",
+    unknown: "Unknown",
+    noRole: "No role",
+    none: "None",
+    placeUnknown: "Place unknown",
+  },
   publication: {
     agent: {
       attention: "Human decisions and failed investigations",
@@ -209,7 +216,7 @@ export const adminEn = {
     confirmedAsIs: "Confirmed as correct",
     translationsEmpty: "No translation suggestions to review.",
     applyNote:
-      "Accepting records the decision. It does not change the app — run the apply script and open a pull request, so every word a person is shown still arrives through a reviewed commit.",
+      "Accepting records the decision. It does not change the app. Run the apply script and open a pull request, so every word a person is shown still arrives through a reviewed commit.",
     publish: "Publish to board",
     unpublish: "Remove from board",
     spam: "Spam",
@@ -279,7 +286,7 @@ export const adminEn = {
     minDanger: "Minimum danger level",
     alertsReceived: "{{count}} alerts received",
     zones: "Watch zones",
-    noZones: "No zones set — nothing would reach them.",
+    noZones: "No zones set. Nothing would reach them.",
     unnamedZone: "Unnamed zone",
     recentActions: "Recent actions",
     noActions: "No recorded actions.",
@@ -443,7 +450,7 @@ export const adminEn = {
     pushTestHelp:
       "Tap the button, then return to your iPhone Home Screen. One test notification goes to this device only.",
     pushTestButton: "Test this device",
-    pushTestWaiting: "Sending — return to Home Screen",
+    pushTestWaiting: "Sending. Return to Home Screen",
     pushTestAccepted:
       "Provider accepted the test. Confirm the notification appeared on your device.",
     ensemble: {

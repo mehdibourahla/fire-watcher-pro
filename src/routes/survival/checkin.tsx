@@ -142,7 +142,7 @@ function CheckInPage() {
           <span
             className="text-base font-bold"
             style={
-              kind === "assist" ? { color: "var(--emergency)" } : undefined
+              kind === "assist" ? { color: "var(--emergency-ink)" } : undefined
             }
           >
             {t("survival.checkinAssist")}

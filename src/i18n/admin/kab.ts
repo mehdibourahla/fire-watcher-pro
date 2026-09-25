@@ -27,7 +27,7 @@ export const adminKab = {
     pushTestHelp:
       "Sit ɣef tqeffalt, syin uɣal ɣer ugdil agejdan n iPhone. Talɣut n usekyed ad truḥ ɣer yibenk-a kan.",
     pushTestButton: "Sekyed ibenk-a",
-    pushTestWaiting: "Tuzzna — uɣal ɣer ugdil agejdan",
+    pushTestWaiting: "Tuzzna. Uɣal ɣer ugdil agejdan",
     pushTestAccepted:
       "Amefki yeqbel asekyed. Sentem ma tban-d telɣut deg yibenk-ik.",
     ensemble: {

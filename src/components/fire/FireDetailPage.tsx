@@ -9,7 +9,7 @@ import { AirQualityCard } from "@/components/nadhir/AirQualityCard";
 import { DetectionStrip } from "@/components/nadhir/DetectionStrip";
 import { FireEvidence } from "@/components/nadhir/FireEvidence";
 import { StatCard } from "@/components/nadhir/StatCard";
-import { EmptyState, Skeleton } from "@/components/nadhir/states";
+import { EmptyState, ErrorState, Skeleton } from "@/components/nadhir/states";
 import { EmergencyNumbers } from "@/components/SiteChrome";
 import { Button } from "@/components/ui/button";
 import type { Locale } from "@/i18n";
@@ -77,6 +77,17 @@ export function FireDetailPage({ shortId }: { shortId: string }) {
       <div className="mx-auto max-w-5xl space-y-3 p-6">
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-64 w-full" />
+      </div>
+    );
+  }
+
+  if (detail.isError) {
+    return (
+      <div className="mx-auto max-w-3xl p-8">
+        <ErrorState
+          body={t("fire.loadError")}
+          onRetry={() => void detail.refetch()}
+        />
       </div>
     );
   }
@@ -220,7 +231,7 @@ export function FireDetailPage({ shortId }: { shortId: string }) {
                 live
                   ? {
                       backgroundColor: "var(--emergency-surface)",
-                      color: "var(--emergency)",
+                      color: "var(--emergency-ink)",
                     }
                   : undefined
               }
@@ -263,7 +274,7 @@ export function FireDetailPage({ shortId }: { shortId: string }) {
             className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium"
             style={{
               backgroundColor: "var(--emergency-surface)",
-              color: "var(--emergency)",
+              color: "var(--emergency-ink)",
             }}
           >
             <Wind aria-hidden className="size-4 shrink-0" />
@@ -280,7 +291,7 @@ export function FireDetailPage({ shortId }: { shortId: string }) {
               className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium"
               style={{
                 backgroundColor: "var(--emergency-surface)",
-                color: "var(--emergency)",
+                color: "var(--emergency-ink)",
               }}
             >
               <TrendingUp aria-hidden className="size-4 shrink-0" />

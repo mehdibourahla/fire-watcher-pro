@@ -1,6 +1,13 @@
 import type { AdminTranslation } from "./en";
 
 export const adminFr: AdminTranslation = {
+  empty: {
+    notSet: "Non défini",
+    unknown: "Inconnu",
+    noRole: "Aucun rôle",
+    none: "Aucune",
+    placeUnknown: "Lieu inconnu",
+  },
   publication: {
     agent: {
       attention: "Décisions humaines et investigations en échec",
@@ -214,7 +221,7 @@ export const adminFr: AdminTranslation = {
     confirmedAsIs: "Confirmée correcte",
     translationsEmpty: "Aucune proposition de traduction à examiner.",
     applyNote:
-      "Accepter enregistre la décision. Cela ne modifie pas l’application — lancez le script d’application et ouvrez une pull request, afin que chaque mot affiché passe toujours par un commit relu.",
+      "Accepter enregistre la décision. Cela ne modifie pas l’application. Lancez le script d’application et ouvrez une pull request, afin que chaque mot affiché passe toujours par un commit relu.",
     publish: "Publier au tableau",
     unpublish: "Retirer du tableau",
     spam: "Indésirable",
@@ -287,7 +294,7 @@ export const adminFr: AdminTranslation = {
     minDanger: "Niveau de danger minimal",
     alertsReceived: "{{count}} alertes reçues",
     zones: "Zones surveillées",
-    noZones: "Aucune zone — rien ne leur parviendrait.",
+    noZones: "Aucune zone. Rien ne leur parviendrait.",
     unnamedZone: "Zone sans nom",
     recentActions: "Actions récentes",
     noActions: "Aucune action enregistrée.",
@@ -451,7 +458,7 @@ export const adminFr: AdminTranslation = {
     pushTestHelp:
       "Touchez le bouton, puis revenez à l’écran d’accueil de l’iPhone. Une notification de test sera envoyée uniquement à cet appareil.",
     pushTestButton: "Tester cet appareil",
-    pushTestWaiting: "Envoi — revenez à l’écran d’accueil",
+    pushTestWaiting: "Envoi. Revenez à l’écran d’accueil",
     pushTestAccepted:
       "Le fournisseur a accepté le test. Confirmez que la notification est apparue sur votre appareil.",
     ensemble: {

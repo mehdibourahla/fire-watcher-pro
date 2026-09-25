@@ -68,6 +68,14 @@ export const zonesQuery = queryOptions({
 
 export const MAX_ZONES = 10;
 
+// the limit_zones trigger's message is the one save failure a user can act on
+export function zoneFailureKey(failure: unknown): string {
+  return failure instanceof Error &&
+    failure.message.startsWith("Zone limit reached")
+    ? "account.zoneLimit"
+    : "account.zoneSaveFailed";
+}
+
 export const ZONE_HAZARDS = [
   { key: "notify_fires", label: "account.notifyFires" },
   { key: "notify_risk", label: "account.notifyRisk" },
