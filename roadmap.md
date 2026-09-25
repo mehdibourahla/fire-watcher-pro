@@ -116,8 +116,8 @@ response, current SMTP/FCM receipt validation, then dependency refreshes and sco
   `bun run replay:source -- <gap-uuid>`; unsupported terminal gaps are unrecoverable.
 - Secrets needed by the deployed app: `FIRMS_MAP_KEY`, `EUMETSAT_CONSUMER_KEY/SECRET`,
   `NADHIR_CRON_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`, `FIREBASE_SERVICE_ACCOUNT`,
-  `TELEGRAM_BOT_TOKEN`. Telegram has recorded live sends; FCM configuration and device receipt
-  still need current verification. Delivery reports degraded when required configuration is absent.
+  `TELEGRAM_BOT_TOKEN`. Telegram has recorded live sends; a device push receipt was measured
+  on 2026-09-25 (#177). Delivery reports degraded when required configuration is absent.
 
 ## Epic: Broadcast Alerts (codename AMBER — never user-facing)
 
@@ -191,11 +191,11 @@ Slices, in dependency order:
       observed a complete `local_fwi` checkpoint for 2026-09-08.
 - [ ] M4 Delivery reliability: destination receipts deployed in #121. Independent leased
       channel queues, bounded retries/expiry and backlog incidents shipped in #122.
-      Private Telegram receipt is confirmed; iPhone push receipt remains unverified.
+      Private Telegram receipt is confirmed; iPhone push receipt measured on 2026-09-25 (#177).
 - [ ] M5 Operator response: admin fire resolution, replay, risk publication, incident editing,
       moderation replies, place verification and audit trail are implemented. Remaining:
-      iPhone push receipt and production failure drills. Source pause/resume, retention and
-      admin navigation are implemented on the release branch; see `docs/source-operations.md`.
+      production failure drills. Source pause/resume and admin navigation shipped in #125;
+      see `docs/source-operations.md`.
       Delivery pause/resume and reliability-incident acknowledgement/recovery shipped in #122.
 - [ ] M6 New-source gate: require every proposed layer to ship an adapter contract, captured
       producer fixtures, licence/provenance, coverage and recency validation, fallback behavior,

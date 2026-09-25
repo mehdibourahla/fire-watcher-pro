@@ -12,7 +12,8 @@ Source recovery #139 is deployed: all four DGPC and one ITA quarantines recovere
 watchdog issues were verified on 21 September. The independent database-triggered watchdog
 ran successfully. Four exhausted historical gaps are retained as unrecoverable.
 Broader upstream-outage and disaster-restoration exercises remain. The owner previously
-confirmed iPhone push, private Telegram and authentication email receipt.
+confirmed private Telegram and authentication email receipt; device push receipt is measured
+since #177 (2026-09-25: an admin test push reached the owner's iPhone 4.3 s after sending).
 
 The [official notification policy](docs/official-notification-policy.md) defines source,
 hazard, channel and lifecycle requirements. This branch fixes ONM publication/delivery expiry.
@@ -32,14 +33,16 @@ Priorities checked against current code:
    delivery run succeeded at 16:01 UTC. Only official CAP messages carrying
    `source_key=dgpc_telegram` are eligible.
 2. Destination receipts deployed in #121. Production delivery runs succeed; the same-day
-   read-only check found no receipt rows yet. Real DGPC, device push and signup receipt remain unverified.
-3. Release branch implements independent channel queues, backlog incidents, acknowledgement
-   and audited pause/resume. Browser QA also corrected operator access to the source replay list.
-   Source pause/resume and retention are implemented on the release branch. Production
-   failure drills remain an operational follow-up; see `docs/source-operations.md`.
-4. Eight dependency PR intents are integrated on the release branch. PR #31's source intent
+   read-only check found no receipt rows yet. Device push receipt is measured since #177;
+   real DGPC and signup receipt remain unverified.
+3. Independent channel queues, backlog incidents, acknowledgement and audited pause/resume
+   shipped in #122; source pause/resume in #125. Browser QA also corrected operator access to
+   the source replay list. Bulk history now moves to the cold archive after 90 days (#176)
+   instead of being purged. Production failure drills remain an operational follow-up; see
+   `docs/source-operations.md`.
+4. Eight dependency PR intents were integrated in #122. PR #31's source intent
    is replaced with a bounded operator ensemble preview; see `docs/source-successors.md`.
-5. R2 growth and R5 observation-ended notifications are implemented on the release branch.
+5. R2 growth and R5 observation-ended notifications shipped in #122.
    Email/SMS delivery still requires a named provider and private test recipients/device.
 
 Code and open PRs were rechecked on 2026-09-08. Dated production counts below are historical
@@ -118,16 +121,15 @@ Broadcasts publish from satellite fires, ONM and official incident relays, with 
 delivery and an accountless subscription flow (`src/lib/ingest/broadcast.server.ts`,
 `delivery.server.ts`). Telegram has recorded live channel sends; its current public policy
 is DGPC official CAP relays only. The per-user zone `alerts` rows still lack email/SMS
-delivery. Verify FCM runtime credentials, Firebase web config and an actual device receipt
-before calling push operational; missing configuration reports degraded health.
+delivery. A real device receipt was measured on 2026-09-25 (#177); missing push
+configuration still reports degraded health.
 
 The **CAP object** every channel must render is now built (`cap_alerts`, `src/lib/cap.ts`):
 each fire alert links to one CAP 1.2 warning carrying all four languages, so a channel added
 later renders an approved object instead of inventing its own payload. Signing, approval chains and Cell Broadcast remain
 institutional work, not code.
 
-What is left is deploying destination-level retry and verifying device receipts (§2.4), plus providers
-for zone email/SMS. The `cap_alerts` migration was applied to the live project on 2026-08-29
+What is left is providers for zone email/SMS. The `cap_alerts` migration was applied to the live project on 2026-08-29
 (ledger version 20260829010000).
 
 **Commune alert state — 2026-09-02.** A push now means a commune's alert level rose:
@@ -465,7 +467,7 @@ Publication and delivery status:
 - **Channel-isolated delivery (M4).** The receipt fix deployed in #121: private
   `broadcast_delivery_receipts` records successful chats/topics so retries skip them; provider
   rejection continues other destinations, and channel errors do not block the other channel.
-  The release branch adds independent leased queues, eight bounded attempts, 24-hour expiry,
+  #122 added independent leased queues, eight bounded attempts, 24-hour expiry,
   a 15-minute backlog signal, operator pause/resume and incident acknowledgement. An accepted send with a lost
   response or failed receipt write can still repeat; neither provider offers exactly-once sends.
 
@@ -483,7 +485,7 @@ anyone reviewing the schema. The checklist can proceed for them.
 
 ## 3. Product surface
 
-- **R2 growth and R5 observation-ended** are implemented on the release branch. Growth
+- **R2 growth and R5 observation-ended** shipped in #122. Growth
   requires doubling area or FRP against the last notification and a 45-minute interval.
   End messages use the actual active-to-contained observation event and explicitly do not
   declare extinction or safety. Both use `alerts.kind='fire'` with a payload phase.
@@ -518,8 +520,8 @@ anyone reviewing the schema. The checklist can proceed for them.
   source-gap replay, risk publication, official-incident editing, moderation queues,
   member tools, place verification and an audit timeline. See `src/lib/admin-*.ts` and
   `src/routes/_authenticated/admin/`. Incident acknowledgement and delivery pause/resume
-  shipped in #122. Source pause/resume, retention and admin navigation are implemented on
-  the release branch. Production failure drills remain part of M5.
+  shipped in #122; source pause/resume and admin navigation in #125. Production failure
+  drills remain part of M5.
 - **`/contribute` now has replies.** `IdeaQueue.tsx` calls `replyToIdea` and displays whether
   the reply author is a person or agent. This proves the workflow exists, not that someone
   is monitoring submissions. Voting is anonymous and keyed to a
