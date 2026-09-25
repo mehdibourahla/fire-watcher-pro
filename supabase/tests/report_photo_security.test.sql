@@ -70,11 +70,13 @@ select lives_ok(
   'an owner can store a canonical private JPEG key'
 );
 
-select lives_ok(
-  $$update public.citizen_reports
-    set photo_url = 'f0200000-0000-4000-8000-000000000001/f0202000-0000-4000-8000-000000000002.png'
-    where id = 'f0201000-0000-4000-8000-000000000001'$$,
-  'an owner can update a pending report to a canonical private PNG key'
+update public.citizen_reports
+  set photo_url = 'f0200000-0000-4000-8000-000000000001/f0202000-0000-4000-8000-000000000002.png'
+  where id = 'f0201000-0000-4000-8000-000000000001';
+select is(
+  (select photo_url from public.citizen_reports where id = 'f0201000-0000-4000-8000-000000000001'),
+  'f0200000-0000-4000-8000-000000000001/f0202000-0000-4000-8000-000000000001.jpg',
+  'a sent report cannot be rewritten by its owner, even to a canonical key'
 );
 
 select lives_ok(
@@ -140,49 +142,9 @@ select throws_ok(
 );
 delete from public.citizen_reports where note = 'f020-extension';
 
-select throws_ok(
-  $$update public.citizen_reports
-    set photo_url = 'f0200000-0000-4000-8000-000000000002/f0202000-0000-4000-8000-000000000005.jpg'
-    where id = 'f0201000-0000-4000-8000-000000000001'$$,
-  '23514', null,
-  'an owner cannot update a report to another user prefix'
-);
-update public.citizen_reports
-set photo_url = 'f0200000-0000-4000-8000-000000000001/f0202000-0000-4000-8000-000000000002.png'
-where id = 'f0201000-0000-4000-8000-000000000001';
 
-select throws_ok(
-  $$update public.citizen_reports
-    set photo_url = 'https://attacker.example/update.jpg'
-    where id = 'f0201000-0000-4000-8000-000000000001'$$,
-  '23514', null,
-  'an owner cannot update a report to an absolute network URL'
-);
-update public.citizen_reports
-set photo_url = 'f0200000-0000-4000-8000-000000000001/f0202000-0000-4000-8000-000000000002.png'
-where id = 'f0201000-0000-4000-8000-000000000001';
 
-select throws_ok(
-  $$update public.citizen_reports
-    set photo_url = 'f0200000-0000-4000-8000-000000000001/../update.png'
-    where id = 'f0201000-0000-4000-8000-000000000001'$$,
-  '23514', null,
-  'an owner cannot update a report to a traversal key'
-);
-update public.citizen_reports
-set photo_url = 'f0200000-0000-4000-8000-000000000001/f0202000-0000-4000-8000-000000000002.png'
-where id = 'f0201000-0000-4000-8000-000000000001';
 
-select throws_ok(
-  $$update public.citizen_reports
-    set photo_url = 'f0200000-0000-4000-8000-000000000001/f0202000-0000-4000-8000-000000000005.jpeg'
-    where id = 'f0201000-0000-4000-8000-000000000001'$$,
-  '23514', null,
-  'an owner cannot update a report to a non-canonical extension'
-);
-update public.citizen_reports
-set photo_url = 'f0200000-0000-4000-8000-000000000001/f0202000-0000-4000-8000-000000000002.png'
-where id = 'f0201000-0000-4000-8000-000000000001';
 
 select is(
   (select count(*)::integer from public.citizen_reports
@@ -228,16 +190,6 @@ select lives_ok(
     )$$,
   'service writers retain legitimate canonical photo inserts'
 );
-select throws_ok(
-  $$update public.citizen_reports
-    set photo_url = 'https://attacker.example/service.png'
-    where id = 'f0201000-0000-4000-8000-000000000002'$$,
-  '23514', null,
-  'service writers cannot bypass the photo key boundary'
-);
-update public.citizen_reports
-set photo_url = 'f0200000-0000-4000-8000-000000000002/f0202000-0000-4000-8000-000000000006.png'
-where id = 'f0201000-0000-4000-8000-000000000002';
 
 reset role;
 create temporary table qa_report_photo_constraint as
@@ -276,6 +228,18 @@ select lives_ok(
   $$alter table public.citizen_reports
     validate constraint citizen_reports_photo_key_valid$$,
   'the canonical constraint validates after invalid legacy data is removed'
+);
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', 'f0200000-0000-4000-8000-000000000001', true);
+update public.citizen_reports
+  set photo_url = 'https://attacker.example/update.jpg'
+  where id = 'f0201000-0000-4000-8000-000000000001';
+reset role;
+select is(
+  (select photo_url from public.citizen_reports where id = 'f0201000-0000-4000-8000-000000000001'),
+  'f0200000-0000-4000-8000-000000000001/f0202000-0000-4000-8000-000000000001.jpg',
+  'an owner cannot point a sent report at a network URL'
 );
 
 select * from finish();

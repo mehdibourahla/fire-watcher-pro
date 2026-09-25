@@ -139,10 +139,22 @@ _Avoid_: anonymous zone, device registration
 ### Reporting
 
 **Hazard Report**:
-A one-tap citizen report of danger — fire here, heavy smoke, road blocked, person
-trapped. Displays publicly unmoderated, labelled with source and age; moderation can
-promote or remove. "Person trapped" inherits the SOS honesty rule: recorded, not
-monitored, call 14.
+A citizen report of danger: one tap for fire or smoke, flooding, storm damage, road
+blocked, earthquake damage or person trapped, or a short text the classifier files as one
+of those or sandstorm, landslide, snow or ice, structural danger, hazardous spill, other.
+A tile without text publishes at once; text publishes only as the classifier's neutral
+summary, never raw, and waits for a moderator when the classifier holds it. Labelled with
+source and age; moderation can remove. "Person trapped" is never public and inherits the
+SOS honesty rule: recorded, not monitored, call 14.
+
+**Witness**:
+A signed-in person within 5 km of a published Hazard Report who says "I see it too" (one
+per person, never the reporter). "It's gone" votes are collected for moderation only and
+never hide or clear a report: the All-Clear asymmetry applies.
+
+**Corroborated**:
+A Hazard Report with at least one Witness. Only corroborated reports push to zones and earn
+their reporter points.
 
 **All-Clear Report**:
 A one-tap citizen report of clearance — road passable, refuge reached. Collected but
