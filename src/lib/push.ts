@@ -70,7 +70,7 @@ async function registrationToken(): Promise<string> {
   return token;
 }
 
-export async function testPushOnThisDevice(): Promise<void> {
+export async function testPushOnThisDevice(): Promise<string> {
   if (!pushSupported() || Notification.permission !== "granted")
     throw new Error("Enable notifications on this device first.");
   const { supabase } = await import("@/integrations/supabase/client");
@@ -93,6 +93,21 @@ export async function testPushOnThisDevice(): Promise<void> {
     } | null;
     throw new Error(body?.error ?? "Push test failed");
   }
+  return ((await response.json()) as { testId: string }).testId;
+}
+
+export async function pushTestArrival(testId: string, sentAt: number) {
+  const { supabase } = await import("@/integrations/supabase/client");
+  const { data, error } = await supabase
+    .from("push_test_receipts")
+    .select("received_at")
+    .eq("id", testId)
+    .single();
+  if (error) throw new Error(error.message);
+  return {
+    receivedAt: data.received_at,
+    expired: Date.now() - sentAt > 60_000,
+  };
 }
 
 async function callSubscribeApi(

@@ -4,7 +4,11 @@ vi.mock("@/integrations/supabase/client.server", () => ({
   supabaseAdmin: {},
 }));
 
-import { pushReceipt, recordPushReceipt } from "@/lib/push-receipt.server";
+import {
+  pushReceipt,
+  recordPushReceipt,
+  testPushReceipt,
+} from "@/lib/push-receipt.server";
 
 const secret = "test-secret";
 const alertId = "0b000000-0000-4000-8000-000000000001";
@@ -16,8 +20,8 @@ function deps() {
     marked,
     deps: {
       secret: () => secret,
-      mark: async (id: string) => {
-        marked.push(id);
+      mark: async (target: "alert" | "test", id: string) => {
+        marked.push(`${target} ${id}`);
       },
     },
   };
@@ -30,7 +34,33 @@ describe("push receipts", () => {
     await expect(
       recordPushReceipt({ alert_id: alertId, receipt }, d),
     ).resolves.toBe("recorded");
-    expect(marked).toEqual([alertId]);
+    expect(marked).toEqual([`alert ${alertId}`]);
+  });
+
+  it("marks the admin test a device received", async () => {
+    const { marked, deps: d } = deps();
+    const receipt = await testPushReceipt(other, secret);
+    await expect(
+      recordPushReceipt({ test_id: other, receipt }, d),
+    ).resolves.toBe("recorded");
+    expect(marked).toEqual([`test ${other}`]);
+  });
+
+  it("never lets an alert's receipt mark a test, or a test's an alert", async () => {
+    const { marked, deps: d } = deps();
+    await expect(
+      recordPushReceipt(
+        { test_id: alertId, receipt: await pushReceipt(alertId, secret) },
+        d,
+      ),
+    ).resolves.toBe("forged");
+    await expect(
+      recordPushReceipt(
+        { alert_id: alertId, receipt: await testPushReceipt(alertId, secret) },
+        d,
+      ),
+    ).resolves.toBe("forged");
+    expect(marked).toEqual([]);
   });
 
   it("refuses a forged receipt or one signed for another alert", async () => {
@@ -55,6 +85,7 @@ describe("push receipts", () => {
       { alert_id: alertId },
       { alert_id: "not-a-uuid", receipt },
       { alert_id: alertId, receipt, extra: 1 },
+      { alert_id: alertId, test_id: alertId, receipt },
     ])
       await expect(recordPushReceipt(body, d)).resolves.toBe("invalid");
     expect(marked).toEqual([]);

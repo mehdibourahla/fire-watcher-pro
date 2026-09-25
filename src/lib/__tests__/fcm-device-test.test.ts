@@ -38,7 +38,7 @@ it("rejects an unregistered device without exposing its token", async () => {
         headers: { TTL: "60" },
         fcm_options: { link: "https://nadhir.app" },
       },
-      data: { kind: "test" },
+      data: { kind: "test", test_id: "t", receipt: "r" },
     }),
   ).rejects.toThrow("fcm send failed (404)");
   const body = JSON.parse(String(vi.mocked(fetch).mock.calls[1]?.[1]?.body));

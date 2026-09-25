@@ -9,8 +9,13 @@ function serviceSecret() {
   return value;
 }
 
-// labelled so this signature can never be mistaken for another use of the same key
-const signed = (alertId: string) => encoder.encode(`push-receipt:${alertId}`);
+type Target = "alert" | "test";
+
+// labelled so this signature can never be mistaken for another use of the same key, or an alert's for a test's
+const signed = (target: Target, id: string) =>
+  encoder.encode(
+    target === "alert" ? `push-receipt:${id}` : `push-receipt:test:${id}`,
+  );
 
 const hmacKey = (secret: string) =>
   crypto.subtle.importKey(
@@ -37,20 +42,34 @@ function fromBase64Url(value: string): Uint8Array<ArrayBuffer> | null {
   return bytes;
 }
 
-export async function pushReceipt(alertId: string, secret = serviceSecret()) {
+async function sign(target: Target, id: string, secret: string) {
   return toBase64Url(
-    await crypto.subtle.sign("HMAC", await hmacKey(secret), signed(alertId)),
+    await crypto.subtle.sign("HMAC", await hmacKey(secret), signed(target, id)),
   );
 }
 
+export const pushReceipt = (alertId: string, secret = serviceSecret()) =>
+  sign("alert", alertId, secret);
+
+export const testPushReceipt = (testId: string, secret = serviceSecret()) =>
+  sign("test", testId, secret);
+
 const store = {
   secret: serviceSecret,
-  mark: async (alertId: string) => {
-    const { error } = await supabaseAdmin
-      .from("alerts")
-      .update({ push_received_at: new Date().toISOString() })
-      .eq("id", alertId)
-      .is("push_received_at", null);
+  mark: async (target: Target, id: string) => {
+    const now = new Date().toISOString();
+    const { error } =
+      target === "alert"
+        ? await supabaseAdmin
+            .from("alerts")
+            .update({ push_received_at: now })
+            .eq("id", id)
+            .is("push_received_at", null)
+        : await supabaseAdmin
+            .from("push_test_receipts")
+            .update({ received_at: now })
+            .eq("id", id)
+            .is("received_at", null);
     if (error) throw new Error(error.message);
   },
 };
@@ -63,11 +82,15 @@ export async function recordPushReceipt(
   if (!body || typeof body !== "object" || Array.isArray(body))
     return "invalid";
   const fields = body as Record<string, unknown>;
-  const { alert_id: alertId, receipt } = fields;
+  const target: Target | null =
+    "alert_id" in fields ? "alert" : "test_id" in fields ? "test" : null;
+  const id = target === "alert" ? fields["alert_id"] : fields["test_id"];
+  const { receipt } = fields;
   if (
+    !target ||
     Object.keys(fields).length !== 2 ||
-    typeof alertId !== "string" ||
-    !UUID.test(alertId) ||
+    typeof id !== "string" ||
+    !UUID.test(id) ||
     typeof receipt !== "string"
   )
     return "invalid";
@@ -77,9 +100,9 @@ export async function recordPushReceipt(
     "HMAC",
     await hmacKey(deps.secret()),
     signature,
-    signed(alertId),
+    signed(target, id),
   );
   if (!valid) return "forged";
-  await deps.mark(alertId);
+  await deps.mark(target, id);
   return "recorded";
 }

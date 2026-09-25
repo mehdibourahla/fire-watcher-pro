@@ -16,12 +16,13 @@ self.addEventListener("push", (event) => {
   } catch {
     return;
   }
-  if (!data?.alert_id || !data?.receipt) return;
+  const key = data?.alert_id ? "alert_id" : data?.test_id ? "test_id" : null;
+  if (!key || !data.receipt) return;
   event.waitUntil(
     fetch("/api/public/push-receipt", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ alert_id: data.alert_id, receipt: data.receipt }),
+      body: JSON.stringify({ [key]: data[key], receipt: data.receipt }),
     }).catch(() => undefined),
   );
 });

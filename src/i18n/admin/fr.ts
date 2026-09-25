@@ -468,7 +468,10 @@ export const adminFr: AdminTranslation = {
     pushTestButton: "Tester cet appareil",
     pushTestWaiting: "Envoi. Revenez à l’écran d’accueil",
     pushTestAccepted:
-      "Le fournisseur a accepté le test. Confirmez que la notification est apparue sur votre appareil.",
+      "Le fournisseur a accepté le test. En attente du signalement d'arrivée par cet appareil.",
+    pushTestReceived: "Reçu sur cet appareil à {{time}}.",
+    pushTestUnconfirmed:
+      "Aucune arrivée signalée en une minute. Le navigateur peut la livrer plus tard, ou cet appareil bloque la réception en arrière-plan.",
     ensemble: {
       title: "Aperçu météo d’ensemble",
       description:

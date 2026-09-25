@@ -460,7 +460,10 @@ export const adminEn = {
     pushTestButton: "Test this device",
     pushTestWaiting: "Sending. Return to Home Screen",
     pushTestAccepted:
-      "Provider accepted the test. Confirm the notification appeared on your device.",
+      "Provider accepted the test. Waiting for this device to report arrival.",
+    pushTestReceived: "Received on this device at {{time}}.",
+    pushTestUnconfirmed:
+      "No arrival reported within a minute. The browser may deliver it later, or this device blocks background delivery.",
     ensemble: {
       title: "Ensemble weather preview",
       description:

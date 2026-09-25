@@ -34,6 +34,27 @@ export type Database = {
   };
   public: {
     Tables: {
+      push_test_receipts: {
+        Row: {
+          id: string;
+          received_at: string | null;
+          sent_at: string;
+          user_id: string;
+        };
+        Insert: {
+          id?: string;
+          received_at?: string | null;
+          sent_at?: string;
+          user_id: string;
+        };
+        Update: {
+          id?: string;
+          received_at?: string | null;
+          sent_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       airport_observations: {
         Row: {
           fetched_at: string;
