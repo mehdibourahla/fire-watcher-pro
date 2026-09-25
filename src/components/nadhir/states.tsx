@@ -78,7 +78,7 @@ export function ErrorState({
       )}
       style={{
         backgroundColor: "var(--emergency-surface)",
-        color: "var(--emergency)",
+        color: "var(--emergency-ink)",
       }}
     >
       <p className="text-sm font-medium">{t("common.error")}</p>
@@ -87,7 +87,7 @@ export function ErrorState({
         <button
           type="button"
           onClick={onRetry}
-          className="rounded-md border border-current px-2.5 py-1 text-xs font-medium"
+          className="min-h-8 rounded-md border border-current px-3 py-1 text-sm font-medium pointer-coarse:min-h-11"
         >
           {t("common.retry")}
         </button>

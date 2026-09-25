@@ -23,6 +23,7 @@ import {
   setZoneActive,
   ZONE_HAZARDS,
   type Zone,
+  zoneFailureKey,
 } from "@/lib/account";
 import { unitName, type AdminUnit } from "@/lib/nadhir";
 
@@ -51,7 +52,8 @@ export function ZoneCard({
       await action();
       await qc.invalidateQueries({ queryKey: ["zones"] });
     } catch (failure) {
-      setError(failure instanceof Error ? failure.message : String(failure));
+      console.error(failure);
+      setError(t(zoneFailureKey(failure)));
     } finally {
       setPending(false);
     }
@@ -75,7 +77,12 @@ export function ZoneCard({
               .join(" · ")}
           </p>
         </div>
-        <RiskChip level={zone.min_danger_level} />
+        <div className="flex flex-col items-end gap-1">
+          <span className="text-xs text-muted-foreground">
+            {t("account.minLevel")}
+          </span>
+          <RiskChip level={zone.min_danger_level} />
+        </div>
       </div>
       {isDefaultPoint(zone) ? (
         <div
@@ -83,7 +90,7 @@ export function ZoneCard({
           className="mt-3 rounded-lg px-3 py-2 text-sm"
           style={{
             backgroundColor: "var(--emergency-surface)",
-            color: "var(--emergency)",
+            color: "var(--emergency-ink)",
           }}
         >
           <p>{t("account.zoneDefaultPoint")}</p>

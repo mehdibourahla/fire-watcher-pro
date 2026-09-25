@@ -84,3 +84,63 @@ export function airQualityQuery(position: { lat: number; lon: number } | null) {
     },
   });
 }
+
+export const WHO_PM10_24H = 45;
+
+// WHO 2021 PM10 guideline (45) and interim targets IT-3 (75) and IT-1 (150).
+export function pm10Level(pm10: number): SmokeLevel {
+  if (pm10 < WHO_PM10_24H) return "low";
+  if (pm10 < 75) return "elevated";
+  if (pm10 < 150) return "high";
+  return "severe";
+}
+
+export type AirHourly = {
+  time: string[];
+  pm2_5: (number | null)[];
+  pm10: (number | null)[];
+};
+
+export function parseAirHourly(response: unknown): AirHourly | null {
+  if (typeof response !== "object" || response === null) return null;
+  const hourly = (response as { hourly?: Record<string, unknown> }).hourly;
+  if (!hourly) return null;
+  const { time, pm2_5, pm10 } = hourly;
+  if (
+    !Array.isArray(time) ||
+    !Array.isArray(pm2_5) ||
+    !Array.isArray(pm10) ||
+    pm2_5.length !== time.length ||
+    pm10.length !== time.length ||
+    !time.every(
+      (t) => typeof t === "string" && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(t),
+    )
+  )
+    return null;
+  return { time, pm2_5: pm2_5.map(num), pm10: pm10.map(num) };
+}
+
+export function airForecastUrl(lat: number, lon: number): string {
+  return `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&hourly=pm2_5,pm10&forecast_days=6&timezone=Africa%2FAlgiers`;
+}
+
+export function airForecastQuery(
+  position: { lat: number; lon: number } | null,
+) {
+  const key = position
+    ? [position.lat.toFixed(3), position.lon.toFixed(3)]
+    : null;
+  return queryOptions({
+    queryKey: ["air-forecast", key],
+    enabled: position !== null,
+    staleTime: 60 * 60 * 1000,
+    queryFn: async () => {
+      if (!position) throw new Error("air forecast needs a position");
+      const res = await fetch(airForecastUrl(position.lat, position.lon));
+      if (!res.ok) throw new Error(`open-meteo air forecast ${res.status}`);
+      const hourly = parseAirHourly(await res.json());
+      if (!hourly) throw new Error("open-meteo air forecast: unreadable body");
+      return hourly;
+    },
+  });
+}

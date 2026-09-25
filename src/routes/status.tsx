@@ -46,7 +46,7 @@ function StatusPage() {
           className="mt-4 rounded-lg px-3 py-2 text-sm"
           style={{
             backgroundColor: "var(--emergency-surface)",
-            color: "var(--emergency)",
+            color: "var(--emergency-ink)",
           }}
         >
           {t("status.state.unavailable")}
@@ -57,7 +57,7 @@ function StatusPage() {
           className="mt-4 rounded-lg px-3 py-2 text-sm"
           style={{
             backgroundColor: "var(--emergency-surface)",
-            color: "var(--emergency)",
+            color: "var(--emergency-ink)",
           }}
         >
           {t("status.degradedCount", { count: summary.affected })}

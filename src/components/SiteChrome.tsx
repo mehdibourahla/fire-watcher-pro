@@ -2,8 +2,8 @@ import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
   Bell,
+  CalendarDays,
   Check,
-  Flame,
   MapPin,
   Menu,
   Monitor,
@@ -68,7 +68,7 @@ const ACCOUNT_NAV = [
 
 const TABS = [
   { to: "/", key: "nav.map", Icon: MapPin },
-  { to: "/forecast", key: "nav.forecast", Icon: Flame },
+  { to: "/forecast", key: "nav.forecast", Icon: CalendarDays },
   { to: "/alerts", key: "nav.alerts", Icon: Bell },
   { to: "/settings", key: "nav.settings", Icon: Settings },
 ] as const;
@@ -335,7 +335,7 @@ export function EmergencyNumbers({ compact = false }: { compact?: boolean }) {
     >
       <h2
         className="flex items-center gap-2 font-medium"
-        style={{ color: "var(--emergency)", fontFamily: "inherit" }}
+        style={{ color: "var(--emergency-ink)", fontFamily: "inherit" }}
       >
         <TriangleAlert aria-hidden className="size-4" />
         {t("emergency.title")}
@@ -347,7 +347,7 @@ export function EmergencyNumbers({ compact = false }: { compact?: boolean }) {
             <a
               href={`tel:${n.number}`}
               className="tabular font-semibold underline underline-offset-2"
-              style={{ color: "var(--emergency)" }}
+              style={{ color: "var(--emergency-ink)" }}
             >
               {n.number}
             </a>
@@ -362,7 +362,7 @@ export function RiskLegend({ className }: { className?: string }) {
   const { t } = useTranslation();
   return (
     <div className={cn("flex flex-col gap-1.5", className)}>
-      <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+      <span className="text-xs font-medium text-muted-foreground">
         {t("risk.legend")}
       </span>
       <ul className="flex flex-wrap gap-x-3 gap-y-1.5">
@@ -426,7 +426,7 @@ export function DegradedBanner({ onDismiss }: { onDismiss?: () => void }) {
       className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs"
       style={{
         backgroundColor: "var(--emergency-surface)",
-        color: "var(--emergency)",
+        color: "var(--emergency-ink)",
       }}
     >
       <TriangleAlert aria-hidden className="size-3.5 shrink-0" />

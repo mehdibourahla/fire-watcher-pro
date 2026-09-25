@@ -115,7 +115,7 @@ function AlertsPage() {
           className="mt-6 rounded-lg px-4 py-3 text-sm"
           style={{
             backgroundColor: "var(--emergency-surface)",
-            color: "var(--emergency)",
+            color: "var(--emergency-ink)",
           }}
         >
           <p>{t("alerts.defaultPointZones")}</p>

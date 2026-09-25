@@ -87,7 +87,7 @@ export function ZonesPage() {
           </>
         ) : zones.isError ? (
           <ErrorState
-            body={zones.error.message}
+            body={t("account.zonesLoadFailed")}
             onRetry={() => void zones.refetch()}
           />
         ) : list.length === 0 ? (

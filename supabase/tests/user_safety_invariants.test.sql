@@ -2,7 +2,7 @@ begin;
 
 set local search_path = public, extensions;
 
-select plan(34);
+select plan(35);
 
 insert into auth.users (
   instance_id,
@@ -339,6 +339,18 @@ select ok(
     'execute'
   ), true),
   'Data API roles cannot execute citizen report trigger functions'
+);
+
+delete from public.zones where user_id = 'f09f1000-0000-4000-8000-000000000001';
+insert into public.zones (user_id, name, lat, lon)
+  select 'f09f1000-0000-4000-8000-000000000001', 'zone ' || n, 36, 3 from generate_series(1, 10) n;
+-- the client maps this exact message to the translated zone-limit text (zoneFailureKey)
+select throws_ok(
+  $$insert into public.zones (user_id, name, lat, lon)
+    values ('f09f1000-0000-4000-8000-000000000001', 'eleventh', 36, 3)$$,
+  '23514',
+  'Zone limit reached (10 total)',
+  'the eleventh zone is refused with the message the client recognises'
 );
 
 select * from finish();

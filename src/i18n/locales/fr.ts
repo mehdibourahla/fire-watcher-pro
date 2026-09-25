@@ -96,13 +96,15 @@ export const fr: Translation = {
     demoMode: "Données de démonstration",
     demoModeNote:
       "Les flux satellites en direct ne sont pas encore connectés. Les chiffres affichés proviennent d'un scénario de démonstration.",
+    notRecorded: "Non enregistré",
+    unavailable: "Indisponible",
   },
   meta: {
-    defaultTitle: "Nadhir — Risques locaux et alertes en Algérie",
-    titleTemplate: "{{page}} — Nadhir",
+    defaultTitle: "Nadhir · Risques locaux et alertes en Algérie",
+    titleTemplate: "{{page}} · Nadhir",
   },
   notFound: {
-    metaTitle: "Page introuvable — Nadhir",
+    metaTitle: "Page introuvable · Nadhir",
     title: "Page introuvable",
     body: "La page que vous cherchez n'existe pas ou a été déplacée.",
     home: "Retour à l'accueil",
@@ -296,9 +298,9 @@ export const fr: Translation = {
     webhooks: "Webhooks",
     team: "Équipe",
     language: "Langue",
-    themeSystem: "Thème : suit votre appareil — passer en clair",
-    themeLight: "Thème : clair — passer en sombre",
-    themeDark: "Thème : sombre — suivre votre appareil",
+    themeSystem: "Thème : suit votre appareil. Passer en clair",
+    themeLight: "Thème : clair. Passer en sombre",
+    themeDark: "Thème : sombre. Suivre votre appareil",
   },
   emergency: {
     title: "Numéros d'urgence",
@@ -439,7 +441,7 @@ export const fr: Translation = {
     unverifiedHint:
       "Les détections non vérifiées apparaissent automatiquement à partir du zoom 9.",
     title: "Carte des feux en direct",
-    metaTitle: "Nadhir — Risques et avertissements en Algérie",
+    metaTitle: "Nadhir · Risques et avertissements en Algérie",
     metaDescription:
       "Consultez les observations satellites, incidents officiels, signalements citoyens et vigilances météo de l’ONM par commune ou wilaya en Algérie.",
     todayIn: "Aujourd'hui en Algérie",
@@ -494,7 +496,7 @@ export const fr: Translation = {
   fire: {
     nearSettlement: "À {{km}} km de {{settlement}}",
     detail: "Détail de l'incendie",
-    metaTitle: "Feu {{id}} — Nadhir",
+    metaTitle: "Feu {{id}} · Nadhir",
     metaDescription:
       "Chronologie des détections, direction de propagation et localités proches d'un feu actif en Algérie.",
     title: "Feu {{id}}",
@@ -514,11 +516,11 @@ export const fr: Translation = {
     airWho: "{{ratio}}× la valeur guide OMS sur 24 h",
     airSource: "modèle CAMS · {{time}}",
     windToward:
-      "Le vent souffle vers {{bearing}} — {{settlement}} se trouve dans cette direction",
+      "Le vent souffle vers {{bearing}} : {{settlement}} se trouve dans cette direction",
     growthGrowing:
-      "En progression — les d\u00e9tections satellite sont pass\u00e9es de {{earlier}} \u00e0 {{recent}} depuis {{time}}",
+      "En progression : les détections satellite sont passées de {{earlier}} à {{recent}} depuis {{time}}",
     growthFading:
-      "Moins de d\u00e9tections depuis {{time}} — cela peut aussi \u00eatre un nuage ou de la fum\u00e9e, pas un feu plus petit",
+      "Moins de détections depuis {{time}}. Cela peut aussi être un nuage ou de la fumée, pas un feu plus petit",
     growthSteady: "D\u00e9tections stables depuis {{time}}",
     timeline: "Chronologie des détections",
     nearest: "Localités les plus proches",
@@ -537,12 +539,14 @@ export const fr: Translation = {
     alertMe: "M'alerter sur cette zone",
     commune: "Commune",
     wilaya: "Wilaya",
+    loadError:
+      "Impossible de charger cet incendie. Vérifiez votre connexion et réessayez.",
   },
   evidence: {
     title: "Éléments",
     looks: "{{count}} observation",
     looks_other: "{{count}} observations",
-    official: "{{status}} — selon le bulletin de {{when}}",
+    official: "{{status}}, selon le bulletin de {{when}}",
     note: "Deux pixels voisins d'un même passage satellite comptent pour une observation, pas deux. Seule une source officielle confirme un incendie.",
   },
   stage: {
@@ -565,7 +569,7 @@ export const fr: Translation = {
       "Niveau de danger 1 \u00e0 5, d\u00e9riv\u00e9 du FWI selon l'\u00e9chelle europ\u00e9enne EFFIS.",
     notRated:
       "La m\u00e9t\u00e9o du feu est calcul\u00e9e, mais cette commune n'a presque aucune v\u00e9g\u00e9tation combustible : aucun niveau n'est affich\u00e9.",
-    area: "Surface br\u00fbl\u00e9e estim\u00e9e d'apr\u00e8s la taille et le nombre de d\u00e9tections satellite \u2014 une approximation, pas un p\u00e9rim\u00e8tre mesur\u00e9.",
+    area: "Surface brûlée estimée d'après la taille et le nombre de détections satellite. C'est une approximation, pas un périmètre mesuré.",
     frp: "Puissance radiative maximale du feu, mesur\u00e9e par satellite, en m\u00e9gawatts.",
     detections:
       "Nombre de d\u00e9tections thermiques satellite regroup\u00e9es dans ce feu.",
@@ -583,40 +587,24 @@ export const fr: Translation = {
     nearest: "Distance au lieu habit\u00e9 connu le plus proche.",
   },
   risk: {
-    metaTitle: "Prévision du danger d'incendie — Nadhir Algérie",
-    metaDescription:
-      "Prévision sur six jours de l'indice forêt-météo et conseils clairs pour chaque commune couverte par Nadhir.",
-    title: "Prévision du danger d'incendie",
-    dayLabel: "J{{n}}",
     today: "Aujourd'hui",
     fwi: "IFM",
     staleAsOf:
-      "Ceci est la prévision de {{time}} — celle d'aujourd'hui n'a pas encore été publiée.",
+      "Ceci est la prévision de {{time}}. Celle d'aujourd'hui n'a pas encore été publiée.",
     percentile: "IFM plus élevé que {{pct}} % des années à cette date",
     level: "Niveau de danger",
-    searchCommune: "Rechercher une commune",
-    noResults: "Aucune commune ne correspond.",
-    unavailableTitle: "La prévision du danger d'incendie est indisponible",
-    unavailableBody:
-      "La dernière actualisation ne s'est pas terminée : aucune prévision n'est publiée pour le moment. Consultez la page d'état des sources.",
     legend: "Échelle de danger",
-    sixDay: "Perspective 6 jours",
     low: "Faible",
     moderate: "Modéré",
     high: "Élevé",
     very_high: "Très élevé",
     extreme: "Extrême",
-    communeCount: "{{count}} communes",
-    communeCount_one: "{{count}} commune",
-    communeCount_other: "{{count}} communes",
-    groupWorst: "Niveau de la commune la plus exposée de la wilaya",
     effis: "EFFIS/GWIS (autorité européenne) classe cette commune : {{class}}",
-    fuelLimited: "Non évalué — végétation combustible négligeable",
+    fuelLimited: "Non évalué : végétation combustible négligeable",
     effisMasked:
       "EFFIS n'évalue pas le terrain de cette commune (zone non végétalisée).",
-    onmLabel: "Vigilance officielle ONM",
     effisNone:
-      "Pas de comparaison EFFIS exploitable pour le moment — le produit européen est récupéré chaque jour et refusé quand son calcul échoue à nos contrôles de qualité.",
+      "Pas de comparaison EFFIS exploitable pour le moment : le produit européen est récupéré chaque jour et refusé quand son calcul échoue à nos contrôles de qualité.",
     effisClass: {
       low: "Faible",
       moderate: "Modéré",
@@ -634,38 +622,65 @@ export const fr: Translation = {
     },
   },
   history: {
+    title: "Historique et statistiques",
+    metaTitle: "Historique des risques et statistiques · Nadhir Algérie",
+    metaDescription:
+      "Chaque feu, vigilance ONM et incident routier enregistré par Nadhir en Algérie, par semaine et par wilaya.",
+    exportCsv: "Exporter en CSV",
+    filterHazard: "Aléa",
+    allHazards: "Tous les aléas",
+    hazard: {
+      fire: "Feux",
+      weather: "Vigilances ONM",
+      road: "Incidents routiers",
+    },
+    filterWilaya: "Wilaya",
+    allWilayas: "Toutes les wilayas",
+    season: "Saison",
+    allSeasons: "Toutes les saisons",
+    coverage:
+      "Début des relevés : {{list}}. Nadhir ne connaît rien d’antérieur : aucune période antérieure n’est présentée comme calme.",
+    coverageItem: "{{hazard}} le {{date}}",
+    chartWeek: "Aléas enregistrés chaque semaine",
+    chartMonth: "Aléas enregistrés chaque mois",
+    fireTitle: "Feux",
+    totalFires: "Feux enregistrés",
+    burnedArea: "Surface estimée touchée",
+    officialReports: "Signalés par la Protection civile",
     cumulative: "Surface brûlée cumulée",
-    empty: "Aucun incendie enregistré pour ce filtre.",
-    noWilaya:
-      "Aucun incendie de cette période n'a pu être rattaché à une wilaya.",
-    unlocated:
-      "{{count}} incendies n'ont pas pu être rattachés à une wilaya et sont exclus de ce classement.",
-    unlocated_one:
-      "{{count}} incendie n'a pas pu être rattaché à une wilaya et est exclu de ce classement.",
-    unlocated_other:
-      "{{count}} incendies n'ont pas pu être rattachés à une wilaya et sont exclus de ce classement.",
+    weatherTitle: "Vigilances ONM par phénomène",
+    roadTitle: "Derniers incidents routiers",
+    roadNote:
+      "D’après Info Trafic Algérie, vérifié par Nadhir. Ce n’est pas un relevé officiel.",
+    byWilaya: "Par wilaya",
     fireCount: "{{count}} feux",
     fireCount_one: "{{count}} feu",
     fireCount_other: "{{count}} feux",
-    metaTitle: "Historique et statistiques des feux — Nadhir Algérie",
-    metaDescription:
-      "Archive des foyers détectés, surfaces estimées et wilayas les plus touchées en Algérie.",
-    title: "Historique et statistiques",
-    totalFires: "Feux enregistrés",
-    burnedArea: "Surface estimée touchée",
-    worstWilaya: "Wilaya la plus touchée",
-    byWilaya: "Par wilaya",
-    fires: "Feux",
-    area: "Surface",
-    exportCsv: "Exporter en CSV",
-    season: "Saison",
-    allSeasons: "Toutes les saisons",
-    filterWilaya: "Wilaya",
-    allWilayas: "Toutes les wilayas",
-    vsSeason: "par rapport à {{year}}",
-    monthly: "Répartition mensuelle",
-    monthlyNote:
-      "La hauteur indique la surface estimée touchée ; le chiffre au-dessus est le nombre de départs de feu.",
+    weatherCount: "{{count}} vigilances",
+    weatherCount_one: "{{count}} vigilance",
+    weatherCount_other: "{{count}} vigilances",
+    roadCount: "{{count}} incidents routiers",
+    roadCount_one: "{{count}} incident routier",
+    roadCount_other: "{{count}} incidents routiers",
+    unlocated:
+      "{{count}} relevés n’ont pas pu être rattachés à une wilaya et sont exclus de ce classement.",
+    unlocated_one:
+      "{{count}} relevé n’a pas pu être rattaché à une wilaya et est exclu de ce classement.",
+    unlocated_other:
+      "{{count}} relevés n’ont pas pu être rattachés à une wilaya et sont exclus de ce classement.",
+    noWilaya:
+      "Aucun relevé de cette sélection n’a pu être rattaché à une wilaya.",
+    empty:
+      "Rien d’enregistré pour cette sélection. Essayez tous les aléas ou toutes les wilayas.",
+    recordsTitle: "Relevés",
+    colDate: "Date",
+    colHazard: "Aléa",
+    colPlace: "Wilaya",
+    colDetail: "Détail",
+    recordsShown:
+      "Les {{shown}} plus récents sur {{total}}. Le CSV les contient tous.",
+    sourceError:
+      "{{hazard}} : chargement impossible. Les autres relevés restent affichés.",
     methodology:
       "Les surfaces sont des estimations satellitaires, pas des relevés de terrain.",
   },
@@ -680,7 +695,7 @@ export const fr: Translation = {
       "{{count}} source de données affectée — la capacité actuelle peut être réduite.",
     degradedCount_other:
       "{{count}} sources de données affectées — la capacité actuelle peut être réduite.",
-    metaTitle: "État des sources de données — Nadhir",
+    metaTitle: "État des sources de données · Nadhir",
     metaDescription:
       "État des sources satellitaires, météo, d’avertissements officiels et géographiques utilisées par Nadhir.",
     title: "Sources de données",
@@ -731,7 +746,7 @@ export const fr: Translation = {
     contributeCta: "Voir ce qui manque",
     attribution:
       "Sources : NASA FIRMS · EUMETSAT · Copernicus · Open-Meteo · ONM · DGPC · OpenStreetMap",
-    metaTitle: "À propos de Nadhir — méthodologie et données",
+    metaTitle: "À propos de Nadhir · méthodologie et données",
     metaDescription:
       "Comment Nadhir rassemble prévisions météo, observations satellitaires des incendies et avertissements officiels attribués pour l’Algérie.",
     title: "À propos de Nadhir",
@@ -785,7 +800,7 @@ export const fr: Translation = {
     zoneLimit:
       "Vous avez atteint le maximum de 10 zones. Supprimez-en une pour en ajouter une autre.",
     zoneFires:
-      "{{count}} incendies actifs dans cette zone — le plus proche à {{km}} km.",
+      "{{count}} incendies actifs dans cette zone, le plus proche à {{km}} km.",
     authTitle: "Se connecter à Nadhir",
     authMetaTitle: "Se connecter",
     authSubtitle:
@@ -809,7 +824,7 @@ export const fr: Translation = {
       "La connexion est momentanément indisponible. Réessayez dans un instant.",
     zonesTitle: "Mes zones surveillées",
     zonesSubtitle:
-      "Gérez les lieux suivis et leurs alertes disponibles sur les incendies et le danger.",
+      "Gérez les lieux suivis et les aléas pour lesquels chacun vous alerte.",
     newZone: "Ajouter une zone",
     zoneName: "Nom de la zone",
     radius: "Rayon : {{km}} km",
@@ -847,16 +862,16 @@ export const fr: Translation = {
       "Carte pour placer la zone. Déplacez-la pour mettre l'épingle centrale sur votre lieu.",
     zoneFollows: "Suit : {{list}}",
     zoneFollowsNothing:
-      "Ne suit rien — activez au moins un aléa pour recevoir des alertes.",
+      "Ne suit rien. Activez au moins un aléa pour recevoir des alertes.",
     deleteZoneTitle: "Supprimer {{name}} ?",
     deleteZoneBody: "Vous ne recevrez plus d'alertes pour ce lieu.",
     noZones:
       "Aucune zone. Ajoutez votre village, ferme ou forêt pour recevoir des alertes.",
     zoneClear: "Aucun feu actif dans cette zone actuellement.",
     zoneFires_one:
-      "{{count}} feu actif dans cette zone — le plus proche à {{km}} km.",
+      "{{count}} feu actif dans cette zone, le plus proche à {{km}} km.",
     zoneFires_other:
-      "{{count}} feux actifs dans cette zone — le plus proche à {{km}} km.",
+      "{{count}} feux actifs dans cette zone, le plus proche à {{km}} km.",
     pause: "Suspendre",
     resume: "Réactiver",
     paused: "Alertes suspendues pour cette zone.",
@@ -891,10 +906,14 @@ export const fr: Translation = {
       "La suppression n’a pas pu être terminée. Certaines photos ont peut-être déjà été supprimées. Reconnectez-vous et réessayez.",
     deleteLastAdmin:
       "Désignez un autre administrateur avant de supprimer votre compte.",
+    zoneSaveFailed:
+      "Cette zone n’a pas pu être enregistrée. Vérifiez votre connexion et réessayez.",
+    zonesLoadFailed:
+      "Vos zones n’ont pas pu être chargées. Vérifiez votre connexion et réessayez.",
   },
   reports: {
     title: "Signaler un feu",
-    metaTitle: "Signaler un feu de forêt — Nadhir",
+    metaTitle: "Signaler un feu de forêt · Nadhir",
     metaDescription:
       "Envoyez un signalement géolocalisé aux modérateurs de Nadhir et aidez à confirmer les détections satellites en Algérie.",
     subtitle:
@@ -1227,10 +1246,10 @@ export const fr: Translation = {
   legal: {
     terms: "Conditions d'utilisation",
     privacy: "Confidentialité",
-    termsMetaTitle: "Conditions d'utilisation et avertissement — Nadhir",
+    termsMetaTitle: "Conditions d'utilisation et avertissement · Nadhir",
     termsMetaDescription:
       "Nadhir fournit des informations sur les risques locaux et des alertes en Algérie. Consultez ses conditions et limites.",
-    privacyMetaTitle: "Politique de confidentialité — Nadhir",
+    privacyMetaTitle: "Politique de confidentialité · Nadhir",
     privacyMetaDescription:
       "Les données personnelles conservées par Nadhir pour les alertes locales, leur durée de conservation et leur suppression.",
     termsTitle: "Conditions d'utilisation et avertissement",
@@ -1295,13 +1314,13 @@ export const fr: Translation = {
       "Coupe-circuit, journal d'audit et relais manuel des avertissements d'autorités.",
     forbidden: "Rôle administrateur requis.",
     killTitle: "Coupe-circuit global",
-    killOn: "Diffusion ACTIVE — les alertes se publient à chaque cycle.",
-    killOff: "Diffusion COUPÉE — rien ne part avant la reprise.",
+    killOn: "Diffusion ACTIVE : les alertes se publient à chaque cycle.",
+    killOff: "Diffusion COUPÉE : rien ne part avant la reprise.",
     killStop: "Couper la diffusion",
     killResume: "Reprendre la diffusion",
     relayTitle: "Relayer un avertissement d'autorité",
     relayNote:
-      "Verbatim et attribué — pour les avertissements reçus par téléphone ou fax. Diffusé aux communes de la wilaya choisie au prochain cycle.",
+      "Verbatim et attribué, pour les avertissements reçus par téléphone ou fax. Diffusé aux communes de la wilaya choisie au prochain cycle.",
     source: "Autorité (visible du public)",
     receivedVia: "Reçu par",
     via: {
@@ -1328,6 +1347,8 @@ export const fr: Translation = {
     colActor: "Auteur",
     systemActor: "Système",
     colCommunes: "Communes",
+    chooseWilaya: "Choisir une wilaya",
+    sourcePlaceholder: "ex. Protection Civile, Wilaya de Tizi Ouzou",
   },
   push: {
     bannerLive: "Alerte en cours dans votre commune",

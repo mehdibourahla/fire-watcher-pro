@@ -34,7 +34,7 @@ export function StatCard({
             : undefined
         }
       >
-        <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+        <span className="text-xs font-medium text-muted-foreground">
           {label}
         </span>
         <span

@@ -77,19 +77,23 @@ export function FireDetail({
           <When at={fire.last_detected_at} />
         </dd>
         <dt className="text-muted-foreground">{t("fires.detections")}</dt>
-        <dd className="tabular-nums">{fire.detection_count ?? "—"}</dd>
+        <dd className="tabular-nums">
+          {fire.detection_count ?? t("empty.unknown")}
+        </dd>
         <dt className="text-muted-foreground">{t("fires.confidence")}</dt>
         <dd className="tabular-nums">
           {fire.confidence === null
-            ? "—"
+            ? t("empty.unknown")
             : `${Math.round(fire.confidence * 100)} %`}
         </dd>
         <dt className="text-muted-foreground">{t("fires.frp")}</dt>
         <dd className="tabular-nums">
-          {fire.max_frp_mw === null ? "—" : `${fire.max_frp_mw.toFixed(1)} MW`}
+          {fire.max_frp_mw === null
+            ? t("empty.unknown")
+            : `${fire.max_frp_mw.toFixed(1)} MW`}
         </dd>
         <dt className="text-muted-foreground">{t("fires.sources")}</dt>
-        <dd>{fire.sources?.join(", ") || "—"}</dd>
+        <dd>{fire.sources?.join(", ") || t("empty.unknown")}</dd>
       </dl>
       <label className="block">
         <span className="font-medium">{t("fires.note")}</span>

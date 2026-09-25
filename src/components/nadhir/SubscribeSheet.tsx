@@ -227,7 +227,7 @@ export function SubscribeSheet({ open, onClose, initialCommuneCode }: Props) {
                     className="rounded-lg px-3 py-2 text-xs"
                     style={{
                       backgroundColor: "var(--emergency-surface)",
-                      color: "var(--emergency)",
+                      color: "var(--emergency-ink)",
                     }}
                   >
                     {t("push.denied")}

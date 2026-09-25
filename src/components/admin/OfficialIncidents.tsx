@@ -31,13 +31,17 @@ const STATUS_TONE: Record<string, Tone> = {
   unknown: "neutral",
 };
 
-const place = (incident: OfficialIncident, locale: AnyLocale) =>
+const place = (
+  incident: OfficialIncident,
+  locale: AnyLocale,
+  unknown: string,
+) =>
   [incident.commune, incident.wilaya]
     .map((unit) => (unit ? unitName(unit, locale) : null))
     .filter(Boolean)
-    .join(" — ") ||
+    .join(", ") ||
   incident.place_text ||
-  "—";
+  unknown;
 
 function Detail({
   incident,
@@ -76,7 +80,9 @@ function Detail({
       </div>
       <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
         <dt className="text-muted-foreground">{t("incidents.place")}</dt>
-        <dd>{place(incident, i18n.language as AnyLocale)}</dd>
+        <dd>
+          {place(incident, i18n.language as AnyLocale, t("empty.placeUnknown"))}
+        </dd>
         <dt className="text-muted-foreground">{t("incidents.authority")}</dt>
         <dd>
           {t(`incidents.tier_${incident.authority_tier}`, {
@@ -225,7 +231,11 @@ export function OfficialIncidents() {
                         </span>
                       </span>
                       <span className="mt-1 block truncate text-xs text-muted-foreground">
-                        {place(incident, i18n.language as AnyLocale)}
+                        {place(
+                          incident,
+                          i18n.language as AnyLocale,
+                          t("empty.placeUnknown"),
+                        )}
                       </span>
                     </button>
                   </li>

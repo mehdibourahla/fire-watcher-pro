@@ -140,7 +140,7 @@ export function fcmMessagesForOnm(args: {
           fcmTopic(code, lang),
           "ONM · Météo Algérie",
           body,
-          `${APP_URL}/forecast`,
+          `${APP_URL}/forecast?commune=${encodeURIComponent(code)}`,
           data,
           args.wilayaId ? `onm-${args.wilayaId}-${args.event}` : undefined,
         ),

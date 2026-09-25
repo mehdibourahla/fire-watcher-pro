@@ -1,6 +1,13 @@
 import type { AdminTranslation } from "./en";
 
 export const adminAr: AdminTranslation = {
+  empty: {
+    notSet: "غير محدد",
+    unknown: "غير معروف",
+    noRole: "بلا دور",
+    none: "لا شيء",
+    placeUnknown: "مكان غير معروف",
+  },
   publication: {
     agent: {
       attention: "القرارات البشرية والتحقيقات المتعثرة",
@@ -125,7 +132,7 @@ export const adminAr: AdminTranslation = {
     pushTestHelp:
       "اضغط الزر ثم عد إلى الشاشة الرئيسية للهاتف. يُرسل إشعار اختبار إلى هذا الجهاز فقط.",
     pushTestButton: "اختبار هذا الجهاز",
-    pushTestWaiting: "جارٍ الإرسال — عد إلى الشاشة الرئيسية",
+    pushTestWaiting: "جارٍ الإرسال. عد إلى الشاشة الرئيسية",
     pushTestAccepted: "قبل المزوّد الاختبار. أكّد ظهور الإشعار على جهازك.",
     ensemble: {
       title: "معاينة التوقعات الجوية الجماعية",
@@ -453,7 +460,7 @@ export const adminAr: AdminTranslation = {
     confirmedAsIs: "أُكِّد أنه صحيح",
     translationsEmpty: "لا توجد اقتراحات ترجمة للمراجعة.",
     applyNote:
-      "القبول يسجّل القرار فقط ولا يغيّر التطبيق — شغّل سكربت التطبيق وافتح طلب دمج، حتى تمر كل كلمة يراها الناس عبر مراجعة.",
+      "القبول يسجّل القرار فقط ولا يغيّر التطبيق. شغّل سكربت التطبيق وافتح طلب دمج، حتى تمر كل كلمة يراها الناس عبر مراجعة.",
     publish: "نشر على اللوحة",
     unpublish: "إزالة من اللوحة",
     spam: "مزعج",
@@ -523,7 +530,7 @@ export const adminAr: AdminTranslation = {
     minDanger: "أدنى مستوى خطر",
     alertsReceived: "التنبيهات المستلمة: {{count}}",
     zones: "مناطق المراقبة",
-    noZones: "لا مناطق محددة — لن يصله شيء.",
+    noZones: "لا مناطق محددة. لن يصله شيء.",
     unnamedZone: "منطقة بلا اسم",
     recentActions: "آخر الإجراءات",
     noActions: "لا إجراءات مسجلة.",

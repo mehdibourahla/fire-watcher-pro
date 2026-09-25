@@ -325,7 +325,7 @@ export function WeatherForecast({ communeId }: { communeId?: string } = {}) {
               >
                 <table className="w-full min-w-[820px] text-start text-sm">
                   <caption className="sr-only">
-                    {t("title")} —{" "}
+                    {t("title")}:{" "}
                     {selected && unitName(selected, locale as Locale)}
                   </caption>
                   <thead className="sticky top-0 bg-surface">

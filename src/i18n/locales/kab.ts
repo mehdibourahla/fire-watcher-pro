@@ -96,13 +96,15 @@ export const kab: Translation = {
     demoMode: "Isefka n uskan",
     demoModeNote:
       "Isaduf n usaṭelit ur qqinen ara akka tura. Izwilen d wid n uskan.",
+    notRecorded: "Non enregistré",
+    unavailable: "Indisponible",
   },
   meta: {
-    defaultTitle: "Nadhir — Risques locaux et alertes en Algérie",
-    titleTemplate: "{{page}} — Nadhir",
+    defaultTitle: "Nadhir · Risques locaux et alertes en Algérie",
+    titleTemplate: "{{page}} · Nadhir",
   },
   notFound: {
-    metaTitle: "Ur nufi ara asebter — Nadhir",
+    metaTitle: "Ur nufi ara asebter · Nadhir",
     title: "Ur nufi ara asebter",
     body: "Asebter i tettnadiḍ ulac-it neɣ yettwabeddel umkan-is.",
     home: "Uɣal ɣer usebter akham",
@@ -295,9 +297,9 @@ export const kab: Translation = {
     webhooks: "Webhooks",
     team: "Tarbaɛt",
     language: "Tutlayt",
-    themeSystem: "Askan: yeḍfer ibenk-ik — uɣal ɣer uceɛlal",
-    themeLight: "Askan: aceɛlal — uɣal ɣer uberkan",
-    themeDark: "Askan: aberkan — ḍfer ibenk-ik",
+    themeSystem: "Askan: yeḍfer ibenk-ik. Uɣal ɣer uceɛlal",
+    themeLight: "Askan: aceɛlal. Uɣal ɣer uberkan",
+    themeDark: "Askan: aberkan. Ḍfer ibenk-ik",
   },
   emergency: {
     title: "Uṭṭunen n tuffɣa",
@@ -438,7 +440,7 @@ export const kab: Translation = {
     unverifiedHint:
       "Tifin ur nettwasenqden ara ttbanent s wudem awurman seg zoom 9.",
     title: "Takarḍa n tmessi srid",
-    metaTitle: "Nadhir — Risques et avertissements en Algérie",
+    metaTitle: "Nadhir · Risques et avertissements en Algérie",
     metaDescription:
       "Consultez les observations satellites, incidents officiels, signalements citoyens et vigilances météo de l’ONM par commune ou wilaya en Algérie.",
     todayIn: "Ass-a di Lezzayer",
@@ -491,7 +493,7 @@ export const kab: Translation = {
   fire: {
     nearSettlement: "{{km}} km si {{settlement}}",
     detail: "Talqayt n times",
-    metaTitle: "Timess {{id}} — Nadhir",
+    metaTitle: "Timess {{id}} · Nadhir",
     metaDescription:
       "Aḍris n tifin, tanila n uzuzzer d tuddar iqerben i tmessi turmidt di Lezzayer.",
     title: "Timess {{id}}",
@@ -510,11 +512,11 @@ export const kab: Translation = {
     airDustNote: "aɣebbar n uẓru, mačči d dexxan",
     airWho: "{{ratio}}× azal n OMS deg 24 isragen",
     airSource: "amuddem CAMS · {{time}}",
-    windToward: "Aḍu ibbriḥ ɣer {{bearing}} — {{settlement}} yella deg ubrid-a",
+    windToward: "Aḍu ibbriḥ ɣer {{bearing}}: {{settlement}} yella deg ubrid-a",
     growthGrowing:
-      "Yettimɣur — tifin n yiṭsanen ulint si {{earlier}} ɣer {{recent}} seg {{time}}",
+      "Yettimɣur: tifin n yiṭsanen ulint si {{earlier}} ɣer {{recent}} seg {{time}}",
     growthFading:
-      "Drus n tifin seg {{time}} — yezmer ad yili d asigna neɣ d abbu, mačči d times meẓẓiyen",
+      "Drus n tifin seg {{time}}. Yezmer ad yili d asigna neɣ d abbu, mačči d times meẓẓiyen",
     growthSteady: "Tifin ttuqadar seg {{time}}",
     timeline: "Aḍris n tifin",
     nearest: "Tuddar iqerben",
@@ -533,12 +535,14 @@ export const kab: Translation = {
     alertMe: "Ɛeggen-iyi ɣef tmessi-a",
     commune: "Taɣiwant",
     wilaya: "Tawilayt",
+    loadError:
+      "Impossible de charger cet incendie. Vérifiez votre connexion et réessayez.",
   },
   evidence: {
     title: "Ttbut",
     looks: "{{count}} uḍfar",
     looks_other: "{{count}} yeḍfaren",
-    official: "{{status}} — akken i d-yenna ulɣu n {{when}}",
+    official: "{{status}}, akken i d-yenna ulɣu n {{when}}",
     note: "Snat tenqiḍin timyeqriwin deg yiwen n uɛeddi n yigenwan d yiwen uḍfar, mačči d sin. D aɣbalu unṣib kan i yessentemen times.",
   },
   stage: {
@@ -561,7 +565,7 @@ export const kab: Translation = {
       "Aswir n umihi 1–5, yekka-d seg umatar FWI s usellum uṛufi EFFIS.",
     notRated:
       "Tagnawt n tmes tettwaḥseb, maca taɣiwant-a drus deg-s yimɣan i yettarɣen, ihi ur d-yettwaskan ara uswir.",
-    area: "Tajumma yerɣan tettwaqder seg teɣzi d umḍan n twaliyin n usatilit — d aqdar kan, mačči d ayen yettwaktalen.",
+    area: "Tajumma yerɣan tettwaqder seg teɣzi d umḍan n twaliyin n usatilit. D aqdar kan, mačči d ayen yettwaktalen.",
     frp: "Tazmert tafellayt n tmes yettwaktalen seg usatilit, s umigawatt.",
     detections: "Amḍan n twaliyin n uzɣal n usatilit yeddukklen deg tmes-a.",
     stage:
@@ -578,38 +582,22 @@ export const kab: Translation = {
     nearest: "Tamsafit ɣer tmezduɣt tqerben yettwassnen.",
   },
   risk: {
-    metaTitle: "Asmenyaf n uɣilif n tmessi — Nadhir Lezzayer",
-    metaDescription:
-      "Asmenyaf n sḍis n wussan n umatar FWI d iwellihen ifazen i yal taɣiwant.",
-    title: "Asmenyaf n uɣilif n tmessi",
-    dayLabel: "A{{n}}",
     today: "Ass-a",
     fwi: "FWI",
-    staleAsOf: "Wagi d amagrad n {{time}} — win wass-a ur d-iffiɣ ara.",
+    staleAsOf: "Wagi d amagrad n {{time}}. Win wass-a ur d-iffiɣ ara.",
     percentile: "amatar yugaren {{pct}}% n iseggasen deg wass-agi",
     level: "Aswir n uɣilif",
-    searchCommune: "Nadi taɣiwant",
-    noResults: "Ulac taɣiwant i imṣadan.",
-    unavailableTitle: "Asmenyaf n uɣilif n tmessi ulac-it",
-    unavailableBody:
-      "Aleqqem aneggaru ur yemmed ara, ihi ulac asmenyaf yeffɣen tura. Wali asebter n waddad n yiɣbula.",
     legend: "Asalu n uɣilif",
-    sixDay: "Asmenyaf n 6 wussan",
     low: "Meẓẓi",
     moderate: "Alemmas",
     high: "Ɛlay",
     very_high: "Ɛlay aṭas",
     extreme: "Amtawi",
-    communeCount: "{{count}} n tɣiwanin",
-    communeCount_one: "{{count}} n tɣiwant",
-    communeCount_other: "{{count}} n tɣiwanin",
-    groupWorst: "Aswir afellay n tɣiwant deg twilayt",
     effis: "EFFIS/GWIS (tadbelt tuṛufit) tsemma taɣiwant-a: {{class}}",
-    fuelLimited: "Ur yettwasemma ara — drus n yimɣan i yettarɣen",
+    fuelLimited: "Ur yettwasemma ara: drus n yimɣan i yettarɣen",
     effisMasked: "EFFIS ur isemma ara akal n taɣiwant-a (akal war imɣan).",
-    onmLabel: "Alɣu unṣib n ONM",
     effisNone:
-      "Ulac aserwes EFFIS yelhan tura — afaris uṛufi yettwajbed yal ass, yettwagi ma yecceḍ deg usenqed-nneɣ n tɣara.",
+      "Ulac aserwes EFFIS yelhan tura: afaris uṛufi yettwajbed yal ass, yettwagi ma yecceḍ deg usenqed-nneɣ n tɣara.",
     effisClass: {
       low: "Meẓẓi",
       moderate: "Alemmas",
@@ -627,37 +615,65 @@ export const kab: Translation = {
     },
   },
   history: {
+    title: "Amazray d tiddadanin",
+    metaTitle: "Historique des risques et statistiques · Nadhir Algérie",
+    metaDescription:
+      "Chaque feu, vigilance ONM et incident routier enregistré par Nadhir en Algérie, par semaine et par wilaya.",
+    exportCsv: "Sifeḍ CSV",
+    filterHazard: "Aléa",
+    allHazards: "Tous les aléas",
+    hazard: {
+      fire: "Feux",
+      weather: "Vigilances ONM",
+      road: "Incidents routiers",
+    },
+    filterWilaya: "Tawilayt",
+    allWilayas: "Akk tiwilayin",
+    season: "Tasemhuyt",
+    allSeasons: "Akk tisemhuyin",
+    coverage:
+      "Début des relevés : {{list}}. Nadhir ne connaît rien d’antérieur : aucune période antérieure n’est présentée comme calme.",
+    coverageItem: "{{hazard}} le {{date}}",
+    chartWeek: "Aléas enregistrés chaque semaine",
+    chartMonth: "Aléas enregistrés chaque mois",
+    fireTitle: "Feux",
+    totalFires: "Timessi yettwajerden",
+    burnedArea: "Tajumma yettwaɣen s usmenyef",
+    officialReports: "Signalés par la Protection civile",
     cumulative: "Tajumma yerɣan s wemḍan",
-    empty: "Ulac times yettwaklsen i ustay-a.",
-    noWilaya: "Ulac times deg tallit-a i yezmren ad yettwaqqen ɣer twilayt.",
-    unlocated:
-      "{{count}} n times ur nezmir ara ad ttwaqqnen ɣer twilayt, ttwakksen seg usmizzwer-a.",
-    unlocated_one:
-      "{{count}} n tmes ur nezmir ara ad tettwaqqen ɣer twilayt, tettwakkes seg usmizzwer-a.",
-    unlocated_other:
-      "{{count}} n times ur nezmir ara ad ttwaqqnen ɣer twilayt, ttwakksen seg usmizzwer-a.",
+    weatherTitle: "Vigilances ONM par phénomène",
+    roadTitle: "Derniers incidents routiers",
+    roadNote:
+      "D’après Info Trafic Algérie, vérifié par Nadhir. Ce n’est pas un relevé officiel.",
+    byWilaya: "S tewilayin",
     fireCount: "{{count}} n tmes",
     fireCount_one: "{{count}} n tmes",
     fireCount_other: "{{count}} n tmes",
-    metaTitle: "Amazray d tiddadanin n tmessi — Nadhir",
-    metaDescription:
-      "Amazray n tmessi yettwafen, tijumma yeṛɣan d twilayin yettwaɣen aṭas.",
-    title: "Amazray d tiddadanin",
-    totalFires: "Timessi yettwajerden",
-    burnedArea: "Tajumma yettwaɣen s usmenyef",
-    worstWilaya: "Tawilayt yettwaɣen aṭas",
-    byWilaya: "S tewilayin",
-    fires: "Timessi",
-    area: "Tajumma",
-    exportCsv: "Sifeḍ CSV",
-    season: "Tasemhuyt",
-    allSeasons: "Akk tisemhuyin",
-    filterWilaya: "Tawilayt",
-    allWilayas: "Akk tiwilayin",
-    vsSeason: "ɣer {{year}}",
-    monthly: "Beṭṭu s wayyuren",
-    monthlyNote:
-      "Teɣzi n ujgu d tajumma yettwaɣen s usmenyef; amḍan ufella d amḍan n tmessi i d-ikkren deg wayyur.",
+    weatherCount: "{{count}} vigilances",
+    weatherCount_one: "{{count}} vigilance",
+    weatherCount_other: "{{count}} vigilances",
+    roadCount: "{{count}} incidents routiers",
+    roadCount_one: "{{count}} incident routier",
+    roadCount_other: "{{count}} incidents routiers",
+    unlocated:
+      "{{count}} relevés n’ont pas pu être rattachés à une wilaya et sont exclus de ce classement.",
+    unlocated_one:
+      "{{count}} relevé n’a pas pu être rattaché à une wilaya et est exclu de ce classement.",
+    unlocated_other:
+      "{{count}} relevés n’ont pas pu être rattachés à une wilaya et sont exclus de ce classement.",
+    noWilaya:
+      "Aucun relevé de cette sélection n’a pu être rattaché à une wilaya.",
+    empty:
+      "Rien d’enregistré pour cette sélection. Essayez tous les aléas ou toutes les wilayas.",
+    recordsTitle: "Relevés",
+    colDate: "Date",
+    colHazard: "Aléa",
+    colPlace: "Wilaya",
+    colDetail: "Détail",
+    recordsShown:
+      "Les {{shown}} plus récents sur {{total}}. Le CSV les contient tous.",
+    sourceError:
+      "{{hazard}} : chargement impossible. Les autres relevés restent affichés.",
     methodology: "Tijumma d usmenyef n usaṭelit, mačči d aktal n wakal.",
   },
   status: {
@@ -671,7 +687,7 @@ export const kab: Translation = {
       "{{count}} n uɣbalu n yisefka yettwaseḥbes — tazmert tamirant tezmer ad tenqes.",
     degradedCount_other:
       "{{count}} n yiɣbula n yisefka ttwaseḥbes — tazmert tamirant tezmer ad tenqes.",
-    metaTitle: "Addad n yiɣbula n isefka — Nadhir",
+    metaTitle: "Addad n yiɣbula n isefka · Nadhir",
     metaDescription:
       "État des sources satellitaires, météo, d’avertissements officiels et géographiques utilisées par Nadhir.",
     title: "Iɣbula n isefka",
@@ -718,7 +734,7 @@ export const kab: Translation = {
     contributeCta: "Wali ayen ixuṣṣen",
     attribution:
       "Sources : NASA FIRMS · EUMETSAT · Copernicus · Open-Meteo · ONM · DGPC · OpenStreetMap",
-    metaTitle: "Ɣef Nadhir — tarrayt d isefka",
+    metaTitle: "Ɣef Nadhir · tarrayt d isefka",
     metaDescription:
       "Comment Nadhir rassemble prévisions météo, observations satellitaires des incendies et avertissements officiels attribués pour l’Algérie.",
     title: "Ɣef Nadhir",
@@ -772,7 +788,7 @@ export const kab: Translation = {
     zoneLimit:
       "Tewwḍeḍ ɣer talast n 10 n temnaḍin. Kkes yiwet akken ad ternuḍ tayeḍ.",
     zoneFires:
-      "{{count}} n times yeddren deg temnaḍt-a — tamezwarut ɣef {{km}} km.",
+      "{{count}} n times yeddren deg temnaḍt-a, tamezwarut ɣef {{km}} km.",
     authTitle: "Kcem ɣer Nadhir",
     authMetaTitle: "Kcem",
     authSubtitle:
@@ -794,7 +810,7 @@ export const kab: Translation = {
       "Anekcum ur yelli ara akka tura. Ɛreḍ tikkelt-nniḍen ticki.",
     zonesTitle: "Temnaḍin-iw yettwaɛussen",
     zonesSubtitle:
-      "Gérez les lieux suivis et leurs alertes disponibles sur les incendies et le danger.",
+      "Gérez les lieux suivis et les aléas pour lesquels chacun vous alerte.",
     newZone: "Rnu tamnaḍt",
     zoneName: "Isem n tmnaḍt",
     radius: "Azgen n uglam: {{km}} km",
@@ -832,16 +848,16 @@ export const kab: Translation = {
       "Carte pour placer la zone. Déplacez-la pour mettre l'épingle centrale sur votre lieu.",
     zoneFollows: "Suit : {{list}}",
     zoneFollowsNothing:
-      "Ne suit rien — activez au moins un aléa pour recevoir des alertes.",
+      "Ne suit rien. Activez au moins un aléa pour recevoir des alertes.",
     deleteZoneTitle: "Supprimer {{name}} ?",
     deleteZoneBody: "Vous ne recevrez plus d'alertes pour ce lieu.",
     noZones:
       "Ulac tamnaḍt. Rnu taddart, tafellaḥt neɣ tazgi-k akken ad tremseḍ ilɣa.",
     zoneClear: "Ulac times urmid deg tmnaḍt-a tura.",
     zoneFires_one:
-      "{{count}} n times urmid deg tmnaḍt-a — tamezwarut ɣef {{km}} km.",
+      "{{count}} n times urmid deg tmnaḍt-a, tamezwarut ɣef {{km}} km.",
     zoneFires_other:
-      "{{count}} n times urmiden deg tmnaḍt-a — tamezwarut ɣef {{km}} km.",
+      "{{count}} n times urmiden deg tmnaḍt-a, tamezwarut ɣef {{km}} km.",
     pause: "Seḥbes",
     resume: "Kemmel",
     paused: "Ilɣa ḥebsen i tmnaḍt-a.",
@@ -873,10 +889,14 @@ export const kab: Translation = {
     deleteFailed:
       "Tukksa ur tekfi ara. Kra n tugniwin zemrent ad ilint ttwakksent yakan. Qqen tikkelt-nniḍen, ɛreḍ.",
     deleteLastAdmin: "Fren anedbal-nniḍen uqbel ad tekkseḍ amiḍan-ik.",
+    zoneSaveFailed:
+      "Cette zone n’a pas pu être enregistrée. Vérifiez votre connexion et réessayez.",
+    zonesLoadFailed:
+      "Vos zones n’ont pas pu être chargées. Vérifiez votre connexion et réessayez.",
   },
   reports: {
     title: "Mmel times",
-    metaTitle: "Mmel times n teẓgi — Nadhir",
+    metaTitle: "Mmel times n teẓgi · Nadhir",
     metaDescription:
       "Azen aneɣmis s wadeg-is i imḍebbren n Nadhir, ttekki deg usentem n twafit n iseṭṭalen.",
     subtitle:
@@ -1202,10 +1222,10 @@ export const kab: Translation = {
   legal: {
     terms: "Tiwtilin n useqdec",
     privacy: "Tabaḍnit",
-    termsMetaTitle: "Tiwtilin n useqdec d ulɣu — Nadhir",
+    termsMetaTitle: "Tiwtilin n useqdec d ulɣu · Nadhir",
     termsMetaDescription:
       "Nadhir fournit des informations sur les risques locaux et des alertes en Algérie. Consultez ses conditions et limites.",
-    privacyMetaTitle: "Tasertit n tbaḍnit — Nadhir",
+    privacyMetaTitle: "Tasertit n tbaḍnit · Nadhir",
     privacyMetaDescription:
       "Les données personnelles conservées par Nadhir pour les alertes locales, leur durée de conservation et leur suppression.",
     termsTitle: "Tiwtilin n useqdec d ulɣu",
@@ -1270,13 +1290,13 @@ export const kab: Translation = {
       "Taqeffalt n uḥbas, aɣmis n usenqed, d uzuzer s ufus n yilɣa n tnebbaḍt.",
     forbidden: "Yesra tamlilt n unedbal.",
     killTitle: "Taqeffalt n uḥbas tamatut",
-    killOn: "Azuzer yermed — ilɣa ttwazuzuren yal tikkelt.",
-    killOff: "Azuzer yeḥbes — ulac ayen ara yeffɣen alamma yuɣal.",
+    killOn: "Azuzer yermed: ilɣa ttwazuzuren yal tikkelt.",
+    killOff: "Azuzer yeḥbes: ulac ayen ara yeffɣen alamma yuɣal.",
     killStop: "Ḥbes azuzer",
     killResume: "Ales azuzer",
     relayTitle: "Zuzer alɣu n tnebbaḍt",
     relayNote:
-      "Awal s wawal, s yisem n uɣbalu — i yilɣa i d-yewḍen s tilifun neɣ s fax. Ad yettwazuzer i tɣiwanin n twilayt yettwafernen deg tikkelt i d-iteddun.",
+      "Awal s wawal, s yisem n uɣbalu, i yilɣa i d-yewḍen s tilifun neɣ s fax. Ad yettwazuzer i tɣiwanin n twilayt yettwafernen deg tikkelt i d-iteddun.",
     source: "Tanebbaḍt (tettban i wegdud)",
     receivedVia: "Yewweḍ-d s",
     via: { phone: "Asiwel", fax: "Fax", email: "Imayl", in_person: "S timmad" },
@@ -1298,6 +1318,8 @@ export const kab: Translation = {
     colActor: "Ameskar",
     systemActor: "Anagraw",
     colCommunes: "Tiɣiwanin",
+    chooseWilaya: "Choisir une wilaya",
+    sourcePlaceholder: "ex. Protection Civile, Wilaya de Tizi Ouzou",
   },
   push: {
     bannerLive: "Alɣu iteddun deg tɣiwant-ik",

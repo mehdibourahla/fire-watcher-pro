@@ -204,7 +204,7 @@ function Relay() {
           <Input
             className={field}
             value={form.source}
-            placeholder="Protection Civile — Wilaya de Tizi Ouzou"
+            placeholder={t("broadcastAdmin.sourcePlaceholder")}
             onChange={(e) => setForm({ ...form, source: e.target.value })}
           />
         </label>
@@ -239,7 +239,7 @@ function Relay() {
             value={form.wilaya_id}
             onChange={(e) => setForm({ ...form, wilaya_id: e.target.value })}
           >
-            <option value="">—</option>
+            <option value="">{t("broadcastAdmin.chooseWilaya")}</option>
             {wilayas.map((unit) => (
               <option key={unit.id} value={unit.id}>
                 {unitName(unit, locale)}
@@ -389,7 +389,8 @@ function Audit() {
                       </TableCell>
                       <TableCell className="text-sm">
                         {row.actor_id
-                          ? (names.get(row.actor_id) ?? "—")
+                          ? (names.get(row.actor_id) ??
+                            t("admin:empty.unknown"))
                           : t("broadcastAdmin.systemActor")}
                       </TableCell>
                     </TableRow>

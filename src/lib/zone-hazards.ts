@@ -89,3 +89,10 @@ export const roadConcernsZone = (
 ) =>
   publication.area_id === zone.commune_id ||
   publication.area_id === zone.wilayaId;
+
+export const ONM_SEVERITY: Record<string, number> = {
+  Minor: 1,
+  Moderate: 2,
+  Severe: 3,
+  Extreme: 4,
+};

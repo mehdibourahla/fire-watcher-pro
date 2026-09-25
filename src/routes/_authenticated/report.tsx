@@ -230,7 +230,7 @@ function ReportPage() {
             className="rounded-md px-3 py-2 text-sm font-medium"
             style={{
               backgroundColor: "var(--emergency-surface)",
-              color: "var(--emergency)",
+              color: "var(--emergency-ink)",
             }}
           >
             {t(
@@ -449,7 +449,7 @@ export function ReportRow({
             className="rounded-full px-2 py-0.5 text-xs font-semibold"
             style={{
               backgroundColor: "var(--emergency-surface)",
-              color: "var(--emergency)",
+              color: "var(--emergency-ink)",
             }}
           >
             {t(

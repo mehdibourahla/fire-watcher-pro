@@ -115,7 +115,7 @@ export function DangerScale({
       <div
         className="relative"
         role="img"
-        aria-label={`${t("risk.level")}: ${current}/5 — ${name}`}
+        aria-label={`${t("risk.level")}: ${current}/5, ${name}`}
       >
         <div className={cn("danger-track w-full rounded-full", s.track)} />
         <span

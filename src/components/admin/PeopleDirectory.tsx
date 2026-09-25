@@ -416,7 +416,7 @@ export function PeopleDirectory() {
                               ))
                             ) : (
                               <span className="text-xs text-muted-foreground">
-                                —
+                                {t("empty.noRole")}
                               </span>
                             )}
                           </span>

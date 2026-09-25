@@ -56,7 +56,7 @@ export function AdminNav({
         return (
           <div key={group}>
             {group !== "overview" ? (
-              <p className="mb-1 px-3 text-xs font-medium uppercase tracking-wide text-faint">
+              <p className="mb-1 px-3 text-xs font-medium text-muted-foreground">
                 {t(`groups.${group}`)}
               </p>
             ) : null}

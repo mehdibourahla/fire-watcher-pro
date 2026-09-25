@@ -30,6 +30,7 @@ import {
   ZONE_HAZARDS,
   type Zone,
   type ZoneHazardKey,
+  zoneFailureKey,
 } from "@/lib/account";
 import { findPlaces, nearestPlace } from "@/lib/civil-map";
 import {
@@ -161,7 +162,8 @@ function Editor({
       await qc.invalidateQueries({ queryKey: ["zones"] });
       onDone();
     } catch (failure) {
-      setError(failure instanceof Error ? failure.message : String(failure));
+      console.error(failure);
+      setError(t(zoneFailureKey(failure)));
     } finally {
       setPending(false);
     }

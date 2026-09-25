@@ -1,6 +1,7 @@
 import {
   authorityConcernsZone,
   officialConcernsZone,
+  ONM_SEVERITY,
   roadConcernsZone,
   weatherConcernsZone,
   type ZoneArea,
@@ -123,12 +124,6 @@ const COPY: Record<string, Copy> = {
   },
 };
 
-const ONM_SEVERITY: Record<string, number> = {
-  Minor: 1,
-  Moderate: 2,
-  Severe: 3,
-  Extreme: 4,
-};
 const AUTHORITY_SEVERITY: Record<string, number> = { Severe: 4, Extreme: 5 };
 
 const HOUR = 3_600_000;

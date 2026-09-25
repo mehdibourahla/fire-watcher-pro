@@ -5,8 +5,11 @@ import { absoluteTime } from "@/lib/admin-format";
 import { relativeTime } from "@/lib/nadhir";
 
 export function When({ at }: { at: string | null | undefined }) {
-  const { i18n } = useTranslation();
-  if (!at) return <span className="text-muted-foreground">—</span>;
+  const { t, i18n } = useTranslation();
+  if (!at)
+    return (
+      <span className="text-muted-foreground">{t("common.notRecorded")}</span>
+    );
   const locale = i18n.language as Locale;
   return (
     <time dateTime={at} title={absoluteTime(at, locale)}>
