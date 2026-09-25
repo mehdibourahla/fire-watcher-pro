@@ -97,6 +97,7 @@ export const fr: Translation = {
     demoModeNote:
       "Les flux satellites en direct ne sont pas encore connectés. Les chiffres affichés proviennent d'un scénario de démonstration.",
     notRecorded: "Non enregistré",
+    unavailable: "Indisponible",
   },
   meta: {
     defaultTitle: "Nadhir · Risques locaux et alertes en Algérie",
@@ -621,38 +622,65 @@ export const fr: Translation = {
     },
   },
   history: {
+    title: "Historique et statistiques",
+    metaTitle: "Historique des risques et statistiques · Nadhir Algérie",
+    metaDescription:
+      "Chaque feu, vigilance ONM et incident routier enregistré par Nadhir en Algérie, par semaine et par wilaya.",
+    exportCsv: "Exporter en CSV",
+    filterHazard: "Aléa",
+    allHazards: "Tous les aléas",
+    hazard: {
+      fire: "Feux",
+      weather: "Vigilances ONM",
+      road: "Incidents routiers",
+    },
+    filterWilaya: "Wilaya",
+    allWilayas: "Toutes les wilayas",
+    season: "Saison",
+    allSeasons: "Toutes les saisons",
+    coverage:
+      "Début des relevés : {{list}}. Nadhir ne connaît rien d’antérieur : aucune période antérieure n’est présentée comme calme.",
+    coverageItem: "{{hazard}} le {{date}}",
+    chartWeek: "Aléas enregistrés chaque semaine",
+    chartMonth: "Aléas enregistrés chaque mois",
+    fireTitle: "Feux",
+    totalFires: "Feux enregistrés",
+    burnedArea: "Surface estimée touchée",
+    officialReports: "Signalés par la Protection civile",
     cumulative: "Surface brûlée cumulée",
-    empty: "Aucun incendie enregistré pour ce filtre.",
-    noWilaya:
-      "Aucun incendie de cette période n'a pu être rattaché à une wilaya.",
-    unlocated:
-      "{{count}} incendies n'ont pas pu être rattachés à une wilaya et sont exclus de ce classement.",
-    unlocated_one:
-      "{{count}} incendie n'a pas pu être rattaché à une wilaya et est exclu de ce classement.",
-    unlocated_other:
-      "{{count}} incendies n'ont pas pu être rattachés à une wilaya et sont exclus de ce classement.",
+    weatherTitle: "Vigilances ONM par phénomène",
+    roadTitle: "Derniers incidents routiers",
+    roadNote:
+      "D’après Info Trafic Algérie, vérifié par Nadhir. Ce n’est pas un relevé officiel.",
+    byWilaya: "Par wilaya",
     fireCount: "{{count}} feux",
     fireCount_one: "{{count}} feu",
     fireCount_other: "{{count}} feux",
-    metaTitle: "Historique et statistiques des feux · Nadhir Algérie",
-    metaDescription:
-      "Archive des foyers détectés, surfaces estimées et wilayas les plus touchées en Algérie.",
-    title: "Historique et statistiques",
-    totalFires: "Feux enregistrés",
-    burnedArea: "Surface estimée touchée",
-    worstWilaya: "Wilaya la plus touchée",
-    byWilaya: "Par wilaya",
-    fires: "Feux",
-    area: "Surface",
-    exportCsv: "Exporter en CSV",
-    season: "Saison",
-    allSeasons: "Toutes les saisons",
-    filterWilaya: "Wilaya",
-    allWilayas: "Toutes les wilayas",
-    vsSeason: "par rapport à {{year}}",
-    monthly: "Répartition mensuelle",
-    monthlyNote:
-      "La hauteur indique la surface estimée touchée ; le chiffre au-dessus est le nombre de départs de feu.",
+    weatherCount: "{{count}} vigilances",
+    weatherCount_one: "{{count}} vigilance",
+    weatherCount_other: "{{count}} vigilances",
+    roadCount: "{{count}} incidents routiers",
+    roadCount_one: "{{count}} incident routier",
+    roadCount_other: "{{count}} incidents routiers",
+    unlocated:
+      "{{count}} relevés n’ont pas pu être rattachés à une wilaya et sont exclus de ce classement.",
+    unlocated_one:
+      "{{count}} relevé n’a pas pu être rattaché à une wilaya et est exclu de ce classement.",
+    unlocated_other:
+      "{{count}} relevés n’ont pas pu être rattachés à une wilaya et sont exclus de ce classement.",
+    noWilaya:
+      "Aucun relevé de cette sélection n’a pu être rattaché à une wilaya.",
+    empty:
+      "Rien d’enregistré pour cette sélection. Essayez tous les aléas ou toutes les wilayas.",
+    recordsTitle: "Relevés",
+    colDate: "Date",
+    colHazard: "Aléa",
+    colPlace: "Wilaya",
+    colDetail: "Détail",
+    recordsShown:
+      "Les {{shown}} plus récents sur {{total}}. Le CSV les contient tous.",
+    sourceError:
+      "{{hazard}} : chargement impossible. Les autres relevés restent affichés.",
     methodology:
       "Les surfaces sont des estimations satellitaires, pas des relevés de terrain.",
   },

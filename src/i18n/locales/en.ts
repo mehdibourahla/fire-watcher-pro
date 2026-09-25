@@ -93,6 +93,7 @@ export const en = {
     demoModeNote:
       "Live satellite feeds are not connected yet. Figures shown come from a seeded demonstration scenario.",
     notRecorded: "Not recorded",
+    unavailable: "Unavailable",
   },
   meta: {
     defaultTitle: "Nadhir · Local hazards and alerts for Algeria",
@@ -609,37 +610,63 @@ export const en = {
     },
   },
   history: {
+    title: "History & statistics",
+    metaTitle: "Hazard history & statistics · Nadhir Algeria",
+    metaDescription:
+      "Every fire, ONM weather warning and road incident Nadhir has recorded in Algeria, by week and by wilaya.",
+    exportCsv: "Export CSV",
+    filterHazard: "Hazard",
+    allHazards: "All hazards",
+    hazard: {
+      fire: "Fires",
+      weather: "ONM warnings",
+      road: "Road incidents",
+    },
+    filterWilaya: "Wilaya",
+    allWilayas: "All wilayas",
+    season: "Season",
+    allSeasons: "All seasons",
+    coverage:
+      "Records start: {{list}}. Nothing earlier is known to Nadhir, so no earlier period is shown as quiet.",
+    coverageItem: "{{hazard}} on {{date}}",
+    chartWeek: "Hazards recorded each week",
+    chartMonth: "Hazards recorded each month",
+    fireTitle: "Fires",
+    totalFires: "Fires recorded",
+    burnedArea: "Estimated area affected",
+    officialReports: "Reported by Civil Protection",
     cumulative: "Cumulative burned area",
-    empty: "No fires recorded for this filter.",
-    noWilaya: "No fire in this period could be matched to a wilaya.",
-    unlocated:
-      "{{count}} fires could not be matched to a wilaya and are excluded from this ranking.",
-    unlocated_one:
-      "{{count}} fire could not be matched to a wilaya and is excluded from this ranking.",
-    unlocated_other:
-      "{{count}} fires could not be matched to a wilaya and are excluded from this ranking.",
+    weatherTitle: "ONM warnings by phenomenon",
+    roadTitle: "Latest road incidents",
+    roadNote:
+      "From Info Trafic Algérie, reviewed by Nadhir. Not an official record.",
+    byWilaya: "By wilaya",
     fireCount: "{{count}} fires",
     fireCount_one: "{{count}} fire",
     fireCount_other: "{{count}} fires",
-    metaTitle: "Fire history & statistics · Nadhir Algeria",
-    metaDescription:
-      "Archive of detected fire clusters, estimated burned area and worst-affected wilayas in Algeria.",
-    title: "History & statistics",
-    totalFires: "Fires recorded",
-    burnedArea: "Estimated area affected",
-    worstWilaya: "Most affected wilaya",
-    byWilaya: "By wilaya",
-    fires: "Fires",
-    area: "Area",
-    exportCsv: "Export CSV",
-    season: "Season",
-    allSeasons: "All seasons",
-    filterWilaya: "Wilaya",
-    allWilayas: "All wilayas",
-    vsSeason: "vs {{year}}",
-    monthly: "Monthly distribution",
-    monthlyNote:
-      "Bar height is estimated area affected; the number above is the count of fires started that month.",
+    weatherCount: "{{count}} warnings",
+    weatherCount_one: "{{count}} warning",
+    weatherCount_other: "{{count}} warnings",
+    roadCount: "{{count}} road incidents",
+    roadCount_one: "{{count}} road incident",
+    roadCount_other: "{{count}} road incidents",
+    unlocated:
+      "{{count}} records could not be matched to a wilaya and are left out of this ranking.",
+    unlocated_one:
+      "{{count}} record could not be matched to a wilaya and is left out of this ranking.",
+    unlocated_other:
+      "{{count}} records could not be matched to a wilaya and are left out of this ranking.",
+    noWilaya: "No record in this selection could be matched to a wilaya.",
+    empty:
+      "Nothing recorded for this selection. Try all hazards or all wilayas.",
+    recordsTitle: "Records",
+    colDate: "Date",
+    colHazard: "Hazard",
+    colPlace: "Wilaya",
+    colDetail: "Detail",
+    recordsShown: "Latest {{shown}} of {{total}}. The CSV holds them all.",
+    sourceError:
+      "{{hazard}} could not be loaded. The other records are still shown.",
     methodology:
       "Area figures are satellite estimates, not surveyed measurements.",
   },

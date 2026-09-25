@@ -3508,6 +3508,17 @@ export type Database = {
         };
         Relationships: [];
       };
+      onm_warning_history: {
+        Row: {
+          event: string | null;
+          expires: string | null;
+          id: string | null;
+          severity: string | null;
+          starts_at: string | null;
+          wilaya_id: string | null;
+        };
+        Relationships: [];
+      };
       source_health: {
         Row: {
           age_minutes: number | null;

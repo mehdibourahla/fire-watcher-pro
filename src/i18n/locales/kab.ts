@@ -97,6 +97,7 @@ export const kab: Translation = {
     demoModeNote:
       "Isaduf n usaṭelit ur qqinen ara akka tura. Izwilen d wid n uskan.",
     notRecorded: "Non enregistré",
+    unavailable: "Indisponible",
   },
   meta: {
     defaultTitle: "Nadhir · Risques locaux et alertes en Algérie",
@@ -614,37 +615,65 @@ export const kab: Translation = {
     },
   },
   history: {
+    title: "Amazray d tiddadanin",
+    metaTitle: "Historique des risques et statistiques · Nadhir Algérie",
+    metaDescription:
+      "Chaque feu, vigilance ONM et incident routier enregistré par Nadhir en Algérie, par semaine et par wilaya.",
+    exportCsv: "Sifeḍ CSV",
+    filterHazard: "Aléa",
+    allHazards: "Tous les aléas",
+    hazard: {
+      fire: "Feux",
+      weather: "Vigilances ONM",
+      road: "Incidents routiers",
+    },
+    filterWilaya: "Tawilayt",
+    allWilayas: "Akk tiwilayin",
+    season: "Tasemhuyt",
+    allSeasons: "Akk tisemhuyin",
+    coverage:
+      "Début des relevés : {{list}}. Nadhir ne connaît rien d’antérieur : aucune période antérieure n’est présentée comme calme.",
+    coverageItem: "{{hazard}} le {{date}}",
+    chartWeek: "Aléas enregistrés chaque semaine",
+    chartMonth: "Aléas enregistrés chaque mois",
+    fireTitle: "Feux",
+    totalFires: "Timessi yettwajerden",
+    burnedArea: "Tajumma yettwaɣen s usmenyef",
+    officialReports: "Signalés par la Protection civile",
     cumulative: "Tajumma yerɣan s wemḍan",
-    empty: "Ulac times yettwaklsen i ustay-a.",
-    noWilaya: "Ulac times deg tallit-a i yezmren ad yettwaqqen ɣer twilayt.",
-    unlocated:
-      "{{count}} n times ur nezmir ara ad ttwaqqnen ɣer twilayt, ttwakksen seg usmizzwer-a.",
-    unlocated_one:
-      "{{count}} n tmes ur nezmir ara ad tettwaqqen ɣer twilayt, tettwakkes seg usmizzwer-a.",
-    unlocated_other:
-      "{{count}} n times ur nezmir ara ad ttwaqqnen ɣer twilayt, ttwakksen seg usmizzwer-a.",
+    weatherTitle: "Vigilances ONM par phénomène",
+    roadTitle: "Derniers incidents routiers",
+    roadNote:
+      "D’après Info Trafic Algérie, vérifié par Nadhir. Ce n’est pas un relevé officiel.",
+    byWilaya: "S tewilayin",
     fireCount: "{{count}} n tmes",
     fireCount_one: "{{count}} n tmes",
     fireCount_other: "{{count}} n tmes",
-    metaTitle: "Amazray d tiddadanin n tmessi · Nadhir",
-    metaDescription:
-      "Amazray n tmessi yettwafen, tijumma yeṛɣan d twilayin yettwaɣen aṭas.",
-    title: "Amazray d tiddadanin",
-    totalFires: "Timessi yettwajerden",
-    burnedArea: "Tajumma yettwaɣen s usmenyef",
-    worstWilaya: "Tawilayt yettwaɣen aṭas",
-    byWilaya: "S tewilayin",
-    fires: "Timessi",
-    area: "Tajumma",
-    exportCsv: "Sifeḍ CSV",
-    season: "Tasemhuyt",
-    allSeasons: "Akk tisemhuyin",
-    filterWilaya: "Tawilayt",
-    allWilayas: "Akk tiwilayin",
-    vsSeason: "ɣer {{year}}",
-    monthly: "Beṭṭu s wayyuren",
-    monthlyNote:
-      "Teɣzi n ujgu d tajumma yettwaɣen s usmenyef; amḍan ufella d amḍan n tmessi i d-ikkren deg wayyur.",
+    weatherCount: "{{count}} vigilances",
+    weatherCount_one: "{{count}} vigilance",
+    weatherCount_other: "{{count}} vigilances",
+    roadCount: "{{count}} incidents routiers",
+    roadCount_one: "{{count}} incident routier",
+    roadCount_other: "{{count}} incidents routiers",
+    unlocated:
+      "{{count}} relevés n’ont pas pu être rattachés à une wilaya et sont exclus de ce classement.",
+    unlocated_one:
+      "{{count}} relevé n’a pas pu être rattaché à une wilaya et est exclu de ce classement.",
+    unlocated_other:
+      "{{count}} relevés n’ont pas pu être rattachés à une wilaya et sont exclus de ce classement.",
+    noWilaya:
+      "Aucun relevé de cette sélection n’a pu être rattaché à une wilaya.",
+    empty:
+      "Rien d’enregistré pour cette sélection. Essayez tous les aléas ou toutes les wilayas.",
+    recordsTitle: "Relevés",
+    colDate: "Date",
+    colHazard: "Aléa",
+    colPlace: "Wilaya",
+    colDetail: "Détail",
+    recordsShown:
+      "Les {{shown}} plus récents sur {{total}}. Le CSV les contient tous.",
+    sourceError:
+      "{{hazard}} : chargement impossible. Les autres relevés restent affichés.",
     methodology: "Tijumma d usmenyef n usaṭelit, mačči d aktal n wakal.",
   },
   status: {

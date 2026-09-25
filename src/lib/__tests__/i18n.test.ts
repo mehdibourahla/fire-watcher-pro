@@ -97,6 +97,8 @@ describe("counted labels", () => {
     "map.fireCount",
     "history.unlocated",
     "history.fireCount",
+    "history.weatherCount",
+    "history.roadCount",
     "status.degradedCount",
     "account.zoneFires",
   ];

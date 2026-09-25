@@ -4,6 +4,7 @@ import type { FeatureCollection, Geometry } from "geojson";
 import { isInAlgeriaNorth } from "@/lib/ingest/geo";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchAllPages } from "@/lib/paginate";
+import type { OnmHistoryRow, RoadHistoryRow } from "@/lib/hazard-history";
 import type { AnyLocale, Locale } from "@/i18n";
 import {
   withProcessingHealth,
@@ -366,6 +367,51 @@ export const historyClustersQuery = queryOptions({
     }
     return all;
   },
+});
+
+export const onmHistoryQuery = queryOptions({
+  queryKey: ["onm_warning_history"],
+  queryFn: () =>
+    fetchAllPages<OnmHistoryRow>((from, to) =>
+      supabase
+        .from("onm_warning_history")
+        .select("id, wilaya_id, event, severity, starts_at")
+        .order("starts_at", { ascending: false })
+        .order("id")
+        .range(from, to),
+    ),
+});
+
+export const roadHistoryQuery = queryOptions({
+  queryKey: ["civil_publications", "road", "history"],
+  queryFn: () =>
+    fetchAllPages<RoadHistoryRow>((from, to) =>
+      supabase
+        .from("civil_publications")
+        .select("id, area_id, published_at, summary")
+        .eq("hazard", "road")
+        .eq("state", "published")
+        .order("published_at", { ascending: false })
+        .order("id")
+        .range(from, to),
+    ),
+});
+
+export const officialHistoryQuery = queryOptions({
+  queryKey: ["official_incidents", "history"],
+  queryFn: () =>
+    fetchAllPages<{
+      id: string;
+      wilaya_id: string | null;
+      first_reported_at: string;
+    }>((from, to) =>
+      supabase
+        .from("official_incidents")
+        .select("id, wilaya_id, first_reported_at")
+        .is("unlisted_at", null)
+        .order("id")
+        .range(from, to),
+    ),
 });
 
 export const adminUnitsQuery = queryOptions({
