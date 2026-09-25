@@ -1,5 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
-import type { FeatureCollection, Geometry } from "geojson";
+import type { Geometry } from "geojson";
 
 import { isInAlgeriaNorth } from "@/lib/ingest/geo";
 import { supabase } from "@/integrations/supabase/client";
@@ -650,7 +650,6 @@ export type OfficialIncident = {
 };
 
 const OFFICIAL_WINDOW_MS = 72 * 3_600_000;
-const EXTINGUISHED_VISIBLE_MS = 24 * 3_600_000;
 
 export const officialIncidentsQuery = queryOptions({
   queryKey: ["official_incidents"],
@@ -689,40 +688,6 @@ export function communeGeomsQuery(ids: string[]) {
       );
     },
   });
-}
-
-export function officialIncidentsGeoJSON(
-  incidents: OfficialIncident[],
-  geoms: Map<string, Geometry | unknown>,
-  now = Date.now(),
-): FeatureCollection {
-  return {
-    type: "FeatureCollection",
-    features: incidents.flatMap((i) => {
-      if (
-        i.status === "extinguished" &&
-        now - Date.parse(i.last_reported_at) > EXTINGUISHED_VISIBLE_MS
-      )
-        return [];
-      const polygon = i.commune_id ? geoms.get(i.commune_id) : undefined;
-      const anchor = i.commune ?? i.wilaya;
-      return [
-        {
-          type: "Feature" as const,
-          geometry: polygon
-            ? (polygon as Geometry)
-            : { type: "Point" as const, coordinates: [anchor.lon, anchor.lat] },
-          properties: {
-            id: i.id,
-            status: i.status,
-            precision: i.precision,
-            listed: i.unlisted_at === null,
-            area: Boolean(polygon),
-          },
-        },
-      ];
-    }),
-  };
 }
 
 export const recallDailyQuery = queryOptions({
