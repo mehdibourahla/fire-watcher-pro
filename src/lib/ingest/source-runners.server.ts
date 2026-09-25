@@ -29,6 +29,7 @@ import { ingestFci, ingestS3, type FciRun } from "./fci.server";
 import { ingestFirms } from "./firms.server";
 import { fuseDetections } from "./fusion.server";
 import { ingestOnm } from "./onm.server";
+import { ingestEmsc } from "./emsc.server";
 import {
   flagPersistentCandidates,
   screenPersistentSources,
@@ -43,6 +44,7 @@ export const RUNTIME_CONTRACT_KEYS = [
   "fci",
   "s3_slstr",
   "onm",
+  "emsc",
   "persistent_screen",
   "fusion",
   "openmeteo_wind",
@@ -64,6 +66,7 @@ export type SourceRunnerDependencies = {
   ingestFci: typeof ingestFci;
   ingestS3: typeof ingestS3;
   ingestOnm: typeof ingestOnm;
+  ingestEmsc: typeof ingestEmsc;
   screenPersistentSources: typeof screenPersistentSources;
   fuseDetections: typeof fuseDetections;
   flagPersistentCandidates: typeof flagPersistentCandidates;
@@ -242,6 +245,19 @@ export function createSourceRunners(
           detailed_entries: run.detailed ?? 0,
           superseded_entries: run.superseded ?? 0,
         },
+      };
+    },
+    emsc: async (job) => {
+      const run = await dependencies.ingestEmsc();
+      const health = adapterHealth({ accepted: run.fetched, error: run.error });
+      return {
+        ...baseReport(job),
+        ...health,
+        ...coveredInterval(job, health.outcome === "succeeded"),
+        recordsSeen: run.fetched,
+        recordsInserted: run.stored,
+        recordsRejected: 0,
+        qualityChecks: { outside_algeria: run.outside },
       };
     },
     persistent_screen: async (job) => {
@@ -426,6 +442,7 @@ const sourceRunnerDependencies: SourceRunnerDependencies = {
   ingestFci,
   ingestS3,
   ingestOnm,
+  ingestEmsc,
   screenPersistentSources,
   fuseDetections,
   flagPersistentCandidates,

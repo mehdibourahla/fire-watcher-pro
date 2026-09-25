@@ -1535,6 +1535,54 @@ export type Database = {
           },
         ];
       };
+      earthquakes: {
+        Row: {
+          commune_id: string | null;
+          depth_km: number | null;
+          fetched_at: string;
+          id: string;
+          lat: number;
+          lon: number;
+          magnitude: number;
+          magnitude_type: string | null;
+          network: string | null;
+          occurred_at: string;
+          offshore: boolean;
+          region: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          commune_id?: string | null;
+          depth_km?: number | null;
+          fetched_at?: string;
+          id: string;
+          lat: number;
+          lon: number;
+          magnitude: number;
+          magnitude_type?: string | null;
+          network?: string | null;
+          occurred_at: string;
+          offshore?: boolean;
+          region?: string | null;
+          updated_at: string;
+        };
+        Update: {
+          commune_id?: string | null;
+          depth_km?: number | null;
+          fetched_at?: string;
+          id?: string;
+          lat?: number;
+          lon?: number;
+          magnitude?: number;
+          magnitude_type?: string | null;
+          network?: string | null;
+          occurred_at?: string;
+          offshore?: boolean;
+          region?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       fire_clusters: {
         Row: {
           commune_id: string | null;
@@ -3335,6 +3383,7 @@ export type Database = {
           min_danger_level: number;
           name: string;
           notify_citizen: boolean;
+          notify_earthquake: boolean;
           notify_fires: boolean;
           notify_official: boolean;
           notify_risk: boolean;
@@ -3354,6 +3403,7 @@ export type Database = {
           min_danger_level?: number;
           name: string;
           notify_citizen?: boolean;
+          notify_earthquake?: boolean;
           notify_fires?: boolean;
           notify_official?: boolean;
           notify_risk?: boolean;
@@ -3373,6 +3423,7 @@ export type Database = {
           min_danger_level?: number;
           name?: string;
           notify_citizen?: boolean;
+          notify_earthquake?: boolean;
           notify_fires?: boolean;
           notify_official?: boolean;
           notify_risk?: boolean;
