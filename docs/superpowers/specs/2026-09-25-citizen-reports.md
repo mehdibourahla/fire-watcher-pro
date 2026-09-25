@@ -28,7 +28,7 @@ sandstorm, landslide, snow_ice, structural, hazmat, other.
   returns `publishable`, `hazard`, a neutral `summary` of at most 160 characters in the report's language, and
   `severity`. Publishable reports publish the summary, never the raw text. Held reports wait for a moderator.
 - Deterministic guards outside the model: the summary is dropped if it holds a phone number, an email or a URL;
-  the 3-per-24-hours report limit stays; person trapped is never public, never gamified, and shows call 14.
+  the 3-per-24-hours report limit stays and counts deleted reports too; person trapped is never public, never gamified, and shows call 14.
 - If the classifier is down, a tile report with text publishes as its bare category; "Something else" waits and
   is retried by the alerts engine run.
 - Public view `hazard_reports` shows only published, unrejected, unexpired reports, without reporter, raw note or
@@ -38,11 +38,10 @@ sandstorm, landslide, snow_ice, structural, hazmat, other.
 
 - "I see it too" and "It's gone" on a report's map card, signed in, once per person, from within 5 km (the
   glossary's sighting radius), not on your own report, 30 votes per hour.
-- Each "I see it too" extends the report's life by 3 hours (a report lives 6 hours, 24 at most).
+- Each "I see it too" keeps the report alive at least 3 more hours (a report lives 6 hours, 24 at most).
 - "It's gone" never hides a report and is never shown publicly (a false all-clear kills). Three more "gone" than
   "seen" votes flag it for moderation and stop further extensions.
-- A report with at least one other witness is corroborated. Corroborated reports count as the second look in the
-  glossary and may push.
+- A report with at least one other witness is corroborated. Only corroborated reports push.
 
 ## Alerts
 
@@ -53,7 +52,7 @@ people, not verified by authorities.
 ## Rewards
 
 Points only for what others confirm, never for sending: 10 when your report is corroborated, 3 for each witness
-vote you give on a report that ends corroborated. Levels: Observer (0), Witness (30), Guardian (100), Sentinel
+vote you give once a second independent witness agrees. Levels: Observer (0), Witness (30), Guardian (100), Sentinel
 (300). Badges: first corroborated report, five confirmations given, three different hazards reported, a report
 that alerted people. Impact shown as real counts: witnesses on your reports and people alerted by them. No
 leaderboard. Nothing celebratory on person trapped.

@@ -1144,6 +1144,21 @@ export type Database = {
           },
         ];
       };
+      citizen_report_submissions: {
+        Row: {
+          created_at: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       citizen_reports: {
         Row: {
           classified_at: string | null;

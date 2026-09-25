@@ -39,6 +39,47 @@ $$;
 create trigger citizen_reports_prepare
   before insert on public.citizen_reports
   for each row execute function public.prepare_citizen_report();
+revoke all on function public.prepare_citizen_report() from public, anon, authenticated;
+
+-- tile reports now publish instantly, so a delete must not hand back a slot in the daily limit
+create table public.citizen_report_submissions (
+  user_id uuid not null references auth.users(id) on delete cascade,
+  created_at timestamptz not null default now()
+);
+create index citizen_report_submissions_user_idx on public.citizen_report_submissions (user_id, created_at);
+alter table public.citizen_report_submissions enable row level security;
+revoke all on public.citizen_report_submissions from public, anon, authenticated;
+insert into public.citizen_report_submissions (user_id, created_at)
+  select user_id, created_at from public.citizen_reports where created_at > now() - interval '24 hours';
+
+create or replace function public.limit_citizen_reports()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  recent_reports integer;
+begin
+  new.created_at := now();
+  perform pg_catalog.pg_advisory_xact_lock(
+    pg_catalog.hashtext('nadhir:citizen-report-limit'),
+    pg_catalog.hashtext(new.user_id::text)
+  );
+  select count(*) into recent_reports
+  from public.citizen_report_submissions
+  where user_id = new.user_id and created_at > now() - interval '24 hours';
+  if recent_reports >= 3 then
+    raise exception using
+      errcode = '23514',
+      message = 'Daily report limit reached (3 per 24 hours)';
+  end if;
+  insert into public.citizen_report_submissions (user_id) values (new.user_id);
+  return new;
+end;
+$$;
+
+revoke truncate on public.citizen_reports from anon, authenticated;
 
 drop policy "own pending reports update" on public.citizen_reports;
 
@@ -74,6 +115,9 @@ begin
   end if;
   if _vote not in ('seen', 'gone') then
     raise invalid_parameter_value using message = 'invalid_vote';
+  end if;
+  if _lat is null or _lon is null or abs(_lat) > 90 or abs(_lon) > 180 then
+    raise invalid_parameter_value using message = 'too_far';
   end if;
   if not public.consume_rate_limit('witness:' || actor::text, 30, 3600) then
     raise exception using errcode = '54000', message = 'witness_rate_limited';
@@ -123,7 +167,7 @@ create view public.hazard_reports
   where (r.publish_state = 'published' or r.status = 'approved')
     and r.status <> 'rejected'
     and r.kind <> 'person_trapped'
-    and r.expires_at > now() - interval '24 hours';
+    and r.expires_at > now();
 -- a bypassrls view: default privileges would hand anon write access through it (see 20260903150000)
 revoke all on public.hazard_reports from public, anon, authenticated;
 grant select on public.hazard_reports to anon, authenticated;
@@ -133,6 +177,8 @@ alter table public.alerts add constraint alerts_kind_check
   check (kind in ('fire','risk','weather','official','road','citizen'));
 
 alter table public.zones add column notify_citizen boolean not null default true;
+
+create index alerts_citizen_source_idx on public.alerts (source_id) where source_table = 'citizen_reports';
 
 -- points reward what others confirmed, never the act of sending (a points-for-sending game rewards false reports)
 create function public.my_contribution()
@@ -149,10 +195,13 @@ as $$
     where r.user_id = (select auth.uid()) and r.status <> 'rejected'
       and (r.publish_state = 'published' or r.status = 'approved') and r.kind <> 'person_trapped'
   ),
+  -- a confirmation earns points only once a second independent witness agrees, so a vote alone mints nothing
   given as (
     select count(*) as n
     from public.report_witnesses w join public.citizen_reports r on r.id = w.report_id
     where w.user_id = (select auth.uid()) and w.vote = 'seen' and r.status <> 'rejected'
+      and (select count(*) from public.report_witnesses o
+           where o.report_id = r.id and o.vote = 'seen') >= 2
   )
   select jsonb_build_object(
     'published', (select count(*) from mine),

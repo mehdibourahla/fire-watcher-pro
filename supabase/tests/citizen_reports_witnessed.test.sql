@@ -1,6 +1,6 @@
 begin;
 set local search_path = public, extensions;
-select plan(18);
+select plan(21);
 
 insert into auth.users (id, email) values
   ('3c000000-0000-4000-8000-000000000001', 'reporter@example.invalid'),
@@ -9,7 +9,8 @@ insert into auth.users (id, email) values
   ('3c000000-0000-4000-8000-000000000004', 'gone-a@example.invalid'),
   ('3c000000-0000-4000-8000-000000000005', 'gone-b@example.invalid'),
   ('3c000000-0000-4000-8000-000000000006', 'gone-c@example.invalid'),
-  ('3c000000-0000-4000-8000-000000000007', 'gone-d@example.invalid');
+  ('3c000000-0000-4000-8000-000000000007', 'gone-d@example.invalid'),
+  ('3c000000-0000-4000-8000-000000000008', 'gone-e@example.invalid');
 
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '3c000000-0000-4000-8000-000000000001', true);
@@ -52,7 +53,15 @@ select is(witness_report('3c100000-0000-4000-8000-000000000001', 'seen', 36.71, 
   'a nearby person confirms the report');
 select throws_ok($$select witness_report('3c100000-0000-4000-8000-000000000002', 'seen', 36.70, 4.05)$$,
   'P0002', 'report_not_open', 'an unpublished report cannot be witnessed');
-select is((my_contribution() ->> 'points')::integer, 3, 'a confirmation earns the witness 3 points');
+select is((my_contribution() ->> 'points')::integer, 0, 'a lone confirmation mints no points');
+select throws_ok($$select witness_report('3c100000-0000-4000-8000-000000000001', 'seen', null, null)$$,
+  '22023', 'too_far', 'a vote without a location is refused, never waved through');
+reset role;
+
+select set_config('request.jwt.claim.sub', '3c000000-0000-4000-8000-000000000003', true);
+select witness_report('3c100000-0000-4000-8000-000000000001', 'seen', 36.70, 4.06);
+select set_config('request.jwt.claim.sub', '3c000000-0000-4000-8000-000000000002', true);
+select is((my_contribution() ->> 'points')::integer, 3, 'a confirmation earns 3 points once a second witness agrees');
 reset role;
 
 select ok((select expires_at > now() + interval '6 hours' from citizen_reports
@@ -60,8 +69,16 @@ select ok((select expires_at > now() + interval '6 hours' from citizen_reports
         and (select expires_at >= now() + interval '3 hours' - interval '1 minute' from citizen_reports
            where id = '3c100000-0000-4000-8000-000000000001'),
   'a confirmation keeps the report alive at least three more hours');
-select is((select witnesses from hazard_reports where id = '3c100000-0000-4000-8000-000000000001'), 1,
+select is((select witnesses from hazard_reports where id = '3c100000-0000-4000-8000-000000000001'), 2,
   'the public sees how many people confirmed it');
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '3c000000-0000-4000-8000-000000000001', true);
+delete from citizen_reports where id = '3c100000-0000-4000-8000-000000000003';
+select throws_ok($$insert into citizen_reports (user_id, lat, lon, kind, status)
+  values ('3c000000-0000-4000-8000-000000000001', 36.7, 4.05, 'flooding', 'pending')$$,
+  '23514', null, 'deleting a report does not hand back a slot in the daily limit');
+reset role;
 
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '3c000000-0000-4000-8000-000000000001', true);
@@ -75,6 +92,8 @@ select witness_report('3c100000-0000-4000-8000-000000000001', 'gone', 36.70, 4.0
 select set_config('request.jwt.claim.sub', '3c000000-0000-4000-8000-000000000006', true);
 select witness_report('3c100000-0000-4000-8000-000000000001', 'gone', 36.70, 4.05);
 select set_config('request.jwt.claim.sub', '3c000000-0000-4000-8000-000000000007', true);
+select witness_report('3c100000-0000-4000-8000-000000000001', 'gone', 36.70, 4.05);
+select set_config('request.jwt.claim.sub', '3c000000-0000-4000-8000-000000000008', true);
 select witness_report('3c100000-0000-4000-8000-000000000001', 'gone', 36.70, 4.05);
 reset role;
 
