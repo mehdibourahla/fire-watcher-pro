@@ -1,6 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 import type { FeatureCollection } from "geojson";
 
+import type { ReportKind } from "@/lib/reports";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchAllPages } from "@/lib/paginate";
 
@@ -36,13 +37,18 @@ export const openAreasQuery = queryOptions({
 
 export type HazardReport = {
   id: string;
-  kind: "sighting" | "road_blocked" | "person_trapped";
+  kind: ReportKind;
+  hazard: string | null;
   sighting: "smoke" | "flames" | "smell" | "other";
+  summary: string | null;
   lat: number;
   lon: number;
+  commune_id: string | null;
   observed_at: string;
   created_at: string;
+  expires_at: string | null;
   status: "pending" | "approved" | "rejected";
+  witnesses: number;
 };
 
 /** Hazard asymmetry (CONTEXT.md): danger reports show unmoderated through safe columns only. */
@@ -59,16 +65,3 @@ export const hazardReportsQuery = queryOptions({
     return (data ?? []) as unknown as HazardReport[];
   },
 });
-
-export function hazardReportsGeoJSON(
-  reports: HazardReport[],
-): FeatureCollection {
-  return {
-    type: "FeatureCollection",
-    features: reports.map((r) => ({
-      type: "Feature",
-      geometry: { type: "Point", coordinates: [r.lon, r.lat] },
-      properties: { id: r.id, kind: r.kind, status: r.status },
-    })),
-  };
-}

@@ -159,8 +159,8 @@ drop view public.hazard_reports;
 -- Hazard asymmetry (CONTEXT.md): only published danger shows, through safe columns; "gone" votes never do
 create view public.hazard_reports
   with (security_invoker = false, security_barrier = true) as
-  select r.id, r.kind, r.hazard, r.sighting, r.summary, r.lat, r.lon, r.observed_at, r.created_at,
-         r.expires_at, r.status,
+  select r.id, r.kind, r.hazard, r.sighting, r.summary, r.lat, r.lon, r.commune_id, r.observed_at,
+         r.created_at, r.expires_at, r.status,
          (select count(*) from public.report_witnesses w where w.report_id = r.id and w.vote = 'seen')::integer
            as witnesses
   from public.citizen_reports r

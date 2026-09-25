@@ -3528,6 +3528,7 @@ export type Database = {
       };
       hazard_reports: {
         Row: {
+          commune_id: string | null;
           created_at: string | null;
           expires_at: string | null;
           hazard: string | null;
@@ -3542,6 +3543,7 @@ export type Database = {
           witnesses: number | null;
         };
         Insert: {
+          commune_id?: string | null;
           created_at?: string | null;
           expires_at?: string | null;
           hazard?: string | null;
@@ -3556,6 +3558,7 @@ export type Database = {
           witnesses?: number | null;
         };
         Update: {
+          commune_id?: string | null;
           created_at?: string | null;
           expires_at?: string | null;
           hazard?: string | null;

@@ -444,10 +444,10 @@ export const ar: Translation = {
     layerFires: "الحرائق النشطة",
     layerOfficial: "بلاغات رسمية",
     layerReports: "بلاغات المواطنين",
-    reportEyebrow: "بلاغ مواطن",
     reportObserved: "شوهد {{time}}",
-    reportUnverified:
-      "غير مؤكد — يُعرض كما ورد مع عمره. يمكن للمشرفين تأكيده أو إزالته.",
+    reportUnverified: "لم يؤكده أحد بعد",
+    reportNote:
+      "نُشر بعد فحص آلي. يمكن للأشخاص القريبين تأكيده، ويمكن للمشرفين إزالته.",
     layerRisk: "توقع الخطر",
     layerUnverified: "رصد غير مؤكد",
     layerWind: "اتجاه الرياح",
@@ -869,6 +869,20 @@ export const ar: Translation = {
     zoneNowUnavailable: "الحالة المباشرة غير متاحة. ما زالت تنبيهاتك تصلك.",
   },
   reports: {
+    hazardName: {
+      fire: "حريق أو دخان",
+      flooding: "فيضان",
+      storm_damage: "أضرار عاصفة",
+      road_blocked: "طريق مقطوع",
+      earthquake: "أضرار زلزال",
+      person_trapped: "شخص محاصر",
+      sandstorm: "زوبعة رملية",
+      landslide: "انزلاق تربة أو سقوط صخور",
+      snow_ice: "ثلج أو جليد على الطريق",
+      structural: "بناية خطرة",
+      hazmat: "تسرب غاز أو مادة خطرة",
+      other: "خطر آخر",
+    },
     safety:
       "اتصل أولاً بالحماية المدنية على الرقم 14 إذا كان هناك خطر على الأشخاص أو المنازل. نذير ليس خدمة طوارئ.",
     useMyLocation: "استخدام موقعي",
@@ -954,7 +968,9 @@ export const ar: Translation = {
     points: "{{count}} نقاط",
     points_one: "نقطة واحدة",
     points_other: "{{count}} نقطة",
-    toNext: "{{count}} نقطة للوصول إلى {{level}}",
+    toNext: "{{count}} نقاط للوصول إلى {{level}}",
+    toNext_one: "نقطة واحدة للوصول إلى {{level}}",
+    toNext_other: "{{count}} نقطة للوصول إلى {{level}}",
     topLevel: "أعلى مستوى تم بلوغه",
     badge: {
       firstCorroborated: "أول بلاغ مؤكَّد",

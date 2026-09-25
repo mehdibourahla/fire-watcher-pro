@@ -307,12 +307,17 @@ describe("civil map administrative geometry", () => {
       data: {
         id: "r1",
         kind: "road_blocked",
+        hazard: "road_blocked",
         sighting: "other",
+        summary: null,
         lat: 36.5,
         lon: 3.5,
+        commune_id: null,
         observed_at: official.at,
         created_at: official.at,
+        expires_at: null,
         status: "pending",
+        witnesses: 0,
       },
     };
     const result = civilMapGeoJSON(
@@ -322,7 +327,6 @@ describe("civil map administrative geometry", () => {
     );
     expect(result.reports.features).toHaveLength(1);
     expect(result.reports.features[0]?.properties).toMatchObject({
-      kind: "road_blocked",
       source: "citizen",
       area: false,
       selected: false,

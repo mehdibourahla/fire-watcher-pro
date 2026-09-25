@@ -455,10 +455,10 @@ export const fr: Translation = {
     layerFires: "Feux actifs",
     layerOfficial: "Signalements officiels",
     layerReports: "Signalements citoyens",
-    reportEyebrow: "Signalement citoyen",
     reportObserved: "Vu {{time}}",
-    reportUnverified:
-      "Non vérifié — affiché tel que reçu, avec son ancienneté. La modération peut le confirmer ou le retirer.",
+    reportUnverified: "Personne ne l'a encore confirmé",
+    reportNote:
+      "Publié après une vérification automatique. Les personnes à proximité peuvent le confirmer, et la modération peut le retirer.",
     layerRisk: "Prévision de danger",
     layerUnverified: "Détections non vérifiées",
     layerWind: "Vecteurs de vent",
@@ -922,6 +922,20 @@ export const fr: Translation = {
       "L’état en direct est indisponible. Vos alertes arrivent toujours.",
   },
   reports: {
+    hazardName: {
+      fire: "Feu ou fumée",
+      flooding: "Inondation",
+      storm_damage: "Dégâts d’orage",
+      road_blocked: "Route bloquée",
+      earthquake: "Dégâts de séisme",
+      person_trapped: "Personne bloquée",
+      sandstorm: "Vent de sable",
+      landslide: "Glissement ou chute de pierres",
+      snow_ice: "Neige ou verglas sur la route",
+      structural: "Bâtiment dangereux",
+      hazmat: "Fuite de gaz ou produit dangereux",
+      other: "Autre danger",
+    },
     safety:
       "Appelez d'abord la Protection civile au 14 si des personnes ou des habitations sont menacées. Nadhir n'est pas un service d'urgence.",
     useMyLocation: "Utiliser ma position",
@@ -1013,6 +1027,8 @@ export const fr: Translation = {
     points_one: "{{count}} point",
     points_other: "{{count}} points",
     toNext: "{{count}} points avant {{level}}",
+    toNext_one: "{{count}} point avant {{level}}",
+    toNext_other: "{{count}} points avant {{level}}",
     topLevel: "Niveau le plus élevé atteint",
     badge: {
       firstCorroborated: "Premier signalement confirmé",

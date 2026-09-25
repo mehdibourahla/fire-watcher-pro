@@ -12,11 +12,7 @@ const FIRE_ARCHIVE_HOURS = 24;
 const OFFICIAL_LEASE_HOURS = 24;
 const ARCHIVE_HOURS = 72;
 const REPORT_ARCHIVE_HOURS = 24;
-const REPORT_LEASE_HOURS = {
-  sighting: 3,
-  road_blocked: 2,
-  person_trapped: 3,
-} as const;
+const REPORT_LEGACY_LEASE_HOURS = 3;
 const CIVIL_LEASE_HOURS: Record<CivilHazard, number> = {
   road: 2,
   fire: 3,
@@ -85,15 +81,20 @@ export function officialPhase(
   return phase === "live" && incident.unlisted_at !== null ? "fading" : phase;
 }
 
+// witnesses extend a report, so its own expiry, not its age, decides its phase
 export function reportPhase(
-  report: { kind: keyof typeof REPORT_LEASE_HOURS; observed_at: string },
+  report: { expires_at: string | null; observed_at: string },
   now: number,
 ): Phase {
-  return byAge(
-    ageHours(report.observed_at, now),
-    REPORT_LEASE_HOURS[report.kind],
-    REPORT_ARCHIVE_HOURS,
-  );
+  if (!report.expires_at)
+    return byAge(
+      ageHours(report.observed_at, now),
+      REPORT_LEGACY_LEASE_HOURS,
+      REPORT_ARCHIVE_HOURS,
+    );
+  const left = (Date.parse(report.expires_at) - now) / HOUR;
+  if (left <= 0) return "archived";
+  return left > 1 ? "live" : "fading";
 }
 
 export function publicationPhase(

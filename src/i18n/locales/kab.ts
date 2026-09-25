@@ -453,10 +453,10 @@ export const kab: Translation = {
     layerFires: "Timessi urmidin",
     layerOfficial: "Ineɣmisen unṣiben",
     layerReports: "Ineɣmisen n yimezdaɣ",
-    reportEyebrow: "Aneɣmis n umezdaɣ",
     reportObserved: "Yettwawala {{time}}",
-    reportUnverified:
-      "Ur yettwasenqed ara — yettwasken akken i d-yewweḍ, s leɛmer-is. Imḍebbren zemren ad t-sentmen neɣ ad t-kksen.",
+    reportUnverified: "Personne ne l'a encore confirmé",
+    reportNote:
+      "Publié après une vérification automatique. Les personnes à proximité peuvent le confirmer, et la modération peut le retirer.",
     layerRisk: "Asmenyaf n uɣilif",
     layerUnverified: "Tifin ur nettwasenqed ara",
     layerWind: "Ineẓẓafen n waḍu",
@@ -905,6 +905,20 @@ export const kab: Translation = {
       "L’état en direct est indisponible. Vos alertes arrivent toujours.",
   },
   reports: {
+    hazardName: {
+      fire: "Feu ou fumée",
+      flooding: "Inondation",
+      storm_damage: "Dégâts d’orage",
+      road_blocked: "Route bloquée",
+      earthquake: "Dégâts de séisme",
+      person_trapped: "Personne bloquée",
+      sandstorm: "Vent de sable",
+      landslide: "Glissement ou chute de pierres",
+      snow_ice: "Neige ou verglas sur la route",
+      structural: "Bâtiment dangereux",
+      hazmat: "Fuite de gaz ou produit dangereux",
+      other: "Autre danger",
+    },
     safety:
       "Siwel qbel i Tɣellist Taɣarimt ɣef 14 ma llan yemdanen neɣ ixxamen deg wugur. Nadhir mačči d ameẓlu n tuffɣa.",
     useMyLocation: "Seqdec adig-iw",
@@ -996,6 +1010,8 @@ export const kab: Translation = {
     points_one: "{{count}} point",
     points_other: "{{count}} points",
     toNext: "{{count}} points avant {{level}}",
+    toNext_one: "{{count}} point avant {{level}}",
+    toNext_other: "{{count}} points avant {{level}}",
     topLevel: "Niveau le plus élevé atteint",
     badge: {
       firstCorroborated: "Premier signalement confirmé",

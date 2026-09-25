@@ -447,10 +447,10 @@ export const en = {
     layerFires: "Active fires",
     layerOfficial: "Official incident reports",
     layerReports: "Citizen hazard reports",
-    reportEyebrow: "Citizen report",
     reportObserved: "Seen {{time}}",
-    reportUnverified:
-      "Unverified — shown as received, with its age. Moderators can confirm or remove it.",
+    reportUnverified: "No one has confirmed it yet",
+    reportNote:
+      "Published after an automatic check. People nearby can confirm it, and moderators can remove it.",
     layerRisk: "Danger forecast",
     layerUnverified: "Unverified detections",
     layerWind: "Wind vectors",
@@ -897,6 +897,20 @@ export const en = {
     zoneNowUnavailable: "Live status is unavailable. Your alerts still arrive.",
   },
   reports: {
+    hazardName: {
+      fire: "Fire or smoke",
+      flooding: "Flooding",
+      storm_damage: "Storm damage",
+      road_blocked: "Road blocked",
+      earthquake: "Earthquake damage",
+      person_trapped: "Person trapped",
+      sandstorm: "Sandstorm",
+      landslide: "Landslide or rockfall",
+      snow_ice: "Snow or ice on the road",
+      structural: "Dangerous building",
+      hazmat: "Hazardous spill or gas leak",
+      other: "Other danger",
+    },
     safety:
       "Call Civil Protection on 14 first if people or homes are at risk. Nadhir is not an emergency service.",
     useMyLocation: "Use my location",
@@ -987,6 +1001,8 @@ export const en = {
     points_one: "{{count}} point",
     points_other: "{{count}} points",
     toNext: "{{count}} points to {{level}}",
+    toNext_one: "{{count}} point to {{level}}",
+    toNext_other: "{{count}} points to {{level}}",
     topLevel: "Highest level reached",
     badge: {
       firstCorroborated: "First confirmed report",

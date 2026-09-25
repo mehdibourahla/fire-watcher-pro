@@ -23,6 +23,7 @@ import {
   ShieldCheck,
   TriangleAlert,
   X,
+  Megaphone,
 } from "lucide-react";
 import { MapCanvas } from "@/components/MapCanvas";
 import { useGrantedPosition } from "@/lib/granted-position";
@@ -691,6 +692,15 @@ function LiveMapPage() {
                     : summaryLine}
               </p>
             </div>
+            {panelView === "list" && (
+              <Link
+                to="/report"
+                className="flex h-11 shrink-0 items-center gap-1.5 rounded-xl border border-border px-3 text-sm font-medium hover:bg-muted"
+              >
+                <Megaphone aria-hidden className="size-4" />
+                {t("reports.reportButton")}
+              </Link>
+            )}
             {panelView === "list" && (
               <button
                 type="button"

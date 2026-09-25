@@ -151,9 +151,6 @@ export function civilMapGeoJSON(
             : item.source === "onm"
               ? "wilaya"
               : "point",
-      ...(item.source === "citizen"
-        ? { kind: item.data.kind, sighting: item.data.sighting }
-        : {}),
     };
     const outline =
       item.source === "onm" && item.data.wilaya_id

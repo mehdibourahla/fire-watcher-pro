@@ -34,6 +34,10 @@ export function useSituationLabels(units: AdminUnit[], now: number) {
       return unitName(item.data.commune ?? item.data.wilaya, locale);
     if (item.source === "civil" && item.data.area)
       return unitName(item.data.area, locale);
+    const near =
+      item.source === "citizen" &&
+      units.find((u) => u.id === item.data.commune_id);
+    if (near) return t("map.nearPlace", { place: unitName(near, locale) });
     return item.lat !== null && item.lon !== null
       ? `${item.lat.toFixed(3)}, ${item.lon.toFixed(3)}`
       : t("civilMap.unknownLocation");
@@ -45,7 +49,9 @@ export function useSituationLabels(units: AdminUnit[], now: number) {
         ? item.data.headline_fr || item.data.title
         : item.source === "satellite" && item.level === "heat_signal"
           ? `${t("civilMap.heatSignalShort")} · ${place(item)}`
-          : `${t(`civilMap.${item.category}`)} · ${place(item)}`;
+          : item.source === "citizen"
+            ? `${t(`reports.hazardName.${item.data.hazard ?? "other"}`)} · ${place(item)}`
+            : `${t(`civilMap.${item.category}`)} · ${place(item)}`;
   const source = (item: Situation) =>
     t(
       item.source === "official" && item.data.authority_tier === "media"
@@ -84,7 +90,10 @@ export function useSituationLabels(units: AdminUnit[], now: number) {
                 ? "civilMap.probable"
                 : "civilMap.heatSignal",
       );
-    if (item.source === "citizen") return t("map.reportUnverified");
+    if (item.source === "citizen")
+      return item.data.witnesses
+        ? t("reports.witnessCount", { count: item.data.witnesses })
+        : t("map.reportUnverified");
     return t(
       item.data.onset && Date.parse(item.data.onset) > now
         ? "civilMap.upcoming"
