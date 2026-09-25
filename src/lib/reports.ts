@@ -49,7 +49,6 @@ export type NewReport = {
   lat: number;
   lon: number;
   note: string | null;
-  commune_id: string | null;
   observed_at: string;
 };
 

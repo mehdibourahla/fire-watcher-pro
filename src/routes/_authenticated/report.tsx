@@ -115,7 +115,6 @@ function ReportPage() {
           lat: point.lat,
           lon: point.lon,
           note: note.trim() || null,
-          commune_id: commune?.level === "commune" ? commune.id : null,
           observed_at: new Date().toISOString(),
         },
         photo,

@@ -36,7 +36,6 @@ const reportInput = {
   lat: 36.6,
   lon: 4.05,
   note: null,
-  commune_id: null,
   observed_at: "2026-09-01T00:00:00.000Z",
 };
 

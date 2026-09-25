@@ -294,26 +294,44 @@ async function loadHazardContext(
   ]);
   for (const result of [units, weather, official, authority, road])
     if (result.error) throw new Error(result.error.message);
-  const { data: reports, error: reportsError } = await supabaseAdmin
-    .from("citizen_reports")
-    .select("id, user_id, hazard, summary, lat, lon, expires_at")
-    .or("publish_state.eq.published,status.eq.approved")
-    .neq("status", "rejected")
-    .neq("kind", "person_trapped")
-    .is("flagged_at", null)
-    .gt("expires_at", iso);
-  if (reportsError) throw new Error(reportsError.message);
-  const { data: votes, error: votesError } = reports?.length
-    ? await supabaseAdmin
-        .from("report_witnesses")
-        .select("report_id, user_id")
-        .eq("vote", "seen")
-        .in(
-          "report_id",
-          reports.map((r) => r.id),
-        )
-    : { data: [], error: null };
-  if (votesError) throw new Error(votesError.message);
+  const reports = await fetchAllPages<{
+    id: string;
+    user_id: string;
+    hazard: string | null;
+    summary: string | null;
+    lat: number;
+    lon: number;
+    expires_at: string;
+  }>((from, to) =>
+    supabaseAdmin
+      .from("citizen_reports")
+      .select("id, user_id, hazard, summary, lat, lon, expires_at")
+      .or("publish_state.eq.published,status.eq.approved")
+      .neq("status", "rejected")
+      .neq("kind", "person_trapped")
+      .is("flagged_at", null)
+      .gt("expires_at", iso)
+      .order("id")
+      .range(from, to),
+  );
+  const votes: { report_id: string; user_id: string }[] = [];
+  // chunked so the id list stays well under gateway URL limits
+  for (let i = 0; i < reports.length; i += 100) {
+    const ids = reports.slice(i, i + 100).map((r) => r.id);
+    votes.push(
+      ...(await fetchAllPages<{ report_id: string; user_id: string }>(
+        (from, to) =>
+          supabaseAdmin
+            .from("report_witnesses")
+            .select("report_id, user_id")
+            .eq("vote", "seen")
+            .in("report_id", ids)
+            .order("report_id")
+            .order("user_id")
+            .range(from, to),
+      )),
+    );
+  }
   return {
     communes: new Map(
       (units.data ?? []).map((u) => [
@@ -339,15 +357,15 @@ async function loadHazardContext(
     ),
     authority: authority.data ?? [],
     road: road.data ?? [],
-    citizen: (reports ?? []).map((r) => ({
+    citizen: reports.map((r) => ({
       id: r.id,
       reporter: r.user_id,
       hazard: r.hazard,
       summary: r.summary,
       lat: r.lat,
       lon: r.lon,
-      expires_at: r.expires_at!,
-      witnesses: (votes ?? [])
+      expires_at: r.expires_at,
+      witnesses: votes
         .filter((v) => v.report_id === r.id)
         .map((v) => v.user_id),
     })),

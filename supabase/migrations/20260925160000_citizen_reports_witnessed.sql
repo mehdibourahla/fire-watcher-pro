@@ -32,6 +32,13 @@ begin
     when new.kind = 'other' or has_text then 'classifying'
     else 'published' end;
   new.expires_at := now() + interval '6 hours';
+  -- the place is shown publicly, so it comes from the pin, never from the client
+  new.commune_id := (
+    select u.id from public.admin_units u
+    where u.level = 'commune' and u.lat is not null and u.lon is not null
+      and 111.32 * sqrt((u.lat - new.lat) ^ 2 + ((u.lon - new.lon) * cos(radians(new.lat))) ^ 2) <= 50
+    order by (u.lat - new.lat) ^ 2 + ((u.lon - new.lon) * cos(radians(new.lat))) ^ 2, u.id
+    limit 1);
   return new;
 end;
 $$;
@@ -179,6 +186,8 @@ alter table public.alerts add constraint alerts_kind_check
 alter table public.zones add column notify_citizen boolean not null default true;
 
 create index alerts_citizen_source_idx on public.alerts (source_id) where source_table = 'citizen_reports';
+-- every open-report read (map view, zone alerts, moderation badge) is bounded by expiry
+create index citizen_reports_expires_idx on public.citizen_reports (expires_at);
 
 -- points reward what others confirmed, never the act of sending (a points-for-sending game rewards false reports)
 create function public.my_contribution()

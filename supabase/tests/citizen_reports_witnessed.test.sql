@@ -1,6 +1,6 @@
 begin;
 set local search_path = public, extensions;
-select plan(23);
+select plan(24);
 
 insert into auth.users (id, email) values
   ('3c000000-0000-4000-8000-000000000001', 'reporter@example.invalid'),
@@ -13,14 +13,18 @@ insert into auth.users (id, email) values
   ('3c000000-0000-4000-8000-000000000008', 'gone-e@example.invalid'),
   ('3c000000-0000-4000-8000-000000000009', 'moderator@example.invalid');
 insert into user_roles (user_id, role) values ('3c000000-0000-4000-8000-000000000009', 'report_moderator');
+insert into admin_units (id, level, code, name_ar, name_fr, name_en, lat, lon) values
+  ('3c200000-0000-4000-8000-000000000001', 'commune', 'citizen-near', 'N', 'N', 'N', 36.70, 4.05),
+  ('3c200000-0000-4000-8000-000000000002', 'commune', 'citizen-far', 'F', 'F', 'F', 35.00, 0.50);
 select set_config('request.jwt.claim.sub', '3c000000-0000-4000-8000-000000000009', true);
 create temp table attention_baseline as
   select count as n from admin_attention_counts() where item = 'citizen_reports';
 
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '3c000000-0000-4000-8000-000000000001', true);
-insert into citizen_reports (id, user_id, lat, lon, kind, status) values
-  ('3c100000-0000-4000-8000-000000000001', '3c000000-0000-4000-8000-000000000001', 36.70, 4.05, 'sighting', 'pending');
+insert into citizen_reports (id, user_id, lat, lon, kind, status, commune_id) values
+  ('3c100000-0000-4000-8000-000000000001', '3c000000-0000-4000-8000-000000000001', 36.70, 4.05, 'sighting', 'pending',
+   '3c200000-0000-4000-8000-000000000002');
 insert into citizen_reports (id, user_id, lat, lon, kind, status, note, publish_state, summary) values
   ('3c100000-0000-4000-8000-000000000002', '3c000000-0000-4000-8000-000000000001', 36.70, 4.05, 'flooding', 'pending',
    'water up to the door', 'published', 'forged summary');
@@ -30,6 +34,8 @@ reset role;
 
 select is((select publish_state || '/' || hazard from citizen_reports where id = '3c100000-0000-4000-8000-000000000001'),
   'published/fire', 'a tile report without text publishes at once as its category');
+select is((select commune_id from citizen_reports where id = '3c100000-0000-4000-8000-000000000001'),
+  '3c200000-0000-4000-8000-000000000001'::uuid, 'the public place comes from the pin, not from what the client claims');
 select is((select publish_state from citizen_reports where id = '3c100000-0000-4000-8000-000000000002'),
   'classifying', 'a report with text waits for the classifier even if the client claims it is published');
 select is((select summary from citizen_reports where id = '3c100000-0000-4000-8000-000000000002'),
