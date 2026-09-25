@@ -50,6 +50,12 @@ jobs:
       - run: bash scripts/test-db.sh
         env:
           SUPABASE_INTERNAL_IMAGE_REGISTRY: public.ecr.aws
+      - run: bun install --frozen-lockfile
+      - name: Auth integration
+        run: |
+          eval "$(supabase status -o env | grep -E '^(API_URL|ANON_KEY|SERVICE_ROLE_KEY)=')"
+          SUPABASE_URL="$API_URL" SUPABASE_PUBLISHABLE_KEY="$ANON_KEY" \
+            SUPABASE_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY" bun run scripts/test-auth-integration.ts
       - run: bun run scripts/test-ita-retry-concurrency.ts
       - run: bun run scripts/test-civil-publication-concurrency.ts
         env:

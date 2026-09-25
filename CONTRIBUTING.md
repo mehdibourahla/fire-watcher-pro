@@ -40,7 +40,11 @@ Point `.env.local` at the printed local URL and keys. Everything the local stack
 including its `service_role` key — is a documented constant, worthless outside your
 machine. Outbound email lands in the local test inbox (`supabase status` shows the URL),
 so account signup and login are fully testable locally, which the live project cannot do
-yet. Add your own FIRMS/EUMETSAT keys and any string as `NADHIR_CRON_SECRET` to exercise
+yet. CI runs `scripts/test-auth-integration.ts` (signup, sign-in, recovery) against its
+local stack. `scripts/test-account-deletion.ts` needs the app running on
+`http://127.0.0.1:4193` and a local admin, so run it by hand before changing account
+deletion, with `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` and `SUPABASE_SERVICE_ROLE_KEY`
+from `supabase status` and `ACCOUNT_TEST_DATABASE_URL` pointing at its database. Add your own FIRMS/EUMETSAT keys and any string as `NADHIR_CRON_SECRET` to exercise
 isolated source jobs end to end. Supabase and Cloudflare enqueue normalized slots; Workers
 claim one short job at a time, while `local_fwi` and `effis` are claimed by separate GitHub
 Actions consumers.

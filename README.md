@@ -181,8 +181,8 @@ want to contribute. The blockers that matter most:
   SMTP/account observations in GAPS are not a current capacity guarantee.
 - **Broadcast delivery exists, but reliability work remains.** Telegram has recorded live
   sends and its current public policy is DGPC official relays only. FCM has an accountless
-  subscription path; validate an actual device receipt. Durable destination receipts deployed
-  in #121. Independent queues and operator controls are implemented on the release branch;
+  subscription path, with a device receipt measured since #177. Durable destination receipts
+  deployed in #121. Independent queues and operator controls shipped in #122 and #125;
   per-user zone email/SMS still needs a provider and verified recipients.
 - **Cross-border fires are watched but coarsely placed.** Detections in the Moroccan and
   Tunisian border strips are ingested and shown with coordinates rather than an Algerian
