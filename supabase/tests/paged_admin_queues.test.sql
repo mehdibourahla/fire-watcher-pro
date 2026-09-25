@@ -1,6 +1,6 @@
 begin;
 set local search_path = public, extensions;
-select plan(13);
+select plan(14);
 
 insert into auth.users (instance_id, id, aud, role, email, encrypted_password, email_confirmed_at, created_at, updated_at)
 select '00000000-0000-0000-0000-000000000000', id, 'authenticated', 'authenticated', email, '', now(), created_at, now()
@@ -41,6 +41,8 @@ select is((select array_agg(email order by email) from public.list_members_page(
   array['paged-probe-one@example.invalid'], 'the no-role filter runs on the server');
 select throws_ok($$select * from public.list_members_page(null, null, 'newest', 0, 1000)$$, '22023', 'invalid_page',
   'a page larger than 100 members is refused');
+select throws_ok($$select * from public.list_contribution_ideas_for_moderation(null, 0, null)$$, '22023', 'invalid_page',
+  'a missing page size is refused, never read as no limit');
 
 select is((select array_agg(id::text) from public.list_contribution_ideas_for_moderation('pending', 0, 1)),
   array['26000000-0000-4000-8000-000000000011'], 'ideas page on the server, filtered by status');

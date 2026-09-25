@@ -30,9 +30,11 @@ language sql
 stable
 set search_path = ''
 as $$
-  with records as (
+  with everything as (
+    select * from public.hazard_history
+  ), records as (
     select h.*
-    from public.hazard_history as h
+    from everything as h
     where (_hazard is null or h.hazard = _hazard)
       and (_wilaya is null or h.wilaya_id = _wilaya)
       and (_year is null or extract(year from h.at at time zone 'UTC') = _year)
@@ -99,9 +101,9 @@ as $$
     'severities', coalesce((select jsonb_object_agg(severity, n) from (
         select severity, count(*) as n from records where hazard = 'weather' group by severity) as s), '{}'::jsonb),
     'coverage', coalesce((select jsonb_object_agg(hazard, first) from (
-        select hazard, min(at) as first from public.hazard_history group by hazard) as c), '{}'::jsonb),
+        select hazard, min(at) as first from everything group by hazard) as c), '{}'::jsonb),
     'years', coalesce((select jsonb_agg(y order by y desc) from (
-        select distinct extract(year from at at time zone 'UTC')::integer as y from public.hazard_history) as ys), '[]'::jsonb),
+        select distinct extract(year from at at time zone 'UTC')::integer as y from everything) as ys), '[]'::jsonb),
     'official', (select count(*) from public.official_incidents as o
       where o.kind = any (_official_kinds) and o.unlisted_at is null
         and (_wilaya is null or o.wilaya_id = _wilaya)

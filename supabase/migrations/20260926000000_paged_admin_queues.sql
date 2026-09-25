@@ -28,7 +28,7 @@ begin
   if not public.has_role((select auth.uid()), 'admin'::public.app_role) then
     raise insufficient_privilege using message = 'admin_role_required';
   end if;
-  if _offset < 0 or _limit not between 1 and 100 or _sort not in ('newest', 'oldest', 'email')
+  if coalesce(_offset < 0 or _limit not between 1 and 100 or _sort not in ('newest', 'oldest', 'email'), true)
     or (_role is not null and _role <> 'none' and _role not in (select unnest(enum_range(null::public.app_role))::text)) then
     raise invalid_parameter_value using message = 'invalid_page';
   end if;
@@ -119,7 +119,7 @@ begin
   ) then
     raise insufficient_privilege using message = 'moderation_role_required';
   end if;
-  if _offset < 0 or _limit not between 1 and 300 then
+  if coalesce(_offset < 0 or _limit not between 1 and 300, true) then
     raise invalid_parameter_value using message = 'invalid_page';
   end if;
 
@@ -180,7 +180,7 @@ begin
   ) then
     raise insufficient_privilege using message = 'moderation_role_required';
   end if;
-  if _offset < 0 or _limit not between 1 and 500 then
+  if coalesce(_offset < 0 or _limit not between 1 and 500, true) then
     raise invalid_parameter_value using message = 'invalid_page';
   end if;
 
