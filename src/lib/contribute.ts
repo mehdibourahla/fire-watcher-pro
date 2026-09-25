@@ -18,7 +18,7 @@ export type Lane = (typeof LANES)[number];
 
 export const IDEA_MIN = 25;
 export const IDEA_MAX = 2000;
-export const CONTACT_MAX = 200;
+const CONTACT_MAX = 200;
 
 export type IdeaStatus = "pending" | "published" | "rejected" | "spam";
 

@@ -1,4 +1,4 @@
-export const ENSEMBLE_VARIABLES = {
+const ENSEMBLE_VARIABLES = {
   temperature_2m: "°C",
   precipitation: "mm",
   wind_speed_10m: "km/h",

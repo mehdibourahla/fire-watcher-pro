@@ -1,5 +1,3 @@
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
-
 import {
   sourceRunRpcArgs,
   type SourceRunReport,
@@ -26,10 +24,4 @@ export async function recordSourceRunWith(
 
   console.warn(`[source_runs] could not record ${report.contractKey}`);
   return false;
-}
-
-export async function recordSourceRun(
-  report: SourceRunReport,
-): Promise<boolean> {
-  return recordSourceRunWith(supabaseAdmin, report, new Date().toISOString());
 }

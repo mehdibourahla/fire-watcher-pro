@@ -23,7 +23,7 @@ export type AttentionCounts = Partial<Record<AttentionItem, Attention>>;
 const isAttentionItem = (item: string): item is AttentionItem =>
   (ATTENTION_ITEMS as readonly string[]).includes(item);
 
-export function toAttentionCounts(
+function toAttentionCounts(
   rows: { item: string; count: number; oldest: string | null }[],
 ): AttentionCounts {
   const counts: AttentionCounts = {};

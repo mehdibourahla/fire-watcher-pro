@@ -12,9 +12,7 @@ function escapeHtml(value: string): string {
     .replaceAll(">", "&gt;");
 }
 
-export function watchdogFingerprint(
-  issues: readonly SourceWatchdogIssue[],
-): string {
+function watchdogFingerprint(issues: readonly SourceWatchdogIssue[]): string {
   return [
     ...new Set(
       issues.map((i) => `${i.contract_key ?? "?"}:${i.issue_code ?? "?"}`),

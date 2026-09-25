@@ -52,7 +52,7 @@ export type FireCapInput = {
   texts: CapText[];
 };
 
-export const CAP_SENDER = "alerts@nadhir.app";
+const CAP_SENDER = "alerts@nadhir.app";
 
 type CivilCapInput = {
   id: string;
@@ -321,7 +321,7 @@ export type OfficialCapInput = {
   texts: CapText[];
 };
 
-export function officialCapIdentifier(incidentId: string): string {
+function officialCapIdentifier(incidentId: string): string {
   return `nadhir-off-${incidentId.slice(0, 8)}`;
 }
 

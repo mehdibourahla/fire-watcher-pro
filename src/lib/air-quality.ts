@@ -85,7 +85,7 @@ export function airQualityQuery(position: { lat: number; lon: number } | null) {
   });
 }
 
-export const WHO_PM10_24H = 45;
+const WHO_PM10_24H = 45;
 
 // WHO 2021 PM10 guideline (45) and interim targets IT-3 (75) and IT-1 (150).
 export function pm10Level(pm10: number): SmokeLevel {
@@ -101,7 +101,7 @@ export type AirHourly = {
   pm10: (number | null)[];
 };
 
-export function parseAirHourly(response: unknown): AirHourly | null {
+function parseAirHourly(response: unknown): AirHourly | null {
   if (typeof response !== "object" || response === null) return null;
   const hourly = (response as { hourly?: Record<string, unknown> }).hourly;
   if (!hourly) return null;
@@ -120,7 +120,7 @@ export function parseAirHourly(response: unknown): AirHourly | null {
   return { time, pm2_5: pm2_5.map(num), pm10: pm10.map(num) };
 }
 
-export function airForecastUrl(lat: number, lon: number): string {
+function airForecastUrl(lat: number, lon: number): string {
   return `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&hourly=pm2_5,pm10&forecast_days=6&timezone=Africa%2FAlgiers`;
 }
 

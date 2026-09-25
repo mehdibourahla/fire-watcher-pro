@@ -12,7 +12,7 @@ import type { Locale } from "@/i18n";
 
 export const SURVIVAL_AUTO_KM = 10;
 // Beyond this a fire is context, not a threat to this person; showing it would overclaim.
-export const SURVIVAL_THREAT_KM = 50;
+const SURVIVAL_THREAT_KM = 50;
 export const SURVIVAL_ACTIVE_KEY = "nadhir.survival.active";
 export const SURVIVAL_LAST_CHECK_KEY = "nadhir.survival.lastCheck";
 export const SURVIVAL_DISMISS_KEY = "nadhir.survival.dismissed";

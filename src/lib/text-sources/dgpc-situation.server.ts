@@ -7,7 +7,7 @@ import {
   type OpenRouterRequest,
 } from "@/lib/text-sources/extract-llm.server";
 
-export const SITUATION_HAZARDS = [
+const SITUATION_HAZARDS = [
   "flood",
   "road",
   "structure",
@@ -129,7 +129,7 @@ const isoOrNull = (value: string | null) =>
     ? value
     : null;
 
-export function copiedFrom(span: string, post: string): boolean {
+function copiedFrom(span: string, post: string): boolean {
   const needle = squash(span);
   return needle.length >= 8 && squash(post).includes(needle);
 }

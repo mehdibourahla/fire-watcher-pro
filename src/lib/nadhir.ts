@@ -155,7 +155,7 @@ export const LIVE_STATES: ClusterState[] = [
   "contained_guess",
 ];
 
-export const DANGER_LEVEL_KEYS = [
+const DANGER_LEVEL_KEYS = [
   "low",
   "moderate",
   "high",
@@ -165,10 +165,6 @@ export const DANGER_LEVEL_KEYS = [
 
 export function dangerLevelKey(level: number) {
   return DANGER_LEVEL_KEYS[Math.min(Math.max(level, 1), 5) - 1];
-}
-
-export function riskColorVar(level: number) {
-  return `var(--risk-${Math.min(Math.max(level, 1), 5)})`;
 }
 
 export { dangerFromFwi as levelFromFwi } from "@/lib/ingest/fwi";
@@ -540,7 +536,7 @@ export const sourceHealthQuery = queryOptions({
   },
 });
 
-export const HORIZON_DAYS = 6;
+const HORIZON_DAYS = 6;
 
 type RiskPublicationCheckpoint = {
   coverage_status: string | null;
@@ -554,7 +550,7 @@ function isoDate(value: string | null) {
   return new Date(value).toISOString().slice(0, 10);
 }
 
-export function publishedRiskBaseDate(
+function publishedRiskBaseDate(
   checkpoint: RiskPublicationCheckpoint | null | undefined,
 ) {
   if (

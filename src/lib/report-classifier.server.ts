@@ -7,7 +7,7 @@ import {
   type OpenRouterRequest,
 } from "@/lib/text-sources/extract-llm.server";
 
-export const REPORT_HAZARDS = [
+const REPORT_HAZARDS = [
   "fire",
   "flooding",
   "storm_damage",

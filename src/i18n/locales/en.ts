@@ -464,7 +464,6 @@ export const en = {
     unverified: "Unverified",
     selectHint: "Select a fire on the map to see its detail.",
     nationalMax: "National maximum danger",
-    degraded: "Some data sources are degraded — detections may be delayed.",
     openDetail: "Open fire detail",
   },
   official: {

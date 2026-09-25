@@ -461,7 +461,6 @@ export const ar: Translation = {
     unverified: "غير مؤكد",
     selectHint: "اختر حريقًا على الخريطة لعرض تفاصيله.",
     nationalMax: "أقصى خطر وطني",
-    degraded: "بعض المصادر متدهورة — قد يتأخر الرصد.",
     openDetail: "فتح تفاصيل الحريق",
   },
   official: {

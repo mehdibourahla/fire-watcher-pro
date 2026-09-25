@@ -121,7 +121,7 @@ export function fciGrowth(dets: Det[], now: number): FciGrowth | null {
  */
 const MERGE_RADIUS_KM = 3;
 
-export async function mergeOverlappingClusters(): Promise<string[]> {
+async function mergeOverlappingClusters(): Promise<string[]> {
   const list = await fetchAllPages<{
     id: string;
     lat: number;

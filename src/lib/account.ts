@@ -27,7 +27,7 @@ export type ProfileSettingsInput = Pick<
   | "min_danger_level"
 >;
 
-export class ProfileSettingsError extends Error {
+class ProfileSettingsError extends Error {
   override cause?: unknown;
 
   constructor(cause?: unknown) {

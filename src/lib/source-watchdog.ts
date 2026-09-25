@@ -1,6 +1,6 @@
 import type { Database } from "@/integrations/supabase/types";
 
-export const SOURCE_WATCHDOG_ISSUE_CODES = [
+const SOURCE_WATCHDOG_ISSUE_CODES = [
   "missing_job",
   "queue_delayed",
   "lease_expired",

@@ -83,7 +83,7 @@ type SituationFilters = {
 
 export const CITIZEN_NEARBY_RADIUS_KM = 20;
 // an airport observation speaks for the plain around it, not for the next valley
-export const STATION_NEARBY_RADIUS_KM = 50;
+const STATION_NEARBY_RADIUS_KM = 50;
 
 export function selectedSituation(
   items: Situation[],

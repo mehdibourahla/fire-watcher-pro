@@ -56,7 +56,7 @@ export function parseEmsc(body: unknown): EmscEvent[] {
   });
 }
 
-export const NEAR_ALGERIA_KM = 100;
+const NEAR_ALGERIA_KM = 100;
 
 export function locateEvents(
   events: EmscEvent[],

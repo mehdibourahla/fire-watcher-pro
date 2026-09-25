@@ -20,7 +20,7 @@ export type PackZone = {
   radius_km: number;
 };
 
-export async function prepareSurvivalShell(): Promise<void> {
+async function prepareSurvivalShell(): Promise<void> {
   if (!navigator.onLine || !("serviceWorker" in navigator))
     throw new Error("survival.packUnavailable");
   const requested = await navigator.serviceWorker.register("/sw.js");
