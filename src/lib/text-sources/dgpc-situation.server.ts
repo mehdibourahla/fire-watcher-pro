@@ -121,6 +121,14 @@ export function defaultSituationReader(): SituationDependencies {
 
 const squash = (text: string) => text.replace(/\s+/g, " ").trim();
 
+// the model is asked for ISO 8601; anything else would fail the timestamp cast downstream
+const isoOrNull = (value: string | null) =>
+  value &&
+  /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(value) &&
+  Number.isFinite(Date.parse(value))
+    ? value
+    : null;
+
 export function copiedFrom(span: string, post: string): boolean {
   const needle = squash(span);
   return needle.length >= 8 && squash(post).includes(needle);
@@ -173,12 +181,12 @@ export async function readSituation(
       : [];
   let advice: Situation["advice"] = null;
   if (a.disposition === "weather_relay" && a.advice_text) {
-    if (copiedFrom(a.advice_text, post))
+    if (copiedFrom(a.advice_text, post) && a.advice_text.length <= 1000)
       advice = {
         text: squash(a.advice_text),
         wilayas: a.advice_wilayas,
-        validFrom: a.valid_from,
-        validTo: a.valid_to,
+        validFrom: isoOrNull(a.valid_from),
+        validTo: isoOrNull(a.valid_to),
       };
     else rejected += 1;
   }

@@ -626,7 +626,7 @@ async function relayOfficialIncidents(): Promise<number> {
     .not("commune_id", "is", null)
     .in("kind", [...FIRE_KINDS])
     .is("unlisted_at", null)
-    .neq("status", "extinguished")
+    .not("status", "in", "(extinguished,cleared)")
     .gte("as_of", since);
   if (error) throw new Error(error.message);
   if (!incidents?.length) return 0;

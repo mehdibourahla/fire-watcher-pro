@@ -95,6 +95,25 @@ describe("readSituation", () => {
     expect(invented.rejected).toBe(1);
   });
 
+  it("drops a validity the model did not write as a timestamp", async () => {
+    const result = await readSituation(
+      relayPost,
+      answering({
+        ...empty,
+        disposition: "weather_relay",
+        advice_text:
+          "يُرجى توخي الحيطة والحذر أثناء السياقة، وتثبيت الأشياء العرضة للتطاير",
+        advice_wilayas: ["وهران"],
+        valid_from: "jeudi 18h",
+        valid_to: "2026-09-20T21:00:00+01:00",
+      }),
+    );
+    expect(result.advice).toMatchObject({
+      validFrom: null,
+      validTo: "2026-09-20T21:00:00+01:00",
+    });
+  });
+
   it("publishes nothing from a retrospective post", async () => {
     const result = await readSituation(
       situationPost,

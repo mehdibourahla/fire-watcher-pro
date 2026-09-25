@@ -6,7 +6,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { fetchAllPages } from "@/lib/paginate";
 import type { OnmHistoryRow, RoadHistoryRow } from "@/lib/hazard-history";
 import type { AnyLocale, Locale } from "@/i18n";
-import type { IncidentKind, IncidentStatus } from "@/lib/text-sources/merge";
+import {
+  FIRE_KINDS,
+  type IncidentKind,
+  type IncidentStatus,
+} from "@/lib/text-sources/merge";
 import {
   withProcessingHealth,
   type SourceHealth,
@@ -409,6 +413,7 @@ export const officialHistoryQuery = queryOptions({
       supabase
         .from("official_incidents")
         .select("id, wilaya_id, first_reported_at")
+        .in("kind", [...FIRE_KINDS])
         .is("unlisted_at", null)
         .order("id")
         .range(from, to),
