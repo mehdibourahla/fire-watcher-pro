@@ -44,6 +44,9 @@ export function symbolFor(
 ): MapSymbol {
   if (kind === "official") return "official";
   if (kind === "warnings") return "weather";
+  // citizen features carry the classifier's category, not the tapped kind
+  if (properties["source"] === "citizen")
+    return properties["category"] === "road" ? "road" : "observation";
   if (properties["source"] === "civil") {
     const category = properties["category"];
     return category === "fire" || category === "road" || category === "weather"
