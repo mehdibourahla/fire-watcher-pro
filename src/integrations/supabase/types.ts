@@ -1144,11 +1144,31 @@ export type Database = {
           },
         ];
       };
+      citizen_report_submissions: {
+        Row: {
+          created_at: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       citizen_reports: {
         Row: {
+          classified_at: string | null;
+          classifier: string | null;
           cluster_id: string | null;
           commune_id: string | null;
           created_at: string;
+          expires_at: string | null;
+          flagged_at: string | null;
+          hazard: string | null;
           id: string;
           kind: string;
           lat: number;
@@ -1157,18 +1177,25 @@ export type Database = {
           note: string | null;
           observed_at: string;
           photo_url: string | null;
+          publish_state: string;
           reviewed_at: string | null;
           reviewed_by: string | null;
           sighting: string;
           size_hint: string;
           status: string;
+          summary: string | null;
           updated_at: string;
           user_id: string;
         };
         Insert: {
+          classified_at?: string | null;
+          classifier?: string | null;
           cluster_id?: string | null;
           commune_id?: string | null;
           created_at?: string;
+          expires_at?: string | null;
+          flagged_at?: string | null;
+          hazard?: string | null;
           id?: string;
           kind?: string;
           lat: number;
@@ -1177,18 +1204,25 @@ export type Database = {
           note?: string | null;
           observed_at?: string;
           photo_url?: string | null;
+          publish_state?: string;
           reviewed_at?: string | null;
           reviewed_by?: string | null;
           sighting?: string;
           size_hint?: string;
           status?: string;
+          summary?: string | null;
           updated_at?: string;
           user_id: string;
         };
         Update: {
+          classified_at?: string | null;
+          classifier?: string | null;
           cluster_id?: string | null;
           commune_id?: string | null;
           created_at?: string;
+          expires_at?: string | null;
+          flagged_at?: string | null;
+          hazard?: string | null;
           id?: string;
           kind?: string;
           lat?: number;
@@ -1197,11 +1231,13 @@ export type Database = {
           note?: string | null;
           observed_at?: string;
           photo_url?: string | null;
+          publish_state?: string;
           reviewed_at?: string | null;
           reviewed_by?: string | null;
           sighting?: string;
           size_hint?: string;
           status?: string;
+          summary?: string | null;
           updated_at?: string;
           user_id?: string;
         };
@@ -2345,6 +2381,27 @@ export type Database = {
         };
         Relationships: [];
       };
+      report_witnesses: {
+        Row: {
+          created_at: string;
+          report_id: string;
+          user_id: string;
+          vote: string;
+        };
+        Insert: {
+          created_at?: string;
+          report_id: string;
+          user_id: string;
+          vote: string;
+        };
+        Update: {
+          created_at?: string;
+          report_id?: string;
+          user_id?: string;
+          vote?: string;
+        };
+        Relationships: [];
+      };
       risk_forecasts: {
         Row: {
           commune_id: string;
@@ -3238,11 +3295,12 @@ export type Database = {
           lon: number;
           min_danger_level: number;
           name: string;
+          notify_citizen: boolean;
           notify_fires: boolean;
+          notify_official: boolean;
           notify_risk: boolean;
           notify_road: boolean;
           notify_weather: boolean;
-          notify_official: boolean;
           radius_km: number;
           updated_at: string;
           user_id: string;
@@ -3256,11 +3314,12 @@ export type Database = {
           lon: number;
           min_danger_level?: number;
           name: string;
+          notify_citizen?: boolean;
           notify_fires?: boolean;
+          notify_official?: boolean;
           notify_risk?: boolean;
           notify_road?: boolean;
           notify_weather?: boolean;
-          notify_official?: boolean;
           radius_km?: number;
           updated_at?: string;
           user_id: string;
@@ -3274,11 +3333,12 @@ export type Database = {
           lon?: number;
           min_danger_level?: number;
           name?: string;
+          notify_citizen?: boolean;
           notify_fires?: boolean;
+          notify_official?: boolean;
           notify_risk?: boolean;
           notify_road?: boolean;
           notify_weather?: boolean;
-          notify_official?: boolean;
           radius_km?: number;
           updated_at?: string;
           user_id?: string;
@@ -3468,7 +3528,10 @@ export type Database = {
       };
       hazard_reports: {
         Row: {
+          commune_id: string | null;
           created_at: string | null;
+          expires_at: string | null;
+          hazard: string | null;
           id: string | null;
           kind: string | null;
           lat: number | null;
@@ -3476,9 +3539,14 @@ export type Database = {
           observed_at: string | null;
           sighting: string | null;
           status: string | null;
+          summary: string | null;
+          witnesses: number | null;
         };
         Insert: {
+          commune_id?: string | null;
           created_at?: string | null;
+          expires_at?: string | null;
+          hazard?: string | null;
           id?: string | null;
           kind?: string | null;
           lat?: number | null;
@@ -3486,9 +3554,14 @@ export type Database = {
           observed_at?: string | null;
           sighting?: string | null;
           status?: string | null;
+          summary?: string | null;
+          witnesses?: number | null;
         };
         Update: {
+          commune_id?: string | null;
           created_at?: string | null;
+          expires_at?: string | null;
+          hazard?: string | null;
           id?: string | null;
           kind?: string | null;
           lat?: number | null;
@@ -3496,6 +3569,8 @@ export type Database = {
           observed_at?: string | null;
           sighting?: string | null;
           status?: string | null;
+          summary?: string | null;
+          witnesses?: number | null;
         };
         Relationships: [];
       };
@@ -4043,6 +4118,19 @@ export type Database = {
           snapshot_id: string;
           status: string;
         }[];
+      };
+      my_contribution: {
+        Args: never;
+        Returns: Json;
+      };
+      witness_report: {
+        Args: {
+          _lat: number;
+          _lon: number;
+          _report: string;
+          _vote: string;
+        };
+        Returns: number;
       };
       moderate_citizen_report: {
         Args: {

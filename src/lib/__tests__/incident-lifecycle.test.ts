@@ -84,14 +84,22 @@ describe("officialPhase", () => {
 
 describe("reportPhase", () => {
   it.each([
-    ["sighting", 2.9, "live"],
-    ["sighting", 3, "fading"],
-    ["road_blocked", 1.9, "live"],
-    ["road_blocked", 2, "fading"],
-    ["person_trapped", 2.9, "live"],
-    ["sighting", 24, "archived"],
-  ] as const)("a %s report %s h old is %s", (kind, hours, phase) => {
-    expect(reportPhase({ kind, observed_at: ago(hours) }, NOW)).toBe(phase);
+    [2, "live"],
+    [0.5, "fading"],
+    [-0.1, "archived"],
+  ] as const)("a report expiring in %s h is %s", (hours, phase) => {
+    expect(
+      reportPhase({ expires_at: ahead(hours), observed_at: ago(1) }, NOW),
+    ).toBe(phase);
+  });
+
+  it("falls back to its age when it has no expiry", () => {
+    expect(reportPhase({ expires_at: null, observed_at: ago(2.9) }, NOW)).toBe(
+      "live",
+    );
+    expect(reportPhase({ expires_at: null, observed_at: ago(3) }, NOW)).toBe(
+      "fading",
+    );
   });
 });
 

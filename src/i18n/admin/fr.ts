@@ -135,7 +135,7 @@ export const adminFr: AdminTranslation = {
   reportsPage: {
     title: "Signalements citoyens",
     description:
-      "Observations envoyées depuis l'application. Approuvez ce qui est crédible, rattachez-le à un feu proche, rejetez le reste.",
+      "Signalements envoyés depuis l'application. Une vérification automatique publie les plus clairs. Tranchez ceux qu'elle a retenus, les signalements privés et ceux que des témoins disent terminés.",
     detail: "Signalement",
     placeholder: "Sélectionnez un signalement pour le modérer.",
     openMap: "Voir sur la carte",
@@ -144,6 +144,13 @@ export const adminFr: AdminTranslation = {
     nearbyFires: "Rattacher à un feu à moins de 50 km",
     noNearby: "Aucun feu satellite à moins de 50 km ces trois derniers jours.",
     km: "{{km}} km",
+    flagged: "Des témoins disent que c'est terminé",
+    summary: "Résumé publié",
+    noSummary: "Aucun. Affiché avec sa catégorie seulement.",
+    check: "Vérification automatique",
+    checkFallback: "Vérification indisponible, publié avec sa catégorie",
+    checkPending: "Pas encore vérifié",
+    words: "Mots de l'auteur",
   },
   translationsPage: {
     title: "Traductions",
@@ -232,6 +239,7 @@ export const adminFr: AdminTranslation = {
     ideasEmpty: "Aucune idée dans cette vue.",
     filterAll: "Tous",
     filterPending: "En attente",
+    filterAttention: "À décider",
     filterApproved: "Approuvés",
     filterRejected: "Rejetés",
     approve: "Approuver",

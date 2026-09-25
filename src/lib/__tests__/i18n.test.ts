@@ -101,6 +101,9 @@ describe("counted labels", () => {
     "history.roadCount",
     "status.degradedCount",
     "account.zoneFires",
+    "reports.points",
+    "reports.toNext",
+    "reports.witnessCount",
   ];
 
   it("uses singular grammar for one in English", () => {

@@ -99,12 +99,17 @@ const official = (over: Partial<OfficialIncident> = {}): OfficialIncident => ({
 const report = (over: Partial<HazardReport> = {}): HazardReport => ({
   id: "r",
   kind: "sighting",
+  hazard: "fire",
   sighting: "flames",
+  summary: null,
   lat: 36.75,
   lon: 5.08,
+  commune_id: "c1",
   observed_at: at(1),
   created_at: at(1),
+  expires_at: null,
   status: "pending",
+  witnesses: 0,
   ...over,
 });
 const warning = (over: Partial<OnmVigilance> = {}): OnmVigilance => ({
@@ -334,7 +339,7 @@ describe("civil situations", () => {
       ],
       official: [official(), official({ id: "old", last_reported_at: at(30) })],
       reports: [
-        report({ kind: "road_blocked" }),
+        report({ kind: "road_blocked", hazard: "road_blocked" }),
         report({ id: "r2", lat: 20, lon: 5 }),
       ],
       warnings: [
@@ -480,15 +485,21 @@ describe("civil situations", () => {
       ]),
     );
   });
-  it("classifies citizen hazards without treating trapped people or other sightings as fires", () => {
+  it("files each citizen report under its classified hazard, never defaulting to fire", () => {
     const items = build({
       reports: [
-        report({ id: "road", kind: "road_blocked" }),
-        report({ id: "person", kind: "person_trapped" }),
-        report({ id: "other", sighting: "other" }),
+        report({ id: "road", kind: "road_blocked", hazard: "road_blocked" }),
+        report({ id: "flood", kind: "flooding", hazard: "flooding" }),
+        report({ id: "other", kind: "other", hazard: "hazmat" }),
+        report({ id: "unclassified", kind: "other", hazard: null }),
         report({ id: "smoke", sighting: "smoke" }),
       ],
     });
+    expect(
+      filterSituations(items, { ...filters, category: "weather" }, units).map(
+        (x) => x.id,
+      ),
+    ).toEqual(["report:flood"]);
     expect(
       filterSituations(items, { ...filters, category: "fire" }, units).map(
         (x) => x.id,

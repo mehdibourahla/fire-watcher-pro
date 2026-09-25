@@ -133,7 +133,7 @@ export const adminEn = {
   reportsPage: {
     title: "Citizen reports",
     description:
-      "Sightings sent from the app. Approve what is credible, link it to a nearby fire, reject the rest.",
+      "Reports sent from the app. An automatic check publishes the clear ones. Decide on what it held, the private ones and the ones witnesses say are gone.",
     detail: "Report",
     placeholder: "Select a report to moderate it.",
     openMap: "Show on the map",
@@ -142,6 +142,13 @@ export const adminEn = {
     nearbyFires: "Link to a fire within 50 km",
     noNearby: "No satellite fire within 50 km in the last three days.",
     km: "{{km}} km",
+    flagged: "Witnesses say it is gone",
+    summary: "Published summary",
+    noSummary: "None. Shown as its category only.",
+    check: "Automatic check",
+    checkFallback: "Checker unavailable, published as its category",
+    checkPending: "Not checked yet",
+    words: "Reporter's words",
   },
   translationsPage: {
     title: "Translations",
@@ -227,6 +234,7 @@ export const adminEn = {
     ideasEmpty: "No ideas in this view.",
     filterAll: "All",
     filterPending: "Pending",
+    filterAttention: "Needs a decision",
     filterApproved: "Approved",
     filterRejected: "Rejected",
     approve: "Approve",

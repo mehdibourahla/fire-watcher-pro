@@ -236,6 +236,7 @@ select lives_ok(
 );
 delete from public.citizen_reports where note = 'quarantined-future';
 
+delete from public.citizen_report_submissions where user_id = 'f09f1000-0000-4000-8000-000000000001';
 insert into public.citizen_reports (
   user_id,
   lat,

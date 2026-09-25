@@ -173,12 +173,7 @@ export function buildSituations({
   }
   for (const data of reports) {
     if (data.status === "rejected" || !recent(data.observed_at, 24)) continue;
-    const category =
-      data.kind === "road_blocked"
-        ? "road"
-        : data.kind === "person_trapped" || data.sighting === "other"
-          ? "other"
-          : "fire";
+    const category = REPORT_CATEGORY[data.hazard ?? ""] ?? "other";
     items.push({
       id: `report:${data.id}`,
       source: "citizen",
@@ -377,6 +372,16 @@ export function findPlaces(
     )
     .slice(0, 12);
 }
+
+const REPORT_CATEGORY: Record<string, "fire" | "weather" | "road" | "other"> = {
+  fire: "fire",
+  flooding: "weather",
+  storm_damage: "weather",
+  sandstorm: "weather",
+  road_blocked: "road",
+  landslide: "road",
+  snow_ice: "road",
+};
 
 export function nearestPlace(
   units: AdminUnit[],

@@ -39,7 +39,6 @@ export const Route = createFileRoute("/survival/")({
 
 const REPORT_KINDS = [
   { kind: "sighting", key: "survival.reportFire" },
-  { kind: "smoke", key: "survival.reportSmoke" },
   { kind: "road_blocked", key: "survival.reportRoadBlocked" },
   { kind: "person_trapped", key: "survival.reportPersonTrapped" },
 ] as const;

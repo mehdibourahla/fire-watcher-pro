@@ -18,6 +18,7 @@ const zone: HazardZone = {
   notify_weather: true,
   notify_official: true,
   notify_road: true,
+  notify_citizen: true,
 };
 
 const context: HazardContext = {
@@ -64,6 +65,7 @@ const context: HazardContext = {
       expires_at: "2026-09-26T09:00:00Z",
     },
   ],
+  citizen: [],
 };
 
 const awake = () => ({ locale: "fr", quiet: false, minLevel: 1 });
@@ -222,6 +224,85 @@ describe("hazardAlerts", () => {
     const { rows } = hazardAlerts([zone, neighbour], context, awake);
     expect(rows.filter((r) => r.kind === "road").map((r) => r.user_id)).toEqual(
       ["u1", "u2"],
+    );
+  });
+});
+
+describe("citizen report alerts", () => {
+  const flood: HazardContext["citizen"][number] = {
+    id: "r1",
+    reporter: "u7",
+    hazard: "flooding",
+    summary: "Water over the road near the market",
+    lat: 36.61,
+    lon: 3.1,
+    expires_at: "2026-09-25T18:00:00Z",
+    witnesses: ["u8"],
+  };
+  const withReport = (over: Partial<typeof flood> = {}) => ({
+    ...context,
+    weather: [],
+    official: [],
+    authority: [],
+    road: [],
+    citizen: [{ ...flood, ...over }],
+  });
+  const english = () => ({ locale: "en", quiet: false, minLevel: 1 });
+
+  it("pushes a corroborated report inside the zone, labelled as unverified", () => {
+    const { rows } = hazardAlerts([zone], withReport(), english);
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({
+      kind: "citizen",
+      dedupe_key: "citizen:r1",
+      source_table: "citizen_reports",
+      source_id: "r1",
+      payload: { witnesses: 1, map_event: "report:r1" },
+    });
+    expect(rows[0]!.title).toBe("Citizen report near Home: Flooding");
+    expect(rows[0]!.body).toBe(
+      "“Water over the road near the market” Confirmed by one person nearby. Not verified by authorities.",
+    );
+  });
+
+  it("stays silent until someone else confirms it, and outside the zone", () => {
+    expect(
+      hazardAlerts([zone], withReport({ witnesses: [] }), english).rows,
+    ).toEqual([]);
+    expect(
+      hazardAlerts([zone], withReport({ lat: 36.8 }), english).rows,
+    ).toEqual([]);
+    expect(
+      hazardAlerts([{ ...zone, notify_citizen: false }], withReport(), english)
+        .rows,
+    ).toEqual([]);
+  });
+
+  it("never alerts the reporter or a witness about what they already saw", () => {
+    const zones = ["u7", "u8", "u9"].map((user_id, i) => ({
+      ...zone,
+      id: `z${i}`,
+      user_id,
+    }));
+    const { rows } = hazardAlerts(zones, withReport(), english);
+    expect(rows.map((r) => r.user_id)).toEqual(["u9"]);
+  });
+
+  it("waits for quiet hours to end and names the bare category without a summary", () => {
+    const quiet = hazardAlerts([zone], withReport(), () => ({
+      locale: "fr",
+      quiet: true,
+      minLevel: 1,
+    }));
+    expect(quiet).toEqual({ rows: [], suppressed: 1 });
+    const bare = hazardAlerts(
+      [zone],
+      withReport({ summary: null, witnesses: ["u8", "u9"] }),
+      () => ({ locale: "fr", quiet: false, minLevel: 1 }),
+    ).rows[0]!;
+    expect(bare.title).toBe("Signalement citoyen près de Home : Inondation");
+    expect(bare.body).toBe(
+      "Confirmé par 2 personnes sur place. Non vérifié par les autorités.",
     );
   });
 });

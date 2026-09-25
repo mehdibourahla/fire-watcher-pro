@@ -49,6 +49,7 @@ import { Route as AuthenticatedAdminTranslationsRouteImport } from './routes/_au
 import { Route as ApiPrivateAccountRouteImport } from './routes/api/private/account'
 import { Route as ApiPrivateEnsembleRouteImport } from './routes/api/private/ensemble'
 import { Route as ApiPrivatePushTestRouteImport } from './routes/api/private/push-test'
+import { Route as ApiPrivateReportPublishRouteImport } from './routes/api/private/report-publish'
 import { Route as ApiPrivateUserPushRouteImport } from './routes/api/private/user-push'
 import { Route as ContributeLanguageLocaleRouteImport } from './routes/contribute_.language.$locale'
 import { Route as ApiInternalSourceJobsRunRouteImport } from './routes/api/internal/source-jobs/run'
@@ -272,6 +273,11 @@ const ApiPrivatePushTestRoute = ApiPrivatePushTestRouteImport.update({
   path: '/api/private/push-test',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPrivateReportPublishRoute = ApiPrivateReportPublishRouteImport.update({
+  id: '/api/private/report-publish',
+  path: '/api/private/report-publish',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPrivateUserPushRoute = ApiPrivateUserPushRouteImport.update({
   id: '/api/private/user-push',
   path: '/api/private/user-push',
@@ -396,6 +402,7 @@ export interface FileRoutesByFullPath {
   '/api/private/account': typeof ApiPrivateAccountRoute
   '/api/private/ensemble': typeof ApiPrivateEnsembleRoute
   '/api/private/push-test': typeof ApiPrivatePushTestRoute
+  '/api/private/report-publish': typeof ApiPrivateReportPublishRoute
   '/api/private/user-push': typeof ApiPrivateUserPushRoute
   '/contribute/language/$locale': typeof ContributeLanguageLocaleRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
@@ -451,6 +458,7 @@ export interface FileRoutesByTo {
   '/api/private/account': typeof ApiPrivateAccountRoute
   '/api/private/ensemble': typeof ApiPrivateEnsembleRoute
   '/api/private/push-test': typeof ApiPrivatePushTestRoute
+  '/api/private/report-publish': typeof ApiPrivateReportPublishRoute
   '/api/private/user-push': typeof ApiPrivateUserPushRoute
   '/contribute/language/$locale': typeof ContributeLanguageLocaleRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
@@ -510,6 +518,7 @@ export interface FileRoutesById {
   '/api/private/account': typeof ApiPrivateAccountRoute
   '/api/private/ensemble': typeof ApiPrivateEnsembleRoute
   '/api/private/push-test': typeof ApiPrivatePushTestRoute
+  '/api/private/report-publish': typeof ApiPrivateReportPublishRoute
   '/api/private/user-push': typeof ApiPrivateUserPushRoute
   '/contribute_/language/$locale': typeof ContributeLanguageLocaleRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
@@ -569,6 +578,7 @@ export interface FileRouteTypes {
     | '/api/private/account'
     | '/api/private/ensemble'
     | '/api/private/push-test'
+    | '/api/private/report-publish'
     | '/api/private/user-push'
     | '/contribute/language/$locale'
     | '/admin/'
@@ -624,6 +634,7 @@ export interface FileRouteTypes {
     | '/api/private/account'
     | '/api/private/ensemble'
     | '/api/private/push-test'
+    | '/api/private/report-publish'
     | '/api/private/user-push'
     | '/contribute/language/$locale'
     | '/admin'
@@ -682,6 +693,7 @@ export interface FileRouteTypes {
     | '/api/private/account'
     | '/api/private/ensemble'
     | '/api/private/push-test'
+    | '/api/private/report-publish'
     | '/api/private/user-push'
     | '/contribute_/language/$locale'
     | '/_authenticated/admin/'
@@ -718,6 +730,7 @@ export interface RootRouteChildren {
   ApiPrivateAccountRoute: typeof ApiPrivateAccountRoute
   ApiPrivateEnsembleRoute: typeof ApiPrivateEnsembleRoute
   ApiPrivatePushTestRoute: typeof ApiPrivatePushTestRoute
+  ApiPrivateReportPublishRoute: typeof ApiPrivateReportPublishRoute
   ApiPrivateUserPushRoute: typeof ApiPrivateUserPushRoute
   ContributeLanguageLocaleRoute: typeof ContributeLanguageLocaleRoute
   ApiInternalSourceJobsRunRoute: typeof ApiInternalSourceJobsRunRoute
@@ -1018,6 +1031,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPrivatePushTestRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/private/report-publish': {
+      id: '/api/private/report-publish'
+      path: '/api/private/report-publish'
+      fullPath: '/api/private/report-publish'
+      preLoaderRoute: typeof ApiPrivateReportPublishRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/private/user-push': {
       id: '/api/private/user-push'
       path: '/api/private/user-push'
@@ -1229,6 +1249,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPrivateAccountRoute: ApiPrivateAccountRoute,
   ApiPrivateEnsembleRoute: ApiPrivateEnsembleRoute,
   ApiPrivatePushTestRoute: ApiPrivatePushTestRoute,
+  ApiPrivateReportPublishRoute: ApiPrivateReportPublishRoute,
   ApiPrivateUserPushRoute: ApiPrivateUserPushRoute,
   ContributeLanguageLocaleRoute: ContributeLanguageLocaleRoute,
   ApiInternalSourceJobsRunRoute: ApiInternalSourceJobsRunRoute,

@@ -7,7 +7,15 @@ import type { AppRole } from "./roles";
 export type ReportStatus = "pending" | "approved" | "rejected";
 export type Sighting = "smoke" | "flames" | "smell" | "other";
 export type SizeHint = "small" | "medium" | "large";
-export type ReportKind = "sighting" | "road_blocked" | "person_trapped";
+export type ReportKind =
+  | "sighting"
+  | "flooding"
+  | "storm_damage"
+  | "road_blocked"
+  | "earthquake"
+  | "person_trapped"
+  | "other";
+export type PublishState = "classifying" | "published" | "held" | "private";
 
 export type CitizenReport = {
   id: string;
@@ -26,16 +34,21 @@ export type CitizenReport = {
   moderation_note: string | null;
   reviewed_at: string | null;
   created_at: string;
+  hazard: string | null;
+  summary: string | null;
+  publish_state: PublishState;
+  classifier: string | null;
+  classified_at: string | null;
+  expires_at: string | null;
+  flagged_at: string | null;
+  witnesses?: number;
 };
 
 export type NewReport = {
   kind: ReportKind;
   lat: number;
   lon: number;
-  sighting: Sighting;
-  size_hint: SizeHint;
   note: string | null;
-  commune_id: string | null;
   observed_at: string;
 };
 
@@ -76,7 +89,22 @@ export const myReportsQuery = queryOptions({
       .order("created_at", { ascending: false })
       .limit(100);
     if (error) throw new Error(error.message);
-    return (data ?? []) as unknown as CitizenReport[];
+    const reports = (data ?? []) as unknown as CitizenReport[];
+    const live = reports.filter((r) => r.publish_state === "published");
+    if (!live.length) return reports;
+    // reporters cannot read other people's votes, only the public count
+    const counts = await supabase
+      .from("hazard_reports")
+      .select("id, witnesses")
+      .in(
+        "id",
+        live.map((r) => r.id),
+      );
+    if (counts.error) throw new Error(counts.error.message);
+    const byId = new Map(
+      (counts.data ?? []).map((c) => [c.id, c.witnesses ?? 0]),
+    );
+    return reports.map((r) => ({ ...r, witnesses: byId.get(r.id) ?? 0 }));
   },
 });
 
@@ -111,7 +139,7 @@ export const myRolesQuery = queryOptions({
 export async function createReport(
   input: NewReport,
   photo?: ReportPhotoUpload | null,
-) {
+): Promise<string> {
   const user = await authenticatedUser("reports.submitFailed");
   const reportId = crypto.randomUUID();
   let photoPath: string | null = null;
@@ -122,6 +150,7 @@ export async function createReport(
       photo.objectId,
     );
   let creationFailed: boolean;
+  let limitReached = false;
   try {
     const { error } = await supabase.from("citizen_reports").insert({
       ...input,
@@ -131,6 +160,7 @@ export async function createReport(
       photo_url: photoPath,
     });
     creationFailed = !!error;
+    limitReached = !!error?.message.startsWith("Daily report limit");
   } catch {
     try {
       const { data: committed } = await supabase
@@ -138,18 +168,20 @@ export async function createReport(
         .select("id")
         .eq("id", reportId)
         .maybeSingle();
-      if (committed) return;
+      if (committed) return reportId;
     } catch {
       throw new ReportMutationError("reports.submitUnknown");
     }
     creationFailed = true;
   }
-  if (!creationFailed) return;
+  if (!creationFailed) return reportId;
   if (photoPath) {
     if (!(await removeReportPhoto(photoPath)))
       throw new ReportMutationError("reports.submitCleanupFailed");
   }
-  throw new ReportMutationError("reports.submitFailed");
+  throw new ReportMutationError(
+    limitReached ? "reports.dailyLimit" : "reports.submitFailed",
+  );
 }
 
 export async function deleteReport(id: string) {
@@ -295,3 +327,69 @@ export async function signedPhotoUrl(
     return null;
   }
 }
+
+export type PublishResult = {
+  publish_state: PublishState;
+  hazard: string | null;
+  summary: string | null;
+};
+
+export async function publishReport(id: string): Promise<PublishResult> {
+  const { data, error } = await supabase.auth.getSession();
+  if (error || !data.session)
+    throw new ReportMutationError("reports.submitFailed");
+  const res = await fetch("/api/private/report-publish", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      authorization: `Bearer ${data.session.access_token}`,
+    },
+    body: JSON.stringify({ id }),
+  });
+  if (!res.ok) throw new Error(`report publish failed (${res.status})`);
+  return (await res.json()) as PublishResult;
+}
+
+const WITNESS_ERRORS: Record<string, string> = {
+  too_far: "reports.witnessTooFar",
+  own_report: "reports.witnessOwn",
+  report_not_open: "reports.witnessClosed",
+  witness_rate_limited: "reports.witnessRateLimited",
+};
+
+export async function witnessReport(
+  id: string,
+  vote: "seen" | "gone",
+  position: { lat: number; lon: number },
+): Promise<number> {
+  const { data, error } = await supabase.rpc("witness_report", {
+    _report: id,
+    _vote: vote,
+    _lat: position.lat,
+    _lon: position.lon,
+  });
+  if (error)
+    throw new ReportMutationError(
+      WITNESS_ERRORS[error.message] ?? "reports.witnessFailed",
+    );
+  return data;
+}
+
+export type Contribution = {
+  published: number;
+  corroborated: number;
+  confirmations: number;
+  hazards: number;
+  alerted: number;
+  witnesses: number;
+  points: number;
+};
+
+export const contributionQuery = queryOptions({
+  queryKey: ["reports", "contribution"],
+  queryFn: async () => {
+    const { data, error } = await supabase.rpc("my_contribution");
+    if (error) throw new Error(error.message);
+    return data as unknown as Contribution;
+  },
+});

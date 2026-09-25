@@ -35,10 +35,7 @@ const reportInput = {
   kind: "sighting" as const,
   lat: 36.6,
   lon: 4.05,
-  sighting: "smoke" as const,
-  size_hint: "small" as const,
   note: null,
-  commune_id: null,
   observed_at: "2026-09-01T00:00:00.000Z",
 };
 
@@ -284,9 +281,9 @@ describe("report creation photo cleanup", () => {
     fromMock.mockReturnValue(table);
     vi.spyOn(crypto, "randomUUID").mockReturnValue(reportId);
 
-    await expect(
-      reports.createReport(reportInput, uploadDraft),
-    ).resolves.toBeUndefined();
+    await expect(reports.createReport(reportInput, uploadDraft)).resolves.toBe(
+      reportId,
+    );
     expect(table.insert).toHaveBeenCalledWith(
       expect.objectContaining({ id: reportId, photo_url: photoPath }),
     );

@@ -75,6 +75,11 @@ export function ZoneCard({
         ...status.road
           .slice(0, 2)
           .map((r) => t("account.zoneNowRoad", { summary: r.summary })),
+        ...status.citizen.slice(0, 2).map((c) =>
+          t("account.zoneNowCitizen", {
+            hazard: t(`reports.hazardName.${c.hazard ?? "other"}`),
+          }),
+        ),
       ]
     : [];
   const [pending, setPending] = useState(false);
