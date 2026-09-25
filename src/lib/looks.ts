@@ -1,4 +1,4 @@
-export const LOOK_SLOT_MS = 10 * 60_000;
+const LOOK_SLOT_MS = 10 * 60_000;
 
 export type Look = { sensor: string; detected_at: string };
 

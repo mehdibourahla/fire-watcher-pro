@@ -31,7 +31,7 @@ function bigrams(s: string): Map<string, number> {
   return out;
 }
 
-export function diceSimilarity(a: string, b: string): number {
+function diceSimilarity(a: string, b: string): number {
   if (a.length < 2 || b.length < 2) return a === b ? 1 : 0;
   const ga = bigrams(a);
   const gb = bigrams(b);

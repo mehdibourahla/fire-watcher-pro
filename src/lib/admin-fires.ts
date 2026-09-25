@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { AnyLocale } from "@/i18n";
 import { adminUnitsQuery, unitName } from "@/lib/nadhir";
 
-export const FIRE_STATES = [
+const FIRE_STATES = [
   "unconfirmed",
   "active",
   "contained_guess",
@@ -47,7 +47,7 @@ export type UnresolvedFire = {
 };
 
 // the same bar admin_attention_counts uses, so the page and the count agree
-export const STRONG_FIRE_CONFIDENCE = 0.6;
+const STRONG_FIRE_CONFIDENCE = 0.6;
 
 export const unresolvedFiresQuery = (strongOnly: boolean) =>
   queryOptions({

@@ -470,7 +470,6 @@ export const kab: Translation = {
     unverified: "Ur yettwasenqed ara",
     selectHint: "Fren tamessi ɣef tkarḍa akken ad twaliḍ talqayt.",
     nationalMax: "Aɣilif afellay aɣelnaw",
-    degraded: "Kra n yiɣbula ceḍḍen — tifin tzemer ad teɛṭel.",
     openDetail: "Ldi talqayt n tmess",
   },
   official: {

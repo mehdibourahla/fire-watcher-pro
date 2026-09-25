@@ -208,7 +208,7 @@ const OFFICIAL_HAZARD_NAME: Partial<
 };
 
 export const QUAKE_ALERT_MAGNITUDE = 4;
-export const QUAKE_ALERT_KM = 100;
+const QUAKE_ALERT_KM = 100;
 
 const AUTHORITY_SEVERITY: Record<string, number> = { Severe: 4, Extreme: 5 };
 

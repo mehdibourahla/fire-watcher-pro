@@ -52,7 +52,7 @@ export type MergeDecision =
 
 const MERGE_WINDOW_MS = 48 * 3_600_000;
 
-export const TIER_RANK: Record<AuthorityTier, number> = {
+const TIER_RANK: Record<AuthorityTier, number> = {
   national: 3,
   wilaya: 3,
   forestry: 2,

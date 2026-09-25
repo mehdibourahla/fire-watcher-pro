@@ -14,7 +14,6 @@ import { weatherAr, weatherEn, weatherFr } from "./weather";
 
 export {
   LOCALES,
-  UNREVIEWED_LOCALES,
   RTL_LOCALES,
   type Locale,
   type AnyLocale,
@@ -31,7 +30,7 @@ import {
   writeLocaleCookie,
 } from "./locale-cookie";
 
-export { LOCALE_COOKIE, readLocaleCookie, writeLocaleCookie };
+export { readLocaleCookie };
 
 export const LOCALE_LABELS: Record<AnyLocale, string> = {
   ar: "العربية",
@@ -48,7 +47,7 @@ export const LOCALE_SHORT_LABELS: Record<AnyLocale, string> = {
   kab: "KAB",
 };
 
-export const STORAGE_KEY = "nadhir.locale";
+const STORAGE_KEY = "nadhir.locale";
 
 if (!i18n.isInitialized) {
   void i18n.use(initReactI18next).init({
@@ -73,7 +72,7 @@ export function isLocale(value: string | null | undefined): value is Locale {
   return !!value && (LOCALES as readonly string[]).includes(value);
 }
 
-export function detectLocale(): Locale {
+function detectLocale(): Locale {
   if (typeof window === "undefined") return "ar";
   return readLocaleCookie();
 }

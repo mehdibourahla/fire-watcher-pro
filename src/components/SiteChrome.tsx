@@ -73,7 +73,7 @@ const TABS = [
   { to: "/settings", key: "nav.settings", Icon: Settings },
 ] as const;
 
-export function LanguageSwitcher() {
+function LanguageSwitcher() {
   const { t, i18n } = useTranslation();
   const [open, setOpen] = useState(false);
   const current =
@@ -130,7 +130,7 @@ export function LanguageSwitcher() {
 
 const THEME_ICON = { system: Monitor, light: Sun, dark: Moon } as const;
 
-export function ThemeToggle() {
+function ThemeToggle() {
   const { t } = useTranslation();
   // Starts at "system" and syncs on mount so SSR and hydration render the same icon.
   const [theme, setTheme] = useState<Theme>("system");
@@ -160,7 +160,7 @@ export function ThemeToggle() {
   );
 }
 
-export function SubscribeBell() {
+function SubscribeBell() {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   return (
@@ -415,27 +415,5 @@ export function SiteFooter() {
         <span className="ms-auto">{t("about.attribution")}</span>
       </div>
     </footer>
-  );
-}
-
-export function DegradedBanner({ onDismiss }: { onDismiss?: () => void }) {
-  const { t } = useTranslation();
-  return (
-    <p
-      role="status"
-      className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs"
-      style={{
-        backgroundColor: "var(--emergency-surface)",
-        color: "var(--emergency-ink)",
-      }}
-    >
-      <TriangleAlert aria-hidden className="size-3.5 shrink-0" />
-      {t("map.degraded")}
-      {onDismiss ? (
-        <button type="button" onClick={onDismiss} className="ms-auto underline">
-          {t("common.dismiss")}
-        </button>
-      ) : null}
-    </p>
   );
 }

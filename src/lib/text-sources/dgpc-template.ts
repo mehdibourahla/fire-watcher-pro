@@ -23,7 +23,7 @@ function cleanWilaya(raw: string): string {
     .trim();
 }
 
-export function classifyDgpcPost(text: string): DgpcKind {
+function classifyDgpcPost(text: string): DgpcKind {
   if (
     /#الحرائق_الحضرية_والصناعية|حريق (?:عدادات|بمستودع|شقة|سكن|سيارة|مصنع|محل)/.test(
       text,
@@ -41,7 +41,7 @@ export function classifyDgpcPost(text: string): DgpcKind {
   return "other";
 }
 
-export function dgpcAsOf(text: string, postedAt: string): string | null {
+function dgpcAsOf(text: string, postedAt: string): string | null {
   const m = /الساعة\s*(\d{1,2})\s*سا/.exec(latinDigits(text));
   if (!m) return null;
   const hour = Number(m[1]);

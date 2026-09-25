@@ -1,4 +1,4 @@
-export const GRID = 0.01;
+const GRID = 0.01;
 export const MIN_STATIC_SHARE = 0.65;
 export const MIN_ACTIVE_DAYS = 5;
 export const MIN_DETECTIONS = 10;

@@ -91,7 +91,7 @@ export function publicSupabase() {
   });
 }
 
-export const RATE_LIMIT_PER_MINUTE = 60;
+const RATE_LIMIT_PER_MINUTE = 60;
 
 async function enforceRateLimitWithHeaders(
   request: Request,

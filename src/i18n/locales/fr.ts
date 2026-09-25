@@ -472,8 +472,6 @@ export const fr: Translation = {
     unverified: "Non vérifié",
     selectHint: "Sélectionnez un feu sur la carte pour voir son détail.",
     nationalMax: "Danger maximal national",
-    degraded:
-      "Certaines sources sont dégradées — les détections peuvent être retardées.",
     openDetail: "Ouvrir la fiche du feu",
   },
   official: {

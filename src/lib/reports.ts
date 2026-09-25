@@ -231,7 +231,7 @@ export async function moderateReport(input: {
   if (error) throw new Error(error.message);
 }
 
-export const REPORT_PHOTO_BUCKET = "report-photos";
+const REPORT_PHOTO_BUCKET = "report-photos";
 
 const UUID_PART =
   "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";

@@ -171,7 +171,7 @@ async function fetchLayer(
   return (await res.json()) as FciFeatureCollection;
 }
 
-export async function ingestWfsFire(
+async function ingestWfsFire(
   layer: WfsFireLayer,
   interval?: SourceReplayInterval,
 ): Promise<FciRun> {

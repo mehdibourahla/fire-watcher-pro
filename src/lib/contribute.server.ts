@@ -9,7 +9,7 @@ import {
 
 /** -1 marks a count that could not be read, so the card renders a dash instead
  * of a wrong number on a page whose whole argument is that the numbers are real. */
-export const UNKNOWN = -1;
+const UNKNOWN = -1;
 
 async function count(
   query: PromiseLike<{ count: number | null; error: unknown }>,

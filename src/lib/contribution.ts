@@ -1,6 +1,6 @@
 import type { Contribution } from "@/lib/reports";
 
-export const LEVELS = [
+const LEVELS = [
   { key: "observer", min: 0 },
   { key: "witness", min: 30 },
   { key: "guardian", min: 100 },

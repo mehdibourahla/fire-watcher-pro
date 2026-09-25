@@ -32,7 +32,7 @@ type WebhookMutationErrorKey =
   | "webhooks.updateFailed"
   | "webhooks.deleteFailed";
 
-export class WebhookMutationError extends Error {
+class WebhookMutationError extends Error {
   override cause?: unknown;
 
   constructor(message: WebhookMutationErrorKey, cause?: unknown) {

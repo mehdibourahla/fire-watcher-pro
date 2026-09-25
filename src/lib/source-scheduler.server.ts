@@ -44,9 +44,9 @@ export function watchdogDue(scheduledTime: number): boolean {
 /* The queue gates a job on its dependencies, so a wave of parallel claims only ever
  * advances the chain one stage: ingest, screen, fuse, publish, deliver took five
  * minutes of wall clock. Waves let one Cron Event drain the whole chain. */
-export const DISPATCH_WAVES = 5;
-export const DISPATCH_PARALLEL = 2;
-export const DISPATCH_BUDGET_MS = 20_000;
+const DISPATCH_WAVES = 5;
+const DISPATCH_PARALLEL = 2;
+const DISPATCH_BUDGET_MS = 20_000;
 // Reserve sixty seconds for cleanup before the fifteen-minute Cron runtime ceiling.
 const DISPATCH_TIMEOUT_MS = 840_000;
 

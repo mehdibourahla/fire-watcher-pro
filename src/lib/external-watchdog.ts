@@ -1,6 +1,6 @@
 import type { SourceWatchdogIssue } from "@/lib/source-watchdog";
 
-export const WORKER_SILENCE_MINUTES = 25;
+const WORKER_SILENCE_MINUTES = 25;
 
 /* The in-Worker watchdog cannot report the Worker being dead, which is the failure
  * that silences every short-cadence source at once. Only an outside observer can. */

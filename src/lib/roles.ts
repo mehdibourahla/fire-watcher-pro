@@ -112,7 +112,7 @@ export const membersQuery = queryOptions({
   },
 });
 
-export async function grantRole(userId: string, role: AppRole) {
+async function grantRole(userId: string, role: AppRole) {
   const { error } = await supabase.rpc("grant_user_role", {
     _user: userId,
     _role: role,
@@ -120,7 +120,7 @@ export async function grantRole(userId: string, role: AppRole) {
   if (error) throw new Error(error.message);
 }
 
-export async function revokeRole(userId: string, role: AppRole) {
+async function revokeRole(userId: string, role: AppRole) {
   const { error } = await supabase.rpc("revoke_user_role", {
     _user: userId,
     _role: role,

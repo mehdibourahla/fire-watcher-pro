@@ -34,7 +34,7 @@ export function assembleRings(ways: Point[][]): Ring[] {
   return rings;
 }
 
-export function pointInRing([x, y]: Point, ring: Ring): boolean {
+function pointInRing([x, y]: Point, ring: Ring): boolean {
   let inside = false;
   for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
     const [xi, yi] = ring[i]!;
@@ -147,7 +147,7 @@ export function landcoverFractions(
  * (tree, shrub, grass, crop stubble) a fire-weather rating carries no warning
  * value. Absent land-cover data never masks — a warning service must not
  * silence a commune it cannot see. */
-export const FUEL_LIMIT = 0.05;
+const FUEL_LIMIT = 0.05;
 
 export function isFuelLimited(lc: LandcoverFractions | null): boolean {
   if (!lc) return false;

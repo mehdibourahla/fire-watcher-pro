@@ -1,7 +1,7 @@
 import { haversineKm } from "@/lib/nadhir";
 
 export const PIXEL_GRID = 0.004;
-export const PIXEL_HA = 14;
+const PIXEL_HA = 14;
 
 type Point = { lat: number; lon: number };
 type Burning = Point & { frp_mw?: number | null };

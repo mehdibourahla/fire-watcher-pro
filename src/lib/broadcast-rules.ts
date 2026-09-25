@@ -125,7 +125,7 @@ export function targetCommunes(
   return head ? [head, ...codes] : codes;
 }
 
-export const EXTREME_MIN_FRP_MW = 20;
+const EXTREME_MIN_FRP_MW = 20;
 
 const SEVERITY_RANK: Record<string, number> = { Extreme: 2, Severe: 1 };
 
@@ -353,7 +353,7 @@ export function pushCodesFor(args: {
   });
 }
 
-export const ONM_NO_EXPIRY_WINDOW_HOURS = 24;
+const ONM_NO_EXPIRY_WINDOW_HOURS = 24;
 
 export type OnmWarning = {
   id: string;

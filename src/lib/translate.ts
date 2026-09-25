@@ -137,7 +137,7 @@ export function summarise(drafts: DraftMap, statuses: MyStatusMap) {
 }
 
 /** A review of every string is not one sitting, so drafts survive a closed tab. */
-export function draftStorageKey(locale: string) {
+function draftStorageKey(locale: string) {
   return `nadhir.translate.${locale}`;
 }
 

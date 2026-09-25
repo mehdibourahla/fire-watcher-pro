@@ -32,7 +32,7 @@ export const AUDIT_DOMAINS = [
 export const AUDIT_ACTORS = ["user", "system", "all"] as const;
 export type AuditActor = (typeof AUDIT_ACTORS)[number];
 
-export const AUDIT_PAGE = 50;
+const AUDIT_PAGE = 50;
 
 const QUEUE_PAGES: Record<string, string> = {
   ita: "/admin/ita",
