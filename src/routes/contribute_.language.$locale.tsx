@@ -429,7 +429,10 @@ function ReviewPage() {
           />
           <input
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setOpenGroups({});
+            }}
             placeholder={t("translate.search")}
             className="h-9 w-full rounded-md border border-border bg-background ps-9 pe-3 text-[13.5px]"
           />
