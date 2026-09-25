@@ -74,12 +74,12 @@ describe("hazardAlerts", () => {
     expect(rows.map((r) => [r.kind, r.dedupe_key, r.source_table])).toEqual([
       [
         "weather",
-        "weather:z1:Thunderstorm:Moderate:2026-09-25T06:00:00Z",
+        "weather:Thunderstorm:Moderate:2026-09-25T06:00:00Z",
         "onm_vigilance",
       ],
-      ["official", "official:z1:dgpc1", "official_incidents"],
-      ["official", "official:z1:auth1", "authority_warnings"],
-      ["road", "road:z1:road1", "civil_publications"],
+      ["official", "official:dgpc1", "official_incidents"],
+      ["official", "official:auth1", "authority_warnings"],
+      ["road", "road:road1", "civil_publications"],
     ]);
   });
 
@@ -208,5 +208,20 @@ describe("hazardAlerts", () => {
       minLevel: 3,
     }));
     expect(rows.some((r) => r.kind === "weather")).toBe(false);
+  });
+
+  it("raises one alert per person per hazard when several of their zones cover it", () => {
+    const farm = { ...zone, id: "z2", name: "Farm" };
+    const { rows } = hazardAlerts([zone, farm], context, awake);
+    expect(rows.filter((r) => r.kind === "road")).toHaveLength(1);
+    expect(rows.find((r) => r.kind === "road")!.zone_id).toBe("z1");
+  });
+
+  it("still alerts two different people about the same hazard", () => {
+    const neighbour = { ...zone, id: "z9", user_id: "u2" };
+    const { rows } = hazardAlerts([zone, neighbour], context, awake);
+    expect(rows.filter((r) => r.kind === "road").map((r) => r.user_id)).toEqual(
+      ["u1", "u2"],
+    );
   });
 });

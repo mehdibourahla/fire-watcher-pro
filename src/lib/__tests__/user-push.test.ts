@@ -1,12 +1,26 @@
+import { createHash } from "node:crypto";
 import { beforeEach, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   getUser: vi.fn(),
   rpc: vi.fn(),
   subscribe: vi.fn(),
+  upsert: vi.fn(),
+  deleteEq: vi.fn(),
 }));
 vi.mock("@/integrations/supabase/client.server", () => ({
-  supabaseAdmin: { auth: { getUser: mocks.getUser }, rpc: mocks.rpc },
+  supabaseAdmin: {
+    auth: { getUser: mocks.getUser },
+    rpc: mocks.rpc,
+    from: () => ({
+      upsert: mocks.upsert,
+      delete: () => ({
+        eq: (a: string, x: string) => ({
+          eq: (b: string, y: string) => mocks.deleteEq({ [a]: x, [b]: y }),
+        }),
+      }),
+    }),
+  },
 }));
 vi.mock("@/lib/ingest/fcm.server", () => ({
   fcmSubscribeTopics: mocks.subscribe,
@@ -29,7 +43,12 @@ beforeEach(() => {
   });
   mocks.rpc.mockResolvedValue({ data: true, error: null });
   mocks.subscribe.mockResolvedValue(undefined);
+  mocks.upsert.mockResolvedValue({ error: null });
+  mocks.deleteEq.mockResolvedValue({ error: null });
 });
+
+const hashOf = (token: string) =>
+  createHash("sha256").update(token).digest("hex");
 
 it("refuses a caller who is not signed in", async () => {
   const res = await handleUserPush(
@@ -49,6 +68,12 @@ it("joins the caller's own topic and nobody else's", async () => {
     ["v1.user.u1"],
     true,
   );
+  expect(mocks.upsert).toHaveBeenCalledWith(
+    expect.objectContaining({
+      user_id: "u1",
+      device_hash: hashOf("device-token"),
+    }),
+  );
 });
 
 it("leaves the topic on unsubscribe", async () => {
@@ -60,6 +85,10 @@ it("leaves the topic on unsubscribe", async () => {
     ["v1.user.u1"],
     false,
   );
+  expect(mocks.deleteEq).toHaveBeenCalledWith({
+    user_id: "u1",
+    device_hash: hashOf("device-token"),
+  });
 });
 
 it("rejects a body naming its own topic", async () => {
@@ -84,4 +113,14 @@ it("reports a push provider failure instead of pretending it worked", async () =
     request({ token: "t", action: "subscribe" }),
   );
   expect(res.status).toBe(502);
+  expect(mocks.upsert).not.toHaveBeenCalled();
+});
+
+it("keeps the device registered when its record cannot be removed", async () => {
+  mocks.deleteEq.mockResolvedValue({ error: { message: "db down" } });
+  const res = await handleUserPush(
+    request({ token: "device-token", action: "unsubscribe" }),
+  );
+  expect(res.status).toBe(503);
+  expect(mocks.subscribe).not.toHaveBeenCalled();
 });

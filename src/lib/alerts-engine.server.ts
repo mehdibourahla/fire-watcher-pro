@@ -229,6 +229,7 @@ export type AlertRun = {
   failed?: number;
   pushed?: number;
   pushFailed?: number;
+  noDevice?: number;
   claimsLost?: number;
 };
 

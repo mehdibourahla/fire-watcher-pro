@@ -31,6 +31,7 @@ function harness(rows: ClaimedPush[], send: () => Promise<void>) {
     deps: {
       configured: () => true,
       claim: vi.fn(async () => rows),
+      devices: vi.fn(async () => new Set(rows.map((row) => row.user_id))),
       send: vi.fn(send),
       finish: vi.fn(async (row: ClaimedPush, state: string) => {
         finished.push([row.id, state]);
@@ -45,6 +46,7 @@ describe("drainAlertPushes", () => {
     expect(await drainAlertPushes(deps)).toEqual({
       pushed: 1,
       pushFailed: 0,
+      noDevice: 0,
       claimsLost: 0,
     });
     expect(finished).toEqual([["a1", "sent"]]);
@@ -57,6 +59,7 @@ describe("drainAlertPushes", () => {
     expect(await drainAlertPushes(deps)).toEqual({
       pushed: 0,
       pushFailed: 1,
+      noDevice: 0,
       claimsLost: 0,
     });
     expect(finished).toEqual([["a1", "pending"]]);
@@ -73,10 +76,36 @@ describe("drainAlertPushes", () => {
     expect(finished).toEqual([["a1", "failed"]]);
   });
 
+  it("marks an alert for a user with no opted-in device without calling FCM", async () => {
+    const rows = [
+      claimed({ id: "a1", user_id: "u1" }),
+      claimed({ id: "a2", user_id: "u2" }),
+    ];
+    const { deps, finished } = harness(rows, async () => undefined);
+    deps.devices.mockResolvedValue(new Set(["u2"]));
+    expect(await drainAlertPushes(deps)).toEqual({
+      pushed: 1,
+      pushFailed: 0,
+      noDevice: 1,
+      claimsLost: 0,
+    });
+    expect(finished).toEqual([
+      ["a1", "no_device"],
+      ["a2", "sent"],
+    ]);
+    expect(deps.send).toHaveBeenCalledTimes(1);
+    expect(deps.devices).toHaveBeenCalledWith(["u1", "u2"]);
+  });
+
   it("claims nothing when push is not configured", async () => {
     const { deps } = harness([claimed()], async () => undefined);
     const result = await drainAlertPushes({ ...deps, configured: () => false });
-    expect(result).toEqual({ pushed: 0, pushFailed: 0, claimsLost: 0 });
+    expect(result).toEqual({
+      pushed: 0,
+      pushFailed: 0,
+      noDevice: 0,
+      claimsLost: 0,
+    });
     expect(deps.claim).not.toHaveBeenCalled();
   });
 
@@ -89,6 +118,7 @@ describe("drainAlertPushes", () => {
     expect(await drainAlertPushes(deps)).toEqual({
       pushed: 1,
       pushFailed: 0,
+      noDevice: 0,
       claimsLost: 1,
     });
     expect(deps.send).toHaveBeenCalledTimes(2);

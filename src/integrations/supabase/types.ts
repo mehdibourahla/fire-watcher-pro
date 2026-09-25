@@ -3093,6 +3093,24 @@ export type Database = {
         };
         Relationships: [];
       };
+      user_push_devices: {
+        Row: {
+          device_hash: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          device_hash: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          device_hash?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       user_roles: {
         Row: {
           created_at: string;

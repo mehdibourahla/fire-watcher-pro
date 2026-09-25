@@ -31,8 +31,9 @@ Citizen hazard reports stay out: they are unmoderated and the display asymmetry 
 
 - `zones`: add `notify_weather`, `notify_official`, `notify_road` (boolean, default true); backfill true.
 - `alerts.kind` CHECK widens to `fire, risk, weather, official, road`; `alerts` gains `source_table` and `source_id`
-  so a non-fire alert points at its origin. Dedupe keys: `<kind>:<zone>:<source_id>` (one alert per zone per
-  hazard item; a revised ONM or publication version gets a new id and so a new alert).
+  so a non-fire alert points at its origin. Dedupe keys: `<kind>:<source_id>`, one alert per person per
+  hazard item however many of their zones cover it (2026-09-25: per-zone keys gave one user three copies of
+  one road incident); a revised ONM or publication version gets a new id and so a new alert.
 - Weather follows the zone's "warn me from level" threshold (and the account's, whichever is stricter) on the
   shared 1–5 scale: Moderate 2, Severe 3, Extreme 4. Official and road items ignore it. ONM warnings are
   identified by event, severity and onset, not by row id: ONM re-issues an unchanged warning under a new id every
@@ -44,8 +45,10 @@ Citizen hazard reports stay out: they are unmoderated and the display asymmetry 
 ## Delivery
 
 - **Push**: per-user FCM topic `v1.user.<user_id>`. On sign-in each device with notification permission joins it;
-  on sign-out it leaves. The server sends each new zone alert to the topic after quiet-hours filtering. No
-  device-token table (consistent with ADR 0004). The notification `tag` is the hazard item id, so a device that
+  on sign-out it leaves. The server sends each new zone alert to the topic after quiet-hours filtering. FCM
+  reports no subscriber count for a topic, so `user_push_devices` keeps a SHA-256 hash per opted-in device
+  (never the token; server-only, refreshed on app load, live for 60 days) and the drain marks an alert
+  `no_device` instead of `sent` when its owner has none. The send stays one topic message (ADR 0004). The notification `tag` is the hazard item id, so a device that
   also holds an anonymous commune Subscription shows one notification for the same hazard, not two.
 - In-app list, open-tab notification and webhooks carry every kind. Webhook consumers receive new `kind` values:
   documented in the public API docs as an additive change.

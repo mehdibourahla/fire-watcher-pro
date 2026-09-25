@@ -516,7 +516,7 @@ describe("zone hazard alerts reach the alert table", () => {
         kind: "weather",
         source_table: "onm_vigilance",
         source_id: "onm1",
-        dedupe_key: "weather:z1:Rain:Severe:2026-09-08T15:00:00Z",
+        dedupe_key: "weather:Rain:Severe:2026-09-08T15:00:00Z",
       }),
     ]);
   });
