@@ -1336,16 +1336,16 @@ export const en = {
     privacyTitle: "Privacy policy",
     privacy_collect_title: "What we store",
     privacy_collect_body:
-      "An account holds your email address, an optional display name and phone number, your language, your alert preferences and the watch zones you create. Citizen reports store the coordinates you submit and what you wrote.",
+      "An account holds your email address, an optional display name and phone number, your language, your alert preferences and the watch zones you create. A citizen report stores the category you tapped, the point you placed, what you wrote and an optional photo. When you confirm someone else's report, we store your vote; your position is checked against the report and not kept.",
     privacy_use_title: "How it is used",
     privacy_use_body:
-      "Only to decide which alerts to raise for you and to deliver them to the channels you enabled. There is no advertising and no profiling.",
+      "Only to decide which alerts to raise for you, to deliver them to the channels you enabled, and to publish citizen reports. There is no advertising, no profiling and no analytics.",
     privacy_retention_title: "How long",
     privacy_retention_body:
-      "You can delete alerts from your feed and delete your account in Settings. Account deletion removes personal data, zones, alerts, webhook endpoints and uploaded report photos. Operational audit records are retained with personal identifiers removed.",
+      "You can delete alerts from your feed and delete your account in Settings. Account deletion removes personal data, zones, alerts, webhook endpoints, your citizen reports with their photos, and your confirmations. Operational audit records are retained with personal identifiers removed. A citizen report leaves the public map 6 hours after it was sent, or up to 24 hours when people nearby confirm it.",
     privacy_sharing_title: "Sharing",
     privacy_sharing_body:
-      "Service providers process the data needed to operate Nadhir: Supabase handles accounts and authentication, Resend delivers account emails, and Google handles sign-in when you choose that method. The public API and map do not expose your zones, alerts or identity. Approved citizen reports are shown without your name.",
+      "Service providers process the data needed to operate Nadhir: Cloudflare hosts the site, Supabase handles accounts and data, Resend delivers account emails, Google handles sign-in when you choose that method and delivers push notifications through Firebase, and OpenRouter passes the text of a citizen report to Google's Gemini model, which checks it before it is published. That check receives the category, the commune and your words, never your account or exact position. The public API and map do not expose your zones, alerts or identity. A published citizen report shows its category, a short neutral summary, the point where it was placed, its time and how many people confirmed it; never your name, your words as written or your photo.",
     privacy_rights_title: "Your rights",
     privacy_rights_body:
       "You can view, correct and delete your data from your settings page at any time.",
