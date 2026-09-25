@@ -186,11 +186,11 @@ export function wilayaRanking(
   return { ranked, unlocated };
 }
 
-// road summaries are third-party text; a leading = + - @ would run as a spreadsheet formula
+// road summaries are third-party text; a leading = + - @ tab or CR would run as a spreadsheet formula
 const csvCell = (value: string | number) => {
   const raw = String(value);
-  const text = /^[=+\-@]/.test(raw) ? `'${raw}` : raw;
-  return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+  const text = /^[=+\-@\t\r]/.test(raw) ? `'${raw}` : raw;
+  return /[",\n\r]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
 };
 
 export function historyCsv(

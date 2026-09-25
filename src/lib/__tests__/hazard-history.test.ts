@@ -169,6 +169,21 @@ describe("hazard history", () => {
     expect(rows.at(-1)).toMatchObject({ start: "2026-09-28", weather: 1 });
   });
 
+  it("neutralises a leading tab or carriage return too", () => {
+    const rows = roadRecords(
+      ["\t=1+1", "\r@SUM(A1)"].map((summary, i) => ({
+        id: `t${i}`,
+        area_id: "c-akbil",
+        published_at: "2026-09-22T10:00:00Z",
+        summary,
+      })),
+      units,
+    );
+    const lines = historyCsv(rows, units).split("\n");
+    expect(lines[1]!.endsWith(",'\t=1+1")).toBe(true);
+    expect(lines[2]!.endsWith(`,"'\r@SUM(A1)"`)).toBe(true);
+  });
+
   it("never lets exported text run as a spreadsheet formula", () => {
     const [row] = roadRecords(
       [
