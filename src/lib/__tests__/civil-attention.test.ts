@@ -34,22 +34,26 @@ it("reads immutable v1 decisions in both operator histories", async () => {
     civil_publications: [],
     civil_investigations: [record],
   };
-  const query = {
-    select: () => query,
-    in: () => query,
-    order: () => query,
-    limit: async () => ({ data: [report], error: null }),
-    range: async () => ({ data: [record], error: null }),
+  const rowsFor = (rows: unknown[]) => {
+    const query = {
+      select: () => query,
+      in: () => query,
+      order: () => query,
+      range: async () => ({ data: rows, error: null }),
+    };
+    return query;
   };
-  from.mockReturnValue(query);
+  from.mockImplementation((table: string) =>
+    rowsFor(table === "ita_reports" ? [report] : [record]),
+  );
   const client = new QueryClient();
   expect(
-    (await client.fetchQuery(civilAttentionQuery()))[0]?.history[0]?.decision
-      .official_match,
+    (await client.fetchInfiniteQuery(civilAttentionQuery)).pages[0]?.[0]
+      ?.history[0]?.decision.official_match,
   ).toBeNull();
   expect(
-    (await client.fetchQuery(itaReportsQuery()))[0]?.civil_investigations[0]
-      ?.history[0]?.decision.official_match,
+    (await client.fetchInfiniteQuery(itaReportsQuery())).pages[0]?.[0]
+      ?.civil_investigations[0]?.history[0]?.decision.official_match,
   ).toBeNull();
 });
 
@@ -84,13 +88,16 @@ it("retrieves unresolved cases beyond the intake and recent-investigation cutoff
     })),
   };
   from.mockReturnValue(query);
-  const result = await new QueryClient().fetchQuery(civilAttentionQuery(2));
+  const result = await new QueryClient().fetchInfiniteQuery({
+    ...civilAttentionQuery,
+    pages: 5,
+  });
   expect(from).toHaveBeenCalledWith("civil_investigations");
   expect(query.in).toHaveBeenCalledWith("state", ["review", "failed"]);
   expect(query.select.mock.calls[0]).toEqual([
     expect.stringContaining("report:ita_reports!inner"),
   ]);
-  expect(query.range).toHaveBeenCalledWith(100, 149);
-  expect(result).toHaveLength(25);
-  expect(result[0]?.report_id).toBe("old-report-100");
+  expect(query.range).toHaveBeenCalledWith(100, 124);
+  expect(result.pages[4]).toHaveLength(25);
+  expect(result.pages[4]?.[0]?.report_id).toBe("old-report-100");
 });

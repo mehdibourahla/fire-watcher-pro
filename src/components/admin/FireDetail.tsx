@@ -12,7 +12,6 @@ import { Input } from "@/components/ui/input";
 import {
   resolveFire,
   RESOLUTION_REASONS,
-  unresolvedFiresQuery,
   type ResolutionReason,
   type UnresolvedFire,
   FIRE_STATE_TONE,

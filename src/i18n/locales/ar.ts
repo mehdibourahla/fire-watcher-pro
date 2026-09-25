@@ -69,6 +69,8 @@ export const ar: Translation = {
     changePassword: "تعيين كلمة المرور أو تغييرها",
   },
   common: {
+    loadMore: "عرض المزيد",
+    showMore: "عرض {{count}} إضافية (المتبقي: {{remaining}})",
     close: "إغلاق",
     cancel: "إلغاء",
     dismiss: "إخفاء",

@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  useInfiniteQuery,
+} from "@tanstack/react-query";
 import { ExternalLink } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -10,14 +15,16 @@ import { StatusBadge, type Tone } from "@/components/admin/kit/StatusBadge";
 import { When } from "@/components/admin/kit/When";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { itaReportsQuery, retryItaReport } from "@/lib/admin-ita";
+import {
+  itaReportsQuery,
+  retryItaReport,
+  type ItaReport,
+} from "@/lib/admin-ita";
 import { myRolesQuery } from "@/lib/reports";
 import { cn } from "@/lib/utils";
 import { AgentReasoning } from "./AgentReasoning";
 
-type Report = Awaited<
-  ReturnType<NonNullable<ReturnType<typeof itaReportsQuery>["queryFn"]>>
->[number];
+type Report = ItaReport;
 
 const STATE_TONE: Record<string, Tone> = {
   publish: "ok",
@@ -139,7 +146,7 @@ function Detail({ report }: { report: Report }) {
 export function ItaFeed() {
   const { t } = useTranslation("admin");
   const [exhaustedOnly, setExhaustedOnly] = useState(false);
-  const reports = useQuery(itaReportsQuery(exhaustedOnly));
+  const reports = useInfiniteQuery(itaReportsQuery(exhaustedOnly));
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const selected = reports.data?.find((row) => row.id === selectedId) ?? null;
   return (

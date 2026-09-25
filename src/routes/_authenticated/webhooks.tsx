@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  useInfiniteQuery,
+} from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -13,6 +18,8 @@ import {
   webhookEndpointsQuery,
 } from "@/lib/webhooks";
 import { titledMeta } from "@/lib/page-meta";
+import { pageRows } from "@/lib/paging";
+import { LoadMore } from "@/components/LoadMore";
 
 export const Route = createFileRoute("/_authenticated/webhooks")({
   head: () => ({
@@ -27,7 +34,8 @@ function WebhooksPage() {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const endpoints = useQuery(webhookEndpointsQuery);
-  const deliveries = useQuery(webhookDeliveriesQuery);
+  const deliveries = useInfiniteQuery(webhookDeliveriesQuery);
+  const deliveryRows = pageRows(deliveries.data);
 
   const [label, setLabel] = useState("");
   const [url, setUrl] = useState("");
@@ -230,16 +238,17 @@ function WebhooksPage() {
       <section className="panel mt-5 p-4">
         <h2 className="text-base">{t("webhooks.deliveries")}</h2>
         <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
-          {(deliveries.data ?? []).length === 0 ? (
+          {deliveryRows.length === 0 ? (
             <li>{t("webhooks.noDeliveries")}</li>
           ) : null}
-          {(deliveries.data ?? []).map((d) => (
+          {deliveryRows.map((d) => (
             <li key={d.id} className="tabular">
               {algiersTime(d.created_at)} ·{" "}
               {d.ok ? "200 OK" : `${d.status_code ?? "ERR"} ${d.error ?? ""}`}
             </li>
           ))}
         </ul>
+        <LoadMore query={deliveries} />
       </section>
 
       <p className="mt-4 text-xs text-muted-foreground">

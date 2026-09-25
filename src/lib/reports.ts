@@ -1,8 +1,9 @@
-import { queryOptions } from "@tanstack/react-query";
+import { queryOptions, infiniteQueryOptions } from "@tanstack/react-query";
 
 import { stripImageMetadata } from "@/lib/image-metadata";
 import { supabase } from "@/integrations/supabase/client";
 import type { AppRole } from "./roles";
+import { firstPage, nextOffset, pageRange } from "@/lib/paging";
 
 export type ReportStatus = "pending" | "approved" | "rejected";
 export type Sighting = "smoke" | "flames" | "smell" | "other";
@@ -77,9 +78,11 @@ async function authenticatedUser(errorKey: string) {
 
 const SELECT = "*";
 
-export const myReportsQuery = queryOptions({
+export const myReportsQuery = infiniteQueryOptions({
   queryKey: ["reports", "mine"],
-  queryFn: async () => {
+  initialPageParam: firstPage,
+  getNextPageParam: nextOffset,
+  queryFn: async ({ pageParam }) => {
     const { data: auth } = await supabase.auth.getUser();
     if (!auth.user) return [] as CitizenReport[];
     const { data, error } = await supabase
@@ -87,7 +90,8 @@ export const myReportsQuery = queryOptions({
       .select(SELECT)
       .eq("user_id", auth.user.id)
       .order("created_at", { ascending: false })
-      .limit(100);
+      .order("id", { ascending: false })
+      .range(...pageRange(pageParam));
     if (error) throw new Error(error.message);
     const reports = (data ?? []) as unknown as CitizenReport[];
     const live = reports.filter((r) => r.publish_state === "published");

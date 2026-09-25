@@ -1,6 +1,7 @@
-import { queryOptions } from "@tanstack/react-query";
+import { queryOptions, infiniteQueryOptions } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
+import { firstPage, nextOffset, pageRange } from "@/lib/paging";
 
 export type WebhookEndpoint = {
   id: string;
@@ -54,14 +55,17 @@ export const webhookEndpointsQuery = queryOptions({
   },
 });
 
-export const webhookDeliveriesQuery = queryOptions({
+export const webhookDeliveriesQuery = infiniteQueryOptions({
   queryKey: ["webhooks", "deliveries"],
-  queryFn: async () => {
+  initialPageParam: firstPage,
+  getNextPageParam: nextOffset,
+  queryFn: async ({ pageParam }) => {
     const { data, error } = await supabase
       .from("webhook_deliveries")
       .select("*")
       .order("created_at", { ascending: false })
-      .limit(50);
+      .order("id", { ascending: false })
+      .range(...pageRange(pageParam));
     if (error) throw new Error(error.message);
     return (data ?? []) as unknown as WebhookDelivery[];
   },

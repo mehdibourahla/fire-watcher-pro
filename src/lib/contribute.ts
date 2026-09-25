@@ -1,6 +1,7 @@
-import { queryOptions } from "@tanstack/react-query";
+import { queryOptions, infiniteQueryOptions } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
+import { firstPage, nextOffset, pageRange } from "@/lib/paging";
 
 export const LANES = [
   "local",
@@ -98,15 +99,18 @@ export function percent(done: number, total: number): number {
   return Math.max(0, Math.min(100, Math.round((done / total) * 100)));
 }
 
-export const publishedIdeasQuery = queryOptions({
+export const publishedIdeasQuery = infiniteQueryOptions({
   queryKey: ["contribution-ideas", "published"],
-  queryFn: async () => {
+  initialPageParam: firstPage,
+  getNextPageParam: nextOffset,
+  queryFn: async ({ pageParam }) => {
     const { data, error } = await supabase
       .from("published_contribution_ideas")
       .select("id, lane, message, score, published_at")
       .order("score", { ascending: false })
       .order("published_at", { ascending: false })
-      .limit(50);
+      .order("id")
+      .range(...pageRange(pageParam));
     if (error) throw new Error(error.message);
     return (data ?? []) as unknown as PublishedIdea[];
   },

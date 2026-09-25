@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -24,7 +24,7 @@ export const Route = createFileRoute("/_authenticated/admin/fires")({
 function FiresPage() {
   const { t } = useTranslation("admin");
   const [strongOnly, setStrongOnly] = useState(true);
-  const fires = useQuery(unresolvedFiresQuery(strongOnly));
+  const fires = useInfiniteQuery(unresolvedFiresQuery(strongOnly));
   const place = usePlace();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const selected = fires.data?.find((fire) => fire.id === selectedId) ?? null;

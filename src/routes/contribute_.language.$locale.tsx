@@ -33,14 +33,17 @@ import {
 } from "@/lib/translate";
 import { cn } from "@/lib/utils";
 import { titledMeta } from "@/lib/page-meta";
+import { headTranslator } from "@/i18n";
 
 export const Route = createFileRoute("/contribute_/language/$locale")({
   beforeLoad: ({ params }) => {
     if (!REVIEWABLE.includes(params.locale as ReviewableLocale))
       throw notFound();
   },
-  head: () => ({
-    meta: titledMeta("translate.title"),
+  head: ({ params }) => ({
+    meta: titledMeta("translate.title", undefined, {
+      language: headTranslator()(`translate.lang_${params.locale}`),
+    }),
   }),
   component: ReviewPage,
 });
@@ -456,7 +459,7 @@ function ReviewPage() {
       ) : (
         <div className="mt-6 flex flex-col gap-4">
           {groups.map((group) => {
-            const collapsed = openGroups[group.key] === false;
+            const collapsed = !(openGroups[group.key] ?? query.trim() !== "");
             const done = group.rows.filter((r) => drafts[r.path]).length;
             return (
               <section key={group.key} className="card overflow-hidden">
@@ -465,6 +468,7 @@ function ReviewPage() {
                   onClick={() =>
                     setOpenGroups((p) => ({ ...p, [group.key]: collapsed }))
                   }
+                  aria-expanded={!collapsed}
                   className="flex w-full items-center gap-3 px-4 py-3 text-start transition-colors hover:bg-muted"
                 >
                   <ChevronDown

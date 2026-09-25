@@ -1,7 +1,11 @@
-import type { UseQueryResult } from "@tanstack/react-query";
+import type {
+  UseInfiniteQueryResult,
+  UseQueryResult,
+} from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
+import { LoadMore } from "@/components/LoadMore";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -12,7 +16,7 @@ export function QueryState<T>({
   rows = 3,
   children,
 }: {
-  query: UseQueryResult<T>;
+  query: UseQueryResult<T> | UseInfiniteQueryResult<T>;
   isEmpty?: (data: T) => boolean;
   empty?: ReactNode;
   rows?: number;
@@ -53,5 +57,10 @@ export function QueryState<T>({
         {empty ?? t("kit.empty")}
       </p>
     );
-  return <>{children(query.data)}</>;
+  return (
+    <>
+      {children(query.data)}
+      {"fetchNextPage" in query ? <LoadMore query={query} /> : null}
+    </>
+  );
 }

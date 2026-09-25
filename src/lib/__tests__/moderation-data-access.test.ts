@@ -20,7 +20,7 @@ type Result = { data: unknown; error: { message: string } | null };
 
 function query(result: Result) {
   const builder: Record<string, ReturnType<typeof vi.fn> | unknown> = {};
-  for (const method of ["select", "eq", "order", "limit", "update"]) {
+  for (const method of ["select", "eq", "order", "limit", "range", "update"]) {
     builder[method] = vi.fn(() => builder);
   }
   builder["then"] = (resolve: (value: Result) => unknown) =>
@@ -29,7 +29,11 @@ function query(result: Result) {
 }
 
 async function runQuery(option: { queryFn?: unknown }) {
-  return (option.queryFn as () => Promise<unknown>)();
+  return (
+    option.queryFn as (context: { pageParam: number }) => Promise<unknown>
+  )({
+    pageParam: 0,
+  });
 }
 
 describe("contribution idea data boundaries", () => {

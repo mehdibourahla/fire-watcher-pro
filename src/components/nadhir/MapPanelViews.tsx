@@ -13,6 +13,7 @@ import { CITIZEN_NEARBY_RADIUS_KM, type Situation } from "@/lib/civil-map";
 import { HAZARD_CATEGORIES, type MapSearch } from "@/lib/civil-map-search";
 import type { SourceHealth as SourceHealthRow } from "@/lib/source-health";
 import type { Locale } from "@/i18n";
+import { ShowMore } from "@/components/ShowMore";
 
 export function PlaceSearchResults({
   query,
@@ -152,18 +153,22 @@ export function SituationList({
               <h2 className="mb-3 font-sans text-xs font-semibold text-muted-foreground">
                 {t(`civilMap.${group.key}`)}
               </h2>
-              <div className="space-y-2 lg:space-y-3">
-                {group.items.map((item) => (
-                  <SituationCard
-                    key={item.id}
-                    item={item}
-                    units={units}
-                    now={now}
-                    selected={item.id === selectedId}
-                    onSelect={() => onSelect(item.id)}
-                  />
-                ))}
-              </div>
+              <ShowMore items={group.items}>
+                {(visible) => (
+                  <div className="space-y-2 lg:space-y-3">
+                    {visible.map((item) => (
+                      <SituationCard
+                        key={item.id}
+                        item={item}
+                        units={units}
+                        now={now}
+                        selected={item.id === selectedId}
+                        onSelect={() => onSelect(item.id)}
+                      />
+                    ))}
+                  </div>
+                )}
+              </ShowMore>
             </section>
           ))}
       </div>

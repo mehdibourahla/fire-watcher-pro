@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { ExternalLink } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -17,12 +17,12 @@ import {
   officialIncidentsQuery,
   type IncidentStatus,
   type OfficialIncident,
+  INCIDENT_FILTERS,
+  type IncidentFilter,
 } from "@/lib/admin-incidents";
 import { unitName } from "@/lib/nadhir";
 import { cn } from "@/lib/utils";
 
-const FILTERS = ["listed", "unlisted", "all"] as const;
-type Filter = (typeof FILTERS)[number];
 const STATUS_TONE: Record<string, Tone> = {
   ongoing: "bad",
   contained: "warn",
@@ -152,21 +152,15 @@ function Detail({
 
 export function OfficialIncidents() {
   const { t, i18n } = useTranslation("admin");
-  const incidents = useQuery(officialIncidentsQuery);
-  const [filter, setFilter] = useState<Filter>("listed");
+  const [filter, setFilter] = useState<IncidentFilter>("listed");
+  const incidents = useInfiniteQuery(officialIncidentsQuery(filter));
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const shown = (incidents.data ?? []).filter((incident) =>
-    filter === "all"
-      ? true
-      : filter === "listed"
-        ? !incident.unlisted_at
-        : !!incident.unlisted_at,
-  );
+  const shown = incidents.data ?? [];
   const selected = shown.find((incident) => incident.id === selectedId) ?? null;
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2">
-        {FILTERS.map((value) => (
+        {INCIDENT_FILTERS.map((value) => (
           <Button
             key={value}
             size="sm"

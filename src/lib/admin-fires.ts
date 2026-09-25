@@ -1,4 +1,4 @@
-import { queryOptions, useQuery } from "@tanstack/react-query";
+import { useQuery, infiniteQueryOptions } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -7,6 +7,7 @@ import type { Tone } from "@/components/admin/kit/StatusBadge";
 import { supabase } from "@/integrations/supabase/client";
 import type { AnyLocale } from "@/i18n";
 import { adminUnitsQuery, unitName } from "@/lib/nadhir";
+import { firstPage, nextOffset, pageRange, pageRows } from "@/lib/paging";
 
 const FIRE_STATES = [
   "unconfirmed",
@@ -50,9 +51,12 @@ export type UnresolvedFire = {
 const STRONG_FIRE_CONFIDENCE = 0.6;
 
 export const unresolvedFiresQuery = (strongOnly: boolean) =>
-  queryOptions({
+  infiniteQueryOptions({
     queryKey: ["admin", "fires", "unresolved", strongOnly],
-    queryFn: async (): Promise<UnresolvedFire[]> => {
+    initialPageParam: firstPage,
+    getNextPageParam: nextOffset,
+    select: pageRows,
+    queryFn: async ({ pageParam }): Promise<UnresolvedFire[]> => {
       let query = supabase
         .from("fire_clusters")
         .select(
@@ -61,7 +65,8 @@ export const unresolvedFiresQuery = (strongOnly: boolean) =>
         .is("resolved_at", null)
         .in("state", ["unconfirmed", "active", "contained_guess"])
         .order("confidence", { ascending: false })
-        .limit(200);
+        .order("id")
+        .range(...pageRange(pageParam));
       if (strongOnly) query = query.gte("confidence", STRONG_FIRE_CONFIDENCE);
       const { data, error } = await query;
       if (error) throw new Error(error.message);
