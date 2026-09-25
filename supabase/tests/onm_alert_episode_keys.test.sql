@@ -1,6 +1,6 @@
 begin;
 set local search_path = public, extensions;
-select plan(9);
+select plan(10);
 
 create function pg_temp.warn(_cap text, _event text, _severity text, _onset interval, _expires interval, _sent interval)
 returns void language sql as $$
@@ -32,6 +32,13 @@ select pg_temp.warn('heat-' || d, 'Heat', 'Severe', make_interval(days => d), ma
   make_interval(days => d)) from generate_series(0, 11) d;
 select is((select count(distinct episode_id || ':' || episode_peak) from public.onm_vigilance where cap_id like 'heat-%'),
   1::bigint, 'a heatwave renewed daily for twelve days stays one episode');
+
+insert into public.onm_vigilance(cap_id,title,event,severity,urgency,certainty,onset,expires,sent,area_desc) values
+  ('batch-1','Dust','Dust','Moderate','Expected','Likely',now(),now()+interval '6 hours',now()-interval '1 hour','EPTEST'),
+  ('batch-2','Dust','Dust','Moderate','Expected','Likely',now()+interval '3 hours',now()+interval '9 hours',now(),'EPTEST')
+  on conflict (cap_id) do update set title = excluded.title;
+select is(pg_temp.key('batch-2'), pg_temp.key('batch-1'),
+  'a renewal arriving in the same feed batch as its predecessor joins its episode');
 
 select is((select episode_peak from public.onm_vigilance where cap_id = 'ep-first'), 2::smallint,
   'the first warning of an episode carries its own severity');

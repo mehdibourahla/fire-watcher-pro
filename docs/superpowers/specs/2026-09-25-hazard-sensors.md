@@ -28,12 +28,13 @@ Design Read: ENERGY 2 / RHYTHM 2 / MOTION 1 (unchanged from the 2026-08-28 redes
 
 ## Slice A (Tier 1): ONM episodes and push receipts
 
-**Episode dedupe.** Zone weather alerts key on `weather:<episode id>`, where the episode id is
-the id of the first warning of the overlapping-validity run already defined by
-`onm_warning_history` (same area, event, severity). A renewal with a later onset stays silent;
-an escalation opens a new episode and alerts. A function `onm_episode_ids(uuid[])` returns
-the episode id for current warnings over a bounded 7-day lookback. A migration rewrites
-existing weather alerts' keys to the new form so deploy does not re-alert.
+**Episode dedupe.** Each ONM warning gets its episode once, when it is first stored: a BEFORE
+INSERT trigger copies `episode_id` and `episode_peak` (highest severity so far) from the most
+recently sent warning of the same area and event whose validity overlaps, else starts its own.
+Zone weather alerts key on `weather:<episode_id>:<episode_peak>`. A renewal stays silent, an
+escalation alerts, a downgrade stays silent, as broadcasts already do. Nothing is recomputed
+later, so send order, onset order and episode length cannot change a key. Existing rows are
+backfilled in send order; no alert key is rewritten, so there is no deploy race.
 
 **Push receipts.** "Sent" today means FCM accepted it; FCM also accepts a topic with no
 device. Each push carries its alert id and a server HMAC of it. A plain `push` listener in
