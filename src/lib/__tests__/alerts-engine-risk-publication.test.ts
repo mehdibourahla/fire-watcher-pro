@@ -508,6 +508,8 @@ describe("zone hazard alerts reach the alert table", () => {
           polygon: null,
           wilaya_id: "w16",
           expires: "2026-09-09T12:00:00Z",
+          episode_id: "ep1",
+          episode_peak: 3,
         },
       ],
     });
@@ -516,7 +518,7 @@ describe("zone hazard alerts reach the alert table", () => {
         kind: "weather",
         source_table: "onm_vigilance",
         source_id: "onm1",
-        dedupe_key: "weather:Rain:Severe:2026-09-08T15:00:00Z",
+        dedupe_key: "weather:ep1:3",
       }),
     ]);
   });

@@ -774,6 +774,7 @@ export type Database = {
           payload: Json | null;
           push_attempts: number;
           push_claimed_at: string | null;
+          push_received_at: string | null;
           push_state: string;
           read_at: string | null;
           severity: number;
@@ -798,6 +799,7 @@ export type Database = {
           payload?: Json | null;
           push_attempts?: number;
           push_claimed_at?: string | null;
+          push_received_at?: string | null;
           push_state?: string;
           read_at?: string | null;
           severity?: number;
@@ -822,6 +824,7 @@ export type Database = {
           payload?: Json | null;
           push_attempts?: number;
           push_claimed_at?: string | null;
+          push_received_at?: string | null;
           push_state?: string;
           read_at?: string | null;
           severity?: number;
@@ -2157,6 +2160,8 @@ export type Database = {
           cap_url: string | null;
           certainty: string;
           created_at: string;
+          episode_id: string;
+          episode_peak: number;
           event: string;
           expires: string | null;
           headline_fr: string | null;
@@ -2178,6 +2183,8 @@ export type Database = {
           cap_url?: string | null;
           certainty: string;
           created_at?: string;
+          episode_id?: string;
+          episode_peak?: number;
           event: string;
           expires?: string | null;
           headline_fr?: string | null;
@@ -2199,6 +2206,8 @@ export type Database = {
           cap_url?: string | null;
           certainty?: string;
           created_at?: string;
+          episode_id?: string;
+          episode_peak?: number;
           event?: string;
           expires?: string | null;
           headline_fr?: string | null;
@@ -3670,6 +3679,16 @@ export type Database = {
       };
     };
     Functions: {
+      admin_push_delivery: {
+        Args: { _days?: number };
+        Returns: {
+          day: string;
+          failed: number;
+          no_device: number;
+          received: number;
+          sent: number;
+        }[];
+      };
       supersede_onm_absent: {
         Args: { _feed_cap_ids: string[]; _feed_sent: string };
         Returns: number;

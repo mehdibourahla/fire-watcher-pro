@@ -18,19 +18,22 @@ export type FcmUserMessage = {
     fcm_options: { link: string };
     notification: { tag: string; renotify: boolean };
   };
-  data: { alert_id: string; kind: string };
+  data: { alert_id: string; kind: string; receipt: string };
 };
 
-export function fcmMessageForAlert(alert: {
-  id: string;
-  user_id: string;
-  kind: string;
-  title: string;
-  body: string;
-  source_id: string | null;
-  cluster_id: string | null;
-  payload: unknown;
-}): FcmUserMessage {
+export function fcmMessageForAlert(
+  alert: {
+    id: string;
+    user_id: string;
+    kind: string;
+    title: string;
+    body: string;
+    source_id: string | null;
+    cluster_id: string | null;
+    payload: unknown;
+  },
+  receipt: string,
+): FcmUserMessage {
   const shortId =
     alert.kind === "fire" &&
     alert.payload &&
@@ -50,7 +53,7 @@ export function fcmMessageForAlert(alert: {
         renotify: true,
       },
     },
-    data: { alert_id: alert.id, kind: alert.kind },
+    data: { alert_id: alert.id, kind: alert.kind, receipt },
   };
 }
 

@@ -223,11 +223,14 @@ export async function ingestOnm(): Promise<OnmRun> {
   );
 
   let unmatched = 0;
-  const rows = entries.map((e) => {
-    const wilaya = matchWilaya(e.area_desc, wilayas);
-    if (!wilaya) unmatched += 1;
-    return { ...e, wilaya_id: wilaya?.id ?? null };
-  });
+  // the insert trigger joins each warning to the episode of what was sent before it
+  const rows = [...entries]
+    .sort((a, b) => Date.parse(a.sent) - Date.parse(b.sent))
+    .map((e) => {
+      const wilaya = matchWilaya(e.area_desc, wilayas);
+      if (!wilaya) unmatched += 1;
+      return { ...e, wilaya_id: wilaya?.id ?? null };
+    });
 
   for (let i = 0; i < rows.length; i += 500) {
     const { error } = await supabaseAdmin

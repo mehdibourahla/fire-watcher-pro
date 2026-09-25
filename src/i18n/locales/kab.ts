@@ -1412,6 +1412,15 @@ export const kab: Translation = {
     colCommunes: "Tiɣiwanin",
     chooseWilaya: "Choisir une wilaya",
     sourcePlaceholder: "ex. Protection Civile, Wilaya de Tizi Ouzou",
+    pushTitle: "Notifications d'alertes de zone, 7 derniers jours",
+    pushNote:
+      "Reçue signifie que le téléphone a signalé l'arrivée de la notification. Une absence de reçu ne prouve pas qu'elle n'a pas été affichée : un navigateur fermé peut ne pas le signaler.",
+    pushEmpty: "Aucune notification d'alerte de zone ces 7 derniers jours.",
+    pushDay: "Jour",
+    pushSent: "Envoyées",
+    pushReceived: "Reçues",
+    pushNoDevice: "Sans appareil",
+    pushFailed: "Échecs",
   },
   push: {
     bannerLive: "Alɣu iteddun deg tɣiwant-ik",

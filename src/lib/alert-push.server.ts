@@ -1,6 +1,7 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { fcmMessageForAlert } from "@/lib/fcm";
 import { fcmConfigured, fcmSend } from "@/lib/ingest/fcm.server";
+import { pushReceipt } from "@/lib/push-receipt.server";
 
 export type ClaimedPush = {
   id: string;
@@ -40,7 +41,8 @@ const store = {
     if (error) throw new Error(error.message);
     return new Set((data ?? []).map((row) => row.user_id));
   },
-  send: (row: ClaimedPush) => fcmSend(fcmMessageForAlert(row)),
+  send: async (row: ClaimedPush) =>
+    fcmSend(fcmMessageForAlert(row, await pushReceipt(row.id))),
   finish: async (row: ClaimedPush, state: PushState) => {
     const { data, error } = await supabaseAdmin
       .from("alerts")
