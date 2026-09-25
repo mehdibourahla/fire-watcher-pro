@@ -918,13 +918,6 @@ export const en = {
       "Call Civil Protection on 14 first if people or homes are at risk. Nadhir is not an emergency service.",
     useMyLocation: "Use my location",
     locating: "Locating…",
-    sightingSmoke: "Smoke",
-    sightingFlames: "Flames",
-    sightingSmell: "Burning smell",
-    sightingOther: "Something else",
-    sizeSmall: "Small",
-    sizeMedium: "Medium",
-    sizeLarge: "Large",
     note: "Details (optional)",
     photo: "Photo (optional)",
     photoHint:

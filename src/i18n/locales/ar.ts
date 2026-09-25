@@ -890,13 +890,6 @@ export const ar: Translation = {
       "اتصل أولاً بالحماية المدنية على الرقم 14 إذا كان هناك خطر على الأشخاص أو المنازل. نذير ليس خدمة طوارئ.",
     useMyLocation: "استخدام موقعي",
     locating: "جارٍ تحديد الموقع…",
-    sightingSmoke: "دخان",
-    sightingFlames: "ألسنة لهب",
-    sightingSmell: "رائحة احتراق",
-    sightingOther: "شيء آخر",
-    sizeSmall: "صغير",
-    sizeMedium: "متوسط",
-    sizeLarge: "كبير",
     note: "تفاصيل (اختياري)",
     photo: "صورة (اختياري)",
     photoHint:

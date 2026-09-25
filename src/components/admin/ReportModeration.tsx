@@ -26,13 +26,63 @@ import {
 } from "@/lib/reports";
 import { cn } from "@/lib/utils";
 
-const FILTERS = ["pending", "approved", "rejected", "all"] as const;
+const FILTERS = [
+  "attention",
+  "pending",
+  "approved",
+  "rejected",
+  "all",
+] as const;
 type Filter = (typeof FILTERS)[number];
 const STATUS_TONE: Record<ReportStatus, Tone> = {
   pending: "warn",
   approved: "ok",
   rejected: "neutral",
 };
+
+// mirrors admin_attention_counts so the list and the badge agree
+const needsDecision = (r: CitizenReport, now: number) =>
+  r.status === "pending" &&
+  !!r.expires_at &&
+  Date.parse(r.expires_at) > now &&
+  (r.publish_state !== "published" || !!r.flagged_at);
+
+const matches = (r: CitizenReport, filter: Filter, now: number) =>
+  filter === "all" ||
+  (filter === "attention" ? needsDecision(r, now) : r.status === filter);
+
+function Verdict({ report }: { report: CitizenReport }) {
+  const { t } = useTranslation("admin");
+  const { t: tApp } = useTranslation();
+  if (report.status !== "pending")
+    return (
+      <StatusBadge tone={STATUS_TONE[report.status]}>
+        {tApp(`reports.status${capital(report.status)}`)}
+      </StatusBadge>
+    );
+  if (!report.expires_at || Date.parse(report.expires_at) <= Date.now())
+    return <StatusBadge tone="neutral">{tApp("reports.expired")}</StatusBadge>;
+  if (report.flagged_at)
+    return <StatusBadge tone="bad">{t("reportsPage.flagged")}</StatusBadge>;
+  return (
+    <StatusBadge
+      tone={
+        report.publish_state === "private"
+          ? "bad"
+          : report.publish_state === "published"
+            ? "ok"
+            : "warn"
+      }
+    >
+      {tApp(`reports.state.${report.publish_state}`)}
+    </StatusBadge>
+  );
+}
+
+const hazardLabel = (report: CitizenReport) =>
+  report.hazard
+    ? `reports.hazardName.${report.hazard}`
+    : `reports.tile.${report.kind}`;
 const capital = (value: string) =>
   value.charAt(0).toUpperCase() + value.slice(1);
 
@@ -91,9 +141,7 @@ function Detail({
   return (
     <div className="space-y-5 text-sm">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <StatusBadge tone={STATUS_TONE[report.status]}>
-          {tApp(`reports.status${capital(report.status)}`)}
-        </StatusBadge>
+        <Verdict report={report} />
         {report.commune_id ? (
           <a
             className="inline-flex items-center gap-1 underline"
@@ -113,48 +161,72 @@ function Detail({
         <dd className="tabular-nums" dir="ltr">
           {report.lat.toFixed(4)}, {report.lon.toFixed(4)}
         </dd>
+        <dt className="text-muted-foreground">{t("reportsPage.check")}</dt>
+        <dd>
+          {report.classified_at ? (
+            <>
+              {report.classifier === "fallback"
+                ? t("reportsPage.checkFallback")
+                : report.classifier}{" "}
+              · <When at={report.classified_at} />
+            </>
+          ) : (
+            t("reportsPage.checkPending")
+          )}
+        </dd>
+        <dt className="text-muted-foreground">{t("reportsPage.summary")}</dt>
+        <dd dir="auto">{report.summary ?? t("reportsPage.noSummary")}</dd>
       </dl>
       {report.note ? (
-        <blockquote dir="auto" className="rounded-md bg-muted p-3">
-          {report.note}
-        </blockquote>
+        <figure className="space-y-1">
+          <figcaption className="font-medium">
+            {t("reportsPage.words")}
+          </figcaption>
+          <blockquote dir="auto" className="rounded-md bg-muted p-3">
+            {report.note}
+          </blockquote>
+        </figure>
       ) : null}
       <ReportPhoto photo={report.photo_url} />
-      <fieldset>
-        <legend className="font-medium">{t("reportsPage.nearbyFires")}</legend>
-        {nearby.length === 0 ? (
-          <p className="mt-1 text-muted-foreground">
-            {t("reportsPage.noNearby")}
-          </p>
-        ) : (
-          <div className="mt-2 space-y-1">
-            <label className="flex items-center gap-2">
-              <input
-                type="radio"
-                name={`link-${report.id}`}
-                checked={clusterId === ""}
-                onChange={() => setClusterId("")}
-              />
-              {t("queues.linkNone")}
-            </label>
-            {nearby.map(({ fire, km }) => (
-              <label key={fire.id} className="flex items-center gap-2">
+      {report.hazard === "fire" ? (
+        <fieldset>
+          <legend className="font-medium">
+            {t("reportsPage.nearbyFires")}
+          </legend>
+          {nearby.length === 0 ? (
+            <p className="mt-1 text-muted-foreground">
+              {t("reportsPage.noNearby")}
+            </p>
+          ) : (
+            <div className="mt-2 space-y-1">
+              <label className="flex items-center gap-2">
                 <input
                   type="radio"
                   name={`link-${report.id}`}
-                  checked={clusterId === fire.id}
-                  onChange={() => setClusterId(fire.id)}
+                  checked={clusterId === ""}
+                  onChange={() => setClusterId("")}
                 />
-                <span className="font-mono text-xs">{fire.short_id}</span>
-                <span className="text-muted-foreground">
-                  {t("reportsPage.km", { km: km.toFixed(1) })} ·{" "}
-                  <When at={fire.last_detected_at} />
-                </span>
+                {t("queues.linkNone")}
               </label>
-            ))}
-          </div>
-        )}
-      </fieldset>
+              {nearby.map(({ fire, km }) => (
+                <label key={fire.id} className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name={`link-${report.id}`}
+                    checked={clusterId === fire.id}
+                    onChange={() => setClusterId(fire.id)}
+                  />
+                  <span className="font-mono text-xs">{fire.short_id}</span>
+                  <span className="text-muted-foreground">
+                    {t("reportsPage.km", { km: km.toFixed(1) })} ·{" "}
+                    <When at={fire.last_detected_at} />
+                  </span>
+                </label>
+              ))}
+            </div>
+          )}
+        </fieldset>
+      ) : null}
       <label className="block">
         <span className="font-medium">{t("queues.modNote")}</span>
         <Input
@@ -202,7 +274,8 @@ export function ReportModeration() {
   const queue = useQuery(moderationQueueQuery);
   const clusters = useQuery(clustersQuery);
   const units = useQuery(adminUnitsQuery);
-  const [filter, setFilter] = useState<Filter>("pending");
+  const [filter, setFilter] = useState<Filter>("attention");
+  const now = Date.now();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const communes = useMemo(
     () =>
@@ -217,8 +290,7 @@ export function ReportModeration() {
   const selected =
     queue.data?.find((report) => report.id === selectedId) ?? null;
   const countOf = (value: Filter) =>
-    (queue.data ?? []).filter((r) => value === "all" || r.status === value)
-      .length;
+    (queue.data ?? []).filter((r) => matches(r, value, now)).length;
 
   return (
     <div className="space-y-4">
@@ -238,10 +310,7 @@ export function ReportModeration() {
       </div>
       <QueryState
         query={queue}
-        isEmpty={(rows) =>
-          rows.filter((r) => filter === "all" || r.status === filter).length ===
-          0
-        }
+        isEmpty={(rows) => !rows.some((r) => matches(r, filter, now))}
         empty={t("queues.queueEmpty")}
       >
         {(rows) => (
@@ -262,7 +331,7 @@ export function ReportModeration() {
             list={
               <ul className="divide-y divide-border overflow-hidden rounded-lg border border-border">
                 {rows
-                  .filter((r) => filter === "all" || r.status === filter)
+                  .filter((r) => matches(r, filter, now))
                   .map((report) => (
                     <li key={report.id}>
                       <button
@@ -274,26 +343,9 @@ export function ReportModeration() {
                         )}
                       >
                         <span className="flex items-center gap-2">
-                          <StatusBadge
-                            tone={
-                              report.kind === "sighting"
-                                ? STATUS_TONE[report.status]
-                                : "bad"
-                            }
-                          >
-                            {report.kind === "sighting"
-                              ? tApp(`reports.status${capital(report.status)}`)
-                              : tApp(
-                                  report.kind === "road_blocked"
-                                    ? "survival.reportRoadBlocked"
-                                    : "survival.reportPersonTrapped",
-                                )}
-                          </StatusBadge>
+                          <Verdict report={report} />
                           <span className="truncate text-sm font-medium">
-                            {tApp(
-                              `reports.sighting${capital(report.sighting)}`,
-                            )}{" "}
-                            · {tApp(`reports.size${capital(report.size_hint)}`)}
+                            {tApp(hazardLabel(report))}
                           </span>
                           <span className="ms-auto shrink-0 text-xs text-muted-foreground">
                             <When at={report.observed_at} />

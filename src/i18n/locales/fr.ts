@@ -943,13 +943,6 @@ export const fr: Translation = {
       "Appelez d'abord la Protection civile au 14 si des personnes ou des habitations sont menacées. Nadhir n'est pas un service d'urgence.",
     useMyLocation: "Utiliser ma position",
     locating: "Localisation…",
-    sightingSmoke: "Fumée",
-    sightingFlames: "Flammes",
-    sightingSmell: "Odeur de brûlé",
-    sightingOther: "Autre",
-    sizeSmall: "Petit",
-    sizeMedium: "Moyen",
-    sizeLarge: "Grand",
     note: "Détails (optionnel)",
     photo: "Photo (facultatif)",
     photoHint:

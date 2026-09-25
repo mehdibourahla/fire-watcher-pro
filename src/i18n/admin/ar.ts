@@ -239,7 +239,7 @@ export const adminAr: AdminTranslation = {
   reportsPage: {
     title: "بلاغات المواطنين",
     description:
-      "مشاهدات مُرسلة من التطبيق. وافق على ما هو موثوق، واربطه بحريق قريب، وارفض الباقي.",
+      "بلاغات مُرسلة من التطبيق. ينشر فحص آلي الواضح منها. قرّر بشأن ما أوقفه الفحص، والبلاغات الخاصة، وتلك التي يقول الشهود إنها انتهت.",
     detail: "البلاغ",
     placeholder: "اختر بلاغًا لمراجعته.",
     openMap: "عرض على الخريطة",
@@ -249,6 +249,13 @@ export const adminAr: AdminTranslation = {
     noNearby:
       "لا يوجد حريق مرصود بالأقمار الصناعية على بعد أقل من 50 كم خلال الأيام الثلاثة الأخيرة.",
     km: "{{km}} كم",
+    flagged: "يقول الشهود إنه انتهى",
+    summary: "الملخص المنشور",
+    noSummary: "لا يوجد. يُعرض بفئته فقط.",
+    check: "الفحص الآلي",
+    checkFallback: "الفحص غير متاح، نُشر بفئته",
+    checkPending: "لم يُفحص بعد",
+    words: "كلمات المُبلِّغ",
   },
   translationsPage: {
     title: "الترجمات",
@@ -471,6 +478,7 @@ export const adminAr: AdminTranslation = {
     ideasEmpty: "لا توجد أفكار في هذا العرض.",
     filterAll: "الكل",
     filterPending: "قيد الانتظار",
+    filterAttention: "بحاجة إلى قرار",
     filterApproved: "مقبولة",
     filterRejected: "مرفوضة",
     approve: "قبول",

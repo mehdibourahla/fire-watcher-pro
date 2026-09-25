@@ -1,6 +1,6 @@
 begin;
 set local search_path = public, extensions;
-select plan(21);
+select plan(23);
 
 insert into auth.users (id, email) values
   ('3c000000-0000-4000-8000-000000000001', 'reporter@example.invalid'),
@@ -10,7 +10,12 @@ insert into auth.users (id, email) values
   ('3c000000-0000-4000-8000-000000000005', 'gone-b@example.invalid'),
   ('3c000000-0000-4000-8000-000000000006', 'gone-c@example.invalid'),
   ('3c000000-0000-4000-8000-000000000007', 'gone-d@example.invalid'),
-  ('3c000000-0000-4000-8000-000000000008', 'gone-e@example.invalid');
+  ('3c000000-0000-4000-8000-000000000008', 'gone-e@example.invalid'),
+  ('3c000000-0000-4000-8000-000000000009', 'moderator@example.invalid');
+insert into user_roles (user_id, role) values ('3c000000-0000-4000-8000-000000000009', 'report_moderator');
+select set_config('request.jwt.claim.sub', '3c000000-0000-4000-8000-000000000009', true);
+create temp table attention_baseline as
+  select count as n from admin_attention_counts() where item = 'citizen_reports';
 
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '3c000000-0000-4000-8000-000000000001', true);
@@ -31,6 +36,9 @@ select is((select summary from citizen_reports where id = '3c100000-0000-4000-80
   null, 'a client cannot write the public summary');
 select is((select publish_state from citizen_reports where id = '3c100000-0000-4000-8000-000000000003'),
   'private', 'person trapped is recorded privately');
+select set_config('request.jwt.claim.sub', '3c000000-0000-4000-8000-000000000009', true);
+select is((select count from admin_attention_counts() where item = 'citizen_reports'), (select n + 2 from attention_baseline),
+  'moderators are asked about waiting and private reports, not ones already published');
 
 set local role anon;
 select is((select count(*) from hazard_reports where id::text like '3c1%'), 1::bigint,
@@ -99,6 +107,9 @@ reset role;
 
 select isnt((select flagged_at from citizen_reports where id = '3c100000-0000-4000-8000-000000000001'), null,
   'many "gone" votes flag the report for moderation');
+select set_config('request.jwt.claim.sub', '3c000000-0000-4000-8000-000000000009', true);
+select is((select count from admin_attention_counts() where item = 'citizen_reports'), (select n + 2 from attention_baseline),
+  'a flagged report comes back to the moderators (the private one was deleted above)');
 select is((select count(*) from hazard_reports where id = '3c100000-0000-4000-8000-000000000001'), 1::bigint,
   '"gone" votes never hide a hazard: a false all-clear kills');
 

@@ -217,3 +217,45 @@ as $$
 $$;
 revoke all on function public.my_contribution() from public, anon;
 grant execute on function public.my_contribution() to authenticated;
+
+-- published reports need no moderator; the badge counts what needs a decision
+create or replace function public.admin_attention_counts()
+returns table(item text,count bigint,oldest timestamptz)
+language plpgsql stable security definer set search_path='' as $$
+declare
+  actor uuid := (select auth.uid());
+  ops boolean;
+  mods boolean;
+  translators boolean;
+begin
+  if actor is null or not public.has_any_role(actor,array['admin','operator','report_moderator','translator','incident_editor']::public.app_role[]) then
+    raise insufficient_privilege using message='panel_role_required';
+  end if;
+  ops := public.has_any_role(actor,array['operator','admin']::public.app_role[]);
+  mods := public.has_any_role(actor,array['report_moderator','admin']::public.app_role[]);
+  translators := public.has_any_role(actor,array['translator','admin']::public.app_role[]);
+  if ops then
+    return query select 'ita_review',count(*),min(w.updated_at) from public.civil_investigations w where w.state='review';
+    return query select 'ita_failed',count(*),min(w.updated_at) from public.civil_investigations w where w.state='failed';
+    return query select 'fires',count(*),min(c.first_detected_at) from public.fire_clusters c
+      where c.resolved_at is null and c.confidence>=0.6 and c.state in ('unconfirmed','active','contained_guess');
+    return query select 'operational_incidents',count(*),min(i.first_seen_at) from public.operational_incidents i
+      where i.acknowledged_at is null and i.resolved_at is null;
+    return query select 'source_gaps',count(*),min(g.detected_at) from public.source_gaps g where g.state='open';
+    return query select 'sources_unhealthy',count(*),null::timestamptz from public.source_health h
+      where h.state in ('delayed','degraded','stale');
+    return query select 'delivery_backlog',coalesce(sum(d.pending_count),0)::bigint,min(d.oldest_pending_at) from public.delivery_queue_health d;
+    return query select 'risk_pending',count(*),min(r.finished_at) from public.risk_forecast_snapshot_runs r
+      where r.status='active' and r.finished_at is not null;
+    return query select 'broadcasting_off',count(*),max(s.updated_at) from public.broadcast_settings s where not s.enabled;
+  end if;
+  if mods then
+    return query select 'citizen_reports',count(*),min(r.created_at) from public.citizen_reports r
+      where r.status='pending' and r.expires_at>now() and (r.publish_state<>'published' or r.flagged_at is not null);
+    return query select 'ideas',count(*),min(i.created_at) from public.contribution_ideas i where i.status='pending';
+  end if;
+  if translators then
+    return query select 'translations',count(distinct (t.locale,t.key_path)),min(t.created_at) from public.translation_suggestions t where t.status='pending';
+  end if;
+end;
+$$;

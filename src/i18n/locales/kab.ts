@@ -926,13 +926,6 @@ export const kab: Translation = {
       "Siwel qbel i Tɣellist Taɣarimt ɣef 14 ma llan yemdanen neɣ ixxamen deg wugur. Nadhir mačči d ameẓlu n tuffɣa.",
     useMyLocation: "Seqdec adig-iw",
     locating: "Asnirem n wadig…",
-    sightingSmoke: "Abbu",
-    sightingFlames: "Tirgin",
-    sightingSmell: "Rriḥa n uɣellu",
-    sightingOther: "Ayen nniḍen",
-    sizeSmall: "Meẓẓi",
-    sizeMedium: "Alemmas",
-    sizeLarge: "Meqqer",
     note: "Talqayt (afrayan)",
     photo: "Tawlaft (afrayan)",
     photoHint:

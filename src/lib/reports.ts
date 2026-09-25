@@ -37,6 +37,8 @@ export type CitizenReport = {
   hazard: string | null;
   summary: string | null;
   publish_state: PublishState;
+  classifier: string | null;
+  classified_at: string | null;
   expires_at: string | null;
   flagged_at: string | null;
   witnesses?: number;
