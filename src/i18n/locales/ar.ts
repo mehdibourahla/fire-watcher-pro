@@ -737,6 +737,7 @@ export const ar: Translation = {
     kindWeather: "الطقس",
     kindOfficial: "رسمي",
     kindRoad: "الطرق",
+    kindCitizen: "مواطنون",
     stateCurrentNotice: "إشعار ساري",
     stateNoticeOver: "انتهت مدة الإشعار — هذا لا يعني زوال الخطر",
     openMap: "عرض على الخريطة",
@@ -798,6 +799,7 @@ export const ar: Translation = {
     notifyWeather: "تحذيرات الطقس (الديوان الوطني للأرصاد الجوية)",
     notifyOfficial: "تحذيرات رسمية (الحماية المدنية)",
     notifyRoad: "حوادث الطرق",
+    notifyCitizen: "بلاغات مواطنين أكّدها أشخاص في المكان",
     devicePush: "تنبيهات على هذا الجهاز عندما يكون نذير مغلقًا",
     devicePushHint:
       "يرسل تنبيهات مناطقك إلى هذا الهاتف أو الحاسوب حتى عندما يكون نذير مغلقًا. فعّله على كل جهاز تستخدمه.",
@@ -865,6 +867,7 @@ export const ar: Translation = {
     zoneNowOfficial_other:
       "{{count}} بلاغًا من الحماية المدنية خلال آخر 72 ساعة",
     zoneNowRoad: "الطريق: {{summary}}",
+    zoneNowCitizen: "بلاغ مواطن مؤكَّد في المكان: {{hazard}}",
     zoneNothingNow: "لا شيء نشط حاليًا للمخاطر التي تتابعها هذه المنطقة.",
     zoneNowUnavailable: "الحالة المباشرة غير متاحة. ما زالت تنبيهاتك تصلك.",
   },

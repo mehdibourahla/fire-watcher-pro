@@ -126,6 +126,7 @@ export function ZonesPage() {
                           weather: zone.notify_weather,
                           official: zone.notify_official,
                           road: zone.notify_road,
+                          citizen: zone.notify_citizen,
                         },
                         {
                           lat: zone.lat,

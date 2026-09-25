@@ -1,4 +1,5 @@
 import { ONM_EVENTS } from "@/lib/civil-map-geometry";
+import { haversineKm } from "@/lib/nadhir";
 import {
   officialConcernsZone,
   ONM_SEVERITY,
@@ -23,19 +24,33 @@ export type LiveContext = {
     last_reported_at: string;
   }[];
   road: { id: string; area_id: string; summary: string; expires_at: string }[];
+  citizen: {
+    id: string;
+    hazard: string | null;
+    lat: number;
+    lon: number;
+    expires_at: string;
+    witnesses: number;
+  }[];
 };
 
 export type ZoneStatus = {
   weather: { event: string; level: number; until: string }[];
   official: number;
   road: { id: string; summary: string }[];
+  citizen: { id: string; hazard: string | null }[];
 };
 
 // an official report stays current for 72 h, the same window its zone alert uses
 const OFFICIAL_WINDOW_MS = 72 * 3_600_000;
 
 export function zoneStatus(
-  follows: { weather: boolean; official: boolean; road: boolean },
+  follows: {
+    weather: boolean;
+    official: boolean;
+    road: boolean;
+    citizen: boolean;
+  },
   area: ZoneArea,
   context: LiveContext,
   nowMs: number,
@@ -72,9 +87,21 @@ export function zoneStatus(
         .map((r) => ({ id: r.id, summary: r.summary }))
     : [];
 
+  const citizen = follows.citizen
+    ? context.citizen
+        .filter(
+          (c) =>
+            c.witnesses > 0 &&
+            Date.parse(c.expires_at) > nowMs &&
+            haversineKm(area.lat, area.lon, c.lat, c.lon) <= area.radius_km,
+        )
+        .map((c) => ({ id: c.id, hazard: c.hazard }))
+    : [];
+
   return {
     weather: [...weather.values()].sort((a, b) => b.level - a.level),
     official,
     road,
+    citizen,
   };
 }

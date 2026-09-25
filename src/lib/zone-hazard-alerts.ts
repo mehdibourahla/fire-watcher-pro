@@ -1,3 +1,8 @@
+import { ar } from "@/i18n/locales/ar";
+import { en, type Translation } from "@/i18n/locales/en";
+import { fr } from "@/i18n/locales/fr";
+import { kab } from "@/i18n/locales/kab";
+import { haversineKm } from "@/lib/nadhir";
 import {
   authorityConcernsZone,
   officialConcernsZone,
@@ -19,6 +24,7 @@ export type HazardZone = {
   notify_weather: boolean;
   notify_official: boolean;
   notify_road: boolean;
+  notify_citizen: boolean;
 };
 
 export type HazardContext = {
@@ -57,12 +63,22 @@ export type HazardContext = {
     source_name: string;
     expires_at: string;
   }[];
+  citizen: {
+    id: string;
+    reporter: string;
+    hazard: string | null;
+    summary: string | null;
+    lat: number;
+    lon: number;
+    expires_at: string;
+    witnesses: string[];
+  }[];
 };
 
 export type HazardAlertRow = {
   user_id: string;
   zone_id: string;
-  kind: "weather" | "official" | "road";
+  kind: "weather" | "official" | "road" | "citizen";
   severity: number;
   commune_id: string | null;
   dedupe_key: string;
@@ -81,7 +97,11 @@ type Copy = Record<
   | "authorityTitle"
   | "authorityBody"
   | "roadTitle"
-  | "roadBody",
+  | "roadBody"
+  | "citizenTitle"
+  | "citizenQuote"
+  | "citizenBodyOne"
+  | "citizenBodyMany",
   string
 >;
 
@@ -95,6 +115,12 @@ const FR: Copy = {
   roadTitle: "Incident routier près de {{zone}}",
   roadBody:
     "« {{text}} » — signalé par {{source}}, vérifié par Nadhir. Information, pas une consigne officielle.",
+  citizenTitle: "Signalement citoyen près de {{zone}} : {{hazard}}",
+  citizenQuote: "« {{summary}} » ",
+  citizenBodyOne:
+    "{{quote}}Confirmé par une personne sur place. Non vérifié par les autorités.",
+  citizenBodyMany:
+    "{{quote}}Confirmé par {{count}} personnes sur place. Non vérifié par les autorités.",
 };
 
 const COPY: Record<string, Copy> = {
@@ -108,6 +134,12 @@ const COPY: Record<string, Copy> = {
     roadTitle: "Road incident near {{zone}}",
     roadBody:
       "“{{text}}” — reported by {{source}}, reviewed by Nadhir. Information, not an official order.",
+    citizenTitle: "Citizen report near {{zone}}: {{hazard}}",
+    citizenQuote: "“{{summary}}” ",
+    citizenBodyOne:
+      "{{quote}}Confirmed by one person nearby. Not verified by authorities.",
+    citizenBodyMany:
+      "{{quote}}Confirmed by {{count}} people nearby. Not verified by authorities.",
   },
   fr: FR,
   kab: FR,
@@ -121,7 +153,19 @@ const COPY: Record<string, Copy> = {
     roadTitle: "حادث مروري قرب {{zone}}",
     roadBody:
       "«{{text}}» — أبلغ عنه {{source}} وراجعه نذير. معلومة وليست أمرًا رسميًا.",
+    citizenTitle: "بلاغ مواطن قرب {{zone}}: {{hazard}}",
+    citizenQuote: "«{{summary}}» ",
+    citizenBodyOne: "{{quote}}أكّده شخص واحد في المكان. لم تتحقق منه السلطات.",
+    citizenBodyMany:
+      "{{quote}}أكّده {{count}} أشخاص في المكان. لم تتحقق منه السلطات.",
   },
+};
+
+const HAZARD_NAMES: Record<string, Translation["reports"]["hazardName"]> = {
+  ar: ar.reports.hazardName,
+  en: en.reports.hazardName,
+  fr: fr.reports.hazardName,
+  kab: kab.reports.hazardName,
 };
 
 const AUTHORITY_SEVERITY: Record<string, number> = { Severe: 4, Extreme: 5 };
@@ -150,6 +194,7 @@ export function hazardAlerts(
     const { locale, quiet, minLevel } = profileOf(zone.user_id);
     const threshold = Math.max(zone.min_danger_level, minLevel);
     const copy = COPY[locale] ?? COPY["ar"]!;
+    const hazardNames = HAZARD_NAMES[locale] ?? HAZARD_NAMES["ar"]!;
     const commune = zone.commune_id
       ? context.communes.get(zone.commune_id)
       : undefined;
@@ -272,6 +317,50 @@ export function hazardAlerts(
             payload: {
               expires_at: publication.expires_at,
               map_event: `civil:${publication.id}`,
+            },
+          },
+          false,
+        );
+      }
+
+    if (zone.notify_citizen)
+      for (const report of context.citizen) {
+        if (
+          !report.witnesses.length ||
+          report.reporter === zone.user_id ||
+          report.witnesses.includes(zone.user_id) ||
+          haversineKm(zone.lat, zone.lon, report.lat, report.lon) >
+            zone.radius_km
+        )
+          continue;
+        const count = report.witnesses.length;
+        add(
+          {
+            kind: "citizen",
+            severity: 2,
+            dedupe_key: `citizen:${report.id}`,
+            title: fill(copy.citizenTitle, {
+              zone: zone.name,
+              hazard:
+                hazardNames[
+                  (report.hazard ?? "other") as keyof typeof hazardNames
+                ] ?? hazardNames.other,
+            }),
+            body: fill(
+              count === 1 ? copy.citizenBodyOne : copy.citizenBodyMany,
+              {
+                quote: report.summary
+                  ? fill(copy.citizenQuote, { summary: report.summary })
+                  : "",
+                count: String(count),
+              },
+            ),
+            source_table: "citizen_reports",
+            source_id: report.id,
+            payload: {
+              witnesses: count,
+              expires_at: report.expires_at,
+              map_event: `report:${report.id}`,
             },
           },
           false,

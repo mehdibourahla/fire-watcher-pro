@@ -749,6 +749,7 @@ export const en = {
     kindWeather: "Weather",
     kindOfficial: "Official",
     kindRoad: "Road",
+    kindCitizen: "Citizen",
     stateCurrentNotice: "Current notice",
     stateNoticeOver: "Notice period over — this is not an all-clear",
     openMap: "Show on the map",
@@ -814,6 +815,7 @@ export const en = {
     notifyWeather: "Weather warnings (ONM)",
     notifyOfficial: "Official warnings (Protection Civile)",
     notifyRoad: "Road incidents",
+    notifyCitizen: "Citizen reports confirmed by people nearby",
     devicePush: "Alerts on this device when Nadhir is closed",
     devicePushHint:
       "Sends your zone alerts to this phone or computer, even when Nadhir is closed. Turn it on on each device you use.",
@@ -892,6 +894,7 @@ export const en = {
     zoneNowOfficial_other:
       "{{count}} Civil Protection reports in the last 72 hours",
     zoneNowRoad: "Road: {{summary}}",
+    zoneNowCitizen: "Citizen report confirmed nearby: {{hazard}}",
     zoneNothingNow:
       "Nothing active right now for the hazards this zone follows.",
     zoneNowUnavailable: "Live status is unavailable. Your alerts still arrive.",

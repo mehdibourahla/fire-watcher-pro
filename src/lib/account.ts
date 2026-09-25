@@ -51,6 +51,7 @@ export type Zone = {
   notify_weather: boolean;
   notify_official: boolean;
   notify_road: boolean;
+  notify_citizen: boolean;
   active: boolean;
   created_at: string;
 };
@@ -73,7 +74,7 @@ export const liveZoneContextQuery = queryOptions({
   queryFn: async (): Promise<LiveContext> => {
     const now = new Date().toISOString();
     const since = new Date(Date.now() - 72 * 3_600_000).toISOString();
-    const [weather, official, road] = await Promise.all([
+    const [weather, official, road, citizen] = await Promise.all([
       supabase
         .from("onm_vigilance")
         .select("id, event, severity, expires, wilaya_id, polygon")
@@ -94,8 +95,14 @@ export const liveZoneContextQuery = queryOptions({
         .eq("state", "published")
         .gt("expires_at", now)
         .limit(1000),
+      supabase
+        .from("hazard_reports")
+        .select("id, hazard, lat, lon, expires_at, witnesses")
+        .gt("witnesses", 0)
+        .gt("expires_at", now)
+        .limit(1000),
     ]);
-    for (const result of [weather, official, road])
+    for (const result of [weather, official, road, citizen])
       if (result.error) throw new Error(result.error.message);
     return {
       weather: (weather.data ?? []).flatMap((w) =>
@@ -113,6 +120,20 @@ export const liveZoneContextQuery = queryOptions({
       ),
       official: official.data ?? [],
       road: road.data ?? [],
+      citizen: (citizen.data ?? []).flatMap((c) =>
+        c.id && c.lat !== null && c.lon !== null && c.expires_at
+          ? [
+              {
+                id: c.id,
+                hazard: c.hazard,
+                lat: c.lat,
+                lon: c.lon,
+                expires_at: c.expires_at,
+                witnesses: c.witnesses ?? 0,
+              },
+            ]
+          : [],
+      ),
     };
   },
 });
@@ -133,6 +154,7 @@ export const ZONE_HAZARDS = [
   { key: "notify_weather", label: "account.notifyWeather" },
   { key: "notify_official", label: "account.notifyOfficial" },
   { key: "notify_road", label: "account.notifyRoad" },
+  { key: "notify_citizen", label: "account.notifyCitizen" },
 ] as const;
 
 export type ZoneHazardKey = (typeof ZONE_HAZARDS)[number]["key"];

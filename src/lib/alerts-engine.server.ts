@@ -294,6 +294,26 @@ async function loadHazardContext(
   ]);
   for (const result of [units, weather, official, authority, road])
     if (result.error) throw new Error(result.error.message);
+  const { data: reports, error: reportsError } = await supabaseAdmin
+    .from("citizen_reports")
+    .select("id, user_id, hazard, summary, lat, lon, expires_at")
+    .or("publish_state.eq.published,status.eq.approved")
+    .neq("status", "rejected")
+    .neq("kind", "person_trapped")
+    .is("flagged_at", null)
+    .gt("expires_at", iso);
+  if (reportsError) throw new Error(reportsError.message);
+  const { data: votes, error: votesError } = reports?.length
+    ? await supabaseAdmin
+        .from("report_witnesses")
+        .select("report_id, user_id")
+        .eq("vote", "seen")
+        .in(
+          "report_id",
+          reports.map((r) => r.id),
+        )
+    : { data: [], error: null };
+  if (votesError) throw new Error(votesError.message);
   return {
     communes: new Map(
       (units.data ?? []).map((u) => [
@@ -319,6 +339,18 @@ async function loadHazardContext(
     ),
     authority: authority.data ?? [],
     road: road.data ?? [],
+    citizen: (reports ?? []).map((r) => ({
+      id: r.id,
+      reporter: r.user_id,
+      hazard: r.hazard,
+      summary: r.summary,
+      lat: r.lat,
+      lon: r.lon,
+      expires_at: r.expires_at!,
+      witnesses: (votes ?? [])
+        .filter((v) => v.report_id === r.id)
+        .map((v) => v.user_id),
+    })),
   };
 }
 

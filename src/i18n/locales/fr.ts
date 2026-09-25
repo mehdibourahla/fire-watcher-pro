@@ -767,6 +767,7 @@ export const fr: Translation = {
     kindWeather: "Météo",
     kindOfficial: "Officiel",
     kindRoad: "Route",
+    kindCitizen: "Citoyen",
     stateCurrentNotice: "Avis en cours",
     stateNoticeOver:
       "Période de l'avis terminée — ce n'est pas une fin d'alerte",
@@ -835,6 +836,7 @@ export const fr: Translation = {
     notifyWeather: "Vigilances météo (ONM)",
     notifyOfficial: "Avertissements officiels (Protection civile)",
     notifyRoad: "Incidents routiers",
+    notifyCitizen: "Signalements citoyens confirmés sur place",
     devicePush: "Alertes sur cet appareil quand Nadhir est fermé",
     devicePushHint:
       "Envoie les alertes de vos zones sur ce téléphone ou cet ordinateur, même quand Nadhir est fermé. Activez-le sur chaque appareil.",
@@ -916,6 +918,7 @@ export const fr: Translation = {
     zoneNowOfficial_other:
       "{{count}} signalements de la Protection civile ces dernières 72 heures",
     zoneNowRoad: "Route : {{summary}}",
+    zoneNowCitizen: "Signalement citoyen confirmé sur place : {{hazard}}",
     zoneNothingNow:
       "Rien d’actif en ce moment pour les aléas suivis par cette zone.",
     zoneNowUnavailable:

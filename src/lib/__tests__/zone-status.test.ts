@@ -11,7 +11,7 @@ const area = {
   communeCode: "1501",
   wilayaId: "w15",
 };
-const all = { weather: true, official: true, road: true };
+const all = { weather: true, official: true, road: true, citizen: true };
 
 const context: LiveContext = {
   weather: [
@@ -73,6 +73,40 @@ const context: LiveContext = {
       expires_at: "2026-09-25T10:00:00Z",
     },
   ],
+  citizen: [
+    {
+      id: "seen",
+      hazard: "flooding",
+      lat: 36.72,
+      lon: 4.05,
+      expires_at: "2026-09-25T18:00:00Z",
+      witnesses: 1,
+    },
+    {
+      id: "alone",
+      hazard: "flooding",
+      lat: 36.72,
+      lon: 4.05,
+      expires_at: "2026-09-25T18:00:00Z",
+      witnesses: 0,
+    },
+    {
+      id: "far",
+      hazard: "flooding",
+      lat: 37.5,
+      lon: 4.05,
+      expires_at: "2026-09-25T18:00:00Z",
+      witnesses: 3,
+    },
+    {
+      id: "over",
+      hazard: "flooding",
+      lat: 36.72,
+      lon: 4.05,
+      expires_at: "2026-09-25T11:00:00Z",
+      witnesses: 2,
+    },
+  ],
 };
 
 describe("zoneStatus", () => {
@@ -81,17 +115,18 @@ describe("zoneStatus", () => {
       weather: [{ event: "storm", level: 2, until: "2026-09-25T21:00:00Z" }],
       official: 1,
       road: [{ id: "r1", summary: "Accident RN12" }],
+      citizen: [{ id: "seen", hazard: "flooding" }],
     });
   });
 
   it("shows only the hazards the zone follows", () => {
     expect(
       zoneStatus(
-        { weather: false, official: true, road: false },
+        { weather: false, official: true, road: false, citizen: false },
         area,
         context,
         NOW,
       ),
-    ).toEqual({ weather: [], official: 1, road: [] });
+    ).toEqual({ weather: [], official: 1, road: [], citizen: [] });
   });
 });
