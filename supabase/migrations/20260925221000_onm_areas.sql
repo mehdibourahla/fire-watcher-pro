@@ -7,6 +7,7 @@ create table public.onm_areas (
 alter table public.onm_areas enable row level security;
 revoke all on public.onm_areas from public, anon, authenticated;
 grant select on public.onm_areas to anon, authenticated;
+revoke insert, update, delete, truncate on public.onm_areas from service_role;
 create policy "onm areas are public reference data" on public.onm_areas for select using (true);
 
 insert into public.onm_areas (id, polygon)

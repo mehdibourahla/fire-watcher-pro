@@ -18,6 +18,7 @@ create index airport_observations_observed_idx on public.airport_observations (o
 alter table public.airport_observations enable row level security;
 revoke all on public.airport_observations from public, anon, authenticated;
 grant select on public.airport_observations to anon, authenticated;
+revoke update, delete, truncate on public.airport_observations from service_role;
 create policy "public read airport observations" on public.airport_observations for select using (true);
 
 insert into public.airport_observations

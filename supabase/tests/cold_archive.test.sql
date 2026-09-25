@@ -1,6 +1,6 @@
 begin;
 set local search_path = public, extensions;
-select plan(21);
+select plan(25);
 
 select set_config('test.day', ((now() at time zone 'UTC')::date - 100)::text, true);
 create temp view old_day as select current_setting('test.day')::date as day,
@@ -37,6 +37,11 @@ from old_day o, (values
   ('20000000-0000-4000-8000-000000000031'::uuid, '20000000-0000-4000-8000-000000000021'::uuid),
   ('20000000-0000-4000-8000-000000000032'::uuid, '20000000-0000-4000-8000-000000000022'::uuid)) v(id, snapshot);
 
+insert into storage.objects (bucket_id, name, metadata)
+select 'cold-archive', format('cold/%s/%s.parquet', t, to_char(current_setting('test.day')::date, 'YYYY/MM/DD')), '{"size": 10}'::jsonb
+from unnest(array['broadcast_audit', 'source_runs', 'risk_forecasts']) t
+union all select 'cold-archive', 'cold/elsewhere.parquet', '{"size": 10}'::jsonb;
+
 create temp table digests as
 select t, count(*) as n, md5(string_agg(id::text, ',' order by id::text collate "C")) as digest
 from (select 'broadcast_audit' as t, id from private.cold_candidates('broadcast_audit', current_setting('test.day')::date)
@@ -64,6 +69,12 @@ select throws_ok(format($$select public.cold_archive_commit('broadcast_audit', %
     current_setting('test.day'), md5('other rows'), repeat('a', 64),
     'cold/broadcast_audit/' || to_char(current_setting('test.day')::date, 'YYYY/MM/DD') || '.parquet'),
   'P0001', 'cold_export_mismatch', 'the same count of other rows deletes nothing');
+select throws_ok(format($$select public.cold_archive_commit('broadcast_audit', %L, 2, %L, %L, 11, %L)$$,
+    current_setting('test.day'), (select digest from digests where t = 'broadcast_audit'), repeat('a', 64),
+    'cold/broadcast_audit/' || to_char(current_setting('test.day')::date, 'YYYY/MM/DD') || '.parquet'),
+  'P0002', 'cold_file_missing', 'no day leaves without a stored file of the declared size');
+select throws_ok($$insert into public.cold_exports (table_name, day, rows) values ('broadcast_audit', '2020-01-01', 0)$$,
+  '42501', null, 'the service key cannot forge a manifest row');
 select throws_ok(format($$select public.cold_archive_commit('broadcast_audit', %L, 2, %L, %L, 10, 'cold/elsewhere.parquet')$$,
     current_setting('test.day'), (select digest from digests where t = 'broadcast_audit'), repeat('a', 64)),
   '23514', null, 'the file path follows the archive layout');
@@ -95,6 +106,8 @@ select is((select array_agg(idempotency_key order by idempotency_key) from publi
   array['cold-referenced', 'cold-running'], 'only the unreferenced finished run left');
 select is((select count(*) from public.source_run_retired_keys where idempotency_key = 'cold-old'), 1::bigint,
   'an archived run''s key can never be replayed');
+select throws_ok($$delete from public.risk_forecasts where id = '20000000-0000-4000-8000-000000000032'$$,
+  '55000', 'published_risk_forecast_is_immutable', 'the current publication stays undeletable on an archived day');
 select is((select array_agg(id) from public.risk_forecasts where id in ('20000000-0000-4000-8000-000000000031', '20000000-0000-4000-8000-000000000032')),
   array['20000000-0000-4000-8000-000000000032'::uuid], 'the current publication survives archiving');
 
@@ -102,6 +115,12 @@ select ok(not has_function_privilege('authenticated', 'public.cold_archive_commi
   'users cannot archive evidence');
 select ok(has_function_privilege('cold_reader', 'private.cold_candidates(text,date)', 'execute')
   and not has_table_privilege('cold_reader', 'public.broadcast_audit', 'delete'), 'the export login reads and never deletes');
+
+select is((select count(*) from pg_class c join pg_namespace n on n.oid = c.relnamespace
+    where n.nspname in ('public', 'private', 'storage') and c.relkind in ('r', 'p', 'v')
+      and (has_table_privilege('cold_reader', c.oid, 'insert') or has_table_privilege('cold_reader', c.oid, 'update')
+        or has_table_privilege('cold_reader', c.oid, 'delete') or has_table_privilege('cold_reader', c.oid, 'truncate'))),
+  0::bigint, 'the export login writes to none of our tables');
 
 select * from finish();
 rollback;

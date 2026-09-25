@@ -30,7 +30,7 @@ create table public.cold_exports (
   )
 );
 alter table public.cold_exports enable row level security;
-revoke all on public.cold_exports from public, anon, authenticated;
+revoke all on public.cold_exports from public, anon, authenticated, service_role;
 grant select on public.cold_exports to authenticated;
 create policy operator_read_cold_exports on public.cold_exports for select to authenticated
   using (public.has_any_role(auth.uid(), array['operator', 'admin']::public.app_role[]));
@@ -104,7 +104,8 @@ create or replace function public.reject_published_risk_forecast_mutation() retu
 language plpgsql set search_path = '' as $$
 begin
   if old.snapshot_id is not null
-    and not (tg_op = 'DELETE' and private.cold_archived('risk_forecasts', old.created_at)) then
+    and not (tg_op = 'DELETE' and private.cold_archived('risk_forecasts', old.created_at)
+      and not exists (select 1 from public.risk_publication_checkpoint c where c.snapshot_id = old.snapshot_id)) then
     raise exception using
       errcode = '55000',
       message = 'published_risk_forecast_is_immutable';
@@ -151,6 +152,12 @@ begin
   if _day >= (now() at time zone 'UTC')::date - _hot then
     raise exception 'cold_day_still_hot' using errcode = '22023';
   end if;
+  if _rows > 0 and not exists (
+    select 1 from storage.objects o
+    where o.bucket_id = 'cold-archive' and o.name = _path and (o.metadata ->> 'size')::bigint = _bytes
+  ) then
+    raise exception 'cold_file_missing' using errcode = 'P0002';
+  end if;
   if _table = 'source_runs' then perform pg_advisory_xact_lock(1800908); end if;
 
   insert into public.cold_exports (table_name, day, rows, key_digest, sha256, bytes, path)
@@ -180,7 +187,7 @@ revoke all on function public.cold_archive_commit(text, date, bigint, text, text
   from public, anon, authenticated;
 grant execute on function public.cold_archive_commit(text, date, bigint, text, text, bigint, text) to service_role;
 
--- the export reads through its own login: it can select, never write
+-- the export reads through its own login; pg_net's PUBLIC grants (owned by supabase_admin) still reach it
 do $$
 begin
   if not exists (select 1 from pg_roles where rolname = 'cold_reader') then

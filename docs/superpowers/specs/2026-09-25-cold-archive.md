@@ -42,7 +42,8 @@ For each cold table, every day past its hot window with no `cold_exports` row, o
    `cold/<table>/<yyyy>/<mm>/<dd>.parquet`, zstd. Parquet keeps the column types.
 2. Upload to the private bucket `cold-archive`, download it back, and check the SHA-256 and
    that DuckDB reads the same row count and key digest (MD5 of the sorted ids) from it.
-3. `cold_archive_commit` (service role) deletes the same candidates in one transaction and
+3. `cold_archive_commit` (service role) first requires a stored object at that path with the
+   declared size, then deletes the same candidates in one transaction and
    recomputes count and digest over what it deleted. Any mismatch raises: the delete rolls
    back with the manifest row, and the next run retries the day.
 4. The manifest row `cold_exports(table, day, rows, key_digest, sha256, bytes, path)` is
@@ -50,6 +51,12 @@ For each cold table, every day past its hot window with no `cold_exports` row, o
    are immutable by trigger; the triggers now allow a DELETE only when the row's day has a
    manifest row, and still refuse every UPDATE. Deleted run idempotency keys go to
    `source_run_retired_keys`, as the 180-day prune did.
+
+`cold_exports` is written only by the commit function; no API role can insert or delete a
+manifest row. `cold_reader` writes to none of our tables, but pg_net grants PUBLIC its request
+queue and `http_post`, and those grants belong to `supabase_admin`, beyond a migration's reach.
+Any SQL login therefore carries them. Accepted: the same workflow already holds the service-role
+key, which is strictly more powerful, so the login adds no new trust boundary.
 
 A day with no candidates gets a manifest row with 0 rows and no file. The commit also
 refuses a day inside the hot window, whatever the caller sends. Runs catch up: GitHub drops
@@ -81,7 +88,13 @@ Operational incidents stay hot (85 rows). The retired-key guard stays.
    secret `COLD_ARCHIVE_DB_URL`.
 2. Run the workflow once with `trial_table: risk_forecasts`, `trial_day: 2026-08-28`, and read
    its checks.
-3. First real delete: 2026-11-26, the first day with data older than 90 days.
+3. Run `vacuum full public.onm_vigilance;` once after deploy: dropping `polygon` frees its
+   31 MB only when the table is rewritten.
+4. First real delete: 2026-11-26, the first day with data older than 90 days.
+
+Deploy note: between `db push` and the Worker deploy, the running code still writes
+`airport_weather` and `polygon`; METAR, CAP-detail and alert runs fail for those minutes and
+retry on their next run.
 
 ## Later
 
