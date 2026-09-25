@@ -2,6 +2,15 @@ import { useTranslation } from "react-i18next";
 
 import type { Locale } from "@/i18n";
 import { relativeTime, unitName, type OfficialIncident } from "@/lib/nadhir";
+import { isFireKind } from "@/lib/text-sources/merge";
+
+const HAZARD_NAME: Record<string, string> = {
+  flood: "flooding",
+  road: "road_blocked",
+  structure: "structural",
+  storm: "storm_damage",
+  other: "other",
+};
 
 type Props = {
   incident: OfficialIncident;
@@ -15,6 +24,7 @@ export function OfficialIncidentDetail({ incident, locale, now }: Props) {
   const post = incident.latest_mention?.document ?? null;
   const source =
     incident.latest_mention?.source?.label ?? t("official.sourceFallback");
+  const fire = isFireKind(incident.kind);
 
   return (
     <div className="flex flex-col gap-3">
@@ -31,6 +41,14 @@ export function OfficialIncidentDetail({ incident, locale, now }: Props) {
         {incident.place_text ? ` · ${incident.place_text}` : null}
       </p>
       <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+        {fire ? null : (
+          <>
+            <dt className="text-muted-foreground">{t("official.hazard")}</dt>
+            <dd className="font-medium">
+              {t(`reports.hazardName.${HAZARD_NAME[incident.kind] ?? "other"}`)}
+            </dd>
+          </>
+        )}
         <dt className="text-muted-foreground">{t("official.status")}</dt>
         <dd className="font-medium">
           {t(`official.statuses.${incident.status}`)}
@@ -73,7 +91,7 @@ export function OfficialIncidentDetail({ incident, locale, now }: Props) {
         </a>
       ) : null}
       <p className="text-xs text-muted-foreground">
-        {t("official.disclaimer")}
+        {t(fire ? "official.disclaimer" : "official.disclaimerHazard")}
       </p>
     </div>
   );

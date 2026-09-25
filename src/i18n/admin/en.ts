@@ -579,6 +579,12 @@ export const adminEn = {
     status_extinguished: "Extinguished",
     status_monitoring: "Monitoring",
     status_unknown: "Unknown",
+    kind_flood: "Flood",
+    kind_road: "Road",
+    kind_structure: "Structure",
+    kind_storm: "Storm damage",
+    kind_other: "Other hazard",
+    status_cleared: "Cleared",
   },
   places: {
     search: "Search a place…",

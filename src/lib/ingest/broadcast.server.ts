@@ -1,3 +1,4 @@
+import { FIRE_KINDS } from "@/lib/text-sources/merge";
 import { fireLevel, type FireContext } from "@/lib/fire-confidence";
 import { fireContexts } from "@/lib/ingest/fire-context.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
@@ -623,8 +624,9 @@ async function relayOfficialIncidents(): Promise<number> {
       "id, commune_id, wilaya_id, status, as_of, evidence, unlisted_at, latest_mention_id",
     )
     .not("commune_id", "is", null)
+    .in("kind", [...FIRE_KINDS])
     .is("unlisted_at", null)
-    .neq("status", "extinguished")
+    .not("status", "in", "(extinguished,cleared)")
     .gte("as_of", since);
   if (error) throw new Error(error.message);
   if (!incidents?.length) return 0;

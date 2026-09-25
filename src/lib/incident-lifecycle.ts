@@ -1,3 +1,4 @@
+import { isFireKind } from "./text-sources/merge";
 import {
   CIVIL_PUBLICATION_MAX_AGE_HOURS,
   type CivilHazard,
@@ -10,6 +11,8 @@ export const FIRE_LEASE_HOURS = 6;
 // fusion stops attaching new detections to a cluster silent this long
 const FIRE_ARCHIVE_HOURS = 24;
 const OFFICIAL_LEASE_HOURS = 24;
+// a Protection Civile situation report is a snapshot of the day's weather impacts
+const OFFICIAL_HAZARD_LEASE_HOURS = 12;
 const ARCHIVE_HOURS = 72;
 const REPORT_ARCHIVE_HOURS = 24;
 const REPORT_LEGACY_LEASE_HOURS = 3;
@@ -66,16 +69,20 @@ export function firePhase(
 
 export function officialPhase(
   incident: {
+    kind: string;
     status: string;
     last_reported_at: string;
     unlisted_at: string | null;
   },
   now: number,
 ): Phase {
-  if (incident.status === "extinguished") return "ended";
+  if (incident.status === "extinguished" || incident.status === "cleared")
+    return "ended";
   const phase = byAge(
     ageHours(incident.last_reported_at, now),
-    OFFICIAL_LEASE_HOURS,
+    isFireKind(incident.kind)
+      ? OFFICIAL_LEASE_HOURS
+      : OFFICIAL_HAZARD_LEASE_HOURS,
     ARCHIVE_HOURS,
   );
   return phase === "live" && incident.unlisted_at !== null ? "fading" : phase;

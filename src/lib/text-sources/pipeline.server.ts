@@ -12,6 +12,13 @@ import {
   type LlmMention,
 } from "./extract-llm.server";
 import {
+  defaultSituationReader,
+  readSituation,
+  type Situation,
+} from "./dgpc-situation.server";
+import {
+  FIRE_KINDS,
+  isFireKind,
   mergeDecision,
   nextIncidentState,
   type AuthorityTier,
@@ -117,6 +124,13 @@ export type TextSourceStore = {
     message: string,
   ) => Promise<void>;
   clearExtractionFailure: (documentId: string) => Promise<void>;
+  insertAdvice: (row: {
+    documentId: string;
+    advice: string;
+    wilayaIds: string[];
+    validFrom: string | null;
+    validTo: string | null;
+  }) => Promise<void>;
 };
 
 export type TextSourcePipelineDependencies = {
@@ -127,6 +141,7 @@ export type TextSourcePipelineDependencies = {
     known: Set<string>,
   ) => Promise<TelegramPost[]>;
   extractLlm: (input: LlmExtractionInput) => Promise<LlmExtractionResult>;
+  readSituation: (text: string) => Promise<Situation>;
 };
 
 export type TextSourceRun = {
@@ -144,6 +159,9 @@ export type TextSourceRun = {
   retried: number;
   llmSkipped: boolean;
   llmFailed: number;
+  situationItems: number;
+  adviceStored: number;
+  rejectedSpans: number;
   pending: number;
   error?: string;
 };
@@ -169,7 +187,10 @@ type Draft = Omit<MentionInsert, "document_id" | "text_source_id"> & {
 };
 
 function resolveLlmMention(
-  m: LlmMention,
+  m: Omit<LlmMention, "kind" | "status"> & {
+    kind: IncidentKind;
+    status: IncidentStatus;
+  },
   asOf: string,
   gazetteer: Gazetteer,
   fallbackWilaya: string | null,
@@ -387,6 +408,9 @@ export async function runTextSourceWith(
     retried: 0,
     llmSkipped: false,
     llmFailed: 0,
+    situationItems: 0,
+    adviceStored: 0,
+    rejectedSpans: 0,
     pending: 0,
   };
   const now = (deps.now?.() ?? new Date()).getTime();
@@ -428,12 +452,83 @@ export async function runTextSourceWith(
       source.template === "dgpc_bulletin"
         ? parseDgpcBulletin(doc.body, doc.published_at)
         : null;
-    if (parsed && parsed.kind !== "bulletin" && parsed.kind !== "incident") {
+    if (parsed?.kind === "urban") {
       run.skippedPosts += 1;
       retriedOk.push(doc.id);
       continue;
     }
     const asOf = parsed?.asOf ?? doc.published_at;
+    // the regex router knows only fire formats; the model reads everything else
+    if (parsed && parsed.kind !== "bulletin" && parsed.kind !== "incident") {
+      let situation: Situation;
+      try {
+        situation = await deps.readSituation(doc.body);
+      } catch (error) {
+        run.llmFailed += 1;
+        lastLlmError = error instanceof Error ? error.message : String(error);
+        await deps.store.recordExtractionFailure(doc.id, lastLlmError);
+        continue;
+      }
+      run.rejectedSpans += situation.rejected;
+      if (situation.disposition !== "fire") {
+        const unresolved: string[] = [];
+        for (const item of situation.items) {
+          const draft = resolveLlmMention(
+            {
+              wilaya: item.wilaya,
+              commune: item.commune,
+              place: item.place,
+              kind: item.hazard,
+              status: item.state,
+              count: 1,
+              evidence: item.evidence,
+            },
+            asOf,
+            gazetteer,
+            source.wilaya_id,
+          );
+          if (!draft) {
+            unresolved.push(item.commune ?? item.wilaya ?? "unnamed location");
+            continue;
+          }
+          run.situationItems += 1;
+          inserts.push({
+            ...draft,
+            document_id: doc.id,
+            text_source_id: source.id,
+          });
+        }
+        if (situation.advice) {
+          const wilayaIds = [
+            ...new Set(
+              situation.advice.wilayas.flatMap((name) => {
+                const id = resolveWilaya(name, gazetteer.wilayas);
+                return id ? [id] : [];
+              }),
+            ),
+          ];
+          if (wilayaIds.length) {
+            await deps.store.insertAdvice({
+              documentId: doc.id,
+              advice: situation.advice.text,
+              wilayaIds,
+              validFrom: situation.advice.validFrom,
+              validTo: situation.advice.validTo,
+            });
+            run.adviceStored += 1;
+          } else unresolved.push(...situation.advice.wilayas);
+        }
+        if (!situation.items.length && !situation.advice) run.skippedPosts += 1;
+        if (unresolved.length) {
+          run.unresolved += unresolved.length;
+          await deps.store.recordExtractionFailure(
+            doc.id,
+            `incomplete interpretation: ${unresolved.join(", ")}`,
+          );
+        } else retriedOk.push(doc.id);
+        continue;
+      }
+    }
     // a full bulletin is the authority's complete list of notable fires, so what it
     // omits is no longer listed; a single-incident post says nothing about the rest
     const publishedAt = Date.parse(doc.published_at);
@@ -578,7 +673,7 @@ export async function runTextSourceWith(
   run.resolved = rows.length;
   run.clustersConfirmed = await deps.store.confirmClusters(
     rows
-      .filter((r) => r.commune_id !== null)
+      .filter((r) => r.commune_id !== null && isFireKind(r.kind))
       .map((r) => ({
         communeId: r.commune_id!,
         asOf: r.as_of,
@@ -747,6 +842,7 @@ function createSupabaseStore(key: string): TextSourceStore {
         await supabaseAdmin
           .from("official_incidents")
           .select("id, commune_id, wilaya_id")
+          .in("kind", [...FIRE_KINDS])
           .is("unlisted_at", null)
           .lt("last_reported_at", before),
         "listed incidents",
@@ -779,6 +875,7 @@ function createSupabaseStore(key: string): TextSourceStore {
     clearExtractionFailure: (documentId) => write("complete", { documentId }),
     confirmClusters: (rows) => write("confirm", rows),
     markUnlisted: (ids, asOf) => write("unlist", { ids, asOf }),
+    insertAdvice: (row) => write("advice", row),
   };
 }
 
@@ -800,5 +897,6 @@ export function runTextSource(key: string): Promise<TextSourceRun> {
         ),
       ),
     extractLlm: extractMentionsWithLlm,
+    readSituation: (text) => readSituation(text, defaultSituationReader()),
   });
 }

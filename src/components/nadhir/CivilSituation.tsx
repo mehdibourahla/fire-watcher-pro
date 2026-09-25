@@ -5,6 +5,7 @@ import {
   TriangleAlert,
   Route as Road,
 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import type { Locale } from "@/i18n";
@@ -13,6 +14,7 @@ import { relativeTime, unitName, type AdminUnit } from "@/lib/nadhir";
 import { OfficialIncidentDetail } from "./OfficialIncidentDetail";
 import { HazardReportDetail } from "./HazardReportDetail";
 import { civilPublicationLifecycle } from "@/lib/civil-publication";
+import { adviceFor, weatherAdviceQuery } from "@/lib/weather-advice";
 
 export const hazardIcons = {
   all: ShieldCheck,
@@ -185,6 +187,12 @@ export function SituationDetails({
     units,
     now,
   );
+  const adviceQuery = useQuery({
+    ...weatherAdviceQuery,
+    enabled: item.source === "onm",
+  });
+  const advice =
+    item.source === "onm" ? adviceFor(item.data, adviceQuery.data ?? []) : null;
   if (item.source === "official")
     return (
       <>
@@ -329,9 +337,23 @@ export function SituationDetails({
           <p className="rounded-xl bg-muted p-3 text-sm">
             {t("civilMap.areaPrecision")}
           </p>
-          <p className="text-sm text-muted-foreground">
-            {t("civilMap.noInstructions")}
-          </p>
+          {advice ? (
+            <figure className="space-y-1 text-sm">
+              <figcaption className="font-medium">
+                {t("civilMap.dgpcAdvice")}
+              </figcaption>
+              <blockquote
+                dir="auto"
+                className="border-s-2 border-border ps-3 text-muted-foreground"
+              >
+                {advice.advice}
+              </blockquote>
+            </figure>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              {t("civilMap.noInstructions")}
+            </p>
+          )}
           {item.data.cap_url && /^https?:\/\//.test(item.data.cap_url) && (
             <a
               href={item.data.cap_url}

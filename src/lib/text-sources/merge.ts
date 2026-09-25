@@ -1,6 +1,22 @@
-export type IncidentKind = "vegetation" | "agricultural" | "urban" | "unknown";
+export const FIRE_KINDS = [
+  "vegetation",
+  "agricultural",
+  "urban",
+  "unknown",
+] as const;
+export type FireKind = (typeof FIRE_KINDS)[number];
+export type IncidentKind =
+  FireKind | "flood" | "road" | "structure" | "storm" | "other";
 export type IncidentStatus =
-  "ongoing" | "contained" | "extinguished" | "monitoring" | "unknown";
+  | "ongoing"
+  | "contained"
+  | "extinguished"
+  | "monitoring"
+  | "unknown"
+  | "cleared";
+
+export const isFireKind = (kind: string): kind is FireKind =>
+  (FIRE_KINDS as readonly string[]).includes(kind);
 export type IncidentPrecision = "commune" | "wilaya" | "place";
 export type AuthorityTier = "national" | "wilaya" | "forestry" | "media";
 
@@ -53,6 +69,9 @@ export function mergeDecision(
       (i) =>
         i.area_id === mention.area_id &&
         i.kind === mention.kind &&
+        // a commune can have two roads cut at once; a fire bulletin names no place to tell apart
+        (isFireKind(mention.kind) ||
+          (i.place_text ?? "") === (mention.place_text ?? "")) &&
         Date.parse(i.last_reported_at) >= asOf - MERGE_WINDOW_MS &&
         Date.parse(i.first_reported_at) <= asOf + MERGE_WINDOW_MS,
     )

@@ -69,15 +69,21 @@ dropped) go to a new LLM step (gemini-2.5-flash, strict JSON schema, temperature
   `valid_to`.
 
 Deterministic guards: every `evidence` and `advice` must be a verbatim substring of the post
-(else the item goes to review); places resolve through the existing gazetteer or go to review;
+(else the item is dropped and counted); places resolve through the existing gazetteer or the
+post is kept for retry (at most four attempts);
 `retrospective` and `activity_summary` publish nothing (a past casualty is not a continuing
 threat); `fire` re-enters the fire pipeline, so the LLM is the catch-all the regex lacks.
 
-Storage: `official_incidents` gains `hazard` (default `fire`), non-fire kinds, and status
-`cleared`. Fire confirmation, the public Telegram relay and the recall view filter to fire.
+Storage: `official_incidents.kind` gains the non-fire kinds `flood`, `road`, `structure`, `storm`
+and `other`, and status `cleared`; merging already keys on kind, and non-fire kinds also key on
+place, so two cut roads of one commune stay apart. Fire confirmation, bulletin unlisting, the
+public Telegram relay and the recall view filter to the four fire kinds. A shadow run over the
+month to 25 September (146 posts): 115 retrospective, 8 summaries, 5 situation reports giving 15
+items with every evidence span verbatim, 2 relays with advice kept verbatim, 4 transient
+non-JSON answers retried by the pipeline.
 Non-fire incidents live 12 h from their as-of time, then fade; `cleared` from the authority
 ends them. They appear on the map under their category and alert zones through the existing
-`notify_official` switch, worded "Protection Civile reports ... at <time>".
+`notify_official` switch, worded "Protection Civile report, <place>: <hazard>".
 Weather advice is stored per ONM warning it matches (same wilaya, overlapping validity) and is
 shown and pushed verbatim, attributed to Protection Civile, beside ONM's own text.
 

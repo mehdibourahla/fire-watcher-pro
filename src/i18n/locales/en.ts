@@ -401,6 +401,7 @@ export const en = {
     citizenLegend: "Citizen reports, not independently verified",
     close: "Close",
     area: "Area",
+    dgpcAdvice: "Protection Civile advises",
     noInstructions: "No official instructions available from this source",
     savedPlaces: "Saved places",
     savePlace: "Save this place",
@@ -481,7 +482,11 @@ export const en = {
       extinguished: "Extinguished",
       monitoring: "Under watch",
       unknown: "Not stated",
+      cleared: "Cleared",
     },
+    hazard: "Hazard",
+    disclaimerHazard:
+      "Relayed from Protection Civile, shown at the precision of the report: the shaded area is the commune, not the exact spot. Nadhir adds nothing to the wording.",
   },
   fire: {
     nearSettlement: "{{km}} km from {{settlement}}",

@@ -2152,6 +2152,36 @@ export type Database = {
         };
         Relationships: [];
       };
+      official_weather_advice: {
+        Row: {
+          advice: string;
+          created_at: string;
+          document_id: string;
+          id: string;
+          valid_from: string | null;
+          valid_to: string | null;
+          wilaya_ids: string[];
+        };
+        Insert: {
+          advice: string;
+          created_at?: string;
+          document_id: string;
+          id?: string;
+          valid_from?: string | null;
+          valid_to?: string | null;
+          wilaya_ids: string[];
+        };
+        Update: {
+          advice?: string;
+          created_at?: string;
+          document_id?: string;
+          id?: string;
+          valid_from?: string | null;
+          valid_to?: string | null;
+          wilaya_ids?: string[];
+        };
+        Relationships: [];
+      };
       onm_vigilance: {
         Row: {
           cap_detail_fetched_at: string | null;

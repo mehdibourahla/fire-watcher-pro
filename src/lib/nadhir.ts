@@ -7,6 +7,11 @@ import { fetchAllPages } from "@/lib/paginate";
 import type { OnmHistoryRow, RoadHistoryRow } from "@/lib/hazard-history";
 import type { AnyLocale, Locale } from "@/i18n";
 import {
+  FIRE_KINDS,
+  type IncidentKind,
+  type IncidentStatus,
+} from "@/lib/text-sources/merge";
+import {
   withProcessingHealth,
   type SourceHealth,
   type SourceProcessingHealth,
@@ -408,6 +413,7 @@ export const officialHistoryQuery = queryOptions({
       supabase
         .from("official_incidents")
         .select("id, wilaya_id, first_reported_at")
+        .in("kind", [...FIRE_KINDS])
         .is("unlisted_at", null)
         .order("id")
         .range(from, to),
@@ -609,8 +615,7 @@ export function isStaleForecastDate(
   return forecastDate < new Date(now).toISOString().slice(0, 10);
 }
 
-export type OfficialIncidentStatus =
-  "ongoing" | "contained" | "extinguished" | "monitoring" | "unknown";
+export type OfficialIncidentStatus = IncidentStatus;
 
 type NamedUnit = {
   name_ar: string;
@@ -625,7 +630,7 @@ export type OfficialIncident = {
   id: string;
   wilaya_id: string;
   commune_id: string | null;
-  kind: "vegetation" | "agricultural" | "urban" | "unknown";
+  kind: IncidentKind;
   status: OfficialIncidentStatus;
   precision: "commune" | "wilaya" | "place";
   authority_tier: "national" | "wilaya" | "forestry" | "media";

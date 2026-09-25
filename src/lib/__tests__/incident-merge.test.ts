@@ -38,6 +38,32 @@ function mention(over: Partial<MergeMention>): MergeMention {
 }
 
 describe("mergeDecision", () => {
+  it("keeps two cut roads of one commune apart, but a road's own updates together", () => {
+    const road: OpenIncident = {
+      ...incident,
+      kind: "road",
+      place_text: "الطريق الوطني رقم 104",
+    };
+    expect(
+      mergeDecision(
+        mention({ kind: "road", place_text: "الطريق الوطني رقم 104" }),
+        [road],
+      ),
+    ).toEqual({ action: "attach", incidentId: "inc-1" });
+    expect(
+      mergeDecision(
+        mention({ kind: "road", place_text: "الطريق الوطني رقم 04" }),
+        [road],
+      ),
+    ).toEqual({ action: "create" });
+  });
+
+  it("never merges a flood into a fire of the same commune", () => {
+    expect(mergeDecision(mention({ kind: "flood" }), [incident])).toEqual({
+      action: "create",
+    });
+  });
+
   it("attaches to the open incident for the same area and kind within 48 hours", () => {
     expect(mergeDecision(mention({}), [incident])).toEqual({
       action: "attach",

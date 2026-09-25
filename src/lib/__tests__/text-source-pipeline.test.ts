@@ -7,7 +7,8 @@ import {
   type TextSourceStore,
 } from "@/lib/text-sources/pipeline.server";
 import type { LlmMention } from "@/lib/text-sources/extract-llm.server";
-import type { OpenIncident } from "@/lib/text-sources/merge";
+import { isFireKind, type OpenIncident } from "@/lib/text-sources/merge";
+import type { Situation } from "@/lib/text-sources/dgpc-situation.server";
 import type { TelegramPost } from "@/lib/text-sources/telegram-public";
 import recoveryPosts from "./fixtures/dgpc-recovery-posts.json";
 
@@ -58,6 +59,7 @@ function memoryStore() {
   >();
   const unlisted = new Map<string, string>();
   const stored = new Map<string, DocumentInsert & { id: string }>();
+  const advice: Record<string, unknown>[] = [];
   const retry = new Map<string, DocumentInsert & { id: string }>();
   const confirmed: { communeId: string; asOf: string; mentionId: string }[] =
     [];
@@ -106,7 +108,9 @@ function memoryStore() {
             m["document_id"] === r.document_id &&
             m["commune_id"] === r.commune_id &&
             m["wilaya_id"] === r.wilaya_id &&
-            m["kind"] === r.kind,
+            m["kind"] === r.kind &&
+            // mirrors write_text_source: non-fire mentions stay apart by place
+            (isFireKind(r.kind) || m["place_text"] === r.place_text),
         );
         if (existing)
           return { ...existing, inserted: false } as unknown as typeof r & {
@@ -165,8 +169,20 @@ function memoryStore() {
     markUnlisted: async (ids, asOf) => {
       for (const id of ids) unlisted.set(id, asOf);
     },
+    insertAdvice: async (row) => {
+      advice.push(row);
+    },
   };
-  return { store, documents, mentions, incidents, unlisted, confirmed, retry };
+  return {
+    store,
+    documents,
+    mentions,
+    incidents,
+    unlisted,
+    confirmed,
+    retry,
+    advice,
+  };
 }
 
 function deps(
@@ -181,6 +197,12 @@ function deps(
     store,
     fetchPosts: async () => posts,
     extractLlm: llm,
+    readSituation: async () => ({
+      disposition: "other",
+      items: [],
+      advice: null,
+      rejected: 0,
+    }),
     now: () => new Date("2026-09-02T23:00:00Z"),
   };
 }
@@ -1311,3 +1333,123 @@ it.each(["historical", "future"])(
     expect(f.unlisted.size).toBe(0);
   },
 );
+
+describe("Protection Civile posts beyond fire", () => {
+  const situation = (over: Partial<Situation>): Situation => ({
+    disposition: "situation_report",
+    items: [],
+    advice: null,
+    rejected: 0,
+    ...over,
+  });
+  const weatherPost = post(
+    "20",
+    "2026-09-02T19:00:00Z",
+    "🚨🚨 الحالة العامة إثر التقلبات الجوية على الساعة 20سا00د – 02/09/2026\nولاية سكيكدة\nبلدية عزابة: الطريق الوطني رقم 44 مقطوع بسبب ارتفاع منسوب مياه الوادي",
+  );
+
+  it("files each cut road and flood as its own official incident, never as a fire", async () => {
+    const memory = memoryStore();
+    let fireCalls = 0;
+    const result = await runTextSourceWith("dgpc_telegram", {
+      ...deps([weatherPost], memory.store, async () => {
+        fireCalls += 1;
+        return { skipped: false, mentions: [] };
+      }),
+      readSituation: async () =>
+        situation({
+          items: [
+            {
+              hazard: "road",
+              wilaya: "سكيكدة",
+              commune: "عزابة",
+              place: "الطريق الوطني رقم 44",
+              state: "ongoing",
+              evidence: "الطريق الوطني رقم 44 مقطوع",
+            },
+            {
+              hazard: "road",
+              wilaya: "سكيكدة",
+              commune: "عزابة",
+              place: "الطريق الولائي رقم 7",
+              state: "ongoing",
+              evidence: "الطريق الوطني رقم 44 مقطوع",
+            },
+            {
+              hazard: "flood",
+              wilaya: "سكيكدة",
+              commune: "عين زويت",
+              place: null,
+              state: "ongoing",
+              evidence: "ارتفاع منسوب مياه الوادي",
+            },
+          ],
+        }),
+    });
+    expect(fireCalls).toBe(0);
+    expect(result.incidentsCreated).toBe(3);
+    expect([...memory.incidents.values()].map((i) => i.kind).sort()).toEqual([
+      "flood",
+      "road",
+      "road",
+    ]);
+    expect(memory.confirmed).toEqual([]);
+  });
+
+  it("keeps the authority's advice with the wilayas it names", async () => {
+    const memory = memoryStore();
+    await runTextSourceWith("dgpc_telegram", {
+      ...deps([weatherPost], memory.store),
+      readSituation: async () =>
+        situation({
+          disposition: "weather_relay",
+          advice: {
+            text: "يُرجى توخي الحيطة والحذر أثناء السياقة",
+            wilayas: ["سكيكدة", "ولاية مجهولة"],
+            validFrom: "2026-09-03T06:00:00+01:00",
+            validTo: "2026-09-03T21:00:00+01:00",
+          },
+        }),
+    });
+    expect(memory.advice).toEqual([
+      expect.objectContaining({
+        advice: "يُرجى توخي الحيطة والحذر أثناء السياقة",
+        wilayaIds: [SKIKDA],
+        validFrom: "2026-09-03T06:00:00+01:00",
+      }),
+    ]);
+  });
+
+  it("publishes nothing from an accident that is over", async () => {
+    const memory = memoryStore();
+    const result = await runTextSourceWith("dgpc_telegram", {
+      ...deps([weatherPost], memory.store),
+      readSituation: async () => situation({ disposition: "retrospective" }),
+    });
+    expect(result).toMatchObject({ mentions: 0, skippedPosts: 1 });
+    expect(memory.incidents.size).toBe(0);
+    expect(memory.retry.size).toBe(0);
+  });
+
+  it("hands a fire the router missed to the fire extractor", async () => {
+    const memory = memoryStore();
+    const result = await runTextSourceWith("dgpc_telegram", {
+      ...deps([weatherPost], memory.store, llmWith(mention({}))),
+      readSituation: async () => situation({ disposition: "fire" }),
+    });
+    expect(result.incidentsCreated).toBe(1);
+    expect([...memory.incidents.values()][0]?.kind).toBe("vegetation");
+  });
+
+  it("keeps a post for retry when reading it fails", async () => {
+    const memory = memoryStore();
+    const result = await runTextSourceWith("dgpc_telegram", {
+      ...deps([weatherPost], memory.store),
+      readSituation: async () => {
+        throw new Error("situation reader returned non-JSON content");
+      },
+    });
+    expect(result.llmFailed).toBe(1);
+    expect(memory.retry.size).toBe(1);
+  });
+});

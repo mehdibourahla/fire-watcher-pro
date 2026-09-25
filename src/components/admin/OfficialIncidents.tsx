@@ -28,6 +28,7 @@ const STATUS_TONE: Record<string, Tone> = {
   contained: "warn",
   monitoring: "warn",
   extinguished: "ok",
+  cleared: "ok",
   unknown: "neutral",
 };
 

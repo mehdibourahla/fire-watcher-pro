@@ -408,6 +408,7 @@ export const fr: Translation = {
     citizenLegend: "Signalements citoyens, sans vérification indépendante",
     close: "Fermer",
     area: "Lieu",
+    dgpcAdvice: "La Protection civile recommande",
     noInstructions: "Aucune consigne officielle disponible dans cette source",
     savedPlaces: "Lieux enregistrés",
     savePlace: "Enregistrer ce lieu",
@@ -490,7 +491,11 @@ export const fr: Translation = {
       extinguished: "Éteint",
       monitoring: "Sous surveillance",
       unknown: "Non précisé",
+      cleared: "Levé",
     },
+    hazard: "Danger",
+    disclaimerHazard:
+      "Relayé depuis la Protection civile, à la précision du signalement : la zone ombrée est la commune, pas le lieu exact. Nadhir n'ajoute rien au texte.",
   },
   fire: {
     nearSettlement: "À {{km}} km de {{settlement}}",
