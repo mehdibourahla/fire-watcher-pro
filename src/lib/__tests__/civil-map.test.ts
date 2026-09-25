@@ -14,6 +14,7 @@ import type {
   OfficialIncident,
   OnmVigilance,
 } from "../nadhir";
+import type { Earthquake } from "../earthquakes";
 import type { HazardReport } from "../open-areas";
 
 const now = Date.parse("2026-09-16T12:00:00Z");
@@ -146,6 +147,48 @@ const filters = {
   showEnded: false,
   showCandidates: false,
 };
+
+const quake = (over: Partial<Earthquake> = {}): Earthquake => ({
+  id: "q1",
+  occurred_at: at(2),
+  lat: 36.9,
+  lon: 5.5,
+  depth_km: 10,
+  magnitude: 4.2,
+  magnitude_type: "ml",
+  region: "NORTHERN ALGERIA",
+  network: "CRAAG",
+  commune_id: "c1",
+  offshore: false,
+  ...over,
+});
+
+describe("earthquakes on the map", () => {
+  it("files an earthquake under its own category, live for hours then fading", () => {
+    const items = build({
+      earthquakes: [quake({}), quake({ id: "old", occurred_at: at(30) })],
+    });
+    expect(
+      items
+        .filter((i) => i.source === "seismic")
+        .map((i) => [i.id, i.category, i.phase]),
+    ).toEqual([
+      ["quake:q1", "earthquake", "live"],
+      ["quake:old", "earthquake", "fading"],
+    ]);
+  });
+
+  it("shows an earthquake felt around an area within 100 km, never by administrative membership", () => {
+    const items = build({
+      earthquakes: [quake({}), quake({ id: "far", lat: 35, lon: 0 })],
+    });
+    expect(
+      filterSituations(items, { ...filters, area: commune }, units).map(
+        (i) => i.id,
+      ),
+    ).toEqual(["quake:q1"]);
+  });
+});
 
 describe("civil situations", () => {
   it("keeps reviewed publications available for historical links but excludes inactive publications from current results", () => {

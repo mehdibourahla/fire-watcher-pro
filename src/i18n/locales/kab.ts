@@ -343,6 +343,7 @@ export const kab: Translation = {
     fire: "Incendie",
     weather: "Météo",
     road: "Route",
+    earthquake: "Séisme",
     other: "Autre",
     noSituations: "Aucun signalement actuel dans les sources disponibles",
     noSituationsBody:
@@ -366,6 +367,7 @@ export const kab: Translation = {
     sourceOfficial: "Source officielle",
     sourceCitizen: "Signalement citoyen",
     sourceOnm: "Vigilance ONM",
+    sourceSeismic: "Réseau sismique",
     heatSignal: "Signal thermique satellite",
     heatSignalShort: "Signal thermique",
     probable: "Feu probable",
@@ -761,6 +763,7 @@ export const kab: Translation = {
     kindOfficial: "Officiel",
     kindRoad: "Route",
     kindCitizen: "Citoyen",
+    kindEarthquake: "Séisme",
     stateCurrentNotice: "Avis en cours",
     stateNoticeOver:
       "Période de l'avis terminée — ce n'est pas une fin d'alerte",
@@ -828,6 +831,7 @@ export const kab: Translation = {
     notifyOfficial: "Avertissements officiels (Protection civile)",
     notifyRoad: "Incidents routiers",
     notifyCitizen: "Signalements citoyens confirmés sur place",
+    notifyEarthquake: "Séismes de magnitude 4 ou plus à moins de 100 km",
     devicePush: "Alertes sur cet appareil quand Nadhir est fermé",
     devicePushHint:
       "Envoie les alertes de vos zones sur ce téléphone ou cet ordinateur, même quand Nadhir est fermé. Activez-le sur chaque appareil.",
@@ -911,6 +915,24 @@ export const kab: Translation = {
       "Rien d’actif en ce moment pour les aléas suivis par cette zone.",
     zoneNowUnavailable:
       "L’état en direct est indisponible. Vos alertes arrivent toujours.",
+  },
+  quake: {
+    title: "Séisme M{{mag}}",
+    eyebrow: "Mesure sismique",
+    recordedBy: "Enregistré par l'EMSC ({{network}})",
+    magnitude: "Magnitude",
+    depth: "Profondeur",
+    depthKm: "{{km}} km",
+    time: "Heure",
+    network: "Réseau",
+    guidanceTitle: "Si vous l'avez ressenti",
+    guidanceShaking:
+      "Pendant une réplique : mettez-vous à terre, abritez-vous sous une table solide et tenez-vous jusqu'à la fin des secousses.",
+    guidanceAfter:
+      "Une fois les secousses terminées : quittez les bâtiments endommagés, n'utilisez pas l'ascenseur et coupez le gaz si vous en sentez l'odeur.",
+    guidanceCall: "Appelez le 14 pour toute personne blessée ou coincée.",
+    guidanceCoast: "Forte secousse près de la mer : éloignez-vous du rivage.",
+    note: "La magnitude et la position peuvent être révisées dans les premières heures. Il s'agit de la mesure du réseau sismique, pas d'une alerte officielle.",
   },
   reports: {
     hazardName: {

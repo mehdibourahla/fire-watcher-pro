@@ -1,4 +1,5 @@
 import {
+  Activity,
   CloudLightning,
   Flame,
   ShieldCheck,
@@ -13,6 +14,7 @@ import type { Situation } from "@/lib/civil-map";
 import { relativeTime, unitName, type AdminUnit } from "@/lib/nadhir";
 import { OfficialIncidentDetail } from "./OfficialIncidentDetail";
 import { HazardReportDetail } from "./HazardReportDetail";
+import { QuakeDetail } from "./QuakeDetail";
 import { civilPublicationLifecycle } from "@/lib/civil-publication";
 import { adviceFor, weatherAdviceQuery } from "@/lib/weather-advice";
 
@@ -21,6 +23,7 @@ export const hazardIcons = {
   fire: Flame,
   weather: CloudLightning,
   road: Road,
+  earthquake: Activity,
   other: TriangleAlert,
 };
 
@@ -37,7 +40,7 @@ export function useSituationLabels(units: AdminUnit[], now: number) {
     if (item.source === "civil" && item.data.area)
       return unitName(item.data.area, locale);
     const near =
-      item.source === "citizen" &&
+      (item.source === "citizen" || item.source === "seismic") &&
       units.find((u) => u.id === item.data.commune_id);
     if (near) return t("map.nearPlace", { place: unitName(near, locale) });
     return item.lat !== null && item.lon !== null
@@ -53,7 +56,9 @@ export function useSituationLabels(units: AdminUnit[], now: number) {
           ? `${t("civilMap.heatSignalShort")} · ${place(item)}`
           : item.source === "citizen"
             ? `${t(`reports.hazardName.${item.data.hazard ?? "other"}`)} · ${place(item)}`
-            : `${t(`civilMap.${item.category}`)} · ${place(item)}`;
+            : item.source === "seismic"
+              ? `${t("quake.title", { mag: item.data.magnitude.toFixed(1) })} · ${place(item)}`
+              : `${t(`civilMap.${item.category}`)} · ${place(item)}`;
   const source = (item: Situation) =>
     t(
       item.source === "official" && item.data.authority_tier === "media"
@@ -65,6 +70,7 @@ export function useSituationLabels(units: AdminUnit[], now: number) {
               citizen: "civilMap.sourceCitizen",
               onm: "civilMap.sourceOnm",
               civil: "civilMap.sourceMedia",
+              seismic: "civilMap.sourceSeismic",
             } as const
           )[item.source],
     );
@@ -92,6 +98,8 @@ export function useSituationLabels(units: AdminUnit[], now: number) {
                 ? "civilMap.probable"
                 : "civilMap.heatSignal",
       );
+    if (item.source === "seismic")
+      return t("quake.recordedBy", { network: item.data.network ?? "EMSC" });
     if (item.source === "citizen")
       return item.data.witnesses
         ? t("reports.witnessCount", { count: item.data.witnesses })
@@ -212,6 +220,15 @@ export function SituationDetails({
     );
   if (item.source === "citizen")
     return <HazardReportDetail report={item.data} locale={locale} now={now} />;
+  if (item.source === "seismic")
+    return (
+      <QuakeDetail
+        quake={item.data}
+        place={place(item)}
+        locale={locale}
+        now={now}
+      />
+    );
   if (item.source === "civil")
     return (
       <div className="space-y-4">

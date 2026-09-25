@@ -14,6 +14,11 @@ import {
   type FireLevel,
 } from "./fire-confidence";
 import type { HazardReport } from "./open-areas";
+import {
+  QUAKE_NEARBY_RADIUS_KM,
+  QUAKE_WINDOW_HOURS,
+  type Earthquake,
+} from "./earthquakes";
 import type { CivilPublication } from "./civil-publication";
 import { parseDestination, parseRoadRef } from "./road-ref";
 import { isFireKind } from "./text-sources/merge";
@@ -22,12 +27,14 @@ import {
   isVisibleByDefault,
   officialPhase,
   publicationPhase,
+  quakePhase,
   reportPhase,
   warningPhase,
   type Phase,
 } from "./incident-lifecycle";
 
-export type HazardCategory = "all" | "fire" | "weather" | "road" | "other";
+export type HazardCategory =
+  "all" | "fire" | "weather" | "road" | "earthquake" | "other";
 type SituationBase = {
   id: string;
   category: Exclude<HazardCategory, "all">;
@@ -47,6 +54,7 @@ export type Situation = SituationBase &
     | { source: "citizen"; data: HazardReport }
     | { source: "onm"; data: OnmVigilance }
     | { source: "civil"; data: CivilPublication }
+    | { source: "seismic"; data: Earthquake }
   );
 type SituationInput = {
   fires: FireCluster[];
@@ -54,6 +62,7 @@ type SituationInput = {
   reports: HazardReport[];
   warnings: OnmVigilance[];
   publications?: CivilPublication[];
+  earthquakes?: Earthquake[];
   danger?: ReadonlyMap<string, number>;
   units: AdminUnit[];
   now: number;
@@ -93,6 +102,7 @@ export function buildSituations({
   reports,
   warnings,
   publications = [],
+  earthquakes = [],
   danger = new Map(),
   units,
   now,
@@ -188,6 +198,22 @@ export function buildSituations({
       wilayaId: null,
       phase: reportPhase(data, now),
       confidence: "single",
+      candidate: false,
+      data,
+    });
+  }
+  for (const data of earthquakes) {
+    if (!recent(data.occurred_at, QUAKE_WINDOW_HOURS)) continue;
+    items.push({
+      id: `quake:${data.id}`,
+      source: "seismic",
+      category: "earthquake",
+      at: data.occurred_at,
+      ...coordinates(data),
+      areaId: null,
+      wilayaId: null,
+      phase: quakePhase(data, now),
+      confidence: "corroborated",
       candidate: false,
       data,
     });
@@ -323,16 +349,20 @@ export function filterSituations(
     )
       return false;
     if (!area) return true;
-    if (item.source === "citizen")
+    if (item.source === "citizen" || item.source === "seismic") {
+      const radius =
+        item.source === "seismic"
+          ? QUAKE_NEARBY_RADIUS_KM
+          : CITIZEN_NEARBY_RADIUS_KM;
       return (
         item.lat !== null &&
         item.lon !== null &&
         anchors.some(
           (anchor) =>
-            distanceKm(item.lat!, item.lon!, anchor.lat, anchor.lon) <=
-            CITIZEN_NEARBY_RADIUS_KM,
+            distanceKm(item.lat!, item.lon!, anchor.lat, anchor.lon) <= radius,
         )
       );
+    }
     if (area.level === "wilaya") return item.wilayaId === area.id;
     return (
       item.areaId === area.id ||
@@ -392,7 +422,10 @@ const OFFICIAL_CATEGORY: Partial<Record<string, "weather" | "road" | "other">> =
     other: "other",
   };
 
-const REPORT_CATEGORY: Record<string, "fire" | "weather" | "road" | "other"> = {
+const REPORT_CATEGORY: Record<
+  string,
+  "fire" | "weather" | "road" | "earthquake" | "other"
+> = {
   fire: "fire",
   flooding: "weather",
   storm_damage: "weather",

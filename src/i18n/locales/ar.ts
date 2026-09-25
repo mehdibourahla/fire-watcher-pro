@@ -334,6 +334,7 @@ export const ar: Translation = {
     fire: "حريق",
     weather: "الطقس",
     road: "الطريق",
+    earthquake: "زلزال",
     other: "أخرى",
     noSituations: "لا توجد بلاغات حالية في المصادر المتاحة",
     noSituationsBody:
@@ -356,6 +357,7 @@ export const ar: Translation = {
     sourceOfficial: "مصدر رسمي",
     sourceCitizen: "بلاغ مواطن",
     sourceOnm: "تحذير الديوان الوطني للأرصاد الجوية",
+    sourceSeismic: "شبكة زلزالية",
     heatSignal: "إشارة حرارية بالأقمار الصناعية",
     heatSignalShort: "إشارة حرارية",
     probable: "حريق محتمل",
@@ -743,6 +745,7 @@ export const ar: Translation = {
     kindOfficial: "رسمي",
     kindRoad: "الطرق",
     kindCitizen: "مواطنون",
+    kindEarthquake: "زلزال",
     stateCurrentNotice: "إشعار ساري",
     stateNoticeOver: "انتهت مدة الإشعار — هذا لا يعني زوال الخطر",
     openMap: "عرض على الخريطة",
@@ -805,6 +808,7 @@ export const ar: Translation = {
     notifyOfficial: "تحذيرات رسمية (الحماية المدنية)",
     notifyRoad: "حوادث الطرق",
     notifyCitizen: "بلاغات مواطنين أكّدها أشخاص في المكان",
+    notifyEarthquake: "زلازل بقوة 4 فأكثر على بعد أقل من 100 كم",
     devicePush: "تنبيهات على هذا الجهاز عندما يكون نذير مغلقًا",
     devicePushHint:
       "يرسل تنبيهات مناطقك إلى هذا الهاتف أو الحاسوب حتى عندما يكون نذير مغلقًا. فعّله على كل جهاز تستخدمه.",
@@ -875,6 +879,24 @@ export const ar: Translation = {
     zoneNowCitizen: "بلاغ مواطن مؤكَّد في المكان: {{hazard}}",
     zoneNothingNow: "لا شيء نشط حاليًا للمخاطر التي تتابعها هذه المنطقة.",
     zoneNowUnavailable: "الحالة المباشرة غير متاحة. ما زالت تنبيهاتك تصلك.",
+  },
+  quake: {
+    title: "زلزال بقوة {{mag}}",
+    eyebrow: "قياس زلزالي",
+    recordedBy: "سجّلته شبكة EMSC ({{network}})",
+    magnitude: "القوة",
+    depth: "العمق",
+    depthKm: "{{km}} كم",
+    time: "الوقت",
+    network: "الشبكة",
+    guidanceTitle: "إن شعرت به",
+    guidanceShaking:
+      "أثناء الهزة الارتدادية: انخفض إلى الأرض، واحتمِ تحت طاولة متينة، وتمسّك بها حتى تتوقف الهزة.",
+    guidanceAfter:
+      "بعد توقفها: غادر المباني المتضررة، ولا تستعمل المصعد، وأغلق الغاز إن شممت رائحته.",
+    guidanceCall: "اتصل بالرقم 14 لأي مصاب أو عالق.",
+    guidanceCoast: "هزة قوية قرب البحر: ابتعد عن الشاطئ.",
+    note: "قد تُعدَّل القوة والموقع خلال الساعات الأولى. هذا قياس الشبكة الزلزالية وليس تحذيرًا رسميًا.",
   },
   reports: {
     hazardName: {

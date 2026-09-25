@@ -19,6 +19,7 @@ const zone: HazardZone = {
   notify_official: true,
   notify_road: true,
   notify_citizen: true,
+  notify_earthquake: true,
 };
 
 const context: HazardContext = {
@@ -69,6 +70,7 @@ const context: HazardContext = {
     },
   ],
   citizen: [],
+  earthquakes: [],
 };
 
 const awake = () => ({ locale: "fr", quiet: false, minLevel: 1 });
@@ -341,5 +343,61 @@ describe("citizen report alerts", () => {
     expect(bare.body).toBe(
       "Confirmé par 2 personnes sur place. Non vérifié par les autorités.",
     );
+  });
+});
+
+describe("earthquake alerts", () => {
+  const quake = {
+    id: "20260925_0000100",
+    occurred_at: "2026-09-25T10:02:00Z",
+    lat: 36.65,
+    lon: 3.3,
+    magnitude: 4.3,
+    network: "CRAAG",
+    offshore: false,
+  };
+  const only = (over: Partial<typeof quake> = {}) => ({
+    ...context,
+    weather: [],
+    official: [],
+    authority: [],
+    road: [],
+    earthquakes: [{ ...quake, ...over }],
+  });
+  const english = () => ({ locale: "en", quiet: false, minLevel: 1 });
+
+  it("pushes an M4 or stronger earthquake within 100 km, once per event", () => {
+    const { rows } = hazardAlerts([zone], only(), english);
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({
+      kind: "earthquake",
+      dedupe_key: "earthquake:20260925_0000100",
+      source_table: null,
+      payload: { magnitude: 4.3, map_event: "quake:20260925_0000100" },
+    });
+    expect(rows[0]!.title).toBe("Earthquake M4.3 near Home");
+    expect(rows[0]!.body).toContain("CRAAG");
+  });
+
+  it("stays silent below M4 or beyond 100 km", () => {
+    expect(
+      hazardAlerts([zone], only({ magnitude: 3.9 }), english).rows,
+    ).toEqual([]);
+    expect(hazardAlerts([zone], only({ lat: 35.5 }), english).rows).toEqual([]);
+    expect(
+      hazardAlerts([{ ...zone, notify_earthquake: false }], only(), english)
+        .rows,
+    ).toEqual([]);
+  });
+
+  it("wakes a sleeping person only from M5", () => {
+    const quiet = () => ({ locale: "en", quiet: true, minLevel: 1 });
+    expect(hazardAlerts([zone], only(), quiet)).toEqual({
+      rows: [],
+      suppressed: 1,
+    });
+    expect(
+      hazardAlerts([zone], only({ magnitude: 5.1 }), quiet).rows,
+    ).toHaveLength(1);
   });
 });

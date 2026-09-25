@@ -80,6 +80,11 @@ function dependencies() {
       unmatched: 0,
       detailed: 2,
     }),
+    ingestEmsc: vi.fn().mockResolvedValue({
+      fetched: 3,
+      stored: 1,
+      outside: 2,
+    }),
     screenPersistentSources: vi
       .fn()
       .mockResolvedValue({ screened: 4, registry: 10 }),

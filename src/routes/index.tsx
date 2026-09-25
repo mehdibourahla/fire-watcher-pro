@@ -70,6 +70,7 @@ import {
   type HazardCategory,
   situationSummary,
 } from "@/lib/civil-map";
+import { earthquakesQuery } from "@/lib/earthquakes";
 import { parseMapSearch, type MapSearch } from "@/lib/civil-map-search";
 import { readSubscription } from "@/lib/push";
 import { pageMeta } from "@/lib/page-meta";
@@ -94,6 +95,7 @@ const categories: HazardCategory[] = [
   "fire",
   "weather",
   "road",
+  "earthquake",
   "other",
 ];
 
@@ -111,6 +113,7 @@ function LiveMapPage() {
   const units = useQuery(adminUnitsQuery);
   const fires = useQuery({ ...clustersQuery, ...REFRESH });
   const official = useQuery({ ...officialIncidentsQuery, ...REFRESH });
+  const earthquakes = useQuery({ ...earthquakesQuery, ...REFRESH });
   const reports = useQuery({ ...hazardReportsQuery, ...REFRESH });
   const warnings = useQuery({ ...onmVigilanceQuery, ...REFRESH });
   const danger = useQuery({ ...todayRiskForecastsQuery, ...REFRESH });
@@ -261,6 +264,7 @@ function LiveMapPage() {
         official: official.data ?? [],
         reports: reports.data ?? [],
         warnings: warnings.data ?? [],
+        earthquakes: earthquakes.data ?? [],
         publications: selectedPublication.data
           ? [
               ...(publications.data ?? []).filter(
@@ -568,7 +572,7 @@ function LiveMapPage() {
             selected?.source === "onm" ? selected.data.id : null
           }
           selectedReportId={
-            selected?.source === "civil"
+            selected?.source === "civil" || selected?.source === "seismic"
               ? selected.id
               : selected?.source === "citizen"
                 ? selected.data.id
@@ -577,7 +581,11 @@ function LiveMapPage() {
           onSelect={(c) => select(`fire:${c.id}`)}
           onSelectOfficial={(id) => select(`official:${id}`)}
           onSelectReport={(id) =>
-            select(id.startsWith("civil:") ? id : `report:${id}`)
+            select(
+              id.startsWith("civil:") || id.startsWith("quake:")
+                ? id
+                : `report:${id}`,
+            )
           }
           onSelectWarning={(id) => select(`weather:${id}`)}
           onError={() => setMapFailed(true)}
