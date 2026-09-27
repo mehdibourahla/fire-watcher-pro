@@ -28,6 +28,7 @@ import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedWebhooksRouteImport } from './routes/_authenticated/webhooks'
 import { Route as AuthenticatedZonesRouteImport } from './routes/_authenticated/zones'
 import { Route as FireIdRouteImport } from './routes/fire.$id'
+import { Route as IncidentIdRouteImport } from './routes/incident.$id'
 import { Route as SurvivalIndexRouteImport } from './routes/survival/index'
 import { Route as SurvivalAreasRouteImport } from './routes/survival/areas'
 import { Route as SurvivalCheckinRouteImport } from './routes/survival/checkin'
@@ -162,6 +163,11 @@ const AuthenticatedZonesRoute = AuthenticatedZonesRouteImport.update({
 const FireIdRoute = FireIdRouteImport.update({
   id: '/fire/$id',
   path: '/fire/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IncidentIdRoute = IncidentIdRouteImport.update({
+  id: '/incident/$id',
+  path: '/incident/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SurvivalIndexRoute = SurvivalIndexRouteImport.update({
@@ -401,6 +407,7 @@ export interface FileRoutesByFullPath {
   '/webhooks': typeof AuthenticatedWebhooksRoute
   '/zones': typeof AuthenticatedZonesRoute
   '/fire/$id': typeof FireIdRoute
+  '/incident/$id': typeof IncidentIdRoute
   '/survival/areas': typeof SurvivalAreasRoute
   '/survival/checkin': typeof SurvivalCheckinRoute
   '/survival/sos': typeof SurvivalSosRoute
@@ -460,6 +467,7 @@ export interface FileRoutesByTo {
   '/webhooks': typeof AuthenticatedWebhooksRoute
   '/zones': typeof AuthenticatedZonesRoute
   '/fire/$id': typeof FireIdRoute
+  '/incident/$id': typeof IncidentIdRoute
   '/survival/areas': typeof SurvivalAreasRoute
   '/survival/checkin': typeof SurvivalCheckinRoute
   '/survival/sos': typeof SurvivalSosRoute
@@ -523,6 +531,7 @@ export interface FileRoutesById {
   '/_authenticated/webhooks': typeof AuthenticatedWebhooksRoute
   '/_authenticated/zones': typeof AuthenticatedZonesRoute
   '/fire/$id': typeof FireIdRoute
+  '/incident/$id': typeof IncidentIdRoute
   '/survival/areas': typeof SurvivalAreasRoute
   '/survival/checkin': typeof SurvivalCheckinRoute
   '/survival/sos': typeof SurvivalSosRoute
@@ -586,6 +595,7 @@ export interface FileRouteTypes {
     | '/webhooks'
     | '/zones'
     | '/fire/$id'
+    | '/incident/$id'
     | '/survival/areas'
     | '/survival/checkin'
     | '/survival/sos'
@@ -645,6 +655,7 @@ export interface FileRouteTypes {
     | '/webhooks'
     | '/zones'
     | '/fire/$id'
+    | '/incident/$id'
     | '/survival/areas'
     | '/survival/checkin'
     | '/survival/sos'
@@ -707,6 +718,7 @@ export interface FileRouteTypes {
     | '/_authenticated/webhooks'
     | '/_authenticated/zones'
     | '/fire/$id'
+    | '/incident/$id'
     | '/survival/areas'
     | '/survival/checkin'
     | '/survival/sos'
@@ -764,6 +776,7 @@ export interface RootRouteChildren {
   StatusRoute: typeof StatusRoute
   TermsRoute: typeof TermsRoute
   FireIdRoute: typeof FireIdRoute
+  IncidentIdRoute: typeof IncidentIdRoute
   ApiPrivateAccountRoute: typeof ApiPrivateAccountRoute
   ApiPrivateEnsembleRoute: typeof ApiPrivateEnsembleRoute
   ApiPrivatePushTestRoute: typeof ApiPrivatePushTestRoute
@@ -922,6 +935,13 @@ declare module '@tanstack/react-router' {
       path: '/fire/$id'
       fullPath: '/fire/$id'
       preLoaderRoute: typeof FireIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/incident/$id': {
+      id: '/incident/$id'
+      path: '/incident/$id'
+      fullPath: '/incident/$id'
+      preLoaderRoute: typeof IncidentIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/survival/': {
@@ -1307,6 +1327,7 @@ const rootRouteChildren: RootRouteChildren = {
   StatusRoute: StatusRoute,
   TermsRoute: TermsRoute,
   FireIdRoute: FireIdRoute,
+  IncidentIdRoute: IncidentIdRoute,
   ApiPrivateAccountRoute: ApiPrivateAccountRoute,
   ApiPrivateEnsembleRoute: ApiPrivateEnsembleRoute,
   ApiPrivatePushTestRoute: ApiPrivatePushTestRoute,
