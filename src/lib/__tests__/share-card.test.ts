@@ -6,6 +6,7 @@ import {
   incidentCardModel,
   isShareable,
   linkTargets,
+  outlinePaths,
   shareImagePath,
   shareLocale,
 } from "@/lib/share-card";
@@ -118,5 +119,45 @@ describe("share helpers", () => {
       facebook:
         "https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fnadhir.app%2Fincident%2Fa%3Flang%3Dfr",
     });
+  });
+});
+
+describe("outlinePaths", () => {
+  const square = (x: number, y: number, s: number) => ({
+    type: "Polygon" as const,
+    coordinates: [
+      [
+        [x, y],
+        [x + s, y],
+        [x + s, y + s],
+        [x, y + s],
+        [x, y],
+      ],
+    ],
+  });
+
+  it("fits every shape inside the padded box, one path per shape", () => {
+    const paths = outlinePaths(
+      [square(4, 36, 1), square(4.2, 36.2, 0.2)],
+      400,
+      400,
+      20,
+    );
+    expect(paths).toHaveLength(2);
+    const numbers = paths
+      .join(" ")
+      .match(/-?\d+(\.\d+)?/g)!
+      .map(Number);
+    expect(Math.min(...numbers)).toBeGreaterThanOrEqual(20);
+    expect(Math.max(...numbers)).toBeLessThanOrEqual(380);
+  });
+
+  it("draws north up", () => {
+    const [path] = outlinePaths([square(4, 36, 1)], 400, 400, 0);
+    const [, firstY] = path!
+      .match(/M(-?[\d.]+) (-?[\d.]+)/)!
+      .slice(1)
+      .map(Number);
+    expect(firstY).toBeGreaterThan(200);
   });
 });

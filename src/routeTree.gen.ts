@@ -53,6 +53,7 @@ import { Route as ApiPrivateReportPublishRouteImport } from './routes/api/privat
 import { Route as ApiPrivateUserPushRouteImport } from './routes/api/private/user-push'
 import { Route as ApiPublicPushReceiptRouteImport } from './routes/api/public/push-receipt'
 import { Route as ContributeLanguageLocaleRouteImport } from './routes/contribute_.language.$locale'
+import { Route as ShareCardIncidentIdRouteImport } from './routes/share-card.incident.$id'
 import { Route as ApiInternalSourceJobsRunRouteImport } from './routes/api/internal/source-jobs/run'
 import { Route as ApiPublicContributeIdeaRouteImport } from './routes/api/public/contribute/idea'
 import { Route as ApiPublicContributeMyTranslationsRouteImport } from './routes/api/public/contribute/my-translations'
@@ -295,6 +296,11 @@ const ContributeLanguageLocaleRoute =
     path: '/contribute/language/$locale',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ShareCardIncidentIdRoute = ShareCardIncidentIdRouteImport.update({
+  id: '/share-card/incident/$id',
+  path: '/share-card/incident/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiInternalSourceJobsRunRoute =
   ApiInternalSourceJobsRunRouteImport.update({
     id: '/api/internal/source-jobs/run',
@@ -412,6 +418,7 @@ export interface FileRoutesByFullPath {
   '/api/private/user-push': typeof ApiPrivateUserPushRoute
   '/api/public/push-receipt': typeof ApiPublicPushReceiptRoute
   '/contribute/language/$locale': typeof ContributeLanguageLocaleRoute
+  '/share-card/incident/$id': typeof ShareCardIncidentIdRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/api/internal/source-jobs/run': typeof ApiInternalSourceJobsRunRoute
   '/api/public/contribute/idea': typeof ApiPublicContributeIdeaRoute
@@ -469,6 +476,7 @@ export interface FileRoutesByTo {
   '/api/private/user-push': typeof ApiPrivateUserPushRoute
   '/api/public/push-receipt': typeof ApiPublicPushReceiptRoute
   '/contribute/language/$locale': typeof ContributeLanguageLocaleRoute
+  '/share-card/incident/$id': typeof ShareCardIncidentIdRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/api/internal/source-jobs/run': typeof ApiInternalSourceJobsRunRoute
   '/api/public/contribute/idea': typeof ApiPublicContributeIdeaRoute
@@ -530,6 +538,7 @@ export interface FileRoutesById {
   '/api/private/user-push': typeof ApiPrivateUserPushRoute
   '/api/public/push-receipt': typeof ApiPublicPushReceiptRoute
   '/contribute_/language/$locale': typeof ContributeLanguageLocaleRoute
+  '/share-card/incident/$id': typeof ShareCardIncidentIdRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/api/internal/source-jobs/run': typeof ApiInternalSourceJobsRunRoute
   '/api/public/contribute/idea': typeof ApiPublicContributeIdeaRoute
@@ -591,6 +600,7 @@ export interface FileRouteTypes {
     | '/api/private/user-push'
     | '/api/public/push-receipt'
     | '/contribute/language/$locale'
+    | '/share-card/incident/$id'
     | '/admin/'
     | '/api/internal/source-jobs/run'
     | '/api/public/contribute/idea'
@@ -648,6 +658,7 @@ export interface FileRouteTypes {
     | '/api/private/user-push'
     | '/api/public/push-receipt'
     | '/contribute/language/$locale'
+    | '/share-card/incident/$id'
     | '/admin'
     | '/api/internal/source-jobs/run'
     | '/api/public/contribute/idea'
@@ -708,6 +719,7 @@ export interface FileRouteTypes {
     | '/api/private/user-push'
     | '/api/public/push-receipt'
     | '/contribute_/language/$locale'
+    | '/share-card/incident/$id'
     | '/_authenticated/admin/'
     | '/api/internal/source-jobs/run'
     | '/api/public/contribute/idea'
@@ -746,6 +758,7 @@ export interface RootRouteChildren {
   ApiPrivateUserPushRoute: typeof ApiPrivateUserPushRoute
   ApiPublicPushReceiptRoute: typeof ApiPublicPushReceiptRoute
   ContributeLanguageLocaleRoute: typeof ContributeLanguageLocaleRoute
+  ShareCardIncidentIdRoute: typeof ShareCardIncidentIdRoute
   ApiInternalSourceJobsRunRoute: typeof ApiInternalSourceJobsRunRoute
   ApiPublicContributeIdeaRoute: typeof ApiPublicContributeIdeaRoute
   ApiPublicContributeMyTranslationsRoute: typeof ApiPublicContributeMyTranslationsRoute
@@ -1072,6 +1085,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContributeLanguageLocaleRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/share-card/incident/$id': {
+      id: '/share-card/incident/$id'
+      path: '/share-card/incident/$id'
+      fullPath: '/share-card/incident/$id'
+      preLoaderRoute: typeof ShareCardIncidentIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/internal/source-jobs/run': {
       id: '/api/internal/source-jobs/run'
       path: '/api/internal/source-jobs/run'
@@ -1273,6 +1293,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPrivateUserPushRoute: ApiPrivateUserPushRoute,
   ApiPublicPushReceiptRoute: ApiPublicPushReceiptRoute,
   ContributeLanguageLocaleRoute: ContributeLanguageLocaleRoute,
+  ShareCardIncidentIdRoute: ShareCardIncidentIdRoute,
   ApiInternalSourceJobsRunRoute: ApiInternalSourceJobsRunRoute,
   ApiPublicContributeIdeaRoute: ApiPublicContributeIdeaRoute,
   ApiPublicContributeMyTranslationsRoute:

@@ -1,3 +1,5 @@
+import type { Geometry, Position } from "geojson";
+
 import { LOCALES, type Locale } from "@/i18n/locales-list";
 import { intlLocale, unitName, type OfficialIncident } from "@/lib/nadhir";
 import { isFireKind } from "@/lib/text-sources/merge";
@@ -32,7 +34,7 @@ export const isShareable = (
   incident: Pick<OfficialIncident, "authority_tier">,
 ) => incident.authority_tier !== "media";
 
-type T = (key: string, vars?: Record<string, string>) => string;
+export type T = (key: string, vars?: Record<string, string>) => string;
 
 export type IncidentCard = {
   fire: boolean;
@@ -102,3 +104,37 @@ export const linkTargets = (url: string) => ({
   whatsapp: `https://wa.me/?text=${encodeURIComponent(url)}`,
   facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
 });
+
+const rings = (geometry: Geometry): Position[][] =>
+  geometry.type === "Polygon"
+    ? geometry.coordinates
+    : geometry.type === "MultiPolygon"
+      ? geometry.coordinates.flat()
+      : [];
+
+export function outlinePaths(
+  shapes: Geometry[],
+  width: number,
+  height: number,
+  pad: number,
+): string[] {
+  const points = shapes.flatMap(rings).flat();
+  if (!points.length) return [];
+  const lons = points.map(([lon]) => lon!);
+  const lats = points.map(([, lat]) => lat!);
+  const [minLon, maxLon] = [Math.min(...lons), Math.max(...lons)];
+  const [minLat, maxLat] = [Math.min(...lats), Math.max(...lats)];
+  const kx = Math.cos((((minLat + maxLat) / 2) * Math.PI) / 180);
+  const spanX = Math.max((maxLon - minLon) * kx, 1e-9);
+  const spanY = Math.max(maxLat - minLat, 1e-9);
+  const scale = Math.min((width - 2 * pad) / spanX, (height - 2 * pad) / spanY);
+  const offX = (width - spanX * scale) / 2;
+  const offY = (height - spanY * scale) / 2;
+  const xy = ([lon, lat]: Position) =>
+    `${((lon! - minLon) * kx * scale + offX).toFixed(1)} ${((maxLat - lat!) * scale + offY).toFixed(1)}`;
+  return shapes.map((shape) =>
+    rings(shape)
+      .map((ring) => `M${ring.map(xy).join("L")}Z`)
+      .join(""),
+  );
+}

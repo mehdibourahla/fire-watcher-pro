@@ -175,6 +175,10 @@ function RootComponent() {
   const liveMap = useRouterState({
     select: (s) => s.location.pathname === "/",
   });
+  // share cards are screenshotted: nothing but the card may paint
+  const bare = useRouterState({
+    select: (s) => s.location.pathname.startsWith("/share-card/"),
+  });
 
   useEffect(() => {
     // Keeps <html lang/dir> aligned with the cookie locale after hydration.
@@ -208,6 +212,15 @@ function RootComponent() {
     media.addEventListener("change", onChange);
     return () => media.removeEventListener("change", onChange);
   }, []);
+
+  if (bare)
+    return (
+      <I18nextProvider i18n={i18nInstance}>
+        <QueryClientProvider client={queryClient}>
+          <Outlet />
+        </QueryClientProvider>
+      </I18nextProvider>
+    );
 
   return (
     <I18nextProvider i18n={i18nInstance}>

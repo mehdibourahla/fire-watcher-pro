@@ -34,6 +34,8 @@ Every format is built from one incident and shows, in order:
 3. Place: commune and wilaya, or `official.wilayaLevel` when `precision = wilaya`, plus `place_text`.
 4. Absolute time in Algiers: "Reported 27 Sep, 14:32".
 5. Map: the commune shape shaded inside its wilaya outline, SVG from `admin_units.geom`, no tiles.
+   Wilaya rows carry no geom (all 69 null, 2026-09-27), so the wilaya is drawn as its communes
+   under one group opacity, which hides the shared borders.
    The incident is known to commune precision; a pin on a street map would claim more.
 6. `nadhir.app` printed as the way back (a UUID is never retyped; no `short_id` migration).
 

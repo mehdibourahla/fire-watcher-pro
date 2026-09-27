@@ -638,6 +638,28 @@ export function communeGeomsQuery(ids: string[]) {
   });
 }
 
+// wilayas carry no geom; their outline is the union of their communes
+export function wilayaCommuneGeomsQuery(wilayaId: string) {
+  return queryOptions({
+    queryKey: ["wilaya_commune_geoms", wilayaId],
+    enabled: typeof window !== "undefined",
+    staleTime: Infinity,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("admin_units")
+        .select("id, geom")
+        .eq("level", "commune")
+        .eq("parent_id", wilayaId);
+      if (error) throw new Error(error.message);
+      return new Map(
+        (data ?? [])
+          .filter((r) => r.geom)
+          .map((r) => [r.id, r.geom as unknown as Geometry]),
+      );
+    },
+  });
+}
+
 export const recallDailyQuery = queryOptions({
   queryKey: ["official_incident_recall_daily"],
   queryFn: async () => {
