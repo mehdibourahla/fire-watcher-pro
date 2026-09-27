@@ -1,6 +1,7 @@
 import type { OfficialIncident } from "@/lib/nadhir";
 import {
   SHARE_FORMATS,
+  cardVersion,
   isShareFormat,
   isShareable,
   shareCardPath,
@@ -39,7 +40,7 @@ export async function handleShareImage(input: Input, deps: ShareDeps) {
   if (!incident || !isShareable(incident))
     return new Response("not found", { status: 404 });
   const lang = shareLocale(input.lang);
-  const version = String(Date.parse(incident.updated_at));
+  const version = cardVersion(incident.updated_at);
   const type =
     SHARE_FORMATS[format].type === "jpeg" ? "image/jpeg" : "image/png";
   const headers = {

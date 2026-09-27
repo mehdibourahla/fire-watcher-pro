@@ -1,7 +1,12 @@
 import type { Geometry, Position } from "geojson";
 
 import { LOCALES, type Locale } from "@/i18n/locales-list";
-import { intlLocale, unitName, type OfficialIncident } from "@/lib/nadhir";
+import {
+  HAZARD_NAME,
+  intlLocale,
+  unitName,
+  type OfficialIncident,
+} from "@/lib/nadhir";
 import { isFireKind } from "@/lib/text-sources/merge";
 
 export const SITE_URL = "https://nadhir.app";
@@ -22,21 +27,13 @@ export const shareLocale = (value: string | null | undefined): Locale =>
     ? (value as Locale)
     : "ar";
 
-export const HAZARD_NAME: Record<string, string> = {
-  flood: "flooding",
-  road: "road_blocked",
-  structure: "structural",
-  storm: "storm_damage",
-  other: "other",
-};
-
 export const isShareable = (
   incident: Pick<OfficialIncident, "authority_tier">,
 ) => incident.authority_tier !== "media";
 
-export type T = (key: string, vars?: Record<string, string>) => string;
+export type Translate = (key: string, vars?: Record<string, string>) => string;
 
-export type IncidentCard = {
+export type CardText = {
   fire: boolean;
   eyebrow: string;
   source: string;
@@ -61,9 +58,9 @@ export function algiersDateTime(iso: string, locale: Locale) {
 
 export function incidentCardModel(
   incident: OfficialIncident,
-  t: T,
+  t: Translate,
   locale: Locale,
-): IncidentCard {
+): CardText {
   const fire = isFireKind(incident.kind);
   const commune = incident.precision === "wilaya" ? null : incident.commune;
   return {
@@ -86,19 +83,25 @@ export function incidentCardModel(
   };
 }
 
+// bump when the card layout or wording changes: cached images are immutable
+export const CARD_REVISION = 1;
+
+export const cardVersion = (updatedAt: string) =>
+  `${CARD_REVISION}.${Date.parse(updatedAt)}`;
+
 export const shareImagePath = (
   id: string,
   format: ShareFormat,
   lang: Locale,
   updatedAt: string,
 ) =>
-  `/api/public/share/incident/${id}/${format}?lang=${lang}&v=${Date.parse(updatedAt)}`;
+  `/api/public/share/incident/${id}/${format}?lang=${lang}&v=${cardVersion(updatedAt)}`;
 
 export const shareCardPath = (id: string, format: ShareFormat, lang: Locale) =>
   `/share-card/incident/${id}?format=${format}&lang=${lang}`;
 
-export const incidentUrl = (origin: string, id: string, lang: Locale) =>
-  `${origin}/incident/${id}?lang=${lang}`;
+export const incidentUrl = (id: string, lang: Locale) =>
+  `${SITE_URL}/incident/${id}?lang=${lang}`;
 
 export const linkTargets = (url: string) => ({
   whatsapp: `https://wa.me/?text=${encodeURIComponent(url)}`,
@@ -120,10 +123,18 @@ export function outlinePaths(
 ): string[] {
   const points = shapes.flatMap(rings).flat();
   if (!points.length) return [];
-  const lons = points.map(([lon]) => lon!);
-  const lats = points.map(([, lat]) => lat!);
-  const [minLon, maxLon] = [Math.min(...lons), Math.max(...lons)];
-  const [minLat, maxLat] = [Math.min(...lats), Math.max(...lats)];
+  let [minLon, maxLon, minLat, maxLat] = [
+    Infinity,
+    -Infinity,
+    Infinity,
+    -Infinity,
+  ];
+  for (const [lon, lat] of points) {
+    minLon = Math.min(minLon, lon!);
+    maxLon = Math.max(maxLon, lon!);
+    minLat = Math.min(minLat, lat!);
+    maxLat = Math.max(maxLat, lat!);
+  }
   const kx = Math.cos((((minLat + maxLat) / 2) * Math.PI) / 180);
   const spanX = Math.max((maxLon - minLon) * kx, 1e-9);
   const spanY = Math.max(maxLat - minLat, 1e-9);

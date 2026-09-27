@@ -1,9 +1,14 @@
 import { useTranslation } from "react-i18next";
 
 import type { Locale } from "@/i18n";
-import { relativeTime, unitName, type OfficialIncident } from "@/lib/nadhir";
+import {
+  HAZARD_NAME,
+  relativeTime,
+  unitName,
+  type OfficialIncident,
+} from "@/lib/nadhir";
 import { IncidentShareSheet } from "@/components/share/IncidentShareSheet";
-import { HAZARD_NAME, isShareable } from "@/lib/share-card";
+import { isShareable } from "@/lib/share-card";
 import { isFireKind } from "@/lib/text-sources/merge";
 
 type Props = {

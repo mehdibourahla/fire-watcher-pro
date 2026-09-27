@@ -579,6 +579,14 @@ export type OfficialIncident = {
   } | null;
 };
 
+export const HAZARD_NAME: Record<string, string> = {
+  flood: "flooding",
+  road: "road_blocked",
+  structure: "structural",
+  storm: "storm_damage",
+  other: "other",
+};
+
 const OFFICIAL_WINDOW_MS = 72 * 3_600_000;
 
 const OFFICIAL_INCIDENT_COLUMNS =

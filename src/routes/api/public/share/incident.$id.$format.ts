@@ -22,7 +22,7 @@ export const Route = createFileRoute("/api/public/share/incident/$id/$format")({
           import("@/lib/nadhir"),
         ]);
         const url = new URL(request.url);
-        return handleShareImage(
+        const response = await handleShareImage(
           {
             id: params.id,
             format: params.format,
@@ -40,6 +40,8 @@ export const Route = createFileRoute("/api/public/share/incident/$id/$format")({
             limit: () => enforceRateLimit(request),
           },
         );
+        response.headers.set("Access-Control-Allow-Origin", "*");
+        return response;
       },
     },
   },

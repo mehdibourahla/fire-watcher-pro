@@ -186,23 +186,26 @@ function RootComponent() {
   }, []);
 
   useEffect(() => {
+    if (bare) return;
     void import("@/integrations/supabase/legacy-session")
       .then(({ migrateLegacySession }) => migrateLegacySession())
       .catch(() => undefined);
-  }, []);
+  }, [bare]);
 
   useEffect(() => {
+    if (bare) return;
     if (import.meta.env.PROD && "serviceWorker" in navigator)
       void navigator.serviceWorker.register("/sw.js").catch(() => undefined);
-  }, []);
+  }, [bare]);
 
   useEffect(() => {
+    if (bare) return;
     // ADR-0004: the client re-asserts its FCM topics on load (token refresh path)
     void import("@/lib/push").then(({ syncSubscription, syncUserPush }) => {
       syncSubscription().catch(() => undefined);
       syncUserPush().catch(() => undefined);
     });
-  }, []);
+  }, [bare]);
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-color-scheme: dark)");

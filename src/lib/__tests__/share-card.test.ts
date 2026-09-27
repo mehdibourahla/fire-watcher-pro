@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import type { OfficialIncident } from "@/lib/nadhir";
 import {
+  CARD_REVISION,
   algiersDateTime,
   incidentCardModel,
   isShareable,
@@ -100,9 +101,9 @@ describe("share helpers", () => {
     expect(isShareable(incident({ authority_tier: "media" }))).toBe(false);
   });
 
-  it("versions image URLs by updated_at", () => {
+  it("versions image URLs by card revision and updated_at", () => {
     expect(shareImagePath("abc", "og", "fr", "2026-09-27T13:40:00Z")).toBe(
-      `/api/public/share/incident/abc/og?lang=fr&v=${Date.parse("2026-09-27T13:40:00Z")}`,
+      `/api/public/share/incident/abc/og?lang=fr&v=${CARD_REVISION}.${Date.parse("2026-09-27T13:40:00Z")}`,
     );
   });
 

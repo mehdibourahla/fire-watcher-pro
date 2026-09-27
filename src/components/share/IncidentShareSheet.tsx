@@ -52,12 +52,13 @@ export function IncidentShareSheet({
         .then(async (res) => {
           if (!res.ok) throw new Error(`${res.status}`);
           const blob = await res.blob();
+          if (!live) return;
           const url = URL.createObjectURL(blob);
           urls.push(url);
           const file = new File([blob], `nadhir-${format}.png`, {
             type: blob.type,
           });
-          if (live) setImages((prev) => ({ ...prev, [format]: { file, url } }));
+          setImages((prev) => ({ ...prev, [format]: { file, url } }));
         })
         .catch(
           () => live && setImages((prev) => ({ ...prev, [format]: "error" })),
@@ -71,7 +72,7 @@ export function IncidentShareSheet({
     };
   }, [open, attempt, incident.id, incident.updated_at, lang]);
 
-  const link = incidentUrl(window.location.origin, incident.id, lang);
+  const link = incidentUrl(incident.id, lang);
   const targets = linkTargets(link);
   const current = images[active];
   const file = current && current !== "error" ? current.file : null;

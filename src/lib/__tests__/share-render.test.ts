@@ -1,10 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 
 import type { OfficialIncident } from "@/lib/nadhir";
+import { cardVersion } from "@/lib/share-card";
 import { handleShareImage, type ShareDeps } from "@/lib/share-render.server";
 
 const updated = "2026-09-27T13:40:00Z";
-const version = String(Date.parse(updated));
+const version = cardVersion(updated);
 const incident = {
   id: "i1",
   authority_tier: "national",
@@ -85,6 +86,21 @@ describe("handleShareImage", () => {
     expect(res.status).toBe(503);
     expect(res.headers.get("retry-after")).toBe("30");
     expect(store.size).toBe(0);
+  });
+
+  it("spends the rate limit only on renders, and never renders past it", async () => {
+    const limit = vi.fn(async () => null);
+    const { d } = deps({ limit });
+    await handleShareImage(input(), d);
+    await handleShareImage(input(), d);
+    expect(limit).toHaveBeenCalledTimes(1);
+
+    const blocked = deps({
+      limit: async () => new Response("rate limit exceeded", { status: 429 }),
+    });
+    const res = await handleShareImage(input(), blocked.d);
+    expect(res.status).toBe(429);
+    expect(blocked.d.screenshot).not.toHaveBeenCalled();
   });
 
   it("answers 501 where no browser is bound", async () => {
