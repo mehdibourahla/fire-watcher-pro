@@ -28,6 +28,7 @@ import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedWebhooksRouteImport } from './routes/_authenticated/webhooks'
 import { Route as AuthenticatedZonesRouteImport } from './routes/_authenticated/zones'
 import { Route as FireIdRouteImport } from './routes/fire.$id'
+import { Route as IncidentIdRouteImport } from './routes/incident.$id'
 import { Route as SurvivalIndexRouteImport } from './routes/survival/index'
 import { Route as SurvivalAreasRouteImport } from './routes/survival/areas'
 import { Route as SurvivalCheckinRouteImport } from './routes/survival/checkin'
@@ -53,6 +54,7 @@ import { Route as ApiPrivateReportPublishRouteImport } from './routes/api/privat
 import { Route as ApiPrivateUserPushRouteImport } from './routes/api/private/user-push'
 import { Route as ApiPublicPushReceiptRouteImport } from './routes/api/public/push-receipt'
 import { Route as ContributeLanguageLocaleRouteImport } from './routes/contribute_.language.$locale'
+import { Route as ShareCardIncidentIdRouteImport } from './routes/share-card.incident.$id'
 import { Route as ApiInternalSourceJobsRunRouteImport } from './routes/api/internal/source-jobs/run'
 import { Route as ApiPublicContributeIdeaRouteImport } from './routes/api/public/contribute/idea'
 import { Route as ApiPublicContributeMyTranslationsRouteImport } from './routes/api/public/contribute/my-translations'
@@ -67,6 +69,7 @@ import { Route as ApiPublicV1StatsRouteImport } from './routes/api/public/v1/sta
 import { Route as ApiPublicV1StatusRouteImport } from './routes/api/public/v1/status'
 import { Route as ApiPublicV1SubscribeRouteImport } from './routes/api/public/v1/subscribe'
 import { Route as ApiPublicV1WeatherRouteImport } from './routes/api/public/v1/weather'
+import { Route as ApiPublicShareIncidentIdFormatRouteImport } from './routes/api/public/share/incident.$id.$format'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -160,6 +163,11 @@ const AuthenticatedZonesRoute = AuthenticatedZonesRouteImport.update({
 const FireIdRoute = FireIdRouteImport.update({
   id: '/fire/$id',
   path: '/fire/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IncidentIdRoute = IncidentIdRouteImport.update({
+  id: '/incident/$id',
+  path: '/incident/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SurvivalIndexRoute = SurvivalIndexRouteImport.update({
@@ -295,6 +303,11 @@ const ContributeLanguageLocaleRoute =
     path: '/contribute/language/$locale',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ShareCardIncidentIdRoute = ShareCardIncidentIdRouteImport.update({
+  id: '/share-card/incident/$id',
+  path: '/share-card/incident/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiInternalSourceJobsRunRoute =
   ApiInternalSourceJobsRunRouteImport.update({
     id: '/api/internal/source-jobs/run',
@@ -368,6 +381,12 @@ const ApiPublicV1WeatherRoute = ApiPublicV1WeatherRouteImport.update({
   path: '/api/public/v1/weather',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicShareIncidentIdFormatRoute =
+  ApiPublicShareIncidentIdFormatRouteImport.update({
+    id: '/api/public/share/incident/$id/$format',
+    path: '/api/public/share/incident/$id/$format',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -388,6 +407,7 @@ export interface FileRoutesByFullPath {
   '/webhooks': typeof AuthenticatedWebhooksRoute
   '/zones': typeof AuthenticatedZonesRoute
   '/fire/$id': typeof FireIdRoute
+  '/incident/$id': typeof IncidentIdRoute
   '/survival/areas': typeof SurvivalAreasRoute
   '/survival/checkin': typeof SurvivalCheckinRoute
   '/survival/sos': typeof SurvivalSosRoute
@@ -412,6 +432,7 @@ export interface FileRoutesByFullPath {
   '/api/private/user-push': typeof ApiPrivateUserPushRoute
   '/api/public/push-receipt': typeof ApiPublicPushReceiptRoute
   '/contribute/language/$locale': typeof ContributeLanguageLocaleRoute
+  '/share-card/incident/$id': typeof ShareCardIncidentIdRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/api/internal/source-jobs/run': typeof ApiInternalSourceJobsRunRoute
   '/api/public/contribute/idea': typeof ApiPublicContributeIdeaRoute
@@ -427,6 +448,7 @@ export interface FileRoutesByFullPath {
   '/api/public/v1/subscribe': typeof ApiPublicV1SubscribeRoute
   '/api/public/v1/weather': typeof ApiPublicV1WeatherRoute
   '/api/public/v1/': typeof ApiPublicV1IndexRoute
+  '/api/public/share/incident/$id/$format': typeof ApiPublicShareIncidentIdFormatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -445,6 +467,7 @@ export interface FileRoutesByTo {
   '/webhooks': typeof AuthenticatedWebhooksRoute
   '/zones': typeof AuthenticatedZonesRoute
   '/fire/$id': typeof FireIdRoute
+  '/incident/$id': typeof IncidentIdRoute
   '/survival/areas': typeof SurvivalAreasRoute
   '/survival/checkin': typeof SurvivalCheckinRoute
   '/survival/sos': typeof SurvivalSosRoute
@@ -469,6 +492,7 @@ export interface FileRoutesByTo {
   '/api/private/user-push': typeof ApiPrivateUserPushRoute
   '/api/public/push-receipt': typeof ApiPublicPushReceiptRoute
   '/contribute/language/$locale': typeof ContributeLanguageLocaleRoute
+  '/share-card/incident/$id': typeof ShareCardIncidentIdRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/api/internal/source-jobs/run': typeof ApiInternalSourceJobsRunRoute
   '/api/public/contribute/idea': typeof ApiPublicContributeIdeaRoute
@@ -484,6 +508,7 @@ export interface FileRoutesByTo {
   '/api/public/v1/subscribe': typeof ApiPublicV1SubscribeRoute
   '/api/public/v1/weather': typeof ApiPublicV1WeatherRoute
   '/api/public/v1': typeof ApiPublicV1IndexRoute
+  '/api/public/share/incident/$id/$format': typeof ApiPublicShareIncidentIdFormatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -506,6 +531,7 @@ export interface FileRoutesById {
   '/_authenticated/webhooks': typeof AuthenticatedWebhooksRoute
   '/_authenticated/zones': typeof AuthenticatedZonesRoute
   '/fire/$id': typeof FireIdRoute
+  '/incident/$id': typeof IncidentIdRoute
   '/survival/areas': typeof SurvivalAreasRoute
   '/survival/checkin': typeof SurvivalCheckinRoute
   '/survival/sos': typeof SurvivalSosRoute
@@ -530,6 +556,7 @@ export interface FileRoutesById {
   '/api/private/user-push': typeof ApiPrivateUserPushRoute
   '/api/public/push-receipt': typeof ApiPublicPushReceiptRoute
   '/contribute_/language/$locale': typeof ContributeLanguageLocaleRoute
+  '/share-card/incident/$id': typeof ShareCardIncidentIdRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/api/internal/source-jobs/run': typeof ApiInternalSourceJobsRunRoute
   '/api/public/contribute/idea': typeof ApiPublicContributeIdeaRoute
@@ -545,6 +572,7 @@ export interface FileRoutesById {
   '/api/public/v1/subscribe': typeof ApiPublicV1SubscribeRoute
   '/api/public/v1/weather': typeof ApiPublicV1WeatherRoute
   '/api/public/v1/': typeof ApiPublicV1IndexRoute
+  '/api/public/share/incident/$id/$format': typeof ApiPublicShareIncidentIdFormatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -567,6 +595,7 @@ export interface FileRouteTypes {
     | '/webhooks'
     | '/zones'
     | '/fire/$id'
+    | '/incident/$id'
     | '/survival/areas'
     | '/survival/checkin'
     | '/survival/sos'
@@ -591,6 +620,7 @@ export interface FileRouteTypes {
     | '/api/private/user-push'
     | '/api/public/push-receipt'
     | '/contribute/language/$locale'
+    | '/share-card/incident/$id'
     | '/admin/'
     | '/api/internal/source-jobs/run'
     | '/api/public/contribute/idea'
@@ -606,6 +636,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/subscribe'
     | '/api/public/v1/weather'
     | '/api/public/v1/'
+    | '/api/public/share/incident/$id/$format'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -624,6 +655,7 @@ export interface FileRouteTypes {
     | '/webhooks'
     | '/zones'
     | '/fire/$id'
+    | '/incident/$id'
     | '/survival/areas'
     | '/survival/checkin'
     | '/survival/sos'
@@ -648,6 +680,7 @@ export interface FileRouteTypes {
     | '/api/private/user-push'
     | '/api/public/push-receipt'
     | '/contribute/language/$locale'
+    | '/share-card/incident/$id'
     | '/admin'
     | '/api/internal/source-jobs/run'
     | '/api/public/contribute/idea'
@@ -663,6 +696,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/subscribe'
     | '/api/public/v1/weather'
     | '/api/public/v1'
+    | '/api/public/share/incident/$id/$format'
   id:
     | '__root__'
     | '/'
@@ -684,6 +718,7 @@ export interface FileRouteTypes {
     | '/_authenticated/webhooks'
     | '/_authenticated/zones'
     | '/fire/$id'
+    | '/incident/$id'
     | '/survival/areas'
     | '/survival/checkin'
     | '/survival/sos'
@@ -708,6 +743,7 @@ export interface FileRouteTypes {
     | '/api/private/user-push'
     | '/api/public/push-receipt'
     | '/contribute_/language/$locale'
+    | '/share-card/incident/$id'
     | '/_authenticated/admin/'
     | '/api/internal/source-jobs/run'
     | '/api/public/contribute/idea'
@@ -723,6 +759,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/subscribe'
     | '/api/public/v1/weather'
     | '/api/public/v1/'
+    | '/api/public/share/incident/$id/$format'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -739,6 +776,7 @@ export interface RootRouteChildren {
   StatusRoute: typeof StatusRoute
   TermsRoute: typeof TermsRoute
   FireIdRoute: typeof FireIdRoute
+  IncidentIdRoute: typeof IncidentIdRoute
   ApiPrivateAccountRoute: typeof ApiPrivateAccountRoute
   ApiPrivateEnsembleRoute: typeof ApiPrivateEnsembleRoute
   ApiPrivatePushTestRoute: typeof ApiPrivatePushTestRoute
@@ -746,6 +784,7 @@ export interface RootRouteChildren {
   ApiPrivateUserPushRoute: typeof ApiPrivateUserPushRoute
   ApiPublicPushReceiptRoute: typeof ApiPublicPushReceiptRoute
   ContributeLanguageLocaleRoute: typeof ContributeLanguageLocaleRoute
+  ShareCardIncidentIdRoute: typeof ShareCardIncidentIdRoute
   ApiInternalSourceJobsRunRoute: typeof ApiInternalSourceJobsRunRoute
   ApiPublicContributeIdeaRoute: typeof ApiPublicContributeIdeaRoute
   ApiPublicContributeMyTranslationsRoute: typeof ApiPublicContributeMyTranslationsRoute
@@ -760,6 +799,7 @@ export interface RootRouteChildren {
   ApiPublicV1SubscribeRoute: typeof ApiPublicV1SubscribeRoute
   ApiPublicV1WeatherRoute: typeof ApiPublicV1WeatherRoute
   ApiPublicV1IndexRoute: typeof ApiPublicV1IndexRoute
+  ApiPublicShareIncidentIdFormatRoute: typeof ApiPublicShareIncidentIdFormatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -895,6 +935,13 @@ declare module '@tanstack/react-router' {
       path: '/fire/$id'
       fullPath: '/fire/$id'
       preLoaderRoute: typeof FireIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/incident/$id': {
+      id: '/incident/$id'
+      path: '/incident/$id'
+      fullPath: '/incident/$id'
+      preLoaderRoute: typeof IncidentIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/survival/': {
@@ -1072,6 +1119,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContributeLanguageLocaleRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/share-card/incident/$id': {
+      id: '/share-card/incident/$id'
+      path: '/share-card/incident/$id'
+      fullPath: '/share-card/incident/$id'
+      preLoaderRoute: typeof ShareCardIncidentIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/internal/source-jobs/run': {
       id: '/api/internal/source-jobs/run'
       path: '/api/internal/source-jobs/run'
@@ -1170,6 +1224,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicV1WeatherRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/share/incident/$id/$format': {
+      id: '/api/public/share/incident/$id/$format'
+      path: '/api/public/share/incident/$id/$format'
+      fullPath: '/api/public/share/incident/$id/$format'
+      preLoaderRoute: typeof ApiPublicShareIncidentIdFormatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -1266,6 +1327,7 @@ const rootRouteChildren: RootRouteChildren = {
   StatusRoute: StatusRoute,
   TermsRoute: TermsRoute,
   FireIdRoute: FireIdRoute,
+  IncidentIdRoute: IncidentIdRoute,
   ApiPrivateAccountRoute: ApiPrivateAccountRoute,
   ApiPrivateEnsembleRoute: ApiPrivateEnsembleRoute,
   ApiPrivatePushTestRoute: ApiPrivatePushTestRoute,
@@ -1273,6 +1335,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPrivateUserPushRoute: ApiPrivateUserPushRoute,
   ApiPublicPushReceiptRoute: ApiPublicPushReceiptRoute,
   ContributeLanguageLocaleRoute: ContributeLanguageLocaleRoute,
+  ShareCardIncidentIdRoute: ShareCardIncidentIdRoute,
   ApiInternalSourceJobsRunRoute: ApiInternalSourceJobsRunRoute,
   ApiPublicContributeIdeaRoute: ApiPublicContributeIdeaRoute,
   ApiPublicContributeMyTranslationsRoute:
@@ -1288,6 +1351,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicV1SubscribeRoute: ApiPublicV1SubscribeRoute,
   ApiPublicV1WeatherRoute: ApiPublicV1WeatherRoute,
   ApiPublicV1IndexRoute: ApiPublicV1IndexRoute,
+  ApiPublicShareIncidentIdFormatRoute: ApiPublicShareIncidentIdFormatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

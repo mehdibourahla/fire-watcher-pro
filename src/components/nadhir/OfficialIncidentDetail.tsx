@@ -1,16 +1,15 @@
 import { useTranslation } from "react-i18next";
 
 import type { Locale } from "@/i18n";
-import { relativeTime, unitName, type OfficialIncident } from "@/lib/nadhir";
+import {
+  HAZARD_NAME,
+  relativeTime,
+  unitName,
+  type OfficialIncident,
+} from "@/lib/nadhir";
+import { IncidentShareSheet } from "@/components/share/IncidentShareSheet";
+import { isShareable } from "@/lib/share-card";
 import { isFireKind } from "@/lib/text-sources/merge";
-
-const HAZARD_NAME: Record<string, string> = {
-  flood: "flooding",
-  road: "road_blocked",
-  structure: "structural",
-  storm: "storm_damage",
-  other: "other",
-};
 
 type Props = {
   incident: OfficialIncident;
@@ -89,6 +88,9 @@ export function OfficialIncidentDetail({ incident, locale, now }: Props) {
         >
           {t("official.viewPost")}
         </a>
+      ) : null}
+      {isShareable(incident) ? (
+        <IncidentShareSheet incident={incident} />
       ) : null}
       <p className="text-xs text-muted-foreground">
         {t(fire ? "official.disclaimer" : "official.disclaimerHazard")}

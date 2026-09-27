@@ -14,6 +14,7 @@ import { HAZARD_CATEGORIES, type MapSearch } from "@/lib/civil-map-search";
 import type { SourceHealth as SourceHealthRow } from "@/lib/source-health";
 import type { Locale } from "@/i18n";
 import { ShowMore } from "@/components/ShowMore";
+import { isShareable } from "@/lib/share-card";
 
 export function PlaceSearchResults({
   query,
@@ -206,14 +207,17 @@ export function SituationDetailView({
         </p>
       )}
       <SituationDetails item={selected} units={units} now={now} />
-      <button
-        type="button"
-        onClick={onShare}
-        className="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border text-sm"
-      >
-        <Share2 className="size-4" />
-        {t("civilMap.share")}
-      </button>
+      {/* shareable official incidents carry their own share sheet */}
+      {selected.source === "official" && isShareable(selected.data) ? null : (
+        <button
+          type="button"
+          onClick={onShare}
+          className="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border text-sm"
+        >
+          <Share2 className="size-4" />
+          {t("civilMap.share")}
+        </button>
+      )}
     </>
   );
 }

@@ -37,6 +37,7 @@ const official: Extract<Situation, { source: "official" }> = {
     first_reported_at: "2026-09-16T12:00:00Z",
     last_reported_at: "2026-09-16T12:00:00Z",
     as_of: "2026-09-16T12:00:00Z",
+    updated_at: "2026-09-16T12:00:00Z",
     unlisted_at: null,
     mention_count: 1,
     evidence: "Fire",

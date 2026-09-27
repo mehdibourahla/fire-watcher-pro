@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
+import { fileURLToPath } from "node:url";
 
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
@@ -33,7 +34,17 @@ export default defineConfig(({ command }) => ({
   server: { host: "::", port: 8080, strictPort: true },
   resolve: {
     dedupe: ["react", "react-dom", "@tanstack/react-router"],
+    // only the Workers runtime has this module; dev gets bindings-free stand-ins
+    alias:
+      command === "serve"
+        ? {
+            "cloudflare:workers": fileURLToPath(
+              new URL("./src/lib/cloudflare-workers.dev.ts", import.meta.url),
+            ),
+          }
+        : {},
   },
+  build: { rolldownOptions: { external: [/^cloudflare:/] } },
   // maplibre spawns its worker from a sibling file the dep optimizer does not emit,
   // which silently breaks GeoJSON sources (fire layers never render)
   optimizeDeps: { exclude: ["maplibre-gl"] },
@@ -72,6 +83,7 @@ export default defineConfig(({ command }) => ({
                 limits: { cpu_ms: 30000 },
                 // SSR makes several Supabase round-trips, so run near the database
                 placement: { mode: "smart" },
+                browser: { binding: "BROWSER" },
                 observability: { enabled: true, head_sampling_rate: 1 },
                 routes: [
                   { pattern: "nadhir.app", custom_domain: true },
