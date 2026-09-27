@@ -1,5 +1,5 @@
 import { Share2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
@@ -41,6 +41,7 @@ export function IncidentShareSheet({
   );
   const [attempt, setAttempt] = useState(0);
   const [notice, setNotice] = useState<string | null>(null);
+  const statusId = useId();
 
   useEffect(() => {
     if (!open) return;
@@ -139,6 +140,11 @@ export function IncidentShareSheet({
                 onClick={() => setActive(format)}
                 aria-pressed={active === format}
                 aria-label={t(`shareCard.formats.${format}`)}
+                aria-describedby={
+                  image && image !== "error"
+                    ? undefined
+                    : `${statusId}-${format}`
+                }
                 className={cn(
                   "flex min-w-0 flex-col items-center gap-2 rounded-xl p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   active === format && "bg-muted ring-2 ring-primary",
@@ -152,7 +158,10 @@ export function IncidentShareSheet({
                       className="max-h-full max-w-full rounded-md"
                     />
                   ) : (
-                    <span className="flex h-full w-full items-center justify-center rounded-md bg-muted p-1 text-center text-xs text-muted-foreground">
+                    <span
+                      id={`${statusId}-${format}`}
+                      className="flex h-full w-full items-center justify-center rounded-md bg-muted p-1 text-center text-xs text-muted-foreground"
+                    >
                       {t(
                         image === "error"
                           ? "shareCard.cardError"
@@ -170,17 +179,19 @@ export function IncidentShareSheet({
         </div>
         <div className="space-y-3 px-4 pb-4">
           <p aria-live="polite" className="min-h-5 text-sm">
+            {notice}
             {current === "error" ? (
               <button
                 type="button"
                 onClick={() => setAttempt((n) => n + 1)}
-                className="font-medium text-primary underline underline-offset-2"
+                className={cn(
+                  "font-medium text-primary underline underline-offset-2",
+                  notice && "ms-2",
+                )}
               >
                 {t("shareCard.retry")}
               </button>
-            ) : (
-              notice
-            )}
+            ) : null}
           </p>
           <p className="text-xs text-muted-foreground">
             {t("shareCard.image")}
