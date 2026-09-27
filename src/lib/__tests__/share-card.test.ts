@@ -1,0 +1,122 @@
+import { describe, expect, it } from "vitest";
+
+import type { OfficialIncident } from "@/lib/nadhir";
+import {
+  algiersDateTime,
+  incidentCardModel,
+  isShareable,
+  linkTargets,
+  shareImagePath,
+  shareLocale,
+} from "@/lib/share-card";
+
+const t = (key: string, vars?: Record<string, string>) =>
+  vars ? `${key}${JSON.stringify(vars)}` : key;
+
+const unit = (name: string) => ({
+  name_ar: `${name}-ar`,
+  name_fr: `${name}-fr`,
+  name_en: `${name}-en`,
+  name_kab: null,
+  lat: 36,
+  lon: 4,
+});
+
+const incident = (over: Partial<OfficialIncident> = {}): OfficialIncident => ({
+  id: "0b5c1f2e-8f4a-4c55-9a51-3f1c2f0c9b10",
+  wilaya_id: "w",
+  commune_id: "c",
+  kind: "vegetation",
+  status: "ongoing",
+  precision: "commune",
+  authority_tier: "national",
+  place_text: null,
+  first_reported_at: "2026-09-27T10:00:00Z",
+  last_reported_at: "2026-09-27T13:32:00Z",
+  as_of: "2026-09-27T13:32:00Z",
+  updated_at: "2026-09-27T13:40:00Z",
+  unlisted_at: null,
+  mention_count: 1,
+  evidence: "…",
+  commune: unit("Azazga"),
+  wilaya: unit("Tizi Ouzou"),
+  latest_mention: {
+    document: { url: "https://t.me/x/1", published_at: "2026-09-27T13:32:00Z" },
+    source: { label: "Protection Civile" },
+  },
+  ...over,
+});
+
+describe("incidentCardModel", () => {
+  it("puts the authority first, falling back when the source is unnamed", () => {
+    expect(incidentCardModel(incident(), t, "en")).toMatchObject({
+      eyebrow: "official.eyebrow",
+      source: "Protection Civile",
+    });
+    expect(
+      incidentCardModel(incident({ latest_mention: null }), t, "en").source,
+    ).toBe("official.sourceFallback");
+  });
+
+  it("names the hazard and status in the authority's vocabulary", () => {
+    expect(incidentCardModel(incident(), t, "en")).toMatchObject({
+      fire: true,
+      hazard: "civilMap.fire",
+      status: "official.statuses.ongoing",
+    });
+    expect(
+      incidentCardModel(
+        incident({ kind: "flood", status: "monitoring" }),
+        t,
+        "en",
+      ),
+    ).toMatchObject({
+      fire: false,
+      hazard: "reports.hazardName.flooding",
+      status: "official.statuses.monitoring",
+    });
+  });
+
+  it("falls back to the wilaya when the report is only wilaya-precise", () => {
+    expect(
+      incidentCardModel(incident({ precision: "wilaya" }), t, "fr"),
+    ).toMatchObject({ place: "Tizi Ouzou-fr", region: "official.wilayaLevel" });
+    expect(incidentCardModel(incident(), t, "fr")).toMatchObject({
+      place: "Azazga-fr",
+      region: 'official.inWilaya{"wilaya":"Tizi Ouzou-fr"}',
+    });
+  });
+
+  it("stamps an absolute Algiers time, never a relative one", () => {
+    expect(algiersDateTime("2026-09-27T13:32:00Z", "en")).toMatch(/14:32/);
+    expect(incidentCardModel(incident(), t, "en").time).toContain("14:32");
+  });
+});
+
+describe("share helpers", () => {
+  it("refuses media-tier incidents", () => {
+    expect(isShareable(incident())).toBe(true);
+    expect(isShareable(incident({ authority_tier: "media" }))).toBe(false);
+  });
+
+  it("versions image URLs by updated_at", () => {
+    expect(shareImagePath("abc", "og", "fr", "2026-09-27T13:40:00Z")).toBe(
+      `/api/public/share/incident/abc/og?lang=fr&v=${Date.parse("2026-09-27T13:40:00Z")}`,
+    );
+  });
+
+  it("accepts only picker locales", () => {
+    expect(shareLocale("fr")).toBe("fr");
+    expect(shareLocale("kab")).toBe("ar");
+    expect(shareLocale(null)).toBe("ar");
+  });
+
+  it("encodes the link for WhatsApp and Facebook", () => {
+    expect(linkTargets("https://nadhir.app/incident/a?lang=fr")).toEqual({
+      whatsapp:
+        "https://wa.me/?text=https%3A%2F%2Fnadhir.app%2Fincident%2Fa%3Flang%3Dfr",
+      facebook:
+        "https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fnadhir.app%2Fincident%2Fa%3Flang%3Dfr",
+    });
+  });
+});

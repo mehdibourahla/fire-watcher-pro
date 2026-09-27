@@ -90,6 +90,7 @@ const official = (over: Partial<OfficialIncident> = {}): OfficialIncident => ({
   first_reported_at: at(5),
   last_reported_at: at(1),
   as_of: at(1),
+  updated_at: at(1),
   unlisted_at: null,
   mention_count: 1,
   evidence: "حريق",

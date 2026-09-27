@@ -567,6 +567,7 @@ export type OfficialIncident = {
   first_reported_at: string;
   last_reported_at: string;
   as_of: string;
+  updated_at: string;
   unlisted_at: string | null;
   mention_count: number;
   evidence: string;
@@ -580,15 +581,33 @@ export type OfficialIncident = {
 
 const OFFICIAL_WINDOW_MS = 72 * 3_600_000;
 
+const OFFICIAL_INCIDENT_COLUMNS =
+  "id, wilaya_id, commune_id, kind, status, precision, authority_tier, place_text, first_reported_at, last_reported_at, as_of, updated_at, unlisted_at, mention_count, evidence, commune:admin_units!official_incidents_commune_id_fkey(name_ar, name_fr, name_en, name_kab, lat, lon), wilaya:admin_units!official_incidents_wilaya_id_fkey(name_ar, name_fr, name_en, name_kab, lat, lon), latest_mention:incident_mentions!official_incidents_latest_mention_fkey(document:source_documents(url, published_at), source:text_sources(label))";
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export async function fetchOfficialIncident(
+  client: typeof supabase,
+  id: string,
+): Promise<OfficialIncident | null> {
+  // a malformed id is a 22P02 from Postgres, which would surface as a 500
+  if (!UUID.test(id)) return null;
+  const { data, error } = await client
+    .from("official_incidents")
+    .select(OFFICIAL_INCIDENT_COLUMNS)
+    .eq("id", id)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data as unknown as OfficialIncident | null;
+}
+
 export const officialIncidentsQuery = queryOptions({
   queryKey: ["official_incidents"],
   queryFn: async () => {
     const since = new Date(Date.now() - OFFICIAL_WINDOW_MS).toISOString();
     const { data, error } = await supabase
       .from("official_incidents")
-      .select(
-        "id, wilaya_id, commune_id, kind, status, precision, authority_tier, place_text, first_reported_at, last_reported_at, as_of, unlisted_at, mention_count, evidence, commune:admin_units!official_incidents_commune_id_fkey(name_ar, name_fr, name_en, name_kab, lat, lon), wilaya:admin_units!official_incidents_wilaya_id_fkey(name_ar, name_fr, name_en, name_kab, lat, lon), latest_mention:incident_mentions!official_incidents_latest_mention_fkey(document:source_documents(url, published_at), source:text_sources(label))",
-      )
+      .select(OFFICIAL_INCIDENT_COLUMNS)
       .gte("last_reported_at", since)
       .order("last_reported_at", { ascending: false });
     if (error) throw new Error(error.message);

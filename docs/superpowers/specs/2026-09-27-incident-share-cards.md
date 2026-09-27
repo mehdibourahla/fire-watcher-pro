@@ -37,9 +37,10 @@ Every format is built from one incident and shows, in order:
    The incident is known to commune precision; a pin on a street map would claim more.
 6. `nadhir.app` printed as the way back (a UUID is never retyped; no `short_id` migration).
 
-No emergency number on the card. Language is the sharer's locale.
+No emergency number on the card. Language is the sharer's locale among ar, fr and en; Kabyle is
+withheld from the pickers until reviewed, so it is not offered.
 
-Formats: `story` 1080×1920 PNG, `post` 1080×1350 PNG, `sticker` transparent PNG (hazard icon,
+Formats: `story` 1080×1920 PNG, `post` 1080×1350 PNG, `sticker` 960×600 transparent PNG (hazard icon,
 hazard·status, commune, time, `nadhir.app` on a solid rounded plate, no map), `og` 1200×630 JPEG
 under 300 KB.
 
@@ -47,7 +48,7 @@ under 300 KB.
 
 **`/incident/$id`** public landing page. SSR loader uses a new `officialIncidentQuery(id)` with no
 72 h window, so an old link still opens; media-tier or unknown ids are `notFound()`. `head` sets
-per-incident `og:title`, `og:description`, `og:image` (`…/og?lang=<lang>&v=<as_of>`),
+per-incident `og:title`, `og:description`, `og:image` (`…/og?lang=<lang>&v=<updated_at>`),
 `og:image:width`/`height` and `twitter:card=summary_large_image`. The link carries `?lang=` because
 crawlers have no locale cookie (`headTranslator` reads only the cookie); without it the app's
 default locale is used. Body reuses
@@ -58,7 +59,8 @@ chrome, `noindex`. Geometry loads in the browser (SSR geometry once exceeded the
 Sets `data-card-ready` once fonts and SVG are ready, `data-card-error` if a fetch fails.
 
 **`/api/public/share/incident/$id/$format`** returns the image. Cache API lookup keyed on
-id + format + lang + `as_of`; on a miss, validate the incident (exists, not media tier) and format,
+id + format + lang + `updated_at` (set by `bump_official_incident` on every status change, so
+it versions everything the card shows; `as_of` does not); on a miss, validate the incident (exists, not media tier) and format,
 then Cloudflare Browser Run: viewport at format size, load the card route, wait for
 `[data-card-ready]` (15 s cap), screenshot (`omitBackground` for sticker, JPEG for og), store
 immutable. The Cache API is per data centre, so each location renders once per version; R2 only
@@ -74,19 +76,20 @@ Story, Post and Sticker (direction follows RTL), then two rows:
 
 - Image (acts on the card in view): **Share image** calls `navigator.share({ files })`, shown only
   when `navigator.canShare({ files })` is true; **Save** downloads, and is primary where Share
-  image is hidden. The PNG is fetched into a `File` when its card scrolls into view, so the tap
-  shares immediately. `AbortError` is silent.
+  image is hidden. All three PNGs are fetched into `File`s when the sheet opens (their thumbnails
+  are visible together), so the tap shares immediately. `AbortError` is silent.
 - Link (always the `/incident` URL with `?lang=`): WhatsApp (`wa.me/?text=`), Facebook
   (`facebook.com/sharer/sharer.php?u=`), Copy. No Instagram link action: Instagram has none on the web.
 
 The sticker card replaces Share image with **Copy sticker**:
 `navigator.clipboard.write([new ClipboardItem({ "image/png": blobPromise })])` (the promise form
 keeps Safari's user activation), then the hint "Open your Instagram story and paste".
-Whether Instagram's story editor keeps the transparency is unverified: it is tested on the PR
-preview on one iPhone and one Android phone, and the sticker is kept or deleted in the same PR.
+Whether Instagram's story editor keeps the transparency is unverified: it is tested on a
+`wrangler versions upload` preview (CI deploys only main) on one iPhone and one Android phone,
+and the sticker is kept or deleted in the same PR.
 
 Entry points: `/incident/$id` and the map's `OfficialIncidentDetail` panel. `/fire/$id` keeps its
-link-only button. About 8 new keys in ar, fr, en and kab; kab may ship on fallback.
+link-only button. A `shareCard` string block in ar, fr, en and kab (kab carries the French text until reviewed).
 Left out: Telegram and X.
 
 ## Failure handling
@@ -103,9 +106,9 @@ Left out: Telegram and X.
   from the authority's vocabulary, wilaya-precision wording, absolute Algiers time, media tier
   rejected. Fixtures follow the `officialIncidentsQuery` select shape, not an invented one.
 - Unit: cache key and format validation in the endpoint, with the browser call injected.
-- Visual: Playwright screenshots of the card route in dev, 4 formats × ar/fr/en/kab, checked for
+- Visual: Playwright screenshots of the card route in dev, 4 formats × ar/fr/en, checked for
   Arabic shaping, RTL order and nothing clipped.
-- On the PR preview: render time measured (1–3 s is a guess); Share image into Instagram Story,
+- On the preview version: render time measured (1–3 s is a guess); Share image into Instagram Story,
   Facebook Story and WhatsApp on iPhone Safari and Android Chrome; Copy sticker pasted into an
   Instagram story; link preview checked with Facebook's Sharing Debugger and a WhatsApp message.
 

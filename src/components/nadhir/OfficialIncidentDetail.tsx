@@ -2,15 +2,8 @@ import { useTranslation } from "react-i18next";
 
 import type { Locale } from "@/i18n";
 import { relativeTime, unitName, type OfficialIncident } from "@/lib/nadhir";
+import { HAZARD_NAME } from "@/lib/share-card";
 import { isFireKind } from "@/lib/text-sources/merge";
-
-const HAZARD_NAME: Record<string, string> = {
-  flood: "flooding",
-  road: "road_blocked",
-  structure: "structural",
-  storm: "storm_damage",
-  other: "other",
-};
 
 type Props = {
   incident: OfficialIncident;
