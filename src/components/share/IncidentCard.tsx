@@ -37,6 +37,13 @@ const ACCENT: Record<string, string> = {
   other: "#a3a3a3",
 };
 
+const CLAMP = {
+  display: "-webkit-box",
+  WebkitLineClamp: 2,
+  WebkitBoxOrient: "vertical",
+  overflow: "hidden",
+} as const;
+
 type Props = { incident: OfficialIncident; format: ShareFormat; lang: Locale };
 
 export function IncidentCard({ incident, format, lang }: Props) {
@@ -55,7 +62,13 @@ export function IncidentCard({ incident, format, lang }: Props) {
   useEffect(() => {
     void document.fonts.ready.then(() => setFonts(true));
   }, []);
-  const ready = fonts && (!needsMap || geoms.isSuccess);
+  // a commune report drawn without its commune would read as wilaya-wide
+  const communeMissing =
+    needsMap &&
+    geoms.isSuccess &&
+    !wilayaOnly &&
+    !geoms.data.has(incident.commune_id!);
+  const ready = fonts && (!needsMap || geoms.isSuccess) && !communeMissing;
   const size = SHARE_FORMATS[format];
   const rtl = lang === "ar";
 
@@ -98,7 +111,7 @@ export function IncidentCard({ incident, format, lang }: Props) {
 
   const text = (
     <>
-      <p style={{ fontSize: "1em", opacity: 0.75 }}>
+      <p style={{ fontSize: "1em", opacity: 0.75, ...CLAMP }}>
         {card.eyebrow} · {card.source}
       </p>
       <p
@@ -127,7 +140,7 @@ export function IncidentCard({ incident, format, lang }: Props) {
       <p style={{ fontSize: "1.8em", fontWeight: 600, marginTop: "0.6em" }}>
         {card.place}
       </p>
-      <p style={{ fontSize: "1.1em", opacity: 0.75 }}>
+      <p style={{ fontSize: "1.1em", opacity: 0.75, ...CLAMP }}>
         {card.region}
         {card.placeText ? ` · ${card.placeText}` : null}
       </p>
@@ -145,7 +158,7 @@ export function IncidentCard({ incident, format, lang }: Props) {
       dir={rtl ? "rtl" : "ltr"}
       lang={lang}
       data-card-ready={ready ? "" : undefined}
-      data-card-error={geoms.isError ? "" : undefined}
+      data-card-error={geoms.isError || communeMissing ? "" : undefined}
       style={{
         width: size.width,
         height: size.height,
@@ -224,8 +237,8 @@ export function IncidentCard({ incident, format, lang }: Props) {
       ) : (
         <div
           style={{
-            fontSize: 30,
-            padding: 56,
+            fontSize: 26,
+            padding: 48,
             height: "100%",
             borderRadius: 48,
             background: "#14110ff2",

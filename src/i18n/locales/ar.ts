@@ -504,6 +504,7 @@ export const ar: Translation = {
     stickerCopied: "تم نسخ الملصق. افتح قصتك على إنستغرام والصقه.",
     copyLink: "نسخ الرابط",
     linkCopied: "تم نسخ الرابط",
+    copyFailed: "تعذّر نسخ الرابط.",
     failed: "تعذّرت المشاركة. استعمل الحفظ.",
     cardError: "الصورة غير متاحة",
     retry: "إعادة المحاولة",

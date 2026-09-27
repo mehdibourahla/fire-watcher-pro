@@ -114,7 +114,7 @@ export function IncidentShareSheet({
       await navigator.clipboard.writeText(link);
       setNotice(t("shareCard.linkCopied"));
     } catch {
-      setNotice(t("shareCard.failed"));
+      setNotice(t("shareCard.copyFailed"));
     }
   };
 

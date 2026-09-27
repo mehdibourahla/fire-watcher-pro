@@ -50,6 +50,7 @@ export function algiersDateTime(iso: string, locale: Locale) {
     timeZone: "Africa/Algiers",
     day: "numeric",
     month: "short",
+    year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
     hourCycle: "h23",

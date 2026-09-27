@@ -91,6 +91,7 @@ describe("incidentCardModel", () => {
 
   it("stamps an absolute Algiers time, never a relative one", () => {
     expect(algiersDateTime("2026-09-27T13:32:00Z", "en")).toMatch(/14:32/);
+    expect(algiersDateTime("2026-09-27T13:32:00Z", "fr")).toContain("2026");
     expect(incidentCardModel(incident(), t, "en").time).toContain("14:32");
   });
 });

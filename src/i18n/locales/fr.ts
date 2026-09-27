@@ -515,6 +515,7 @@ export const fr: Translation = {
     stickerCopied: "Sticker copié. Ouvrez votre story Instagram et collez-le.",
     copyLink: "Copier le lien",
     linkCopied: "Lien copié",
+    copyFailed: "Impossible de copier le lien.",
     failed: "Partage impossible. Utilisez Enregistrer.",
     cardError: "Image indisponible",
     retry: "Réessayer",

@@ -507,6 +507,7 @@ export const en = {
     stickerCopied: "Sticker copied. Open your Instagram story and paste it.",
     copyLink: "Copy link",
     linkCopied: "Link copied",
+    copyFailed: "Could not copy the link.",
     failed: "Could not share. Use Save instead.",
     cardError: "Image unavailable",
     retry: "Retry",
