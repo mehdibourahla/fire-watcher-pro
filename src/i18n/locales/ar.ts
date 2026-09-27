@@ -506,6 +506,7 @@ export const ar: Translation = {
     linkCopied: "تم نسخ الرابط",
     copyFailed: "تعذّر نسخ الرابط.",
     failed: "تعذّرت المشاركة. استعمل الحفظ.",
+    preparing: "جارٍ التحضير…",
     cardError: "الصورة غير متاحة",
     retry: "إعادة المحاولة",
     seeOnMap: "عرض على الخريطة",
