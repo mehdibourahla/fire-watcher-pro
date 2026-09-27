@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/sheet";
 import type { OfficialIncident } from "@/lib/nadhir";
 import {
-  SHARE_FORMATS,
   incidentUrl,
   linkTargets,
   shareImagePath,
@@ -130,55 +129,59 @@ export function IncidentShareSheet({
         <SheetHeader>
           <SheetTitle>{t("shareCard.title")}</SheetTitle>
         </SheetHeader>
-        <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2">
+        <div className="grid grid-cols-3 gap-2 px-4 pb-2">
           {CARDS.map((format) => {
             const image = images[format];
-            const { width, height } = SHARE_FORMATS[format];
             return (
               <button
                 key={format}
                 type="button"
                 onClick={() => setActive(format)}
                 aria-pressed={active === format}
+                aria-label={t(`shareCard.formats.${format}`)}
                 className={cn(
-                  "flex shrink-0 snap-center flex-col items-center gap-2 rounded-xl p-2",
-                  active === format ? "ring-2 ring-primary" : "opacity-70",
+                  "flex min-w-0 flex-col items-center gap-2 rounded-xl p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  active === format && "bg-muted ring-2 ring-primary",
                 )}
               >
-                <span
-                  className="flex h-56 items-center justify-center overflow-hidden rounded-lg bg-muted"
-                  style={{ aspectRatio: `${width} / ${height}` }}
-                >
-                  {image === "error" ? (
-                    <span className="p-2 text-center text-xs">
-                      {t("shareCard.cardError")}
-                    </span>
-                  ) : image ? (
+                <span className="flex h-28 w-full items-center justify-center">
+                  {image && image !== "error" ? (
                     <img
                       src={image.url}
                       alt=""
-                      className="h-full w-full object-contain"
+                      className="max-h-full max-w-full rounded-md"
                     />
                   ) : (
-                    <span className="h-full w-full animate-pulse bg-muted-foreground/10" />
+                    <span className="flex h-full w-full items-center justify-center rounded-md bg-muted p-1 text-center text-xs text-muted-foreground">
+                      {t(
+                        image === "error"
+                          ? "shareCard.cardError"
+                          : "shareCard.preparing",
+                      )}
+                    </span>
                   )}
                 </span>
-                <span className="text-sm">
+                <span className="text-center text-xs leading-tight">
                   {t(`shareCard.formats.${format}`)}
                 </span>
               </button>
             );
           })}
         </div>
-        <div className="space-y-3 px-4 pb-6">
+        <div className="space-y-3 px-4 pb-4">
           <p aria-live="polite" className="min-h-5 text-sm">
-            {notice}
+            {current === "error" ? (
+              <button
+                type="button"
+                onClick={() => setAttempt((n) => n + 1)}
+                className="font-medium text-primary underline underline-offset-2"
+              >
+                {t("shareCard.retry")}
+              </button>
+            ) : (
+              notice
+            )}
           </p>
-          {current === "error" ? (
-            <Button variant="outline" onClick={() => setAttempt((n) => n + 1)}>
-              {t("shareCard.retry")}
-            </Button>
-          ) : null}
           <p className="text-xs text-muted-foreground">
             {t("shareCard.image")}
           </p>

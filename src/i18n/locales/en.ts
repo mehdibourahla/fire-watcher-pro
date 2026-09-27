@@ -509,6 +509,7 @@ export const en = {
     linkCopied: "Link copied",
     copyFailed: "Could not copy the link.",
     failed: "Could not share. Use Save instead.",
+    preparing: "Preparing…",
     cardError: "Image unavailable",
     retry: "Retry",
     seeOnMap: "See on the map",

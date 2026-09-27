@@ -517,6 +517,7 @@ export const fr: Translation = {
     linkCopied: "Lien copié",
     copyFailed: "Impossible de copier le lien.",
     failed: "Partage impossible. Utilisez Enregistrer.",
+    preparing: "Préparation…",
     cardError: "Image indisponible",
     retry: "Réessayer",
     seeOnMap: "Voir sur la carte",
