@@ -68,6 +68,7 @@ import { Route as ApiPublicV1StatsRouteImport } from './routes/api/public/v1/sta
 import { Route as ApiPublicV1StatusRouteImport } from './routes/api/public/v1/status'
 import { Route as ApiPublicV1SubscribeRouteImport } from './routes/api/public/v1/subscribe'
 import { Route as ApiPublicV1WeatherRouteImport } from './routes/api/public/v1/weather'
+import { Route as ApiPublicShareIncidentIdFormatRouteImport } from './routes/api/public/share/incident.$id.$format'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -374,6 +375,12 @@ const ApiPublicV1WeatherRoute = ApiPublicV1WeatherRouteImport.update({
   path: '/api/public/v1/weather',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicShareIncidentIdFormatRoute =
+  ApiPublicShareIncidentIdFormatRouteImport.update({
+    id: '/api/public/share/incident/$id/$format',
+    path: '/api/public/share/incident/$id/$format',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -434,6 +441,7 @@ export interface FileRoutesByFullPath {
   '/api/public/v1/subscribe': typeof ApiPublicV1SubscribeRoute
   '/api/public/v1/weather': typeof ApiPublicV1WeatherRoute
   '/api/public/v1/': typeof ApiPublicV1IndexRoute
+  '/api/public/share/incident/$id/$format': typeof ApiPublicShareIncidentIdFormatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -492,6 +500,7 @@ export interface FileRoutesByTo {
   '/api/public/v1/subscribe': typeof ApiPublicV1SubscribeRoute
   '/api/public/v1/weather': typeof ApiPublicV1WeatherRoute
   '/api/public/v1': typeof ApiPublicV1IndexRoute
+  '/api/public/share/incident/$id/$format': typeof ApiPublicShareIncidentIdFormatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -554,6 +563,7 @@ export interface FileRoutesById {
   '/api/public/v1/subscribe': typeof ApiPublicV1SubscribeRoute
   '/api/public/v1/weather': typeof ApiPublicV1WeatherRoute
   '/api/public/v1/': typeof ApiPublicV1IndexRoute
+  '/api/public/share/incident/$id/$format': typeof ApiPublicShareIncidentIdFormatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -616,6 +626,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/subscribe'
     | '/api/public/v1/weather'
     | '/api/public/v1/'
+    | '/api/public/share/incident/$id/$format'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -674,6 +685,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/subscribe'
     | '/api/public/v1/weather'
     | '/api/public/v1'
+    | '/api/public/share/incident/$id/$format'
   id:
     | '__root__'
     | '/'
@@ -735,6 +747,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/subscribe'
     | '/api/public/v1/weather'
     | '/api/public/v1/'
+    | '/api/public/share/incident/$id/$format'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -773,6 +786,7 @@ export interface RootRouteChildren {
   ApiPublicV1SubscribeRoute: typeof ApiPublicV1SubscribeRoute
   ApiPublicV1WeatherRoute: typeof ApiPublicV1WeatherRoute
   ApiPublicV1IndexRoute: typeof ApiPublicV1IndexRoute
+  ApiPublicShareIncidentIdFormatRoute: typeof ApiPublicShareIncidentIdFormatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1190,6 +1204,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicV1WeatherRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/share/incident/$id/$format': {
+      id: '/api/public/share/incident/$id/$format'
+      path: '/api/public/share/incident/$id/$format'
+      fullPath: '/api/public/share/incident/$id/$format'
+      preLoaderRoute: typeof ApiPublicShareIncidentIdFormatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -1309,6 +1330,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicV1SubscribeRoute: ApiPublicV1SubscribeRoute,
   ApiPublicV1WeatherRoute: ApiPublicV1WeatherRoute,
   ApiPublicV1IndexRoute: ApiPublicV1IndexRoute,
+  ApiPublicShareIncidentIdFormatRoute: ApiPublicShareIncidentIdFormatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
