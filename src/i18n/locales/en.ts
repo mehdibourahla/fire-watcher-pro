@@ -1541,6 +1541,7 @@ export const en = {
     activate: "Enable alerts",
     update: "Update subscription",
     disable: "Turn off alerts",
+    channelName: "Nadhir alerts",
     permissionTitle: "Nadhir needs notification permission to reach you",
     permissionBody:
       "Allow this device to receive available fire alerts and official weather warnings. Satellites detect fires; only official sources confirm them. Notification delivery and timing are not guaranteed.",

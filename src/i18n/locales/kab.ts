@@ -1545,6 +1545,7 @@ export const kab: Translation = {
     activate: "Sermed ilɣa",
     update: "Leqqem ajerred",
     disable: "Sens ilɣa",
+    channelName: "Ilɣa n Nadhir",
     permissionTitle: "Iwakken ad ak-yaweḍ, Nadhir yesra tasiregt n yilɣa",
     permissionBody:
       "Autorisez cet appareil à recevoir les alertes incendie disponibles et les avertissements météo officiels. Les satellites détectent les incendies ; seules les sources officielles les confirment. La réception et le délai des notifications ne sont pas garantis.",

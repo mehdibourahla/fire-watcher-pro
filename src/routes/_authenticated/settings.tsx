@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
-import { requestNotificationPermission } from "@/components/AlertNotifier";
 import { AccountSecurity } from "@/components/AccountSecurity";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -14,6 +13,12 @@ import { titledMeta } from "@/lib/page-meta";
 import { DevicePush } from "@/components/DevicePush";
 import { signOutAccount } from "@/lib/sign-out";
 import { apiUrl } from "@/lib/platform";
+import {
+  notificationPermission,
+  pushSupported,
+  requestNotificationPermission,
+  type PushPermission,
+} from "@/lib/push";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({
@@ -66,13 +71,15 @@ function SettingsPage() {
     onError: (error: Error) => toast.error(t(error.message)),
   });
   const [pushState, setPushState] = useState<
-    NotificationPermission | "unsupported" | null
+    PushPermission | "unsupported" | null
   >(null);
 
   useEffect(() => {
-    setPushState(
-      "Notification" in window ? Notification.permission : "unsupported",
-    );
+    if (!pushSupported()) {
+      setPushState("unsupported");
+      return;
+    }
+    void notificationPermission().then(setPushState);
   }, []);
 
   useEffect(() => {

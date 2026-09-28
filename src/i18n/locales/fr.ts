@@ -1573,6 +1573,7 @@ export const fr: Translation = {
     activate: "Activer les alertes",
     update: "Mettre à jour l'abonnement",
     disable: "Désactiver les alertes",
+    channelName: "Alertes Nadhir",
     permissionTitle:
       "Pour vous joindre, Nadhir a besoin de l'autorisation de notification",
     permissionBody:

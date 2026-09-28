@@ -178,6 +178,7 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient, locale } = Route.useRouteContext();
   const i18nInstance = useMemo(() => localeInstance(locale), [locale]);
+  const router = useRouter();
   useEffect(() => watchAuthCache(queryClient), [queryClient]);
   // Survival Mode owns the whole screen: no header, tabs or footer competing for it.
   const survival = useRouterState({
@@ -212,7 +213,22 @@ function RootComponent() {
   }, [bare]);
 
   useEffect(() => {
-    if (bare || NATIVE) return;
+    if (!NATIVE) return;
+    void Promise.all([import("@/lib/push-native"), import("@/lib/push")])
+      .then(([{ startNativePush }, { syncUserPush }]) =>
+        startNativePush({
+          channelName: i18nInstance.t("push.channelName"),
+          navigate: (path) => void router.navigate({ href: path }),
+          onToken: () => void syncUserPush().catch(() => undefined),
+        }),
+      )
+      .catch((error: unknown) =>
+        console.error("native push unavailable", error),
+      );
+  }, [router, i18nInstance]);
+
+  useEffect(() => {
+    if (bare) return;
     // ADR-0004: the client re-asserts its FCM topics on load (token refresh path)
     void import("@/lib/push").then(({ syncSubscription, syncUserPush }) => {
       syncSubscription().catch(() => undefined);
