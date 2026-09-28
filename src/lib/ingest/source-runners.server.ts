@@ -16,6 +16,7 @@ import {
 
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { runItaSource } from "@/lib/text-sources/ita-pipeline.server";
+import { runItaFacebookSource } from "@/lib/text-sources/ita-facebook.server";
 import {
   runTextSource,
   type TextSourceRun,
@@ -41,6 +42,7 @@ import { collectWeatherEvidence } from "./weather-evidence.server";
 export const RUNTIME_CONTRACT_KEYS = [
   "openmeteo_weather",
   "ita_website",
+  "ita_facebook",
   "firms",
   "fci",
   "s3_slstr",
@@ -64,6 +66,7 @@ export type SourceRunnerRegistry = Record<RuntimeContractKey, SourceRunner>;
 export type SourceRunnerDependencies = {
   collectWeatherEvidence: typeof collectWeatherEvidence;
   runItaSource: typeof runItaSource;
+  runItaFacebookSource: typeof runItaFacebookSource;
   ingestFirms: typeof ingestFirms;
   ingestFci: typeof ingestFci;
   ingestS3: typeof ingestS3;
@@ -206,6 +209,23 @@ export function createSourceRunners(
           feed_rejected: run.rejected,
           not_modified: run.notModified,
         },
+      };
+    },
+    ita_facebook: async (job) => {
+      const run = await dependencies.runItaFacebookSource(job);
+      const health = adapterHealth({
+        accepted: run.fetched,
+        expected: run.complete ? null : run.fetched + 1,
+        error: run.error,
+      });
+      return {
+        ...baseReport(job),
+        ...health,
+        ...coveredInterval(job, health.outcome === "succeeded"),
+        recordsSeen: run.fetched,
+        recordsInserted: run.stored,
+        recordsRejected: run.rejected,
+        qualityChecks: { lookback_minutes: run.lookbackMinutes },
       };
     },
     firms: async (job) => {
@@ -454,6 +474,7 @@ export function createSourceRunners(
 const sourceRunnerDependencies: SourceRunnerDependencies = {
   collectWeatherEvidence,
   runItaSource,
+  runItaFacebookSource,
   ingestFirms,
   ingestFci,
   ingestS3,

@@ -6,7 +6,7 @@ import { fetchItaFeed, type ItaFeedPost } from "./ita-feed";
 import { extractItaReport, type ItaExtraction } from "./ita-extract.server";
 import { runCivilInvestigations } from "@/lib/civil-investigation.server";
 
-type Revision = {
+export type Revision = {
   source_post_id: string;
   source_page: string;
   source_url: string;
@@ -46,7 +46,7 @@ type Dependencies = {
   extract: typeof extractItaReport;
 };
 
-async function revision(post: ItaFeedPost): Promise<Revision> {
+export async function revision(post: ItaFeedPost): Promise<Revision> {
   const canonical = JSON.stringify([
     post.uri,
     post.id,
