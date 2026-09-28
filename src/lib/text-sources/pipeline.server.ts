@@ -589,6 +589,15 @@ export async function runTextSourceWith(
           interpretedAggregates.add(wilayaId!);
           continue;
         }
+        // the model restating the bulletin's national totals as a placeless mention
+        const totals = parsed?.totals;
+        if (
+          totals &&
+          !m.wilaya &&
+          !m.place &&
+          [totals.total, totals.extinguished, totals.ongoing].includes(m.count)
+        )
+          continue;
         unresolvedNames.push(m.wilaya ?? "unnamed location");
         run.unresolved++;
         continue;
