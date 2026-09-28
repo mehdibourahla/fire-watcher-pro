@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import { Switch } from "@/components/ui/switch";
 import {
+  notificationPermission,
   pushConfigured,
   pushSupported,
   setUserPush,
@@ -23,8 +24,15 @@ export function DevicePush() {
       setAvailability("unsupported");
       return;
     }
-    setAvailability(Notification.permission === "denied" ? "denied" : "ready");
-    setEnabled(userPushEnabled() && Notification.permission === "granted");
+    let live = true;
+    void notificationPermission().then((state) => {
+      if (!live) return;
+      setAvailability(state === "denied" ? "denied" : "ready");
+      setEnabled(userPushEnabled() && state === "granted");
+    });
+    return () => {
+      live = false;
+    };
   }, []);
 
   const toggle = async (next: boolean) => {

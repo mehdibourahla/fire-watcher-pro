@@ -81,11 +81,3 @@ export function AlertNotifier() {
   );
   return null;
 }
-
-export async function requestNotificationPermission(): Promise<
-  NotificationPermission | "unsupported"
-> {
-  if (typeof Notification === "undefined") return "unsupported";
-  if (Notification.permission === "granted") return "granted";
-  return Notification.requestPermission();
-}

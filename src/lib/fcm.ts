@@ -11,14 +11,67 @@ export function userTopic(userId: string): string {
   return `v1.user.${userId}`;
 }
 
-export type FcmUserMessage = {
+type NativeDelivery = {
+  android: {
+    priority: "high";
+    notification: { channel_id: "alerts"; tag?: string };
+  };
+  apns: {
+    headers: { "apns-priority": "10"; "apns-collapse-id"?: string };
+    payload: {
+      aps: { sound: "default"; "interruption-level": "time-sensitive" };
+    };
+  };
+};
+
+function fnv1a(text: string) {
+  let hash = 0x811c9dc5;
+  for (const byte of new TextEncoder().encode(text))
+    hash = Math.imul(hash ^ byte, 0x01000193) >>> 0;
+  return hash.toString(16).padStart(8, "0");
+}
+
+// APNs rejects ids over 64 bytes, and a bare cut would let two tags collapse into one alert
+function collapseId(tag: string) {
+  const bytes = new TextEncoder().encode(tag);
+  if (bytes.length <= 64) return tag;
+  const prefix = new TextDecoder("utf-8", { fatal: false })
+    .decode(bytes.slice(0, 55))
+    .replace(/\uFFFD$/, "");
+  return `${prefix}-${fnv1a(tag)}`;
+}
+
+function nativeDelivery(tag?: string): NativeDelivery {
+  return {
+    android: {
+      priority: "high",
+      notification: { channel_id: "alerts", ...(tag ? { tag } : {}) },
+    },
+    apns: {
+      headers: {
+        "apns-priority": "10",
+        ...(tag ? { "apns-collapse-id": collapseId(tag) } : {}),
+      },
+      payload: {
+        aps: { sound: "default", "interruption-level": "time-sensitive" },
+      },
+    },
+  };
+}
+
+function appPath(link: string) {
+  const url = new URL(link);
+  return url.pathname + url.search;
+}
+
+export type FcmUserMessage = NativeDelivery & {
   topic: string;
   notification: { title: string; body: string };
   webpush: {
     fcm_options: { link: string };
     notification: { tag: string; renotify: boolean };
   };
-  data: { alert_id: string; kind: string; receipt: string };
+  data: { alert_id: string; kind: string; receipt: string; link: string };
 };
 
 export function fcmMessageForAlert(
@@ -41,30 +94,33 @@ export function fcmMessageForAlert(
     "short_id" in alert.payload
       ? String(alert.payload.short_id)
       : null;
+  const link = shortId ? `${APP_URL}/fire/${shortId}` : `${APP_URL}/alerts`;
+  const tag = alert.source_id ?? alert.cluster_id ?? alert.id;
   return {
     topic: userTopic(alert.user_id),
     notification: { title: alert.title, body: alert.body },
     webpush: {
-      fcm_options: {
-        link: shortId ? `${APP_URL}/fire/${shortId}` : `${APP_URL}/alerts`,
-      },
-      notification: {
-        tag: alert.source_id ?? alert.cluster_id ?? alert.id,
-        renotify: true,
-      },
+      fcm_options: { link },
+      notification: { tag, renotify: true },
     },
-    data: { alert_id: alert.id, kind: alert.kind, receipt },
+    ...nativeDelivery(tag),
+    data: {
+      alert_id: alert.id,
+      kind: alert.kind,
+      receipt,
+      link: appPath(link),
+    },
   };
 }
 
-export type FcmMessage = {
+export type FcmMessage = NativeDelivery & {
   topic: string;
   notification: { title: string; body: string };
   webpush: {
     fcm_options: { link: string };
     notification?: { tag: string; renotify: boolean };
   };
-  data: { broadcast_id: string; severity: string; kind: string };
+  data: { broadcast_id: string; severity: string; kind: string; link: string };
 };
 
 function message(
@@ -72,7 +128,7 @@ function message(
   title: string,
   body: string,
   link: string,
-  data: FcmMessage["data"],
+  data: Omit<FcmMessage["data"], "link">,
   tag?: string,
 ): FcmMessage {
   return {
@@ -83,7 +139,8 @@ function message(
       fcm_options: { link },
       ...(tag ? { notification: { tag, renotify: true } } : {}),
     },
-    data,
+    ...nativeDelivery(tag),
+    data: { ...data, link: appPath(link) },
   };
 }
 

@@ -28,11 +28,65 @@ export function pushConfigured(): boolean {
 
 export function pushSupported(): boolean {
   return (
-    !NATIVE &&
-    typeof window !== "undefined" &&
-    "Notification" in window &&
-    "serviceWorker" in navigator
+    NATIVE ||
+    (typeof window !== "undefined" &&
+      "Notification" in window &&
+      "serviceWorker" in navigator)
   );
+}
+
+export type PushPermission = "granted" | "denied" | "prompt";
+
+export type PushTransport = {
+  permission(): Promise<PushPermission>;
+  request(): Promise<boolean>;
+  token(): Promise<string>;
+  topics(communes: string[], lang: string, join: boolean): Promise<void>;
+};
+
+const webTransport: PushTransport = {
+  async permission() {
+    const state = Notification.permission;
+    return state === "default" ? "prompt" : state;
+  },
+  async request() {
+    return (await Notification.requestPermission()) === "granted";
+  },
+  token: () => registrationToken(),
+  async topics(communes, lang, join) {
+    await callSubscribeApi(
+      await registrationToken(),
+      communes,
+      lang,
+      join ? "subscribe" : "unsubscribe",
+    );
+  },
+};
+
+let topicQueue: Promise<unknown> = Promise.resolve();
+
+// topic changes run one at a time, so a startup re-sync cannot rejoin communes the user just left
+function serial<T>(task: () => Promise<T>): Promise<T> {
+  const run = topicQueue.then(task, task);
+  topicQueue = run.catch(() => undefined);
+  return run;
+}
+
+async function activeTransport(): Promise<PushTransport> {
+  if (!NATIVE) return webTransport;
+  return (await import("@/lib/push-native")).nativeTransport;
+}
+
+export async function requestNotificationPermission(): Promise<PushPermission> {
+  const push = await activeTransport();
+  await push.request();
+  return push.permission();
+}
+
+export async function notificationPermission(
+  transport?: PushTransport,
+): Promise<PushPermission> {
+  return (transport ?? (await activeTransport())).permission();
 }
 
 export function readSubscription(): PushSubscriptionState | null {
@@ -91,7 +145,7 @@ export function pushTestErrorKey(status: number) {
 }
 
 export async function testPushOnThisDevice(): Promise<string> {
-  if (!pushSupported() || Notification.permission !== "granted")
+  if (NATIVE || !pushSupported() || Notification.permission !== "granted")
     throw new PushTestError("sources.pushTestErrors.notifications");
   const { supabase } = await import("@/integrations/supabase/client");
   const { data, error } = await supabase.auth.getSession();
@@ -141,15 +195,23 @@ async function callSubscribeApi(
   }
 }
 
-export async function subscribeToCommunes(
+export function subscribeToCommunes(
   communes: string[],
   lang: string,
+  transport?: PushTransport,
 ): Promise<void> {
-  const permission = await Notification.requestPermission();
-  if (permission !== "granted") throw new Error("permission_denied");
-  const token = await registrationToken();
+  return serial(() => applyCommunes(communes, lang, transport));
+}
+
+async function applyCommunes(
+  communes: string[],
+  lang: string,
+  transport?: PushTransport,
+): Promise<void> {
+  const push = transport ?? (await activeTransport());
+  if (!(await push.request())) throw new Error("permission_denied");
   const previous = readSubscription();
-  await callSubscribeApi(token, communes, lang, "subscribe");
+  await push.topics(communes, lang, true);
   // drop topics that are no longer selected, or whose language changed
   if (previous) {
     const next = new Set(communes.map((c) => fcmTopic(c, lang)));
@@ -158,28 +220,32 @@ export async function subscribeToCommunes(
     );
     // before writeSubscription: a failure here surfaces and a retry redoes both
     // calls (idempotent), instead of silently leaving stale-language topics live
-    if (stale.length)
-      await callSubscribeApi(token, stale, previous.lang, "unsubscribe");
+    if (stale.length) await push.topics(stale, previous.lang, false);
   }
   writeSubscription({ communes, lang });
 }
 
-export async function unsubscribeAll(): Promise<void> {
-  const current = readSubscription();
-  if (!current) return;
-  const token = await registrationToken();
-  await callSubscribeApi(token, current.communes, current.lang, "unsubscribe");
-  writeSubscription(null);
+export function unsubscribeAll(transport?: PushTransport): Promise<void> {
+  return serial(async () => {
+    const current = readSubscription();
+    if (!current) return;
+    const push = transport ?? (await activeTransport());
+    await push.topics(current.communes, current.lang, false);
+    writeSubscription(null);
+  });
 }
 
 /* ADR-0004: the server keeps no per-subscriber state, so the client re-asserts
  * its topics on load — this is also how a rotated FCM token rejoins them. */
-export async function syncSubscription(): Promise<void> {
-  if (!pushConfigured() || !pushSupported()) return;
-  const current = readSubscription();
-  if (!current || Notification.permission !== "granted") return;
-  const token = await registrationToken();
-  await callSubscribeApi(token, current.communes, current.lang, "subscribe");
+export function syncSubscription(transport?: PushTransport): Promise<void> {
+  return serial(async () => {
+    if (!transport && (!pushConfigured() || !pushSupported())) return;
+    const current = readSubscription();
+    if (!current) return;
+    const push = transport ?? (await activeTransport());
+    if ((await push.permission()) !== "granted") return;
+    await push.topics(current.communes, current.lang, true);
+  });
 }
 
 const USER_PUSH_KEY = "nadhir.userpush.v1";
@@ -192,11 +258,14 @@ export function userPushEnabled(): boolean {
   }
 }
 
-async function callUserPush(action: "subscribe" | "unsubscribe") {
+async function callUserPush(
+  action: "subscribe" | "unsubscribe",
+  push: PushTransport,
+) {
   const { supabase } = await import("@/integrations/supabase/client");
   const { data, error } = await supabase.auth.getSession();
   if (error || !data.session) throw new Error("no_session");
-  const token = await registrationToken();
+  const token = await push.token();
   const res = await fetch(apiUrl("/api/private/user-push"), {
     method: "POST",
     headers: {
@@ -213,12 +282,13 @@ async function callUserPush(action: "subscribe" | "unsubscribe") {
   }
 }
 
-export async function setUserPush(enabled: boolean): Promise<void> {
-  if (enabled) {
-    const permission = await Notification.requestPermission();
-    if (permission !== "granted") throw new Error("permission_denied");
-  }
-  await callUserPush(enabled ? "subscribe" : "unsubscribe");
+export async function setUserPush(
+  enabled: boolean,
+  transport?: PushTransport,
+): Promise<void> {
+  const push = transport ?? (await activeTransport());
+  if (enabled && !(await push.request())) throw new Error("permission_denied");
+  await callUserPush(enabled ? "subscribe" : "unsubscribe", push);
   try {
     if (enabled) localStorage.setItem(USER_PUSH_KEY, "on");
     else localStorage.removeItem(USER_PUSH_KEY);
@@ -234,6 +304,7 @@ export async function leaveUserPush(): Promise<void> {
 
 export async function syncUserPush(): Promise<void> {
   if (!pushConfigured() || !pushSupported() || !userPushEnabled()) return;
-  if (Notification.permission !== "granted") return;
-  await callUserPush("subscribe");
+  const push = await activeTransport();
+  if ((await push.permission()) !== "granted") return;
+  await callUserPush("subscribe", push);
 }

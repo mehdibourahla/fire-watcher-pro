@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1038175256338",
+    "project_id": "nadhir-dz",
+    "storage_bucket": "nadhir-dz.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1038175256338:android:26b7f75e3e1ea03d11bdcb",
+        "android_client_info": {
+          "package_name": "app.nadhir"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1038175256338-kh04hub1o2g6a7j7u7emv88h4k10tt13.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBT958wiizQbcUpRYDtG8ceF19lx9ncWsc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1038175256338-kh04hub1o2g6a7j7u7emv88h4k10tt13.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

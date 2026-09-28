@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Bell, BellOff, Check, Plus, Search, X } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -15,11 +15,13 @@ import { FCM_LANGS } from "@/lib/fcm";
 import { adminUnitsQuery, unitName, type AdminUnit } from "@/lib/nadhir";
 import {
   MAX_COMMUNES,
+  notificationPermission,
   pushConfigured,
   pushSupported,
   readSubscription,
   subscribeToCommunes,
   unsubscribeAll,
+  type PushPermission,
 } from "@/lib/push";
 import { cn } from "@/lib/utils";
 
@@ -86,10 +88,16 @@ export function SubscribeSheet({ open, onClose, initialCommuneCode }: Props) {
 
   const supported = pushSupported();
   const configured = pushConfigured();
-  const denied =
-    supported && typeof Notification !== "undefined"
-      ? Notification.permission === "denied"
-      : false;
+  const [permission, setPermission] = useState<PushPermission>("prompt");
+  useEffect(() => {
+    if (!open || !supported) return;
+    let live = true;
+    void notificationPermission().then((state) => live && setPermission(state));
+    return () => {
+      live = false;
+    };
+  }, [open, supported, done]);
+  const denied = permission === "denied";
 
   const close = () => {
     setStep("pick");
@@ -108,6 +116,7 @@ export function SubscribeSheet({ open, onClose, initialCommuneCode }: Props) {
     } catch (e) {
       // the friendly copy hid a CSP block once; keep the real cause reachable
       console.error("[push] subscription failed", e);
+      void notificationPermission().then(setPermission);
       setError(
         e instanceof Error && e.message === "permission_denied"
           ? t("push.denied")
@@ -371,7 +380,7 @@ export function SubscribeSheet({ open, onClose, initialCommuneCode }: Props) {
                     type="button"
                     disabled={busy || !codes.length || denied}
                     onClick={() =>
-                      Notification.permission === "granted"
+                      permission === "granted"
                         ? activate()
                         : setStep("permission")
                     }

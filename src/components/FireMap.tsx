@@ -1,4 +1,5 @@
 import * as maplibregl from "maplibre-gl";
+import "@/lib/map-worker";
 import type { FilterSpecification } from "maplibre-gl";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";

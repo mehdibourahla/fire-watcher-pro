@@ -1,4 +1,5 @@
 import * as maplibregl from "maplibre-gl";
+import "@/lib/map-worker";
 import { MapPin } from "lucide-react";
 import { useEffect, useRef } from "react";
 import "maplibre-gl/dist/maplibre-gl.css";
