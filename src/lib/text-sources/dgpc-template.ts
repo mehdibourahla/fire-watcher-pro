@@ -60,14 +60,21 @@ function dgpcAsOf(text: string, postedAt: string): string | null {
   return new Date(day + hour * 3_600_000 - ALGIERS_OFFSET_MS).toISOString();
 }
 
-// distinct communes after "بلدية" (or both of a dual "بلديتي X وY") in the notable-fires section
 function namedCommunes(text: string): number {
   const section = text.search(/أهم الحرائق/);
   if (section < 0) return 0;
   const names = new Set<string>();
-  for (const m of text.slice(section).matchAll(/بلدي(ة|تي)\s+([^:،,.\n]+)/g))
-    for (const name of m[1] === "تي" ? m[2]!.split(/\s+و/) : [m[2]!])
-      names.add(name.replace(/\s+/g, " ").trim());
+  for (const m of text
+    .slice(section)
+    .matchAll(/(?<!\p{L})[بل]?بلدي(ة|تي)\s+([^:؛،,.\n]+)/gu)) {
+    const phrase = m[2]!.replace(/\s+/g, " ").trim();
+    const and = phrase.lastIndexOf(" و");
+    const pair = m[1] === "تي" && and > 0;
+    for (const name of pair
+      ? [phrase.slice(0, and), phrase.slice(and + 2)]
+      : [phrase])
+      names.add(name.trim());
+  }
   return names.size;
 }
 

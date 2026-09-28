@@ -636,7 +636,10 @@ export async function runTextSourceWith(
               .reduce((n, d) => n + d.fire_count, 0) !== parsed.totals.ongoing
           : // without a distribution the bulletin names only its notable fires
             new Set(drafts.flatMap((d) => (d.commune_id ? [d.commune_id] : [])))
-              .size < parsed.namedCommunes) ||
+              .size < parsed.namedCommunes ||
+            drafts
+              .filter((d) => d.status !== "extinguished")
+              .reduce((n, d) => n + d.fire_count, 0) > parsed.totals.ongoing) ||
         parsed.wilayaCounts.some(
           (c) => resolveWilaya(c.wilaya, gazetteer.wilayas) === null,
         ));
@@ -656,6 +659,7 @@ export async function runTextSourceWith(
       !gated &&
       !incompleteBulletin &&
       parsed?.totals?.ongoing != null &&
+      (parsed.distributed || parsed.totals.ongoing === 0) &&
       drafts.every((d) => d.commune_id !== null) &&
       drafts
         .filter((d) => d.status !== "extinguished")

@@ -1234,6 +1234,11 @@ describe("durable interpretation completion", () => {
   it.each([
     ["both named communes", [mention({}), mention({ commune: "عين زويت" })], 0],
     ["one named commune", [mention({})], 1],
+    [
+      "more fires than the header",
+      [mention({ count: 6 }), mention({ commune: "عين زويت" })],
+      1,
+    ],
   ])(
     "retries an undistributed bulletin only when the model misses a named commune (%s)",
     async (_label, mentions, retries) => {
@@ -1251,6 +1256,32 @@ describe("durable interpretation completion", () => {
       expect(f.unlisted.size).toBe(0);
     },
   );
+  it("never unlists from a bulletin that publishes no distribution", async () => {
+    const { store, unlisted } = memoryStore();
+    await runTextSourceWith(
+      "dgpc_telegram",
+      deps(
+        [post("1", "2026-09-02T08:05:00Z", bulletin("07", skikda2, twoFires))],
+        store,
+        llmWith(mention({}), mention({ commune: "عين زويت" })),
+      ),
+    );
+    const oneOngoing = undistributed
+      .replace("للحرائق: 07", "للحرائق: 03")
+      .replace("المتواصلة: 05", "المتواصلة: 01")
+      .replace(/\n- بلدية عين زويت[^\n]*/, "");
+    const second = await runTextSourceWith(
+      "dgpc_telegram",
+      deps(
+        [post("2", "2026-09-02T14:05:00Z", oneOngoing)],
+        store,
+        llmWith(mention({})),
+      ),
+    );
+    expect(second.error).toBeUndefined();
+    expect(second.incidentsUnlisted).toBe(0);
+    expect(unlisted.size).toBe(0);
+  });
   it("retains incomplete bulletin interpretation instead of declaring success", async () => {
     const f = memoryStore();
     const result = await runTextSourceWith(
