@@ -106,6 +106,7 @@ export async function runAlertCheck() {
   const res = await fetch(apiUrl("/api/private/alert-check"), {
     method: "POST",
     headers: { authorization: `Bearer ${data.session.access_token}` },
+    signal: AbortSignal.timeout(30_000),
   });
   if (!res.ok) throw new Error(`alert check failed (${res.status})`);
 }

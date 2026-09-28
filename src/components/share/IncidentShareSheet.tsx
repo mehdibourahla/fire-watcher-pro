@@ -102,10 +102,6 @@ export function IncidentShareSheet({
   };
   const save = () => {
     if (!current || current === "error") return;
-    if (NATIVE) {
-      void shareImage();
-      return;
-    }
     const a = document.createElement("a");
     a.href = current.url;
     a.download = current.file.name;
@@ -219,15 +215,17 @@ export function IncidentShareSheet({
                 {t("shareCard.shareImage")}
               </Button>
             ) : null}
-            <Button
-              variant={
-                canShareFiles || active === "sticker" ? "outline" : "default"
-              }
-              disabled={!file}
-              onClick={save}
-            >
-              {t("shareCard.save")}
-            </Button>
+            {NATIVE ? null : (
+              <Button
+                variant={
+                  canShareFiles || active === "sticker" ? "outline" : "default"
+                }
+                disabled={!file}
+                onClick={save}
+              >
+                {t("shareCard.save")}
+              </Button>
+            )}
           </div>
           <p className="text-xs text-muted-foreground">{t("shareCard.link")}</p>
           <div className="flex flex-wrap gap-2">
