@@ -116,6 +116,7 @@ export function SubscribeSheet({ open, onClose, initialCommuneCode }: Props) {
     } catch (e) {
       // the friendly copy hid a CSP block once; keep the real cause reachable
       console.error("[push] subscription failed", e);
+      void notificationPermission().then(setPermission);
       setError(
         e instanceof Error && e.message === "permission_denied"
           ? t("push.denied")

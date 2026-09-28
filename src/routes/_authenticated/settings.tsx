@@ -12,10 +12,9 @@ import { profileQuery, saveProfileSettings } from "@/lib/account";
 import { titledMeta } from "@/lib/page-meta";
 import { DevicePush } from "@/components/DevicePush";
 import { signOutAccount } from "@/lib/sign-out";
-import { apiUrl } from "@/lib/platform";
+import { NATIVE, apiUrl } from "@/lib/platform";
 import {
   notificationPermission,
-  pushSupported,
   requestNotificationPermission,
   type PushPermission,
 } from "@/lib/push";
@@ -75,7 +74,7 @@ function SettingsPage() {
   >(null);
 
   useEffect(() => {
-    if (!pushSupported()) {
+    if (!NATIVE && !("Notification" in window)) {
       setPushState("unsupported");
       return;
     }

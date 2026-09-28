@@ -24,6 +24,15 @@ type NativeDelivery = {
   };
 };
 
+function collapseId(tag: string) {
+  const bytes = new TextEncoder().encode(tag);
+  if (bytes.length <= 64) return tag;
+  // APNs rejects a longer collapse id outright; fatal: false drops a split character
+  return new TextDecoder("utf-8", { fatal: false })
+    .decode(bytes.slice(0, 64))
+    .replace(/\uFFFD$/, "");
+}
+
 function nativeDelivery(tag?: string): NativeDelivery {
   return {
     android: {
@@ -33,7 +42,7 @@ function nativeDelivery(tag?: string): NativeDelivery {
     apns: {
       headers: {
         "apns-priority": "10",
-        ...(tag ? { "apns-collapse-id": tag } : {}),
+        ...(tag ? { "apns-collapse-id": collapseId(tag) } : {}),
       },
       payload: {
         aps: { sound: "default", "interruption-level": "time-sensitive" },

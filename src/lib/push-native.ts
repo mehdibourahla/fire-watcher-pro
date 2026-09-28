@@ -32,7 +32,8 @@ export function appLink(data: unknown): string | null {
     data && typeof data === "object" && "link" in data ? data.link : null;
   return typeof link === "string" &&
     link.startsWith("/") &&
-    !link.startsWith("//")
+    !link.startsWith("//") &&
+    !link.startsWith("/\\")
     ? link
     : null;
 }
@@ -47,6 +48,12 @@ type NativePushOptions = {
 
 let current: NativePushOptions | null = null;
 let listening: Promise<void> | null = null;
+
+function notificationId(key: string) {
+  let hash = 0;
+  for (const char of key) hash = (hash * 31 + char.charCodeAt(0)) | 0;
+  return Math.abs(hash);
+}
 
 function open(data: unknown) {
   const link = appLink(data);
@@ -72,7 +79,9 @@ async function listen() {
     void LocalNotifications.schedule({
       notifications: [
         {
-          id: Math.floor(Math.random() * 2 ** 31),
+          id: notificationId(
+            notification.tag ?? notification.id ?? String(Date.now()),
+          ),
           title: notification.title ?? "",
           body: notification.body ?? "",
           channelId: CHANNEL,
@@ -88,7 +97,10 @@ async function listen() {
 
 export async function startNativePush(options: NativePushOptions) {
   current = options;
-  listening ??= listen();
+  listening ??= listen().catch((error: unknown) => {
+    listening = null;
+    throw error;
+  });
   await listening;
   if (Capacitor.getPlatform() !== "android") return;
   await FirebaseMessaging.createChannel({

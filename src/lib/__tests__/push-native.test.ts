@@ -127,6 +127,7 @@ it("follows only same-app paths from a notification", () => {
   );
   expect(appLink({ link: "https://evil.example" })).toBeNull();
   expect(appLink({ link: "//evil.example" })).toBeNull();
+  expect(appLink({ link: "/\\evil.example" })).toBeNull();
   expect(appLink({ link: 3 })).toBeNull();
   expect(appLink(undefined)).toBeNull();
 });
@@ -157,6 +158,24 @@ it("shows an Android foreground push immediately, without asking for alarm permi
   received({
     notification: { title: "t", body: "b", data: { link: "/fire/DZ1" } },
   });
+  received({
+    notification: {
+      title: "t2",
+      body: "b2",
+      tag: "fire-DZ1",
+      data: { link: "/fire/DZ1" },
+    },
+  });
+  received({
+    notification: {
+      title: "t3",
+      body: "b3",
+      tag: "fire-DZ1",
+      data: { link: "/fire/DZ1" },
+    },
+  });
+  const ids = local.schedule.mock.calls.map(([arg]) => arg.notifications[0].id);
+  expect(ids[1]).toBe(ids[2]);
   const [notification] = local.schedule.mock.calls[0]![0].notifications;
   expect(notification).toMatchObject({
     title: "t",
