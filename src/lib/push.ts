@@ -42,6 +42,7 @@ export type PushTransport = {
   request(): Promise<boolean>;
   token(): Promise<string>;
   topics(communes: string[], lang: string, join: boolean): Promise<void>;
+  settled?(communes: string[], lang: string): Promise<void>;
 };
 
 const webTransport: PushTransport = {
@@ -223,6 +224,7 @@ async function applyCommunes(
     if (stale.length) await push.topics(stale, previous.lang, false);
   }
   writeSubscription({ communes, lang });
+  await push.settled?.(communes, lang);
 }
 
 export function unsubscribeAll(transport?: PushTransport): Promise<void> {
@@ -232,6 +234,7 @@ export function unsubscribeAll(transport?: PushTransport): Promise<void> {
     const push = transport ?? (await activeTransport());
     await push.topics(current.communes, current.lang, false);
     writeSubscription(null);
+    await push.settled?.([], current.lang);
   });
 }
 

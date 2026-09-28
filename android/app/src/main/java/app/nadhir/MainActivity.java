@@ -4,6 +4,7 @@ import android.net.ConnectivityManager;
 import android.net.Network;
 import android.os.Bundle;
 import android.webkit.WebView;
+import app.nadhir.commune.CurrentCommunePlugin;
 import com.getcapacitor.BridgeActivity;
 
 public class MainActivity extends BridgeActivity {
@@ -25,6 +26,7 @@ public class MainActivity extends BridgeActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        registerPlugin(CurrentCommunePlugin.class);
         super.onCreate(savedInstanceState);
         connectivity = getSystemService(ConnectivityManager.class);
         setWebViewOnline(connectivity.getActiveNetwork() != null);

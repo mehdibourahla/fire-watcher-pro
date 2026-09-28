@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		2FAD9763203C412B000D30F8 /* config.xml in Resources */ = {isa = PBXBuildFile; fileRef = 2FAD9762203C412B000D30F8 /* config.xml */; };
+		31B89B81006D9316C07B5AC6 /* CurrentCommunePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 972317B93ACC9780D94E1FCF /* CurrentCommunePlugin.swift */; };
+		4665DA3DEA3BC7F2FF2E78DC /* CommuneTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB32ECF86F903ADAF1F91DC0 /* CommuneTracker.swift */; };
 		4D22ABE92AF431CB00220026 /* CapApp-SPM in Frameworks */ = {isa = PBXBuildFile; productRef = 4D22ABE82AF431CB00220026 /* CapApp-SPM */; };
 		50379B232058CBB4000EE86E /* capacitor.config.json in Resources */ = {isa = PBXBuildFile; fileRef = 50379B222058CBB4000EE86E /* capacitor.config.json */; };
 		504EC3081FED79650016851F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 504EC3071FED79650016851F /* AppDelegate.swift */; };
@@ -15,7 +17,9 @@
 		504EC30F1FED79650016851F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30E1FED79650016851F /* Assets.xcassets */; };
 		504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC3101FED79650016851F /* LaunchScreen.storyboard */; };
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
+		80D5B4743B547B61C260CD86 /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E656686667E2BBDF6C88C14D /* MainViewController.swift */; };
 		9582B6832FE993A70072D4E8 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9582B6822FE993A50072D4E8 /* SceneDelegate.swift */; };
+		F04CB7ACB4ADE803F4653D0A /* CommuneResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA7C88CC65B1B02051994A58 /* CommuneResolver.swift */; };
 		F41B2DEAA7AE2D449CE5F059 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 5106C8B7FB73A51AF597D53D /* GoogleService-Info.plist */; };
 /* End PBXBuildFile section */
 
@@ -33,6 +37,10 @@
 		5106C8B7FB73A51AF597D53D /* GoogleService-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		9582B6822FE993A50072D4E8 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		958DCC722DB07C7200EA8C5F /* debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = debug.xcconfig; path = ../debug.xcconfig; sourceTree = SOURCE_ROOT; };
+		972317B93ACC9780D94E1FCF /* CurrentCommunePlugin.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CurrentCommunePlugin.swift; sourceTree = "<group>"; };
+		CA7C88CC65B1B02051994A58 /* CommuneResolver.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CommuneResolver.swift; sourceTree = "<group>"; };
+		E656686667E2BBDF6C88C14D /* MainViewController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
+		EB32ECF86F903ADAF1F91DC0 /* CommuneTracker.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CommuneTracker.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -47,6 +55,17 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		2D7E939B1176B6C787DF2701 /* Commune */ = {
+			isa = PBXGroup;
+			children = (
+				CA7C88CC65B1B02051994A58 /* CommuneResolver.swift */,
+				EB32ECF86F903ADAF1F91DC0 /* CommuneTracker.swift */,
+				972317B93ACC9780D94E1FCF /* CurrentCommunePlugin.swift */,
+			);
+			name = Commune;
+			path = Commune;
+			sourceTree = "<group>";
+		};
 		504EC2FB1FED79650016851F = {
 			isa = PBXGroup;
 			children = (
@@ -78,6 +97,8 @@
 				50B271D01FEDC1A000F3C39B /* public */,
 				5106C8B7FB73A51AF597D53D /* GoogleService-Info.plist */,
 				2C1E037459A853A928D85253 /* App.entitlements */,
+				2D7E939B1176B6C787DF2701 /* Commune */,
+				E656686667E2BBDF6C88C14D /* MainViewController.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -166,6 +187,10 @@
 			files = (
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
 				9582B6832FE993A70072D4E8 /* SceneDelegate.swift in Sources */,
+				F04CB7ACB4ADE803F4653D0A /* CommuneResolver.swift in Sources */,
+				4665DA3DEA3BC7F2FF2E78DC /* CommuneTracker.swift in Sources */,
+				31B89B81006D9316C07B5AC6 /* CurrentCommunePlugin.swift in Sources */,
+				80D5B4743B547B61C260CD86 /* MainViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

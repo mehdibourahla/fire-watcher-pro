@@ -1542,6 +1542,16 @@ export const en = {
     update: "Update subscription",
     disable: "Turn off alerts",
     channelName: "Nadhir alerts",
+    followTitle: "Also follow where I am",
+    followBody:
+      "Your phone works out which commune it is in and receives that commune's alerts. Your location never leaves the phone.",
+    followCurrent: "Following: {{name}}",
+    followWaiting: "Waiting for your position…",
+    followForeground:
+      "Only while Nadhir is open. To be followed in the background, allow location all the time.",
+    followAllowBackground: "Allow in the background",
+    followDenied:
+      "Location permission is off. Turn it on in the phone's settings to follow your commune.",
     permissionTitle: "Nadhir needs notification permission to reach you",
     permissionBody:
       "Allow this device to receive available fire alerts and official weather warnings. Satellites detect fires; only official sources confirm them. Notification delivery and timing are not guaranteed.",

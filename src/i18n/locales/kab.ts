@@ -1546,6 +1546,16 @@ export const kab: Translation = {
     update: "Leqqem ajerred",
     disable: "Sens ilɣa",
     channelName: "Ilɣa n Nadhir",
+    followTitle: "Ḍfer daɣen anda i lliɣ",
+    followBody:
+      "Tiliɣri-k tettaf taɣiwant anda tella, tremmes ilɣa-s. Adig-ik ur yetteffeɣ ara seg tiliɣri.",
+    followCurrent: "Taɣiwant yettwaḍefren: {{name}}",
+    followWaiting: "Ad nerǧu adig-ik…",
+    followForeground:
+      "Mi ara yili Nadhir yeldi kan. Akken ad tettwaḍefreḍ deg ugilal, sireg adig yal tikkelt.",
+    followAllowBackground: "Sireg deg ugilal",
+    followDenied:
+      "Tasiregt n wadig tensa. Rmed-itt deg yiɣewwaṛen n tiliɣri akken ad teḍfreḍ taɣiwant-ik.",
     permissionTitle: "Iwakken ad ak-yaweḍ, Nadhir yesra tasiregt n yilɣa",
     permissionBody:
       "Autorisez cet appareil à recevoir les alertes incendie disponibles et les avertissements météo officiels. Les satellites détectent les incendies ; seules les sources officielles les confirment. La réception et le délai des notifications ne sont pas garantis.",

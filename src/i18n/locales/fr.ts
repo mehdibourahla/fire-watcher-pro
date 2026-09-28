@@ -1574,6 +1574,16 @@ export const fr: Translation = {
     update: "Mettre à jour l'abonnement",
     disable: "Désactiver les alertes",
     channelName: "Alertes Nadhir",
+    followTitle: "Suivre aussi l'endroit où je suis",
+    followBody:
+      "Votre téléphone détermine la commune où il se trouve et reçoit ses alertes. Votre position ne quitte jamais le téléphone.",
+    followCurrent: "Commune suivie : {{name}}",
+    followWaiting: "En attente de votre position…",
+    followForeground:
+      "Uniquement quand Nadhir est ouvert. Pour être suivi en arrière-plan, autorisez la localisation en permanence.",
+    followAllowBackground: "Autoriser en arrière-plan",
+    followDenied:
+      "La localisation est désactivée. Activez-la dans les réglages du téléphone pour suivre votre commune.",
     permissionTitle:
       "Pour vous joindre, Nadhir a besoin de l'autorisation de notification",
     permissionBody:

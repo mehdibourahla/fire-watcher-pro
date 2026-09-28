@@ -1,5 +1,6 @@
 import UIKit
 import Capacitor
+import FirebaseCore
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -7,7 +8,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        // a background relaunch for a location event has no bridge, so the plugin cannot do this
+        if FirebaseApp.app() == nil { FirebaseApp.configure() }
+        application.registerForRemoteNotifications()
+        CommuneTracker.shared.resumeIfEnabled()
         return true
     }
 

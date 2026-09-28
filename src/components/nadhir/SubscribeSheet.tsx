@@ -23,7 +23,9 @@ import {
   unsubscribeAll,
   type PushPermission,
 } from "@/lib/push";
+import { NATIVE } from "@/lib/platform";
 import { cn } from "@/lib/utils";
+import { FollowLocation } from "./FollowLocation";
 
 type Props = {
   open: boolean;
@@ -313,6 +315,14 @@ export function SubscribeSheet({ open, onClose, initialCommuneCode }: Props) {
                     </p>
                   )}
                 </section>
+
+                {NATIVE ? (
+                  <FollowLocation
+                    lang={lang}
+                    communes={communes}
+                    locale={locale}
+                  />
+                ) : null}
 
                 <section>
                   <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
