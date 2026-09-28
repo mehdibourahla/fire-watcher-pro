@@ -74,6 +74,7 @@ describe("fcmMessagesForFire", () => {
       broadcast_id: "b-1",
       severity: "Severe",
       kind: "fire",
+      link: "/fire/DZ7K4A",
     });
   });
 
@@ -192,6 +193,7 @@ describe("fcmMessageForAlert", () => {
       alert_id: "a1",
       kind: "weather",
       receipt: "sig",
+      link: "/alerts",
     });
   });
 
@@ -211,5 +213,63 @@ describe("fcmMessageForAlert", () => {
         "r",
       ).webpush.fcm_options.link,
     ).toBe("https://nadhir.app/fire/DZ1");
+  });
+});
+
+describe("native delivery", () => {
+  const [fire] = fcmMessagesForFire({
+    broadcastId: "b-1",
+    severity: "Severe",
+    communeCodes: ["1503"],
+    shortId: "DZ7K4A",
+    info,
+  });
+
+  it("asks Android and iOS for immediate, audible delivery on the alerts channel", () => {
+    expect(fire!.android).toEqual({
+      priority: "high",
+      notification: { channel_id: "alerts", tag: "fire-DZ7K4A" },
+    });
+    expect(fire!.apns).toEqual({
+      headers: { "apns-priority": "10", "apns-collapse-id": "fire-DZ7K4A" },
+      payload: {
+        aps: { sound: "default", "interruption-level": "time-sensitive" },
+      },
+    });
+  });
+
+  it("tells the app which screen a tap opens", () => {
+    expect(fire!.data.link).toBe("/fire/DZ7K4A");
+    const [onm] = fcmMessagesForOnm({
+      broadcastId: "b-2",
+      severity: "Severe",
+      communeCodes: ["1503"],
+      title: "t",
+      headlineFr: null,
+      wilayaId: null,
+      event: "rain",
+    });
+    expect(onm!.data.link).toBe("/forecast?commune=1503");
+    expect(onm!.android.notification).toEqual({ channel_id: "alerts" });
+    expect(onm!.apns.headers).toEqual({ "apns-priority": "10" });
+  });
+
+  it("gives a user alert the same delivery and its own collapse key", async () => {
+    const message = fcmMessageForAlert(
+      {
+        id: "a1",
+        user_id: "u1",
+        kind: "fire",
+        title: "t",
+        body: "b",
+        source_id: null,
+        cluster_id: "c9",
+        payload: { short_id: "DZ1" },
+      },
+      "r",
+    );
+    expect(message.data.link).toBe("/fire/DZ1");
+    expect(message.android.notification.tag).toBe("c9");
+    expect(message.apns.headers["apns-collapse-id"]).toBe("c9");
   });
 });

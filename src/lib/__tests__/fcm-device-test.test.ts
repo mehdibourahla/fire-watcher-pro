@@ -47,12 +47,13 @@ it("rejects an unregistered device without exposing its token", async () => {
 });
 it("preserves existing empty-topic handling", async () => {
   const { fcmSend } = await import("@/lib/ingest/fcm.server");
-  await expect(
-    fcmSend({
-      topic: "v1.commune.0000.en",
-      notification: { title: "TEST", body: "test" },
-      webpush: { fcm_options: { link: "https://nadhir.app" } },
-      data: { kind: "fire", severity: "Severe", broadcast_id: "test" },
-    }),
-  ).resolves.toBeUndefined();
+  const { fcmMessagesForAuthority } = await import("@/lib/fcm");
+  const message = fcmMessagesForAuthority({
+    broadcastId: "test",
+    severity: "Severe",
+    communeCodes: ["0000"],
+    source: "TEST",
+    body: "test",
+  }).find((m) => m.topic === "v1.commune.0000.en")!;
+  await expect(fcmSend(message)).resolves.toBeUndefined();
 });
