@@ -41,19 +41,24 @@ Cost by cadence, simulated on the real post times (19 posts/day):
 ## Collector
 
 - New source contract `ita_facebook`: family `civil_information`, criticality `supporting`,
-  cadence 15 min, warning 45 min, stale 90 min, execution target `cloudflare`.
+  cadence 15 min, overlap 5 min, warning 45 min, stale 90 min, execution target `cloudflare`,
+  `replay_capability` `none`.
 - Our scheduler owns the cadence. The Apify schedule `nadhir-ita-every-5-min` is disabled.
 - Each job calls `POST /v2/actor-tasks/{task}/run-sync-get-dataset-items` through `archivedFetch`,
   120 s timeout, token in the worker secret `APIFY_TOKEN`, task id in `APIFY_ITA_TASK_ID`.
-- The run input overrides the task: `onlyPostsNewerThan` is the minutes since the job's
-  `data_from` plus 5, so missed slots and `replay:source` backfill themselves; `resultsLimit` 20
-  caps what one run can cost.
+- The POST body merges over the task input: `onlyPostsNewerThan` is the minutes since the job's
+  `data_from` plus 2, clamped to 20–60, so a retried job still covers its own window;
+  `resultsLimit` 20, `maxItems=20` and `maxTotalChargeUsd=0.2` cap what one run can cost.
+- No gap replay: the actor filters only by a lower time bound, so replaying an old window would
+  fetch and bill every post since then. A slot lost beyond its retry window stays lost; the
+  website feed still carries the curated subset.
 - Items are validated with zod and mapped to the existing `ItaFeedPost` shape:
   `id` = `${pageAdLibrary.id}_${postId}`, `uri` = `pageName`, `created_time` = `time`,
   `message` = `text`, `region` = `""`, `type` = `[]`. The identity matches the website feed's
   (`808412572528916_<postId>`, `uri=traficalg`).
-- A `no_items` record means an empty window: the run succeeds with zero posts. A post without
-  text (a bare reel) is rejected and counted.
+- A `no_items` record means an empty window: the run succeeds with zero posts. An item failing
+  the schema is rejected and counted, and fails the run like a rejected website post. All 106
+  posts seen on 2026-09-28 had text and `pageAdLibrary.id` `808412572528916`.
 
 ## Storage and extraction
 
@@ -70,9 +75,14 @@ Cost by cadence, simulated on the real post times (19 posts/day):
 
 ## Failure and budget
 
-- Apify 402/403 (cap or plan limit) fails the run with a distinct `public_reason_code`; a timeout
-  or 5xx fails it for the next slot to retry. The contract thresholds put a dead collector in
-  `source_watchdog`, and the existing operator alert reaches Telegram within the hour.
+- A capped account answers HTTP 403 `{"error":{"type":"platform-feature-disabled","message":
+  "Monthly usage hard limit exceeded"}}` (observed 2026-09-28). The run fails with private
+  diagnostic `Apify usage cap reached (HTTP 403)` and public code `upstream_unreachable`: a new
+  public code would need strings in four locales for one source. A timeout or 5xx fails the run
+  for the next slot. The contract thresholds put a dead collector in `source_watchdog`, and the
+  existing operator alert reaches Telegram within the hour.
+- `ita_facebook` stays out of the public map's `relevantKeys` banner on purpose: a capped bridge
+  must not tell every user the map is limited. `/status` shows its label from the database.
 - At most 96 runs/day. The owner sets the Apify account's hard monthly limit to $30.
 
 ## PPCA track
@@ -97,12 +107,12 @@ Until approval, a development-mode app reads only Pages whose admin holds a role
 
 ## Tests
 
-- Mapping, with fixtures cut from real datasets pulled on 2026-09-28: a post, a `no_items`
-  record, a textless reel.
+- Mapping, with fixtures cut from real datasets pulled on 2026-09-28: a post and a `no_items`
+  record; a schema failure uses that post with `text` removed.
 - pgTAP: the same post from both sources inserts once; a text edit inserts a revision; a
   region/type-only website change inserts nothing; a lost `ita_facebook` lease is refused.
-- Runner: an empty window succeeds with zero posts; a 402 fails with its reason code; the
-  lookback follows `data_from`.
+- Runner: an empty window succeeds with zero posts; a capped 403 fails as
+  `upstream_unreachable`; the lookback follows `data_from` within 20–60 minutes.
 
 ## Out of scope
 
