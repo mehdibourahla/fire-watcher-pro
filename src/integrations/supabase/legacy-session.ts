@@ -1,4 +1,6 @@
 import { supabase } from "./client";
+import { NATIVE } from "@/lib/platform";
+
 import { hasAuthCookie } from "./session-cookie";
 
 /**
@@ -7,7 +9,8 @@ import { hasAuthCookie } from "./session-cookie";
  * signed-in user at /auth. Safe to drop once no legacy sessions remain.
  */
 export async function migrateLegacySession(): Promise<boolean> {
-  if (typeof window === "undefined") return false;
+  // on native this key is the live session, not a legacy one
+  if (typeof window === "undefined" || NATIVE) return false;
 
   try {
     // reading cookies or localStorage throws in sandboxed and storage-blocked contexts

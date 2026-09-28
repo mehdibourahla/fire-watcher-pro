@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { hasAuthCookie } from "@/integrations/supabase/session-cookie";
+import {
+  hasAuthCookie,
+  hasStoredSession,
+} from "@/integrations/supabase/session-cookie";
 
 describe("hasAuthCookie", () => {
   it("detects a session cookie and its chunks", () => {
@@ -24,5 +27,20 @@ describe("hasAuthCookie", () => {
   it("does not match the token name inside another cookie's value", () => {
     expect(hasAuthCookie("decoy=sb-abcdefg-auth-token=x")).toBe(false);
     expect(hasAuthCookie("nadhir_locale=sb-x-auth-token")).toBe(false);
+  });
+});
+
+describe("hasStoredSession", () => {
+  it("detects the supabase session key in app storage", () => {
+    expect(hasStoredSession(["nadhir.locale", "sb-kuuk-auth-token"])).toBe(
+      true,
+    );
+  });
+
+  it("ignores the PKCE verifier and unrelated keys", () => {
+    expect(
+      hasStoredSession(["nadhir.locale", "sb-kuuk-auth-token-code-verifier"]),
+    ).toBe(false);
+    expect(hasStoredSession([])).toBe(false);
   });
 });

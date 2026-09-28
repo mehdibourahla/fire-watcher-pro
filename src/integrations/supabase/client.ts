@@ -2,6 +2,7 @@ import { createBrowserClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "./types";
 import { recoveryProof } from "@/lib/auth-flow";
+import { NATIVE } from "@/lib/platform";
 
 function isNewSupabaseApiKey(value: string): boolean {
   return value.startsWith("sb_publishable_") || value.startsWith("sb_secret_");
@@ -64,13 +65,21 @@ function createSupabaseClient() {
     });
   }
 
-  const client = createBrowserClient<Database>(
-    SUPABASE_URL,
-    SUPABASE_PUBLISHABLE_KEY,
-    {
-      global,
-    },
-  );
+  // the app runs on capacitor://localhost, where WebView cookies are unreliable
+  const client = NATIVE
+    ? createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+        global,
+        auth: {
+          storage: window.localStorage,
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: false,
+          flowType: "pkce",
+        },
+      })
+    : createBrowserClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+        global,
+      });
   client.auth.onAuthStateChange((event, session) => {
     recoveryProof.observe(event, session?.user.id ?? null);
   });
