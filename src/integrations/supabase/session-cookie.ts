@@ -9,7 +9,7 @@ function hasAuthCookie(cookieHeader: string | null | undefined): boolean {
 
 /**
  * Presence only — never an authorization decision. It picks the route to render
- * before markup is committed; RLS and requireSupabaseAuth remain the real gates.
+ * before markup is committed; RLS and bearer checks remain the real gates.
  */
 export const hasSessionCookie = createIsomorphicFn()
   .server((): boolean => {

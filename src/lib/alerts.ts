@@ -2,6 +2,7 @@ import { queryOptions, infiniteQueryOptions } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
 import { firstPage, nextOffset, pageRange } from "@/lib/paging";
+import { apiUrl } from "@/lib/platform";
 
 export type Alert = {
   id: string;
@@ -97,4 +98,14 @@ export async function markAlertsRead(ids: string[], read: boolean) {
 export async function deleteAlerts(ids: string[]) {
   const { error } = await supabase.from("alerts").delete().in("id", ids);
   if (error) throw new Error(error.message);
+}
+
+export async function runAlertCheck() {
+  const { data, error } = await supabase.auth.getSession();
+  if (error || !data.session) throw new Error("no_session");
+  const res = await fetch(apiUrl("/api/private/alert-check"), {
+    method: "POST",
+    headers: { authorization: `Bearer ${data.session.access_token}` },
+  });
+  if (!res.ok) throw new Error(`alert check failed (${res.status})`);
 }

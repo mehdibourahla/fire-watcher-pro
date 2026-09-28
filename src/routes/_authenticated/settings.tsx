@@ -13,6 +13,7 @@ import { profileQuery, saveProfileSettings } from "@/lib/account";
 import { titledMeta } from "@/lib/page-meta";
 import { DevicePush } from "@/components/DevicePush";
 import { signOutAccount } from "@/lib/sign-out";
+import { apiUrl } from "@/lib/platform";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({
@@ -42,7 +43,7 @@ function SettingsPage() {
     mutationFn: async () => {
       const { data, error } = await supabase.auth.getSession();
       if (error || !data.session) throw new Error("account.deleteFailed");
-      const response = await fetch("/api/private/account", {
+      const response = await fetch(apiUrl("/api/private/account"), {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

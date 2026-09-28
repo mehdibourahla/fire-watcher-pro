@@ -4,6 +4,7 @@ import { stripImageMetadata } from "@/lib/image-metadata";
 import { supabase } from "@/integrations/supabase/client";
 import type { AppRole } from "./roles";
 import { firstPage, nextOffset, pageRange, pageRows } from "@/lib/paging";
+import { apiUrl } from "@/lib/platform";
 
 export type ReportStatus = "pending" | "approved" | "rejected";
 export type Sighting = "smoke" | "flames" | "smell" | "other";
@@ -401,7 +402,7 @@ export async function publishReport(id: string): Promise<PublishResult> {
   const { data, error } = await supabase.auth.getSession();
   if (error || !data.session)
     throw new ReportMutationError("reports.submitFailed");
-  const res = await fetch("/api/private/report-publish", {
+  const res = await fetch(apiUrl("/api/private/report-publish"), {
     method: "POST",
     headers: {
       "content-type": "application/json",

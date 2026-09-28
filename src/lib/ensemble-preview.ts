@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { EnsemblePreview } from "@/lib/ensemble";
+import { apiUrl } from "@/lib/platform";
 
 export async function fetchEnsemblePreview(
   code: string,
@@ -7,7 +8,7 @@ export async function fetchEnsemblePreview(
   const { data, error } = await supabase.auth.getSession();
   if (error || !data.session) throw new Error("signIn");
   const response = await fetch(
-    `/api/private/ensemble?commune=${encodeURIComponent(code)}`,
+    apiUrl(`/api/private/ensemble?commune=${encodeURIComponent(code)}`),
     {
       headers: { authorization: `Bearer ${data.session.access_token}` },
       cache: "no-store",

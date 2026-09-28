@@ -48,6 +48,7 @@ import { Route as AuthenticatedAdminSourcesRouteImport } from './routes/_authent
 import { Route as AuthenticatedAdminToolsRouteImport } from './routes/_authenticated/admin/tools'
 import { Route as AuthenticatedAdminTranslationsRouteImport } from './routes/_authenticated/admin/translations'
 import { Route as ApiPrivateAccountRouteImport } from './routes/api/private/account'
+import { Route as ApiPrivateAlertCheckRouteImport } from './routes/api/private/alert-check'
 import { Route as ApiPrivateEnsembleRouteImport } from './routes/api/private/ensemble'
 import { Route as ApiPrivatePushTestRouteImport } from './routes/api/private/push-test'
 import { Route as ApiPrivateReportPublishRouteImport } from './routes/api/private/report-publish'
@@ -272,6 +273,11 @@ const ApiPrivateAccountRoute = ApiPrivateAccountRouteImport.update({
   path: '/api/private/account',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPrivateAlertCheckRoute = ApiPrivateAlertCheckRouteImport.update({
+  id: '/api/private/alert-check',
+  path: '/api/private/alert-check',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPrivateEnsembleRoute = ApiPrivateEnsembleRouteImport.update({
   id: '/api/private/ensemble',
   path: '/api/private/ensemble',
@@ -426,6 +432,7 @@ export interface FileRoutesByFullPath {
   '/admin/tools': typeof AuthenticatedAdminToolsRoute
   '/admin/translations': typeof AuthenticatedAdminTranslationsRoute
   '/api/private/account': typeof ApiPrivateAccountRoute
+  '/api/private/alert-check': typeof ApiPrivateAlertCheckRoute
   '/api/private/ensemble': typeof ApiPrivateEnsembleRoute
   '/api/private/push-test': typeof ApiPrivatePushTestRoute
   '/api/private/report-publish': typeof ApiPrivateReportPublishRoute
@@ -486,6 +493,7 @@ export interface FileRoutesByTo {
   '/admin/tools': typeof AuthenticatedAdminToolsRoute
   '/admin/translations': typeof AuthenticatedAdminTranslationsRoute
   '/api/private/account': typeof ApiPrivateAccountRoute
+  '/api/private/alert-check': typeof ApiPrivateAlertCheckRoute
   '/api/private/ensemble': typeof ApiPrivateEnsembleRoute
   '/api/private/push-test': typeof ApiPrivatePushTestRoute
   '/api/private/report-publish': typeof ApiPrivateReportPublishRoute
@@ -550,6 +558,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/tools': typeof AuthenticatedAdminToolsRoute
   '/_authenticated/admin/translations': typeof AuthenticatedAdminTranslationsRoute
   '/api/private/account': typeof ApiPrivateAccountRoute
+  '/api/private/alert-check': typeof ApiPrivateAlertCheckRoute
   '/api/private/ensemble': typeof ApiPrivateEnsembleRoute
   '/api/private/push-test': typeof ApiPrivatePushTestRoute
   '/api/private/report-publish': typeof ApiPrivateReportPublishRoute
@@ -614,6 +623,7 @@ export interface FileRouteTypes {
     | '/admin/tools'
     | '/admin/translations'
     | '/api/private/account'
+    | '/api/private/alert-check'
     | '/api/private/ensemble'
     | '/api/private/push-test'
     | '/api/private/report-publish'
@@ -674,6 +684,7 @@ export interface FileRouteTypes {
     | '/admin/tools'
     | '/admin/translations'
     | '/api/private/account'
+    | '/api/private/alert-check'
     | '/api/private/ensemble'
     | '/api/private/push-test'
     | '/api/private/report-publish'
@@ -737,6 +748,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/tools'
     | '/_authenticated/admin/translations'
     | '/api/private/account'
+    | '/api/private/alert-check'
     | '/api/private/ensemble'
     | '/api/private/push-test'
     | '/api/private/report-publish'
@@ -778,6 +790,7 @@ export interface RootRouteChildren {
   FireIdRoute: typeof FireIdRoute
   IncidentIdRoute: typeof IncidentIdRoute
   ApiPrivateAccountRoute: typeof ApiPrivateAccountRoute
+  ApiPrivateAlertCheckRoute: typeof ApiPrivateAlertCheckRoute
   ApiPrivateEnsembleRoute: typeof ApiPrivateEnsembleRoute
   ApiPrivatePushTestRoute: typeof ApiPrivatePushTestRoute
   ApiPrivateReportPublishRoute: typeof ApiPrivateReportPublishRoute
@@ -1077,6 +1090,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPrivateAccountRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/private/alert-check': {
+      id: '/api/private/alert-check'
+      path: '/api/private/alert-check'
+      fullPath: '/api/private/alert-check'
+      preLoaderRoute: typeof ApiPrivateAlertCheckRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/private/ensemble': {
       id: '/api/private/ensemble'
       path: '/api/private/ensemble'
@@ -1329,6 +1349,7 @@ const rootRouteChildren: RootRouteChildren = {
   FireIdRoute: FireIdRoute,
   IncidentIdRoute: IncidentIdRoute,
   ApiPrivateAccountRoute: ApiPrivateAccountRoute,
+  ApiPrivateAlertCheckRoute: ApiPrivateAlertCheckRoute,
   ApiPrivateEnsembleRoute: ApiPrivateEnsembleRoute,
   ApiPrivatePushTestRoute: ApiPrivatePushTestRoute,
   ApiPrivateReportPublishRoute: ApiPrivateReportPublishRoute,

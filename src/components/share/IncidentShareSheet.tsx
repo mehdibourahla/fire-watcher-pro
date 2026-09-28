@@ -19,6 +19,7 @@ import {
   type ShareFormat,
 } from "@/lib/share-card";
 import { cn } from "@/lib/utils";
+import { apiUrl } from "@/lib/platform";
 
 const CARDS = [
   "story",
@@ -48,7 +49,9 @@ export function IncidentShareSheet({
     const urls: string[] = [];
     let live = true;
     for (const format of CARDS) {
-      void fetch(shareImagePath(incident.id, format, lang, incident.updated_at))
+      void fetch(
+        apiUrl(shareImagePath(incident.id, format, lang, incident.updated_at)),
+      )
         .then(async (res) => {
           if (!res.ok) throw new Error(`${res.status}`);
           const blob = await res.blob();

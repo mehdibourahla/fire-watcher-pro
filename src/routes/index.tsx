@@ -86,6 +86,7 @@ import {
 import { readSubscription } from "@/lib/push";
 import { pageMeta } from "@/lib/page-meta";
 import type { Locale } from "@/i18n";
+import { NATIVE, publicUrl } from "@/lib/platform";
 
 export const Route = createFileRoute("/")({
   head: () => ({ meta: pageMeta("map.metaTitle", "map.metaDescription") }),
@@ -494,7 +495,11 @@ function LiveMapPage() {
   };
   const share = async () => {
     try {
-      await navigator.clipboard.writeText(window.location.href);
+      await navigator.clipboard.writeText(
+        NATIVE
+          ? publicUrl(window.location.pathname + window.location.search)
+          : window.location.href,
+      );
       setMessage("civilMap.copied");
     } catch {
       setMessage("civilMap.shareFailed");
