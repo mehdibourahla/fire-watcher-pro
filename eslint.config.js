@@ -9,6 +9,8 @@ export default tseslint.config(
   {
     ignores: [
       "dist",
+      "android",
+      "ios",
       ".output",
       ".vinxi",
       ".claude",

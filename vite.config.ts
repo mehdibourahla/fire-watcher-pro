@@ -30,7 +30,7 @@ function maplibreWorkerAsset(): Plugin {
   };
 }
 
-export default defineConfig(({ command }) => ({
+export default defineConfig(({ command, mode }) => ({
   server: { host: "::", port: 8080, strictPort: true },
   resolve: {
     dedupe: ["react", "react-dom", "@tanstack/react-router"],
@@ -55,12 +55,15 @@ export default defineConfig(({ command }) => ({
     tanstackStart({
       // TanStack Start's bundled server entry is redirected to src/server.ts (our SSR error wrapper)
       server: { entry: "server" },
+      ...(mode === "native"
+        ? { spa: { enabled: true, prerender: { outputPath: "/index" } } }
+        : {}),
       importProtection: {
         behavior: "error",
         client: { files: ["**/server/**"], specifiers: ["server-only"] },
       },
     }),
-    ...(command === "build"
+    ...(command === "build" && mode !== "native"
       ? [
           nitro({
             preset: "cloudflare-module",
