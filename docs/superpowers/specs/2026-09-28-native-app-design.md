@@ -63,10 +63,23 @@ system browser and returns to `/`.
   installation.
 - The pack and survival flags stay in `localStorage` (synchronous reads during render are
   unchanged) and are mirrored to a file in the app's private data directory
-  (`@capacitor/filesystem`, `Directory.Data`). At startup, before the first render, any mirrored
-  key missing from `localStorage` is restored. iOS may purge WebView storage under disk pressure;
-  it never purges the app's data directory.
+  (`@capacitor/filesystem`, `Directory.Data`). At startup any mirrored key missing from
+  `localStorage` is restored in `src/client.tsx`, before React hydrates — SPA mode does not run the
+  root `beforeLoad` on first load, so a route-level restore arrives after Survival Mode has
+  already read an empty pack (reproduced on the emulator). iOS may purge WebView storage under
+  disk pressure; it never purges the app's data directory.
 - Map tiles are not offline (unchanged: the pack holds the commune outline, not tiles).
+
+### Android WebView gaps
+
+- The WebView never learns connectivity by itself, so `navigator.onLine` stayed `true` in
+  airplane mode and Survival Mode read "connected". `MainActivity` forwards the default-network
+  callback to `WebView.setNetworkAvailable`.
+- Safe areas: no `viewport-fit=cover`, so Capacitor's SystemBars always pads the WebView natively
+  on every WebView version (with `cover`, WebView ≥ 140 passes insets to CSS, which fixed elements
+  ignore). iOS uses `contentInset: "always"` — unverified until Xcode exists.
+- Hardware back walks history and minimizes the app at the root (Android 12+ convention; keeps
+  Survival Mode state).
 
 ### Native intents
 
