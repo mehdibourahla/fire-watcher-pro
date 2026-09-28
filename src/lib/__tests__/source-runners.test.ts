@@ -51,6 +51,12 @@ function dependencies() {
       pending: 0,
       notModified: false,
     }),
+    runItaFacebookSource: vi.fn().mockResolvedValue({
+      fetched: 2,
+      stored: 1,
+      rejected: 0,
+      lookbackMinutes: 22,
+    }),
     ingestFirms: vi.fn().mockResolvedValue({
       fetched: 2,
       inserted: 1,
@@ -149,6 +155,26 @@ describe("source runner registry", () => {
     expect(deps.deliverBroadcasts).not.toHaveBeenCalled();
     expect(deps.evaluateAlerts).not.toHaveBeenCalled();
     expect(deps.fuseDetections).not.toHaveBeenCalled();
+  });
+  it("reports a capped Apify account as an unreachable upstream", async () => {
+    const deps = dependencies();
+    deps.runItaFacebookSource.mockResolvedValue({
+      fetched: 0,
+      stored: 0,
+      rejected: 0,
+      lookbackMinutes: 22,
+      error: "Apify usage cap reached (HTTP 403)",
+    });
+    const result = await createSourceRunners(deps).ita_facebook(
+      job("ita_facebook"),
+    );
+    expect(result).toMatchObject({
+      outcome: "failed",
+      publicReasonCode: "upstream_unreachable",
+      retryDisposition: "transient",
+      privateDiagnostic: "Apify usage cap reached (HTTP 403)",
+      qualityChecks: { lookback_minutes: 22 },
+    });
   });
   it("contains exactly one runner for every runtime contract", () => {
     expect(Object.keys(createSourceRunners(dependencies())).sort()).toEqual(

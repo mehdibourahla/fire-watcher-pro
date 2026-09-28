@@ -4140,6 +4140,10 @@ export type Database = {
         };
         Returns: undefined;
       };
+      save_ita_facebook_posts: {
+        Args: { _attempt: number; _job: string; _posts: Json };
+        Returns: number;
+      };
       save_ita_feed: {
         Args: {
           _attempt: number;
