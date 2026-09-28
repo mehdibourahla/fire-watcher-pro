@@ -18,4 +18,12 @@ check(TopicPlan.plan(old: "1501", new: "1502", oldLang: "ar", newLang: "ar", pin
 check(TopicPlan.plan(old: "1501", new: nil, oldLang: "ar", newLang: "ar", pinned: []).isEmpty, "sea keeps commune")
 check(TopicPlan.plan(old: "1501", new: "1501", oldLang: "ar", newLang: "fr", pinned: []) ==
       [.init(join: false, topic: "v1.commune.1501.ar"), .init(join: true, topic: "v1.commune.1501.fr")], "language")
+check(TopicPlan.repin(current: "1501", oldLang: "ar", newLang: "ar", oldPinned: ["1501"], newPinned: []) ==
+      [.init(join: true, topic: "v1.commune.1501.ar")], "take over when unpinned")
+check(TopicPlan.repin(current: "1501", oldLang: "ar", newLang: "ar", oldPinned: [], newPinned: ["1501"]).isEmpty, "never drop the manual topic")
+check(TopicPlan.repin(current: "1501", oldLang: "ar", newLang: "fr", oldPinned: [], newPinned: ["1501"]) ==
+      [.init(join: false, topic: "v1.commune.1501.ar")], "drop own other-language topic")
+check(TopicPlan.repin(current: "1501", oldLang: "ar", newLang: "fr", oldPinned: [], newPinned: []) ==
+      [.init(join: false, topic: "v1.commune.1501.ar"), .init(join: true, topic: "v1.commune.1501.fr")], "repin language")
+check(TopicPlan.repin(current: nil, oldLang: "ar", newLang: "fr", oldPinned: ["1501"], newPinned: []).isEmpty, "no commune")
 print("PASS \(fixture.count) fixture points")

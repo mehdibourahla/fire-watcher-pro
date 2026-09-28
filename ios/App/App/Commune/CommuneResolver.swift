@@ -70,4 +70,16 @@ enum TopicPlan {
         if let target, !pinned.contains(target) { ops.append(Op(join: true, topic: topic(target, newLang))) }
         return ops
     }
+
+    static func repin(current: String?, oldLang: String, newLang: String, oldPinned: Set<String>, newPinned: Set<String>) -> [Op] {
+        guard let current else { return [] }
+        let wasPinned = oldPinned.contains(current)
+        let isPinned = newPinned.contains(current)
+        if wasPinned && !isPinned { return [Op(join: true, topic: topic(current, newLang))] }
+        if !wasPinned && isPinned { return oldLang == newLang ? [] : [Op(join: false, topic: topic(current, oldLang))] }
+        if !wasPinned && oldLang != newLang {
+            return [Op(join: false, topic: topic(current, oldLang)), Op(join: true, topic: topic(current, newLang))]
+        }
+        return []
+    }
 }

@@ -1,6 +1,7 @@
 import { Capacitor } from "@capacitor/core";
 import { FirebaseMessaging } from "@capacitor-firebase/messaging";
 
+import { CurrentCommune } from "@/lib/current-commune";
 import { fcmTopic } from "@/lib/fcm";
 import type { PushTransport } from "@/lib/push";
 
@@ -24,6 +25,10 @@ export const nativeTransport: PushTransport = {
       if (join) await FirebaseMessaging.subscribeToTopic({ topic });
       else await FirebaseMessaging.unsubscribeFromTopic({ topic });
     }
+  },
+  async settled(communes, lang) {
+    if ((await CurrentCommune.status()).enabled)
+      await CurrentCommune.setPinned({ pinned: communes, lang });
   },
 };
 

@@ -48,5 +48,20 @@ public final class TopicPlan {
         return ops;
     }
 
+    public static List<Op> repin(String current, String oldLang, String newLang, Set<String> oldPinned, Set<String> newPinned) {
+        List<Op> ops = new ArrayList<>();
+        if (current == null) return ops;
+        boolean wasPinned = oldPinned.contains(current);
+        boolean isPinned = newPinned.contains(current);
+        if (wasPinned && !isPinned) ops.add(new Op(true, topic(current, newLang)));
+        else if (!wasPinned && isPinned) {
+            if (!oldLang.equals(newLang)) ops.add(new Op(false, topic(current, oldLang)));
+        } else if (!wasPinned && !oldLang.equals(newLang)) {
+            ops.add(new Op(false, topic(current, oldLang)));
+            ops.add(new Op(true, topic(current, newLang)));
+        }
+        return ops;
+    }
+
     private TopicPlan() {}
 }

@@ -14,6 +14,7 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -81,7 +82,7 @@ public final class CommuneTracker {
         String current = prefs.getString("commune", null);
         String lang = prefs.getString("lang", "ar");
         Set<String> pinned = prefs.getStringSet("pinned", new HashSet<>());
-        if (current != null && !pinned.contains(current)) FirebaseMessaging.getInstance().unsubscribeFromTopic(TopicPlan.topic(current, lang));
+        if (current != null && !pinned.contains(current)) apply(Collections.singletonList(new TopicPlan.Op(false, TopicPlan.topic(current, lang))));
         prefs.edit().putBoolean("enabled", false).remove("commune").remove("updatedAt").apply();
     }
 
@@ -89,7 +90,8 @@ public final class CommuneTracker {
         SharedPreferences prefs = prefs(context);
         String current = prefs.getString("commune", null);
         String oldLang = prefs.getString("lang", lang);
-        if (apply(TopicPlan.plan(current, current, oldLang, lang, pinned))) prefs
+        Set<String> oldPinned = prefs.getStringSet("pinned", new HashSet<>());
+        if (apply(TopicPlan.repin(current, oldLang, lang, oldPinned, pinned))) prefs
             .edit()
             .putString("lang", lang)
             .putStringSet("pinned", new HashSet<>(pinned))

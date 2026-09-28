@@ -57,8 +57,7 @@ final class CommuneTracker: NSObject, CLLocationManagerDelegate {
         manager.stopMonitoringSignificantLocationChanges()
         queue.async { [self] in
             if let current = commune, !pinned.contains(current) {
-                ensureFirebase()
-                Messaging.messaging().unsubscribe(fromTopic: TopicPlan.topic(current, lang))
+                _ = apply([TopicPlan.Op(join: false, topic: TopicPlan.topic(current, lang))])
             }
             defaults.set(false, forKey: "commune.enabled")
             defaults.removeObject(forKey: "commune.code")
@@ -68,8 +67,7 @@ final class CommuneTracker: NSObject, CLLocationManagerDelegate {
 
     func setPinned(_ pinned: Set<String>, lang: String) {
         queue.async { [self] in
-            let current = commune
-            let ops = TopicPlan.plan(old: current, new: current, oldLang: self.lang, newLang: lang, pinned: pinned)
+            let ops = TopicPlan.repin(current: commune, oldLang: self.lang, newLang: lang, oldPinned: self.pinned, newPinned: pinned)
             if apply(ops) {
                 defaults.set(lang, forKey: "commune.lang")
                 defaults.set(Array(pinned), forKey: "commune.pinned")

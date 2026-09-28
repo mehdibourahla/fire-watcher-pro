@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Test;
@@ -65,5 +66,43 @@ public class CommuneResolverTest {
             Collections.singletonList(new TopicPlan.Op(true, "v1.commune.1501.ar")),
             TopicPlan.plan(null, "1501", "ar", "ar", Collections.emptySet())
         );
+    }
+
+    private static Set<String> set(String... codes) {
+        return new HashSet<>(Arrays.asList(codes));
+    }
+
+    @Test
+    public void takesOverTheCommuneWhenItStopsBeingManual() {
+        assertEquals(
+            Collections.singletonList(new TopicPlan.Op(true, "v1.commune.1501.ar")),
+            TopicPlan.repin("1501", "ar", "ar", set("1501"), set())
+        );
+    }
+
+    @Test
+    public void neverDropsATopicTheManualSubscriptionJustJoined() {
+        assertEquals(Collections.emptyList(), TopicPlan.repin("1501", "ar", "ar", set(), set("1501")));
+    }
+
+    @Test
+    public void dropsItsOwnOtherLanguageTopicWhenTheCommuneBecomesManual() {
+        assertEquals(
+            Collections.singletonList(new TopicPlan.Op(false, "v1.commune.1501.ar")),
+            TopicPlan.repin("1501", "ar", "fr", set(), set("1501"))
+        );
+    }
+
+    @Test
+    public void followsALanguageChangeForItsOwnCommune() {
+        assertEquals(
+            Arrays.asList(new TopicPlan.Op(false, "v1.commune.1501.ar"), new TopicPlan.Op(true, "v1.commune.1501.fr")),
+            TopicPlan.repin("1501", "ar", "fr", set(), set())
+        );
+    }
+
+    @Test
+    public void doesNothingWithoutACurrentCommune() {
+        assertEquals(Collections.emptyList(), TopicPlan.repin(null, "ar", "fr", set("1501"), set()));
     }
 }

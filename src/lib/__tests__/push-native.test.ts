@@ -13,6 +13,8 @@ const platform = vi.hoisted(() => ({ name: "ios" }));
 vi.mock("@capacitor/core", () => ({
   Capacitor: { getPlatform: () => platform.name },
 }));
+const follow = vi.hoisted(() => ({ status: vi.fn(), setPinned: vi.fn() }));
+vi.mock("@/lib/current-commune", () => ({ CurrentCommune: follow }));
 const local = vi.hoisted(() => ({ addListener: vi.fn(), schedule: vi.fn() }));
 vi.mock("@capacitor/local-notifications", () => ({
   LocalNotifications: local,
@@ -29,6 +31,7 @@ import { appLink, nativeTransport, startNativePush } from "@/lib/push-native";
 import {
   setUserPush,
   subscribeToCommunes,
+  unsubscribeAll,
   type PushTransport,
 } from "@/lib/push";
 
@@ -54,12 +57,16 @@ afterEach(() => vi.unstubAllGlobals());
 function fakeTransport(): PushTransport & {
   joined: string[][];
   left: string[][];
+  settledWith: [string[], string][];
 } {
   const joined: string[][] = [];
   const left: string[][] = [];
+  const settledWith: [string[], string][] = [];
   return {
     joined,
     left,
+    settledWith,
+    settled: async (communes, lang) => void settledWith.push([communes, lang]),
     permission: async () => "granted",
     request: async () => true,
     token: async () => "native-token",
@@ -191,4 +198,26 @@ it("shows an Android foreground push immediately, without asking for alarm permi
       importance: 5,
     }),
   );
+});
+
+it("tells the location tracker which communes are now manual after every change", async () => {
+  const transport = fakeTransport();
+  await subscribeToCommunes(["1503"], "ar", transport);
+  await unsubscribeAll(transport);
+  expect(transport.settledWith).toEqual([
+    [["1503"], "ar"],
+    [[], "ar"],
+  ]);
+});
+
+it("pins manual communes only while the tracker is on", async () => {
+  follow.status.mockResolvedValue({ enabled: false });
+  await nativeTransport.settled!(["1503"], "ar");
+  expect(follow.setPinned).not.toHaveBeenCalled();
+  follow.status.mockResolvedValue({ enabled: true });
+  await nativeTransport.settled!(["1503"], "fr");
+  expect(follow.setPinned).toHaveBeenCalledWith({
+    pinned: ["1503"],
+    lang: "fr",
+  });
 });
