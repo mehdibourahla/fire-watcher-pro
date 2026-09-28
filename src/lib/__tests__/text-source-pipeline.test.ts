@@ -215,6 +215,16 @@ const post = (id: string, publishedAt: string, text: string): TelegramPost => ({
 });
 
 const skikda2 = "⏮️⏮️ ولاية سكيكدة 02";
+// the shape of DGPCDZ/7158: ongoing fires, notable communes named, no distribution section
+const undistributed = `🔴 الحالة العامة لحرائق الغطاء النباتي، المحاصيل الزراعية، واحات النخيل، وأحزمة التبن ليوم 02 سبتمبر 2026 إلى غاية الساعة 13سا00د
+🔴 العدد الإجمالي للحرائق: 07
+🔴 عدد الحرائق التي تم إخمادها: 02
+🔴 عدد الحرائق المتواصلة: 05
+🔴 أهم الحرائق:
+🚨 ولاية سكيكدة:
+- بلدية عزابة: حريق غابة مهم مع وجود سكنات.
+- بلدية عين زويت: حريق غابة في منطقة وعرة.
+#الحماية_المدنية_الجزائرية`;
 const twoFires =
   "✅⏮️ حريق ببلدية عزابة، العملية متواصلة...\n✅⏮️ حريق ببلدية عين زويت، العملية متواصلة...";
 
@@ -1221,6 +1231,26 @@ describe("durable interpretation completion", () => {
     expect(f.unlisted.size).toBe(0);
     expect(f.mentions.every((m) => m["commune_id"] === null)).toBe(true);
   });
+  it.each([
+    ["both named communes", [mention({}), mention({ commune: "عين زويت" })], 0],
+    ["one named commune", [mention({})], 1],
+  ])(
+    "retries an undistributed bulletin only when the model misses a named commune (%s)",
+    async (_label, mentions, retries) => {
+      const f = memoryStore();
+      const result = await runTextSourceWith(
+        "dgpc_telegram",
+        deps(
+          [post("undistributed", "2026-09-02T12:10:00Z", undistributed)],
+          f.store,
+          llmWith(...mentions),
+        ),
+      );
+      expect(f.retry.size).toBe(retries);
+      expect(result.mentions).toBe(mentions.length);
+      expect(f.unlisted.size).toBe(0);
+    },
+  );
   it("retains incomplete bulletin interpretation instead of declaring success", async () => {
     const f = memoryStore();
     const result = await runTextSourceWith(

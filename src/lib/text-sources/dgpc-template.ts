@@ -6,6 +6,8 @@ export type DgpcBulletin = {
   asOf: string | null;
   totals: { total: number; extinguished: number; ongoing: number } | null;
   wilayaCounts: { wilaya: string; count: number; raw: string }[];
+  distributed: boolean;
+  namedCommunes: number;
 };
 
 const ALGIERS_OFFSET_MS = 60 * 60_000;
@@ -58,6 +60,17 @@ function dgpcAsOf(text: string, postedAt: string): string | null {
   return new Date(day + hour * 3_600_000 - ALGIERS_OFFSET_MS).toISOString();
 }
 
+// distinct communes after "بلدية" (or both of a dual "بلديتي X وY") in the notable-fires section
+function namedCommunes(text: string): number {
+  const section = text.search(/أهم الحرائق/);
+  if (section < 0) return 0;
+  const names = new Set<string>();
+  for (const m of text.slice(section).matchAll(/بلدي(ة|تي)\s+([^:،,.\n]+)/g))
+    for (const name of m[1] === "تي" ? m[2]!.split(/\s+و/) : [m[2]!])
+      names.add(name.replace(/\s+/g, " ").trim());
+  return names.size;
+}
+
 export function parseDgpcBulletin(
   text: string,
   postedAt: string,
@@ -68,6 +81,8 @@ export function parseDgpcBulletin(
     asOf: null,
     totals: null,
     wilayaCounts: [],
+    distributed: false,
+    namedCommunes: 0,
   };
   if (kind !== "bulletin" && kind !== "incident") return empty;
 
@@ -110,5 +125,12 @@ export function parseDgpcBulletin(
         });
   }
 
-  return { kind, asOf: dgpcAsOf(text, postedAt), totals, wilayaCounts };
+  return {
+    kind,
+    asOf: dgpcAsOf(text, postedAt),
+    totals,
+    wilayaCounts,
+    distributed: /موزعة/.test(text) || wilayaCounts.length > 0,
+    namedCommunes: namedCommunes(text),
+  };
 }
