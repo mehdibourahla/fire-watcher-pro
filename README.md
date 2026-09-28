@@ -80,6 +80,7 @@ bun run seed:geo            # add --prune to drop units no longer in data/geo/
 | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
 | `bun run dev`                                                                    | dev server on :8080                                                                                    |
 | `bun run build`                                                                  | production build                                                                                       |
+| `bun run cap:sync`                                                               | build the Android/iOS bundle (`build:native`) and copy it into `android/` and `ios/` (ADR-0005)        |
 | `bun run test`                                                                   | vitest suite                                                                                           |
 | `bun run lint`                                                                   | eslint                                                                                                 |
 | `bun run format`                                                                 | prettier                                                                                               |

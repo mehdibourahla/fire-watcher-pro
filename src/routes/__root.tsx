@@ -102,7 +102,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     // Isomorphic: resolves the same locale on the server and on the client, so the
     // SSR markup and the hydrated tree render identical text.
     beforeLoad: async ({ location }) => {
-      if (NATIVE) {
+      // the SPA shell is prerendered on the server, where there is no device storage
+      if (NATIVE && typeof window !== "undefined") {
         await startDurableStorage();
         if (webOnlyPath(location.pathname)) {
           window.open(publicUrl(location.href));
