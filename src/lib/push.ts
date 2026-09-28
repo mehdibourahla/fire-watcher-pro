@@ -63,6 +63,15 @@ const webTransport: PushTransport = {
   },
 };
 
+let topicQueue: Promise<unknown> = Promise.resolve();
+
+// topic changes run one at a time, so a startup re-sync cannot rejoin communes the user just left
+function serial<T>(task: () => Promise<T>): Promise<T> {
+  const run = topicQueue.then(task, task);
+  topicQueue = run.catch(() => undefined);
+  return run;
+}
+
 async function activeTransport(): Promise<PushTransport> {
   if (!NATIVE) return webTransport;
   return (await import("@/lib/push-native")).nativeTransport;
@@ -186,7 +195,15 @@ async function callSubscribeApi(
   }
 }
 
-export async function subscribeToCommunes(
+export function subscribeToCommunes(
+  communes: string[],
+  lang: string,
+  transport?: PushTransport,
+): Promise<void> {
+  return serial(() => applyCommunes(communes, lang, transport));
+}
+
+async function applyCommunes(
   communes: string[],
   lang: string,
   transport?: PushTransport,
@@ -208,23 +225,27 @@ export async function subscribeToCommunes(
   writeSubscription({ communes, lang });
 }
 
-export async function unsubscribeAll(transport?: PushTransport): Promise<void> {
-  const current = readSubscription();
-  if (!current) return;
-  const push = transport ?? (await activeTransport());
-  await push.topics(current.communes, current.lang, false);
-  writeSubscription(null);
+export function unsubscribeAll(transport?: PushTransport): Promise<void> {
+  return serial(async () => {
+    const current = readSubscription();
+    if (!current) return;
+    const push = transport ?? (await activeTransport());
+    await push.topics(current.communes, current.lang, false);
+    writeSubscription(null);
+  });
 }
 
 /* ADR-0004: the server keeps no per-subscriber state, so the client re-asserts
  * its topics on load — this is also how a rotated FCM token rejoins them. */
-export async function syncSubscription(): Promise<void> {
-  if (!pushConfigured() || !pushSupported()) return;
-  const current = readSubscription();
-  if (!current) return;
-  const push = await activeTransport();
-  if ((await push.permission()) !== "granted") return;
-  await push.topics(current.communes, current.lang, true);
+export function syncSubscription(transport?: PushTransport): Promise<void> {
+  return serial(async () => {
+    if (!transport && (!pushConfigured() || !pushSupported())) return;
+    const current = readSubscription();
+    if (!current) return;
+    const push = transport ?? (await activeTransport());
+    if ((await push.permission()) !== "granted") return;
+    await push.topics(current.communes, current.lang, true);
+  });
 }
 
 const USER_PUSH_KEY = "nadhir.userpush.v1";

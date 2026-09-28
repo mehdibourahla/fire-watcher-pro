@@ -60,39 +60,61 @@ function open(data: unknown) {
   if (link) current?.navigate(link);
 }
 
+type Handle = { remove(): Promise<void> };
+
 async function listen() {
-  await FirebaseMessaging.addListener("notificationActionPerformed", (event) =>
-    open(event.notification.data),
+  const handles: Handle[] = [];
+  try {
+    await registerListeners(handles);
+  } catch (error) {
+    // a retry must not stack a second tap handler on top of one that did register
+    await Promise.all(handles.map((handle) => handle.remove()));
+    throw error;
+  }
+}
+
+async function registerListeners(handles: Handle[]) {
+  handles.push(
+    await FirebaseMessaging.addListener(
+      "notificationActionPerformed",
+      (event) => open(event.notification.data),
+    ),
   );
-  await FirebaseMessaging.addListener("tokenReceived", () =>
-    current?.onToken(),
+  handles.push(
+    await FirebaseMessaging.addListener("tokenReceived", () =>
+      current?.onToken(),
+    ),
   );
   if (Capacitor.getPlatform() !== "android") return;
   const { LocalNotifications } = await import("@capacitor/local-notifications");
-  await LocalNotifications.addListener(
-    "localNotificationActionPerformed",
-    (event) => open(event.notification.extra),
+  handles.push(
+    await LocalNotifications.addListener(
+      "localNotificationActionPerformed",
+      (event) => open(event.notification.extra),
+    ),
   );
   // Android only raises an event for a push that arrives in the foreground
-  await FirebaseMessaging.addListener("notificationReceived", (event) => {
-    const { notification } = event;
-    void LocalNotifications.schedule({
-      notifications: [
-        {
-          id: notificationId(
-            notification.tag ?? notification.id ?? String(Date.now()),
-          ),
-          title: notification.title ?? "",
-          body: notification.body ?? "",
-          channelId: CHANNEL,
-          smallIcon: "ic_stat_nadhir",
-          // the exact default opens the "Alarms & reminders" settings screen instead of notifying
-          isExactNotification: false,
-          extra: notification.data,
-        },
-      ],
-    });
-  });
+  handles.push(
+    await FirebaseMessaging.addListener("notificationReceived", (event) => {
+      const { notification } = event;
+      void LocalNotifications.schedule({
+        notifications: [
+          {
+            id: notificationId(
+              notification.tag ?? notification.id ?? String(Date.now()),
+            ),
+            title: notification.title ?? "",
+            body: notification.body ?? "",
+            channelId: CHANNEL,
+            smallIcon: "ic_stat_nadhir",
+            // the exact default opens the "Alarms & reminders" settings screen instead of notifying
+            isExactNotification: false,
+            extra: notification.data,
+          },
+        ],
+      });
+    }),
+  );
 }
 
 export async function startNativePush(options: NativePushOptions) {

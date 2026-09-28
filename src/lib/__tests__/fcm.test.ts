@@ -291,3 +291,25 @@ it("keeps the iOS collapse id within APNs' 64-byte limit", () => {
     "onm-8d0e3c1a-4b5f-4c6d-9e7f-0a1b2c3d4e5f-Précipitations-exceptionnelles-orageuses",
   );
 });
+
+it("keeps distinct long ONM tags distinct after shortening the iOS collapse id", () => {
+  const wilayaId = "8d0e3c1a-4b5f-4c6d-9e7f-0a1b2c3d4e5f";
+  const ids = [
+    "Précipitations-exceptionnelles-orageuses",
+    "Précipitations-exceptionnelles-neigeuses",
+  ].map(
+    (event) =>
+      fcmMessagesForOnm({
+        broadcastId: "b",
+        severity: "Severe",
+        communeCodes: ["1503"],
+        title: "t",
+        headlineFr: null,
+        wilayaId,
+        event,
+      })[0]!.apns.headers["apns-collapse-id"]!,
+  );
+  expect(ids[0]).not.toBe(ids[1]);
+  for (const id of ids)
+    expect(new TextEncoder().encode(id).length).toBeLessThanOrEqual(64);
+});
