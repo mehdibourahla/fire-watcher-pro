@@ -1,4 +1,5 @@
 import { fcmTopic } from "@/lib/fcm";
+import { NATIVE, apiUrl } from "@/lib/platform";
 
 /* Public web-app config for the nadhir-dz Firebase project (not secrets). The
  * config is duplicated in public/firebase-messaging-sw.js; the VAPID key is the
@@ -27,6 +28,7 @@ export function pushConfigured(): boolean {
 
 export function pushSupported(): boolean {
   return (
+    !NATIVE &&
     typeof window !== "undefined" &&
     "Notification" in window &&
     "serviceWorker" in navigator
@@ -96,7 +98,7 @@ export async function testPushOnThisDevice(): Promise<string> {
   if (error || !data.session)
     throw new PushTestError("sources.pushTestErrors.signIn");
   const token = await registrationToken();
-  const response = await fetch("/api/private/push-test", {
+  const response = await fetch(apiUrl("/api/private/push-test"), {
     method: "POST",
     headers: {
       "content-type": "application/json",
@@ -126,7 +128,7 @@ async function callSubscribeApi(
   lang: string,
   action: "subscribe" | "unsubscribe",
 ): Promise<void> {
-  const res = await fetch("/api/public/v1/subscribe", {
+  const res = await fetch(apiUrl("/api/public/v1/subscribe"), {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ token, communes, lang, action }),
@@ -195,7 +197,7 @@ async function callUserPush(action: "subscribe" | "unsubscribe") {
   const { data, error } = await supabase.auth.getSession();
   if (error || !data.session) throw new Error("no_session");
   const token = await registrationToken();
-  const res = await fetch("/api/private/user-push", {
+  const res = await fetch(apiUrl("/api/private/user-push"), {
     method: "POST",
     headers: {
       "content-type": "application/json",

@@ -5,7 +5,6 @@ import {
   useInfiniteQuery,
 } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
 import { useTranslation } from "react-i18next";
 
 import type { Locale } from "@/i18n";
@@ -16,11 +15,11 @@ import {
   unreadAlertsQuery,
   deleteAlerts,
   markAlertsRead,
+  runAlertCheck,
   type Alert,
 } from "@/lib/alerts";
 import { groupAlerts, groupPhase, type AlertGroup } from "@/lib/alert-groups";
 import type { Phase } from "@/lib/incident-lifecycle";
-import { runMyAlertCheck } from "@/lib/alerts.functions";
 import { isDefaultPoint, zonesQuery } from "@/lib/account";
 import { RiskChip } from "@/components/nadhir/RiskChip";
 import { riskSolid } from "@/components/nadhir/risk-visuals";
@@ -47,7 +46,6 @@ function AlertsPage() {
   const alerts = useInfiniteQuery(alertsQuery);
   const unreadCount = useQuery(unreadAlertsQuery);
   const zones = useQuery(zonesQuery);
-  const check = useServerFn(runMyAlertCheck);
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["alerts"] });
   const readMutation = useMutation({
@@ -64,7 +62,7 @@ function AlertsPage() {
     onSuccess: invalidate,
   });
   const checkMutation = useMutation({
-    mutationFn: () => check({}),
+    mutationFn: runAlertCheck,
     onSuccess: invalidate,
   });
 

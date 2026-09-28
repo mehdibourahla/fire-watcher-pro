@@ -10,6 +10,7 @@ import {
   formatCoords,
   type PositionCard,
 } from "@/lib/survival";
+import { NATIVE } from "@/lib/platform";
 
 export const Route = createFileRoute("/survival/checkin")({
   component: CheckInPage,
@@ -52,10 +53,19 @@ function CheckInPage() {
 
   const onSend = () => {
     const fresh = composeMessage();
+    const sms = () => {
+      window.location.href = `sms:?&body=${encodeURIComponent(fresh)}`;
+    };
+    if (NATIVE) {
+      void import("@/lib/native-share")
+        .then(({ shareText }) => shareText(fresh))
+        .catch(sms);
+      return;
+    }
     if (navigator.share) {
       void navigator.share({ text: fresh }).catch(() => undefined);
     } else {
-      window.location.href = `sms:?&body=${encodeURIComponent(fresh)}`;
+      sms();
     }
   };
 

@@ -18,11 +18,15 @@ vi.mock("@/integrations/supabase/client.server", () => ({
   },
 }));
 import { handleDeleteAccount } from "@/lib/delete-account.server";
-const req = (body: unknown = { confirmation: "DELETE" }, token = "valid") =>
+const req = (
+  body: unknown = { confirmation: "DELETE" },
+  token = "valid",
+  origin = "https://nadhir.app",
+) =>
   new Request("https://nadhir.app/api/private/account", {
     method: "DELETE",
     headers: {
-      origin: "https://nadhir.app",
+      origin,
       authorization: `Bearer ${token}`,
       "content-type": "application/json",
     },
@@ -36,6 +40,16 @@ beforeEach(() => {
   m.signOut.mockResolvedValue({ error: null });
   m.deleteUser.mockResolvedValue({ error: null });
   m.remove.mockResolvedValue({ error: null });
+});
+it("accepts the native app origins and refuses any other site", async () => {
+  for (const origin of ["capacitor://localhost", "https://localhost"])
+    expect(
+      (await handleDeleteAccount(req(undefined, "valid", origin))).status,
+    ).toBe(200);
+  expect(
+    (await handleDeleteAccount(req(undefined, "valid", "https://evil.example")))
+      .status,
+  ).toBe(403);
 });
 it("requires a valid session and explicit confirmation", async () => {
   expect((await handleDeleteAccount(req({ confirmation: "no" }))).status).toBe(

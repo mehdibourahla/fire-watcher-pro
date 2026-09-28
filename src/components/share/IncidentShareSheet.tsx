@@ -19,6 +19,7 @@ import {
   type ShareFormat,
 } from "@/lib/share-card";
 import { cn } from "@/lib/utils";
+import { NATIVE, apiUrl } from "@/lib/platform";
 
 const CARDS = [
   "story",
@@ -48,7 +49,9 @@ export function IncidentShareSheet({
     const urls: string[] = [];
     let live = true;
     for (const format of CARDS) {
-      void fetch(shareImagePath(incident.id, format, lang, incident.updated_at))
+      void fetch(
+        apiUrl(shareImagePath(incident.id, format, lang, incident.updated_at)),
+      )
         .then(async (res) => {
           if (!res.ok) throw new Error(`${res.status}`);
           const blob = await res.blob();
@@ -78,12 +81,18 @@ export function IncidentShareSheet({
   const file = current && current !== "error" ? current.file : null;
   const canShareFiles =
     !!file &&
-    typeof navigator.canShare === "function" &&
-    navigator.canShare({ files: [file] });
+    (NATIVE ||
+      (typeof navigator.canShare === "function" &&
+        navigator.canShare({ files: [file] })));
 
   const shareImage = async () => {
     if (!file) return;
     try {
+      if (NATIVE) {
+        const { shareImageFile } = await import("@/lib/native-share");
+        await shareImageFile(file);
+        return;
+      }
       await navigator.share({ files: [file] });
     } catch (failure) {
       if (failure instanceof DOMException && failure.name === "AbortError")
@@ -206,15 +215,17 @@ export function IncidentShareSheet({
                 {t("shareCard.shareImage")}
               </Button>
             ) : null}
-            <Button
-              variant={
-                canShareFiles || active === "sticker" ? "outline" : "default"
-              }
-              disabled={!file}
-              onClick={save}
-            >
-              {t("shareCard.save")}
-            </Button>
+            {NATIVE ? null : (
+              <Button
+                variant={
+                  canShareFiles || active === "sticker" ? "outline" : "default"
+                }
+                disabled={!file}
+                onClick={save}
+              >
+                {t("shareCard.save")}
+              </Button>
+            )}
           </div>
           <p className="text-xs text-muted-foreground">{t("shareCard.link")}</p>
           <div className="flex flex-wrap gap-2">

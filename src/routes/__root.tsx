@@ -7,6 +7,7 @@ import {
   useRouterState,
   HeadContent,
   Scripts,
+  redirect,
 } from "@tanstack/react-router";
 import { useEffect, useMemo, type ReactNode } from "react";
 import { I18nextProvider, useTranslation } from "react-i18next";
@@ -26,6 +27,7 @@ import { THEME_BOOT_SCRIPT, applyTheme, readThemeCookie } from "../lib/theme";
 import { SiteHeader, SiteFooter, BottomTabs } from "../components/SiteChrome";
 import { AlertNotifier } from "../components/AlertNotifier";
 import { watchAuthCache } from "@/lib/auth-cache";
+import { NATIVE, openOnWeb, webOnlyPath } from "@/lib/platform";
 
 function NotFoundComponent() {
   const { t } = useTranslation();
@@ -98,7 +100,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   {
     // Isomorphic: resolves the same locale on the server and on the client, so the
     // SSR markup and the hydrated tree render identical text.
-    beforeLoad: () => ({ locale: initLocale() }),
+    beforeLoad: ({ location }) => {
+      // the SPA shell is prerendered on the server, where there is no window
+      if (
+        NATIVE &&
+        typeof window !== "undefined" &&
+        webOnlyPath(location.pathname)
+      ) {
+        openOnWeb(location.href);
+        throw redirect({ to: "/", replace: true });
+      }
+      return { locale: initLocale() };
+    },
     head: () => ({
       meta: [
         { charSet: "utf-8" },
@@ -186,7 +199,7 @@ function RootComponent() {
   }, []);
 
   useEffect(() => {
-    if (bare) return;
+    if (bare || NATIVE) return;
     void import("@/integrations/supabase/legacy-session")
       .then(({ migrateLegacySession }) => migrateLegacySession())
       .catch(() => undefined);
@@ -194,12 +207,12 @@ function RootComponent() {
 
   useEffect(() => {
     if (bare) return;
-    if (import.meta.env.PROD && "serviceWorker" in navigator)
+    if (import.meta.env.PROD && !NATIVE && "serviceWorker" in navigator)
       void navigator.serviceWorker.register("/sw.js").catch(() => undefined);
   }, [bare]);
 
   useEffect(() => {
-    if (bare) return;
+    if (bare || NATIVE) return;
     // ADR-0004: the client re-asserts its FCM topics on load (token refresh path)
     void import("@/lib/push").then(({ syncSubscription, syncUserPush }) => {
       syncSubscription().catch(() => undefined);

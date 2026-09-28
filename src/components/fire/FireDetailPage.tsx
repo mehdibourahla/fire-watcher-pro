@@ -31,6 +31,7 @@ import {
   unitName,
 } from "@/lib/nadhir";
 import { cn } from "@/lib/utils";
+import { NATIVE, publicUrl } from "@/lib/platform";
 
 function statusKey(phase: Phase, stage: string) {
   if (phase === "ended") return "civilMap.ended";
@@ -43,7 +44,20 @@ function ShareButton() {
   const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
   const share = async () => {
-    const url = window.location.href;
+    const url = NATIVE
+      ? publicUrl(window.location.pathname + window.location.search)
+      : window.location.href;
+    if (NATIVE) {
+      try {
+        const { shareText } = await import("@/lib/native-share");
+        await shareText(document.title, url);
+        return;
+      } catch {
+        await navigator.clipboard.writeText(url);
+        setCopied(true);
+        return;
+      }
+    }
     if (navigator.share) {
       try {
         await navigator.share({ title: document.title, url });

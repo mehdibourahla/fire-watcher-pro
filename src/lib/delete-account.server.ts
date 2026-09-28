@@ -1,4 +1,5 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { APP_ORIGINS } from "@/lib/app-cors.server";
 
 const json = (body: unknown, status: number) =>
   Response.json(body, {
@@ -7,7 +8,8 @@ const json = (body: unknown, status: number) =>
   });
 
 export async function handleDeleteAccount(request: Request): Promise<Response> {
-  if (request.headers.get("origin") !== new URL(request.url).origin)
+  const origin = request.headers.get("origin");
+  if (origin !== new URL(request.url).origin && !APP_ORIGINS.has(origin ?? ""))
     return json({ error: "account.deleteFailed" }, 403);
   const token = request.headers
     .get("authorization")

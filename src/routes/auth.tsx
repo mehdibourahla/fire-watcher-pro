@@ -29,6 +29,7 @@ import {
 } from "@/lib/auth-flow";
 import { PasswordField, authInputClass } from "@/components/auth/PasswordField";
 import { titledMeta } from "@/lib/page-meta";
+import { APP_ORIGIN, NATIVE, openOnWeb } from "@/lib/platform";
 
 export const Route = createFileRoute("/auth")({
   validateSearch: (
@@ -53,7 +54,9 @@ function AuthPage() {
   const search = Route.useSearch();
   const hash = useLocation({ select: (location) => location.hash });
   const returnTo = callbackDestination(search.returnTo, hash);
-  const [mode, setMode] = useState<AuthMode>(search.mode ?? "signin");
+  const [mode, setMode] = useState<AuthMode>(
+    NATIVE ? "signin" : (search.mode ?? "signin"),
+  );
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
@@ -159,6 +162,11 @@ function AuthPage() {
   }, [navigate, returnTo]);
   function changeMode(next: AuthMode) {
     if (busy) return;
+    // email links complete in the browser, which cannot see the app's PKCE verifier
+    if (NATIVE && next !== "signin") {
+      openOnWeb(`/auth?${new URLSearchParams({ mode: next })}`);
+      return;
+    }
     setMode(next);
     setError(null);
     setSent(null);
@@ -172,7 +180,8 @@ function AuthPage() {
     });
   }
   function redirectTo(next: AuthMode = "signin") {
-    return `${window.location.origin}/auth?${new URLSearchParams({ mode: next, returnTo })}`;
+    const origin = NATIVE ? APP_ORIGIN : window.location.origin;
+    return `${origin}/auth?${new URLSearchParams({ mode: next, returnTo })}`;
   }
   async function sendEmail(kind: "signup" | "recovery") {
     const generation = requestGeneration.current;
@@ -388,7 +397,7 @@ function AuthPage() {
         ) : (
           <>
             <form onSubmit={submit} className="mt-6 space-y-4" aria-busy={busy}>
-              {(mode === "signin" || mode === "signup") && (
+              {!NATIVE && (mode === "signin" || mode === "signup") && (
                 <>
                   <button
                     type="button"

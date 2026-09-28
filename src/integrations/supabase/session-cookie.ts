@@ -1,7 +1,13 @@
 import { createIsomorphicFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
 
+import { NATIVE } from "@/lib/platform";
+
 const AUTH_COOKIE = /(^|;\s*)sb-[^=;]*-auth-token(\.\d+)?=/;
+
+export function hasStoredSession(keys: string[]): boolean {
+  return keys.some((key) => /^sb-.*-auth-token$/.test(key));
+}
 
 function hasAuthCookie(cookieHeader: string | null | undefined): boolean {
   return !!cookieHeader && AUTH_COOKIE.test(cookieHeader);
@@ -9,7 +15,7 @@ function hasAuthCookie(cookieHeader: string | null | undefined): boolean {
 
 /**
  * Presence only — never an authorization decision. It picks the route to render
- * before markup is committed; RLS and requireSupabaseAuth remain the real gates.
+ * before markup is committed; RLS and bearer checks remain the real gates.
  */
 export const hasSessionCookie = createIsomorphicFn()
   .server((): boolean => {
@@ -19,6 +25,10 @@ export const hasSessionCookie = createIsomorphicFn()
       return false;
     }
   })
-  .client((): boolean => hasAuthCookie(document.cookie));
+  .client((): boolean =>
+    NATIVE
+      ? hasStoredSession(Object.keys(window.localStorage))
+      : hasAuthCookie(document.cookie),
+  );
 
 export { hasAuthCookie };

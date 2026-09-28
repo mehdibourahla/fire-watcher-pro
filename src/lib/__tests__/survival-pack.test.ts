@@ -14,6 +14,7 @@ function memoryStorage(initial: Record<string, string> = {}) {
   return {
     getItem: (k: string) => store.get(k) ?? null,
     setItem: (k: string, v: string) => void store.set(k, v),
+    removeItem: (k: string) => void store.delete(k),
   };
 }
 
@@ -58,6 +59,62 @@ describe("survival pack", () => {
       ),
     ).rejects.toThrow("offline");
     expect(loadPack(storage)).toEqual(pack);
+  });
+  it("restores the prior pack when the durable save fails", async () => {
+    const storage = memoryStorage();
+    savePack(storage, pack);
+    await expect(
+      preparePack(
+        storage,
+        async () => ({
+          ...pack,
+          lat: 36.6,
+          area_map: {
+            type: "Polygon",
+            coordinates: [
+              [
+                [3, 36],
+                [4, 36],
+                [3, 37],
+                [3, 36],
+              ],
+            ],
+          },
+        }),
+        async () => {},
+        async () => {
+          throw new Error("disk");
+        },
+      ),
+    ).rejects.toThrow("disk");
+    expect(loadPack(storage)).toEqual(pack);
+  });
+  it("leaves no pack when the first durable save fails", async () => {
+    const storage = memoryStorage();
+    await expect(
+      preparePack(
+        storage,
+        async () => ({
+          ...pack,
+          area_map: {
+            type: "Polygon",
+            coordinates: [
+              [
+                [3, 36],
+                [4, 36],
+                [3, 37],
+                [3, 36],
+              ],
+            ],
+          },
+        }),
+        async () => {},
+        async () => {
+          throw new Error("disk");
+        },
+      ),
+    ).rejects.toThrow("disk");
+    expect(loadPack(storage)).toBeNull();
   });
   it("does not require writable storage to activate the session", () => {
     expect(
@@ -129,6 +186,7 @@ it("retains the prior pack if device quota rejects the new pack", async () => {
         setItem: () => {
           throw new DOMException("Quota exceeded", "QuotaExceededError");
         },
+        removeItem: storage.removeItem,
       },
       async () => ({
         ...pack,

@@ -3,6 +3,10 @@ import { createFileRoute } from "@tanstack/react-router";
 export const Route = createFileRoute("/api/private/ensemble")({
   server: {
     handlers: {
+      OPTIONS: async ({ request }) => {
+        const { appPreflight } = await import("@/lib/app-cors.server");
+        return appPreflight(request, "GET");
+      },
       ANY: () =>
         Response.json(
           { error: "Method not allowed" },
@@ -13,7 +17,8 @@ export const Route = createFileRoute("/api/private/ensemble")({
         ),
       GET: async ({ request }) => {
         const { handleEnsemblePreview } = await import("@/lib/ensemble.server");
-        return handleEnsemblePreview(request);
+        const { withAppCors } = await import("@/lib/app-cors.server");
+        return withAppCors(request, await handleEnsemblePreview(request));
       },
     },
   },
