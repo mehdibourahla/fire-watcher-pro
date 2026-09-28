@@ -24,13 +24,21 @@ type NativeDelivery = {
   };
 };
 
+function fnv1a(text: string) {
+  let hash = 0x811c9dc5;
+  for (const byte of new TextEncoder().encode(text))
+    hash = Math.imul(hash ^ byte, 0x01000193) >>> 0;
+  return hash.toString(16).padStart(8, "0");
+}
+
+// APNs rejects ids over 64 bytes, and a bare cut would let two tags collapse into one alert
 function collapseId(tag: string) {
   const bytes = new TextEncoder().encode(tag);
   if (bytes.length <= 64) return tag;
-  // APNs rejects a longer collapse id outright; fatal: false drops a split character
-  return new TextDecoder("utf-8", { fatal: false })
-    .decode(bytes.slice(0, 64))
+  const prefix = new TextDecoder("utf-8", { fatal: false })
+    .decode(bytes.slice(0, 55))
     .replace(/\uFFFD$/, "");
+  return `${prefix}-${fnv1a(tag)}`;
 }
 
 function nativeDelivery(tag?: string): NativeDelivery {

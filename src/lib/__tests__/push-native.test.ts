@@ -31,6 +31,7 @@ import { appLink, nativeTransport, startNativePush } from "@/lib/push-native";
 import {
   setUserPush,
   subscribeToCommunes,
+  syncSubscription,
   unsubscribeAll,
   type PushTransport,
 } from "@/lib/push";
@@ -220,4 +221,27 @@ it("pins manual communes only while the tracker is on", async () => {
     pinned: ["1503"],
     lang: "fr",
   });
+});
+
+it("never lets a startup re-sync rejoin communes the user just left", async () => {
+  store.set(
+    "nadhir.push.v1",
+    JSON.stringify({ communes: ["1503"], lang: "ar" }),
+  );
+  const ops: string[] = [];
+  let grant!: (v: "granted") => void;
+  const transport: PushTransport = {
+    permission: () => new Promise((resolve) => (grant = resolve)),
+    request: async () => true,
+    token: async () => "native-token",
+    topics: async (communes, lang, join) =>
+      void ops.push(`${join ? "join" : "leave"} ${communes.join()}.${lang}`),
+  };
+  const sync = syncSubscription(transport);
+  const leave = unsubscribeAll(transport);
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  grant("granted");
+  await Promise.all([sync, leave]);
+  expect(ops).toEqual(["join 1503.ar", "leave 1503.ar"]);
+  expect(store.has("nadhir.push.v1")).toBe(false);
 });

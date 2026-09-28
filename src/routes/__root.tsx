@@ -215,11 +215,14 @@ function RootComponent() {
   useEffect(() => {
     if (!NATIVE) return;
     void Promise.all([import("@/lib/push-native"), import("@/lib/push")])
-      .then(([{ startNativePush }, { syncUserPush }]) =>
+      .then(([{ startNativePush }, { syncSubscription, syncUserPush }]) =>
         startNativePush({
           channelName: i18nInstance.t("push.channelName"),
           navigate: (path) => void router.navigate({ href: path }),
-          onToken: () => void syncUserPush().catch(() => undefined),
+          onToken: () => {
+            void syncUserPush().catch(() => undefined);
+            void syncSubscription().catch(() => undefined);
+          },
         }),
       )
       .catch((error: unknown) =>
