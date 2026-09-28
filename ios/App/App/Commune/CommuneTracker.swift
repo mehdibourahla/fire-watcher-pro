@@ -1,5 +1,4 @@
 import CoreLocation
-import FirebaseCore
 import FirebaseMessaging
 import UIKit
 
@@ -49,38 +48,45 @@ final class CommuneTracker: NSObject, CLLocationManagerDelegate {
 
     func requestBackground(completion: @escaping () -> Void) {
         guard manager.authorizationStatus == .authorizedWhenInUse else { return completion() }
-        authorizationWaiters.append(completion)
+        var done = false
+        let finish = {
+            guard !done else { return }
+            done = true
+            completion()
+        }
+        authorizationWaiters.append(finish)
         manager.requestAlwaysAuthorization()
+        // iOS shows the upgrade prompt at most once and may not call back at all
+        DispatchQueue.main.asyncAfter(deadline: .now() + 10, execute: finish)
     }
 
-    func disable() {
+    func disable(completion: @escaping () -> Void) {
         manager.stopMonitoringSignificantLocationChanges()
         queue.async { [self] in
+            // Firebase persists topic ops and retries them online, so turning off never waits on the network
             if let current = commune, !pinned.contains(current) {
-                _ = apply([TopicPlan.Op(join: false, topic: TopicPlan.topic(current, lang))])
+                Messaging.messaging().unsubscribe(fromTopic: TopicPlan.topic(current, lang)) { error in
+                    if let error { NSLog("CurrentCommune: unsubscribe failed: \(error)") }
+                }
             }
             defaults.set(false, forKey: "commune.enabled")
             defaults.removeObject(forKey: "commune.code")
             defaults.removeObject(forKey: "commune.updatedAt")
+            DispatchQueue.main.async(execute: completion)
         }
     }
 
-    func setPinned(_ pinned: Set<String>, lang: String) {
+    func setPinned(_ pinned: Set<String>, lang: String, completion: (() -> Void)? = nil) {
         queue.async { [self] in
-            let ops = TopicPlan.repin(current: commune, oldLang: self.lang, newLang: lang, oldPinned: self.pinned, newPinned: pinned)
-            if apply(ops) {
-                defaults.set(lang, forKey: "commune.lang")
-                defaults.set(Array(pinned), forKey: "commune.pinned")
-            }
+            _ = apply(TopicPlan.repin(current: commune, oldLang: self.lang, newLang: lang, oldPinned: self.pinned, newPinned: pinned))
+            defaults.set(lang, forKey: "commune.lang")
+            defaults.set(Array(pinned), forKey: "commune.pinned")
+            if let completion { DispatchQueue.main.async(execute: completion) }
         }
     }
 
     private var lang: String { defaults.string(forKey: "commune.lang") ?? "ar" }
     private var pinned: Set<String> { Set(defaults.stringArray(forKey: "commune.pinned") ?? []) }
-
-    private func ensureFirebase() {
-        if FirebaseApp.app() == nil { FirebaseApp.configure() }
-    }
 
     private func loadResolver() -> CommuneResolver? {
         if resolver == nil,
@@ -93,7 +99,6 @@ final class CommuneTracker: NSObject, CLLocationManagerDelegate {
 
     private func apply(_ ops: [TopicPlan.Op]) -> Bool {
         guard !ops.isEmpty else { return true }
-        ensureFirebase()
         var failed = false
         for op in ops {
             let done = DispatchSemaphore(value: 0)
@@ -115,9 +120,10 @@ final class CommuneTracker: NSObject, CLLocationManagerDelegate {
         let task = UIApplication.shared.beginBackgroundTask(withName: "commune")
         queue.async { [self] in
             defer { UIApplication.shared.endBackgroundTask(task) }
-            guard let code = loadResolver()?.resolve(lon: location.coordinate.longitude, lat: location.coordinate.latitude) else { return }
+            guard let resolver = loadResolver() else { return }
+            let code = resolver.resolve(lon: location.coordinate.longitude, lat: location.coordinate.latitude)
             let ops = TopicPlan.plan(old: commune, new: code, oldLang: lang, newLang: lang, pinned: pinned)
-            if apply(ops) {
+            if apply(ops), let code {
                 defaults.set(code, forKey: "commune.code")
                 defaults.set(Date().timeIntervalSince1970 * 1000, forKey: "commune.updatedAt")
             }

@@ -16,12 +16,12 @@ public class CommuneLocationReceiver extends BroadcastReceiver {
         if (location == null) return;
         PendingResult pending = goAsync();
         Context app = context.getApplicationContext();
-        new Thread(() -> {
+        CommuneTracker.run(() -> {
             try {
                 CommuneTracker.onLocation(app, location.getLongitude(), location.getLatitude());
             } finally {
                 pending.finish();
             }
-        }).start();
+        });
     }
 }

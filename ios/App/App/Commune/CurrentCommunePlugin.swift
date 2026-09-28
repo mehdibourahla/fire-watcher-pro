@@ -43,12 +43,10 @@ public class CurrentCommunePlugin: CAPPlugin, CAPBridgedPlugin {
     }
 
     @objc func setPinned(_ call: CAPPluginCall) {
-        tracker.setPinned(pinned(call), lang: call.getString("lang") ?? "ar")
-        call.resolve(status())
+        tracker.setPinned(pinned(call), lang: call.getString("lang") ?? "ar") { call.resolve(self.status()) }
     }
 
     @objc func stop(_ call: CAPPluginCall) {
-        tracker.disable()
-        call.resolve(status())
+        tracker.disable { call.resolve(self.status()) }
     }
 }

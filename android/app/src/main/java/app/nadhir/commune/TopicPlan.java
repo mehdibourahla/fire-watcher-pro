@@ -42,7 +42,11 @@ public final class TopicPlan {
     public static List<Op> plan(String oldCode, String newCode, String oldLang, String newLang, Set<String> pinned) {
         List<Op> ops = new ArrayList<>();
         String target = newCode == null ? oldCode : newCode;
-        if (Objects.equals(oldCode, target) && Objects.equals(oldLang, newLang)) return ops;
+        // re-joining the held topic on every fix heals token rotation and ops that failed or landed late
+        if (Objects.equals(oldCode, target) && Objects.equals(oldLang, newLang)) {
+            if (target != null && !pinned.contains(target)) ops.add(new Op(true, topic(target, newLang)));
+            return ops;
+        }
         if (oldCode != null && !pinned.contains(oldCode)) ops.add(new Op(false, topic(oldCode, oldLang)));
         if (target != null && !pinned.contains(target)) ops.add(new Op(true, topic(target, newLang)));
         return ops;

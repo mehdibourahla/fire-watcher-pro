@@ -47,8 +47,24 @@ public class CommuneResolverTest {
     }
 
     @Test
-    public void keepsTheCommuneWhenThePositionMatchesNone() {
-        assertEquals(Collections.emptyList(), TopicPlan.plan("1501", null, "ar", "ar", Collections.emptySet()));
+    public void reassertsTheCurrentCommuneWhenThePositionMatchesNone() {
+        assertEquals(
+            Collections.singletonList(new TopicPlan.Op(true, "v1.commune.1501.ar")),
+            TopicPlan.plan("1501", null, "ar", "ar", Collections.emptySet())
+        );
+    }
+
+    @Test
+    public void reassertsTheSameCommuneOnEveryFix() {
+        assertEquals(
+            Collections.singletonList(new TopicPlan.Op(true, "v1.commune.1501.ar")),
+            TopicPlan.plan("1501", "1501", "ar", "ar", Collections.emptySet())
+        );
+    }
+
+    @Test
+    public void leavesAManualCommuneToItsSubscription() {
+        assertEquals(Collections.emptyList(), TopicPlan.plan("1501", "1501", "ar", "ar", new HashSet<>(Arrays.asList("1501"))));
     }
 
     @Test

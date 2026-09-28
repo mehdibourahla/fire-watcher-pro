@@ -34,6 +34,7 @@ public class CurrentCommunePlugin extends Plugin {
             for (int i = 0; i < array.length(); i++) out.add(array.getString(i));
         } catch (JSONException error) {
             call.reject("invalid pinned communes");
+            return null;
         }
         return out;
     }
@@ -70,17 +71,22 @@ public class CurrentCommunePlugin extends Plugin {
             call.reject("location_denied");
             return;
         }
-        CommuneTracker.enable(getContext(), call.getString("lang", "ar"), pinned(call));
+        Set<String> pinned = pinned(call);
+        if (pinned == null) return;
+        String lang = call.getString("lang", "ar");
+        CommuneTracker.run(() -> CommuneTracker.enable(getContext(), lang, pinned));
         LocationServices.getFusedLocationProviderClient(getContext())
             .getCurrentLocation(Priority.PRIORITY_BALANCED_POWER_ACCURACY, null)
-            .addOnCompleteListener(task -> {
-                if (task.isSuccessful() && task.getResult() != null) {
-                    new Thread(() -> {
-                        CommuneTracker.onLocation(getContext(), task.getResult().getLongitude(), task.getResult().getLatitude());
-                        call.resolve(status());
-                    }).start();
-                } else call.resolve(status());
-            });
+            .addOnCompleteListener(task ->
+                CommuneTracker.run(() -> {
+                    if (task.isSuccessful() && task.getResult() != null) CommuneTracker.onLocation(
+                        getContext(),
+                        task.getResult().getLongitude(),
+                        task.getResult().getLatitude()
+                    );
+                    call.resolve(status());
+                })
+            );
     }
 
     @PluginMethod
@@ -96,13 +102,20 @@ public class CurrentCommunePlugin extends Plugin {
 
     @PluginMethod
     public void setPinned(PluginCall call) {
-        CommuneTracker.setPinned(getContext(), pinned(call), call.getString("lang", "ar"));
-        call.resolve(status());
+        Set<String> pinned = pinned(call);
+        if (pinned == null) return;
+        String lang = call.getString("lang", "ar");
+        CommuneTracker.run(() -> {
+            CommuneTracker.setPinned(getContext(), pinned, lang);
+            call.resolve(status());
+        });
     }
 
     @PluginMethod
     public void stop(PluginCall call) {
-        CommuneTracker.disable(getContext());
-        call.resolve(status());
+        CommuneTracker.run(() -> {
+            CommuneTracker.disable(getContext());
+            call.resolve(status());
+        });
     }
 }

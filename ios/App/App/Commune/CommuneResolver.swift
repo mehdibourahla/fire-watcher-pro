@@ -64,7 +64,11 @@ enum TopicPlan {
 
     static func plan(old: String?, new: String?, oldLang: String, newLang: String, pinned: Set<String>) -> [Op] {
         let target = new ?? old
-        if old == target && oldLang == newLang { return [] }
+        // re-joining the held topic on every fix heals token rotation and ops that failed or landed late
+        if old == target && oldLang == newLang {
+            guard let target, !pinned.contains(target) else { return [] }
+            return [Op(join: true, topic: topic(target, newLang))]
+        }
         var ops: [Op] = []
         if let old, !pinned.contains(old) { ops.append(Op(join: false, topic: topic(old, oldLang))) }
         if let target, !pinned.contains(target) { ops.append(Op(join: true, topic: topic(target, newLang))) }

@@ -14,10 +14,11 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public final class CommuneTracker {
@@ -31,7 +32,7 @@ public final class CommuneTracker {
         return context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
     }
 
-    static synchronized CommuneResolver resolver(Context context) throws Exception {
+    static CommuneResolver resolver(Context context) throws Exception {
         if (resolver == null) {
             try (InputStream in = context.getAssets().open("public/geo/communes.v1.json")) {
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -58,6 +59,13 @@ public final class CommuneTracker {
         LocationServices.getFusedLocationProviderClient(context).requestLocationUpdates(request, updatesIntent(context));
     }
 
+    // one thread owns all tracker state and blocking topic calls, off Capacitor's shared plugin thread
+    private static final ExecutorService worker = Executors.newSingleThreadExecutor();
+
+    static void run(Runnable task) {
+        worker.execute(task);
+    }
+
     public static boolean enabled(Context context) {
         return prefs(context).getBoolean("enabled", false);
     }
@@ -70,35 +78,35 @@ public final class CommuneTracker {
         return prefs(context).getLong("updatedAt", 0);
     }
 
-    public static void enable(Context context, String lang, Set<String> pinned) {
+    static void enable(Context context, String lang, Set<String> pinned) {
         setPinned(context, pinned, lang);
         prefs(context).edit().putBoolean("enabled", true).apply();
         requestUpdates(context);
     }
 
-    public static synchronized void disable(Context context) {
+    static void disable(Context context) {
         LocationServices.getFusedLocationProviderClient(context).removeLocationUpdates(updatesIntent(context));
         SharedPreferences prefs = prefs(context);
         String current = prefs.getString("commune", null);
         String lang = prefs.getString("lang", "ar");
         Set<String> pinned = prefs.getStringSet("pinned", new HashSet<>());
-        if (current != null && !pinned.contains(current)) apply(Collections.singletonList(new TopicPlan.Op(false, TopicPlan.topic(current, lang))));
+        // Firebase persists topic ops and retries them online, so turning off never waits on the network
+        if (current != null && !pinned.contains(current)) FirebaseMessaging.getInstance()
+            .unsubscribeFromTopic(TopicPlan.topic(current, lang))
+            .addOnFailureListener(error -> Log.e(TAG, "unsubscribe failed", error));
         prefs.edit().putBoolean("enabled", false).remove("commune").remove("updatedAt").apply();
     }
 
-    public static synchronized void setPinned(Context context, Set<String> pinned, String lang) {
+    static void setPinned(Context context, Set<String> pinned, String lang) {
         SharedPreferences prefs = prefs(context);
         String current = prefs.getString("commune", null);
         String oldLang = prefs.getString("lang", lang);
         Set<String> oldPinned = prefs.getStringSet("pinned", new HashSet<>());
-        if (apply(TopicPlan.repin(current, oldLang, lang, oldPinned, pinned))) prefs
-            .edit()
-            .putString("lang", lang)
-            .putStringSet("pinned", new HashSet<>(pinned))
-            .apply();
+        apply(TopicPlan.repin(current, oldLang, lang, oldPinned, pinned));
+        prefs.edit().putString("lang", lang).putStringSet("pinned", new HashSet<>(pinned)).apply();
     }
 
-    static synchronized void onLocation(Context context, double lon, double lat) {
+    static void onLocation(Context context, double lon, double lat) {
         SharedPreferences prefs = prefs(context);
         if (!prefs.getBoolean("enabled", false)) return;
         String code;
@@ -108,15 +116,11 @@ public final class CommuneTracker {
             Log.e(TAG, "commune outlines unreadable", error);
             return;
         }
-        if (code == null) return;
         String current = prefs.getString("commune", null);
         String lang = prefs.getString("lang", "ar");
         Set<String> pinned = prefs.getStringSet("pinned", new HashSet<>());
-        if (apply(TopicPlan.plan(current, code, lang, lang, pinned))) prefs
-            .edit()
-            .putString("commune", code)
-            .putLong("updatedAt", System.currentTimeMillis())
-            .apply();
+        if (!apply(TopicPlan.plan(current, code, lang, lang, pinned)) || code == null) return;
+        prefs.edit().putString("commune", code).putLong("updatedAt", System.currentTimeMillis()).apply();
     }
 
     private static boolean apply(List<TopicPlan.Op> ops) {

@@ -8,7 +8,7 @@ import {
   type CurrentCommuneStatus,
 } from "@/lib/current-commune";
 import { unitName, type AdminUnit } from "@/lib/nadhir";
-import { readSubscription } from "@/lib/push";
+import { readSubscription, requestNotificationPermission } from "@/lib/push";
 
 export function FollowLocation({
   lang,
@@ -23,6 +23,7 @@ export function FollowLocation({
   const [status, setStatus] = useState<CurrentCommuneStatus | null>(null);
   const [pending, setPending] = useState(false);
   const [denied, setDenied] = useState(false);
+  const [silenced, setSilenced] = useState(false);
 
   useEffect(() => {
     void CurrentCommune.status().then(setStatus);
@@ -41,7 +42,13 @@ export function FollowLocation({
   const toggle = async (next: boolean) => {
     setPending(true);
     setDenied(false);
+    setSilenced(false);
     try {
+      // following a commune is useless if its alerts cannot be shown
+      if (next && (await requestNotificationPermission()) !== "granted") {
+        setSilenced(true);
+        return;
+      }
       setStatus(
         next
           ? await CurrentCommune.start({
@@ -99,6 +106,11 @@ export function FollowLocation({
             {t("push.followAllowBackground")}
           </button>
         </div>
+      ) : null}
+      {silenced ? (
+        <p role="alert" className="text-xs text-destructive">
+          {t("push.denied")}
+        </p>
       ) : null}
       {denied ? (
         <p role="alert" className="text-xs text-destructive">
