@@ -8,29 +8,54 @@ export type MirrorFs = {
 
 const MIRRORED = /^nadhir\./;
 
+export type Mirror = ReturnType<typeof createMirror>;
+
 export function createMirror(fs: MirrorFs) {
   let pending: Promise<void> = Promise.resolve();
-  let failure: unknown = null;
-  const queue = (op: () => Promise<void>) => {
-    pending = pending.then(op).catch((error: unknown) => {
-      failure ??= error;
-      console.error("durable storage write failed", error);
-    });
+  const failures = new Map<string, unknown>();
+  const queue = (key: string, op: () => Promise<void>) => {
+    if (!MIRRORED.test(key)) return;
+    pending = pending.then(op).then(
+      () => void failures.delete(key),
+      (error: unknown) => {
+        failures.set(key, error);
+        console.error("durable storage write failed", key, error);
+      },
+    );
   };
   return {
     set(key: string, value: string) {
-      if (MIRRORED.test(key)) queue(() => fs.write(key, value));
+      queue(key, () => fs.write(key, value));
     },
     remove(key: string) {
-      if (MIRRORED.test(key)) queue(() => fs.remove(key));
+      queue(key, () => fs.remove(key));
     },
-    async flush() {
+    async flush(key?: string) {
       await pending;
-      if (failure === null) return;
-      const error = failure;
-      failure = null;
-      throw error;
+      const failure = key ? failures.get(key) : failures.values().next().value;
+      if (failure !== undefined) throw failure;
     },
+  };
+}
+
+const patched = new WeakSet<object>();
+
+export function patchStorage(
+  proto: Pick<Storage, "setItem" | "removeItem">,
+  target: object,
+  mirror: Pick<Mirror, "set" | "remove">,
+) {
+  if (patched.has(proto)) return;
+  patched.add(proto);
+  const { setItem, removeItem } = proto;
+  // an own property on a Storage instance would be stored as an item, so patch the prototype
+  proto.setItem = function (this: object, key: string, value: string) {
+    setItem.call(this, key, value);
+    if (this === target) mirror.set(key, String(value));
+  };
+  proto.removeItem = function (this: object, key: string) {
+    removeItem.call(this, key);
+    if (this === target) mirror.remove(key);
   };
 }
 
@@ -99,7 +124,7 @@ async function capacitorMirrorFs(): Promise<MirrorFs> {
   };
 }
 
-let mirror: ReturnType<typeof createMirror> | null = null;
+let mirror: Mirror | null = null;
 let starting: Promise<void> | null = null;
 
 export function startDurableStorage() {
@@ -111,20 +136,11 @@ export function startDurableStorage() {
 async function installDurableStorage() {
   const fs = await capacitorMirrorFs();
   await restoreMirror(window.localStorage, fs);
-  const active = createMirror(fs);
-  mirror = active;
-  const { setItem, removeItem } = Storage.prototype;
-  // an own property on a Storage instance would be stored as an item, so patch the prototype
-  Storage.prototype.setItem = function (key: string, value: string) {
-    setItem.call(this, key, value);
-    if (this === window.localStorage) active.set(key, String(value));
-  };
-  Storage.prototype.removeItem = function (key: string) {
-    removeItem.call(this, key);
-    if (this === window.localStorage) active.remove(key);
-  };
+  mirror = createMirror(fs);
+  patchStorage(Storage.prototype, window.localStorage, mirror);
 }
 
-export async function flushDurableStorage() {
-  await mirror?.flush();
+export async function flushDurableStorage(key?: string) {
+  await startDurableStorage();
+  await mirror?.flush(key);
 }

@@ -18,7 +18,7 @@ export type SurvivalPack = {
 
 type PackStorage = Pick<Storage, "getItem" | "setItem">;
 
-const KEY = "nadhir.survival.pack";
+export const PACK_KEY = "nadhir.survival.pack";
 export const deviceStorage = {
   getItem: (key: string) => window.localStorage.getItem(key),
   setItem: (key: string, value: string) =>
@@ -51,7 +51,7 @@ export function shouldAutoPreparePack(
 export function savePack(storage: PackStorage, pack: SurvivalPack) {
   const serialized = JSON.stringify(pack);
   if (serialized.length > 1_000_000) throw new Error("survival.packFailed");
-  storage.setItem(KEY, serialized);
+  storage.setItem(PACK_KEY, serialized);
 }
 
 export async function preparePack(
@@ -65,13 +65,13 @@ export async function preparePack(
     throw new Error("survival.packFailed");
   await prepareShell();
   const ready = { ...pack, shell_ready: true };
-  const previous = storage.getItem(KEY);
+  const previous = storage.getItem(PACK_KEY);
   savePack(storage, ready);
   try {
     await afterSave?.();
   } catch (error) {
-    if (previous === null) storage.removeItem(KEY);
-    else storage.setItem(KEY, previous);
+    if (previous === null) storage.removeItem(PACK_KEY);
+    else storage.setItem(PACK_KEY, previous);
     throw error;
   }
   return ready;
@@ -105,7 +105,7 @@ export function loadPack(
   storage: Pick<Storage, "getItem">,
 ): SurvivalPack | null {
   try {
-    const raw = storage.getItem(KEY);
+    const raw = storage.getItem(PACK_KEY);
     if (!raw || raw.length > 1_000_000) return null;
     const parsed = JSON.parse(raw) as SurvivalPack;
     const complete =

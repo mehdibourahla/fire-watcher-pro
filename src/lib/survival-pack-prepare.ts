@@ -12,7 +12,7 @@ import { openAreasQuery } from "@/lib/open-areas";
 import { nearestThreat, positionCard } from "@/lib/survival";
 import { flushDurableStorage } from "@/lib/durable-storage";
 import { NATIVE } from "@/lib/platform";
-import { deviceStorage, preparePack } from "@/lib/survival-pack";
+import { PACK_KEY, deviceStorage, preparePack } from "@/lib/survival-pack";
 
 export type PackZone = {
   name: string;
@@ -164,6 +164,6 @@ export async function prepareZonePack(
       };
     },
     prepareSurvivalShell,
-    NATIVE ? flushDurableStorage : undefined,
+    NATIVE ? () => flushDurableStorage(PACK_KEY) : undefined,
   );
 }
