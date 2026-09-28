@@ -285,3 +285,12 @@
 .map-scroll::-webkit-scrollbar {
   display: none;
 }
+
+/* iOS zooms into any focused field under 16px and never zooms back out */
+@supports (-webkit-touch-callout: none) {
+  input,
+  textarea,
+  select {
+    font-size: max(16px, 1em);
+  }
+}
