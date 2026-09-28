@@ -176,6 +176,25 @@ describe("source runner registry", () => {
       qualityChecks: { lookback_minutes: 22 },
     });
   });
+  it("counts an empty Facebook window as a covered success", async () => {
+    const deps = dependencies();
+    deps.runItaFacebookSource.mockResolvedValue({
+      fetched: 0,
+      stored: 0,
+      rejected: 0,
+      lookbackMinutes: 20,
+    });
+    const result = await createSourceRunners(deps).ita_facebook(
+      job("ita_facebook"),
+    );
+    expect(result).toMatchObject({
+      outcome: "succeeded",
+      retryDisposition: "none",
+      dataFrom: "2026-08-31T19:50:00.000Z",
+      dataThrough: "2026-08-31T20:00:00.000Z",
+      recordsSeen: 0,
+    });
+  });
   it("contains exactly one runner for every runtime contract", () => {
     expect(Object.keys(createSourceRunners(dependencies())).sort()).toEqual(
       [...RUNTIME_CONTRACT_KEYS].sort(),

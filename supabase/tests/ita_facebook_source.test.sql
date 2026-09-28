@@ -1,6 +1,6 @@
 begin;
 set local search_path = public, extensions;
-select plan(12);
+select plan(13);
 select is((select cadence_minutes from source_contracts where key='ita_facebook'),15,'fifteen-minute schedule');
 select is((select replay_capability from source_contracts where key='ita_facebook'),'none','no gap replay');
 set local role authenticated;
@@ -15,20 +15,21 @@ select set_config('fb.job',id::text,true),set_config('fb.attempt',attempt_count:
 select set_config('web.job',id::text,true),set_config('web.attempt',attempt_count::text,true)
  from public.claim_source_job('ita-web-test','cloudflare','ita_website');
 set local role service_role;
+select is(ita_text_key(E'#حادث_مرور #iAccident🚨🚨 \n\nحادث مرور بالطريق الاجتنابي الشمالي بلوزداد اتجاه جامع الجزائر.'),ita_text_key(E'🚨🚨 \n\nحادث مرور بالطريق الاجتنابي الشمالي بلوزداد اتجاه جامع الجزائر.'),'hashtags, emoji and spacing do not change the key');
 select is(save_ita_facebook_posts(current_setting('fb.job')::uuid,current_setting('fb.attempt')::integer,
- jsonb_build_array(jsonb_build_object('source_post_id','808412572528916_1','source_page','traficalg','source_url','https://www.facebook.com/traficalg/posts/1','published_at','2026-09-28T09:40:06Z','content_hash',repeat('a',64),'body','oil on the road','raw','{}'::jsonb))),
+ jsonb_build_array(jsonb_build_object('source_post_id','808412572528916_1','source_page','traficalg','source_url','https://www.facebook.com/traficalg/posts/1','published_at','2026-09-28T09:40:06Z','content_hash',repeat('a',64),'body',E'#حادث_مرور #iAccident🚨🚨 \n\nحادث مرور بالطريق الاجتنابي الشمالي بلوزداد اتجاه جامع الجزائر.','raw','{}'::jsonb))),
  1,'new Facebook post stored');
 select is(save_ita_facebook_posts(current_setting('fb.job')::uuid,current_setting('fb.attempt')::integer,
- jsonb_build_array(jsonb_build_object('source_post_id','808412572528916_1','source_page','traficalg','source_url','https://www.facebook.com/traficalg/posts/1','published_at','2026-09-28T09:40:06Z','content_hash',repeat('b',64),'body','oil on the road','raw','{}'::jsonb))),
+ jsonb_build_array(jsonb_build_object('source_post_id','808412572528916_1','source_page','traficalg','source_url','https://www.facebook.com/traficalg/posts/1','published_at','2026-09-28T09:40:06Z','content_hash',repeat('b',64),'body',E'#حادث_مرور #iAccident🚨🚨 \n\nحادث مرور بالطريق الاجتنابي الشمالي بلوزداد اتجاه جامع الجزائر.','raw','{}'::jsonb))),
  0,'same text again stores nothing');
 select is(save_ita_feed(current_setting('web.job')::uuid,current_setting('web.attempt')::integer,
- jsonb_build_array(jsonb_build_object('source_post_id','808412572528916_1','source_page','traficalg','source_url','https://www.facebook.com/traficalg/posts/1','published_at','2026-09-28T09:40:06Z','content_hash',repeat('c',64),'body','oil on the road','raw','{"region":"Alger"}'::jsonb)),'"v1"',false),
- 0,'website copy with only a region hint adds no revision');
+ jsonb_build_array(jsonb_build_object('source_post_id','808412572528916_1','source_page','traficalg','source_url','https://www.facebook.com/traficalg/posts/1','published_at','2026-09-28T09:40:06Z','content_hash',repeat('c',64),'body',E'🚨🚨 \n\nحادث مرور بالطريق الاجتنابي الشمالي بلوزداد اتجاه جامع الجزائر.','raw','{"region":"Alger","type":["iAccident"]}'::jsonb)),'"v1"',false),
+ 0,'the website''s rewrite of a stored post adds no revision');
 select is(save_ita_feed(current_setting('web.job')::uuid,current_setting('web.attempt')::integer,
- jsonb_build_array(jsonb_build_object('source_post_id','808412572528916_1','source_page','traficalg','source_url','https://www.facebook.com/traficalg/posts/1','published_at','2026-09-28T09:40:06Z','content_hash',repeat('d',64),'body','oil on the road, cleared','raw','{}'::jsonb)),'"v2"',false),
+ jsonb_build_array(jsonb_build_object('source_post_id','808412572528916_1','source_page','traficalg','source_url','https://www.facebook.com/traficalg/posts/1','published_at','2026-09-28T09:40:06Z','content_hash',repeat('d',64),'body',E'🚨🚨 \n\nحادث مرور بالطريق الاجتنابي الشمالي بلوزداد اتجاه جامع الجزائر. حركة السير بطيئة.','raw','{}'::jsonb)),'"v2"',false),
  1,'edited text is a revision');
 select is(save_ita_facebook_posts(current_setting('fb.job')::uuid,current_setting('fb.attempt')::integer,
- jsonb_build_array(jsonb_build_object('source_post_id','808412572528916_1','source_page','traficalg','source_url','https://www.facebook.com/traficalg/posts/1','published_at','2026-09-28T09:40:06Z','content_hash',repeat('e',64),'body','oil on the road, cleared','raw','{}'::jsonb))),
+ jsonb_build_array(jsonb_build_object('source_post_id','808412572528916_1','source_page','traficalg','source_url','https://www.facebook.com/traficalg/posts/1','published_at','2026-09-28T09:40:06Z','content_hash',repeat('e',64),'body',E'#حادث_مرور #iAccident🚨🚨 \n\nحادث مرور بالطريق الاجتنابي الشمالي بلوزداد اتجاه جامع الجزائر. حركة السير بطيئة.','raw','{}'::jsonb))),
  0,'Facebook copy of the edit adds nothing');
 select is(save_ita_facebook_posts(current_setting('fb.job')::uuid,current_setting('fb.attempt')::integer,
  jsonb_build_array(

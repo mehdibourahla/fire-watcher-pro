@@ -64,8 +64,13 @@ Cost by cadence, simulated on the real post times (19 posts/day):
 
 - New RPC `save_ita_facebook_posts(_job, _attempt, _posts)`: asserts the `ita_facebook` lease,
   inserts into `ita_reports`, touches no ETag state. `save_ita_feed` stays `ita_website`-only.
-- Dedup, both RPCs: skip the insert when a row with the same `(source_page, source_post_id, body)`
-  exists. The first source to see a post wins; a text edit still adds a revision.
+- Dedup, both RPCs: skip the insert when a row with the same `(source_page, source_post_id)` and
+  the same `ita_text_key(body)` exists: the text with emoji, hashtags, whitespace and ASCII
+  punctuation removed. The website feed rewrites Facebook's text (it drops hashtags such as
+  `#iAccident🚨🚨` into `type`): of the 32 posts both sources saw on 2026-09-28, 1 body was
+  identical and all 32 keys were. The first source to see a post wins; a text edit still adds a
+  revision; an edit that only changes hashtags or emoji does not. An edit reverted to an earlier
+  text is not stored again.
   Behaviour change on `ita_website`: a change of `region` or `type` alone no longer creates a
   revision or a republication. A post Apify saw first keeps no website region/type hint; the
   extractor already treats both as unreliable.

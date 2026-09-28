@@ -16,6 +16,15 @@ insert into public.source_contracts (
   5, 'none', null
 );
 
+-- the website feed strips hashtags and emoji from Facebook's text, so copies compare on this key
+create function public.ita_text_key(_body text)
+returns text language sql immutable set search_path = '' as $$
+  select regexp_replace(regexp_replace(regexp_replace(_body,
+    '[\u2000-\u2BFF\uFE0F\u200D\U0001F000-\U0001FFFF]', ' ', 'g'),
+    '#[^ \t\n\r\u00A0#]+', ' ', 'g'),
+    '[ \t\n\r\u00A0!-/:-@\[-`{-~]+', '', 'g')
+$$;
+
 create function public.assert_ita_facebook_lease(_job uuid, _attempt integer)
 returns void language plpgsql security definer set search_path = '' as $$
 begin
@@ -39,11 +48,12 @@ begin
     perform pg_advisory_xact_lock(hashtextextended(_identity,0));
   end loop;
   insert into public.ita_reports(source_post_id,source_page,source_url,published_at,content_hash,body,raw)
-  select distinct on (p.source_page,p.source_post_id,p.body)
+  select distinct on (p.source_page,p.source_post_id,public.ita_text_key(p.body))
       p.source_post_id,p.source_page,p.source_url,p.published_at,p.content_hash,p.body,p.raw
     from jsonb_to_recordset(_posts) as p(source_post_id text,source_page text,source_url text,published_at timestamptz,content_hash text,body text,raw jsonb)
     where not exists(select 1 from public.ita_reports r
-      where r.source_page=p.source_page and r.source_post_id=p.source_post_id and r.body=p.body)
+      where r.source_page=p.source_page and r.source_post_id=p.source_post_id
+        and public.ita_text_key(r.body)=public.ita_text_key(p.body))
     on conflict(source_page,source_post_id,content_hash) do nothing;
   get diagnostics _inserted = row_count;
   return _inserted;
@@ -62,11 +72,12 @@ begin
       perform pg_advisory_xact_lock(hashtextextended(_identity,0));
     end loop;
     insert into public.ita_reports(source_post_id,source_page,source_url,published_at,content_hash,body,raw)
-    select distinct on (p.source_page,p.source_post_id,p.body)
+    select distinct on (p.source_page,p.source_post_id,public.ita_text_key(p.body))
         p.source_post_id,p.source_page,p.source_url,p.published_at,p.content_hash,p.body,p.raw
       from jsonb_to_recordset(_posts) as p(source_post_id text,source_page text,source_url text,published_at timestamptz,content_hash text,body text,raw jsonb)
       where not exists(select 1 from public.ita_reports r
-        where r.source_page=p.source_page and r.source_post_id=p.source_post_id and r.body=p.body)
+        where r.source_page=p.source_page and r.source_post_id=p.source_post_id
+        and public.ita_text_key(r.body)=public.ita_text_key(p.body))
       on conflict(source_page,source_post_id,content_hash) do nothing;
     get diagnostics _inserted = row_count;
     update public.ita_feed_state set etag=_etag,checked_at=clock_timestamp() where singleton;
