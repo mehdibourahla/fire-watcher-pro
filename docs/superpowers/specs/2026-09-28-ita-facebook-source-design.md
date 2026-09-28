@@ -49,6 +49,9 @@ Cost by cadence, simulated on the real post times (19 posts/day):
 - The POST body merges over the task input: `onlyPostsNewerThan` is the minutes since the job's
   `data_from` plus 2, clamped to 20–60, so a retried job still covers its own window;
   `resultsLimit` 20, `maxItems=20` and `maxTotalChargeUsd=0.2` cap what one run can cost.
+- A run that returns 20 items (the window may hold more) or whose lookback hit the 60-minute cap
+  is `partial` and does not mark its interval covered. The busiest windows seen were 4 posts in
+  22 minutes and 7 in 60; a claimed job's `data_from` is at most about 52 minutes old.
 - No gap replay: the actor filters only by a lower time bound, so replaying an old window would
   fetch and bill every post since then. A slot lost beyond its retry window stays lost; the
   website feed still carries the curated subset.

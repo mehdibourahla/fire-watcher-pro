@@ -12,11 +12,22 @@ const answering = (body: unknown, status = 201) =>
   vi.fn(async () => Response.json(body, { status }));
 
 describe("ITA Apify fetcher", () => {
+  it("flags a window that filled the 20-item limit", async () => {
+    const full = Array.from({ length: 20 }, (_, i) => ({
+      ...post,
+      postId: String(1526895906150280 + i),
+    }));
+    const result = await fetchItaApifyPosts(request, answering(full));
+    expect(result).toMatchObject({ saturated: true, rejected: 0 });
+    expect(result.posts).toHaveLength(20);
+  });
+
   it("maps a post to the website feed's identity and asks for the window", async () => {
     const fetcher = answering([post]);
     const result = await fetchItaApifyPosts(request, fetcher);
     expect(result).toEqual({
       rejected: 0,
+      saturated: false,
       posts: [
         {
           id: "808412572528916_1526895906150280",
@@ -47,6 +58,7 @@ describe("ITA Apify fetcher", () => {
     expect(await fetchItaApifyPosts(request, answering([empty]))).toEqual({
       posts: [],
       rejected: 0,
+      saturated: false,
     });
   });
 

@@ -56,6 +56,7 @@ function dependencies() {
       stored: 1,
       rejected: 0,
       lookbackMinutes: 22,
+      complete: true,
     }),
     ingestFirms: vi.fn().mockResolvedValue({
       fetched: 2,
@@ -163,6 +164,7 @@ describe("source runner registry", () => {
       stored: 0,
       rejected: 0,
       lookbackMinutes: 22,
+      complete: false,
       error: "Apify usage cap reached (HTTP 403)",
     });
     const result = await createSourceRunners(deps).ita_facebook(
@@ -176,6 +178,26 @@ describe("source runner registry", () => {
       qualityChecks: { lookback_minutes: 22 },
     });
   });
+  it("does not cover the interval of an incomplete Facebook window", async () => {
+    const deps = dependencies();
+    deps.runItaFacebookSource.mockResolvedValue({
+      fetched: 20,
+      stored: 20,
+      rejected: 0,
+      lookbackMinutes: 22,
+      complete: false,
+    });
+    const result = await createSourceRunners(deps).ita_facebook(
+      job("ita_facebook"),
+    );
+    expect(result).toMatchObject({
+      outcome: "partial",
+      coverageStatus: "partial",
+      publicReasonCode: "coverage_partial",
+    });
+    expect(result.dataFrom).toBeUndefined();
+  });
+
   it("counts an empty Facebook window as a covered success", async () => {
     const deps = dependencies();
     deps.runItaFacebookSource.mockResolvedValue({
@@ -183,6 +205,7 @@ describe("source runner registry", () => {
       stored: 0,
       rejected: 0,
       lookbackMinutes: 20,
+      complete: true,
     });
     const result = await createSourceRunners(deps).ita_facebook(
       job("ita_facebook"),

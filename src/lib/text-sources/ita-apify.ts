@@ -76,5 +76,5 @@ export async function fetchItaApifyPosts(
       type: [],
     });
   }
-  return { posts, rejected };
+  return { posts, rejected, saturated: items.length >= 20 };
 }

@@ -11,24 +11,32 @@ export type ItaFacebookRun = {
   stored: number;
   rejected: number;
   lookbackMinutes: number;
+  complete: boolean;
   error?: string;
 };
 
-export function apifyLookback(dataFrom: string, now: number): number {
+type ApifyWindow = { minutes: number; truncated: boolean };
+type ApifyBatch = {
+  posts: ItaFeedPost[];
+  rejected: number;
+  saturated: boolean;
+};
+
+export function apifyWindow(dataFrom: string, now: number): ApifyWindow {
   const since = Math.ceil((now - Date.parse(dataFrom)) / 60_000) + 2;
-  return Math.min(Math.max(since, 20), 60);
+  return { minutes: Math.min(Math.max(since, 20), 60), truncated: since > 60 };
 }
 
 export async function runItaFacebookSourceWith({
-  lookbackMinutes,
+  window,
   fetchPosts,
   save,
 }: {
-  lookbackMinutes: number;
-  fetchPosts: () => Promise<{ posts: ItaFeedPost[]; rejected: number }>;
+  window: ApifyWindow;
+  fetchPosts: () => Promise<ApifyBatch>;
   save: (posts: Revision[]) => Promise<number>;
 }): Promise<ItaFacebookRun> {
-  let batch: { posts: ItaFeedPost[]; rejected: number };
+  let batch: ApifyBatch;
   try {
     batch = await fetchPosts();
   } catch (cause) {
@@ -36,7 +44,8 @@ export async function runItaFacebookSourceWith({
       fetched: 0,
       stored: 0,
       rejected: 0,
-      lookbackMinutes,
+      lookbackMinutes: window.minutes,
+      complete: false,
       error:
         cause instanceof Error ? cause.message : "Apify upstream unavailable",
     };
@@ -46,7 +55,8 @@ export async function runItaFacebookSourceWith({
     fetched: batch.posts.length,
     stored,
     rejected: batch.rejected,
-    lookbackMinutes,
+    lookbackMinutes: window.minutes,
+    complete: !window.truncated && !batch.saturated,
     ...(batch.rejected
       ? { error: `ITA Facebook feed rejected ${batch.rejected} posts` }
       : {}),
@@ -56,7 +66,7 @@ export async function runItaFacebookSourceWith({
 export async function runItaFacebookSource(
   job: ClaimedSourceJob,
 ): Promise<ItaFacebookRun> {
-  const minutes = apifyLookback(job.data_from, Date.now());
+  const window = apifyWindow(job.data_from, Date.now());
   const token = process.env["APIFY_TOKEN"];
   const taskId = process.env["APIFY_ITA_TASK_ID"];
   if (!token || !taskId)
@@ -64,17 +74,21 @@ export async function runItaFacebookSource(
       fetched: 0,
       stored: 0,
       rejected: 0,
-      lookbackMinutes: minutes,
+      lookbackMinutes: window.minutes,
+      complete: false,
       error: "APIFY_TOKEN or APIFY_ITA_TASK_ID not configured",
     };
   return runItaFacebookSourceWith({
-    lookbackMinutes: minutes,
+    window,
     fetchPosts: () =>
       fetchItaApifyPosts(
-        { taskId, token, lookbackMinutes: minutes },
+        { taskId, token, lookbackMinutes: window.minutes },
         (input, init) =>
           archivedFetch("ita_facebook", "apify_posts", input, init, {
-            requestParams: { lookback_minutes: minutes, results_limit: 20 },
+            requestParams: {
+              lookback_minutes: window.minutes,
+              results_limit: 20,
+            },
           }),
       ),
     async save(posts) {
