@@ -47,6 +47,17 @@ function ShareButton() {
     const url = NATIVE
       ? publicUrl(window.location.pathname + window.location.search)
       : window.location.href;
+    if (NATIVE) {
+      try {
+        const { shareText } = await import("@/lib/native-share");
+        await shareText(document.title, url);
+        return;
+      } catch {
+        await navigator.clipboard.writeText(url);
+        setCopied(true);
+        return;
+      }
+    }
     if (navigator.share) {
       try {
         await navigator.share({ title: document.title, url });

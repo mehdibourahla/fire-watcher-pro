@@ -19,7 +19,7 @@ import {
   type ShareFormat,
 } from "@/lib/share-card";
 import { cn } from "@/lib/utils";
-import { apiUrl } from "@/lib/platform";
+import { NATIVE, apiUrl } from "@/lib/platform";
 
 const CARDS = [
   "story",
@@ -81,12 +81,18 @@ export function IncidentShareSheet({
   const file = current && current !== "error" ? current.file : null;
   const canShareFiles =
     !!file &&
-    typeof navigator.canShare === "function" &&
-    navigator.canShare({ files: [file] });
+    (NATIVE ||
+      (typeof navigator.canShare === "function" &&
+        navigator.canShare({ files: [file] })));
 
   const shareImage = async () => {
     if (!file) return;
     try {
+      if (NATIVE) {
+        const { shareImageFile } = await import("@/lib/native-share");
+        await shareImageFile(file);
+        return;
+      }
       await navigator.share({ files: [file] });
     } catch (failure) {
       if (failure instanceof DOMException && failure.name === "AbortError")
@@ -96,6 +102,10 @@ export function IncidentShareSheet({
   };
   const save = () => {
     if (!current || current === "error") return;
+    if (NATIVE) {
+      void shareImage();
+      return;
+    }
     const a = document.createElement("a");
     a.href = current.url;
     a.download = current.file.name;

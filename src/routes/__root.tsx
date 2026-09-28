@@ -7,6 +7,7 @@ import {
   useRouterState,
   HeadContent,
   Scripts,
+  redirect,
 } from "@tanstack/react-router";
 import { useEffect, useMemo, type ReactNode } from "react";
 import { I18nextProvider, useTranslation } from "react-i18next";
@@ -27,7 +28,7 @@ import { SiteHeader, SiteFooter, BottomTabs } from "../components/SiteChrome";
 import { AlertNotifier } from "../components/AlertNotifier";
 import { watchAuthCache } from "@/lib/auth-cache";
 import { startDurableStorage } from "@/lib/durable-storage";
-import { NATIVE } from "@/lib/platform";
+import { NATIVE, publicUrl, webOnlyPath } from "@/lib/platform";
 
 function NotFoundComponent() {
   const { t } = useTranslation();
@@ -100,14 +101,25 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   {
     // Isomorphic: resolves the same locale on the server and on the client, so the
     // SSR markup and the hydrated tree render identical text.
-    beforeLoad: async () => {
-      if (NATIVE) await startDurableStorage();
+    beforeLoad: async ({ location }) => {
+      if (NATIVE) {
+        await startDurableStorage();
+        if (webOnlyPath(location.pathname)) {
+          window.open(publicUrl(location.href));
+          throw redirect({ to: "/", replace: true });
+        }
+      }
       return { locale: initLocale() };
     },
     head: () => ({
       meta: [
         { charSet: "utf-8" },
-        { name: "viewport", content: "width=device-width, initial-scale=1" },
+        {
+          name: "viewport",
+          content: NATIVE
+            ? "width=device-width, initial-scale=1, viewport-fit=cover"
+            : "width=device-width, initial-scale=1",
+        },
         { name: "author", content: "Nadhir" },
         // deepest match wins, so this only titles pages that set none (404 included)
         { title: headTranslator()("meta.defaultTitle") },
@@ -151,7 +163,11 @@ function RootShell({ children }: { children: ReactNode }) {
     <html
       lang={locale}
       dir={RTL_LOCALES.includes(locale) ? "rtl" : "ltr"}
-      className={theme === "dark" ? "dark" : undefined}
+      className={
+        [theme === "dark" && "dark", NATIVE && "native"]
+          .filter(Boolean)
+          .join(" ") || undefined
+      }
       suppressHydrationWarning
     >
       <head>
