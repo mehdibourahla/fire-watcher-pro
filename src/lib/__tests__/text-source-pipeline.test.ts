@@ -597,6 +597,45 @@ describe("distribution gate", () => {
     expect(mentions.every((m) => m["commune_id"] !== null)).toBe(true);
   });
 
+  it.each([
+    [23, 0],
+    [5, 1],
+  ])(
+    "a location-less mention counting %i fires on a quiet bulletin leaves %i unresolved",
+    async (count, unresolved) => {
+      const { store, mentions, retry } = memoryStore();
+      const evidence =
+        "🔴 العدد الإجمالي للحرائق: 23\n🔴 عدد الحرائق التي تم إخمادها: 23";
+      const located = { wilaya: null, commune: null, place: null };
+      const result = await runTextSourceWith(
+        "dgpc_telegram",
+        deps(
+          [
+            post(
+              "7155",
+              "2026-09-28T06:36:56Z",
+              "🔴 الحالة العامة لحرائق الغطاء النباتي، المحاصيل الزراعية، واحات نخيل، وأحزمة التبن من 27 سبتمبر إلى 28 سبتمبر 2026 على الساعة 07سا00د\n🔴 العدد الإجمالي للحرائق: 23\n🔴 عدد الحرائق التي تم إخمادها: 23\n🔴 عدد الحرائق المتواصلة: 00\n🔴 أهم الحرائق: لا يوجد.\n#الحماية_المدنية_الجزائرية",
+            ),
+          ],
+          store,
+          llmWith(
+            mention({ ...located, status: "extinguished", count, evidence }),
+            mention({
+              ...located,
+              kind: "agricultural",
+              status: "extinguished",
+              count: 23,
+              evidence,
+            }),
+          ),
+        ),
+      );
+      expect(result.unresolved).toBe(unresolved);
+      expect(retry.size).toBe(unresolved);
+      expect(mentions).toHaveLength(0);
+    },
+  );
+
   it("lets an extinguished mention through without a distribution entry", async () => {
     const { store, mentions } = memoryStore();
     const result = await runTextSourceWith(
