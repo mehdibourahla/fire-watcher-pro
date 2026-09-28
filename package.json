@@ -37,6 +37,7 @@
     "archive:cold": "bun run scripts/cold-archive.ts"
   },
   "dependencies": {
+    "@capacitor-firebase/messaging": "^8.5.2",
     "@capacitor/app": "^8.1.1",
     "@capacitor/core": "^8.5.2",
     "@capacitor/filesystem": "^8.1.3",
