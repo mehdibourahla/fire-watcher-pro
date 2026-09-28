@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
+import { NATIVE, publicUrl } from "@/lib/platform";
 
 export function AccountSecurity() {
   const { t } = useTranslation();
@@ -94,13 +95,23 @@ export function AccountSecurity() {
             <p className="text-sm text-muted-foreground">
               {t("authKit.passwordSecurityHint")}
             </p>
-            <Link
-              to="/auth"
-              search={{ returnTo: "/settings", mode: "forgot" }}
-              className="mt-3 inline-flex min-h-11 items-center rounded-md border border-border px-4 text-sm font-medium hover:bg-secondary"
-            >
-              {t("authKit.changePassword")}
-            </Link>
+            {NATIVE ? (
+              <button
+                type="button"
+                onClick={() => window.open(publicUrl("/auth?mode=forgot"))}
+                className="mt-3 inline-flex min-h-11 items-center rounded-md border border-border px-4 text-sm font-medium hover:bg-secondary"
+              >
+                {t("authKit.changePassword")}
+              </button>
+            ) : (
+              <Link
+                to="/auth"
+                search={{ returnTo: "/settings", mode: "forgot" }}
+                className="mt-3 inline-flex min-h-11 items-center rounded-md border border-border px-4 text-sm font-medium hover:bg-secondary"
+              >
+                {t("authKit.changePassword")}
+              </Link>
+            )}
           </div>
         </>
       ) : (

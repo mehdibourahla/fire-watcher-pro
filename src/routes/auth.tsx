@@ -29,7 +29,7 @@ import {
 } from "@/lib/auth-flow";
 import { PasswordField, authInputClass } from "@/components/auth/PasswordField";
 import { titledMeta } from "@/lib/page-meta";
-import { NATIVE, publicUrl } from "@/lib/platform";
+import { APP_ORIGIN, NATIVE, publicUrl } from "@/lib/platform";
 
 export const Route = createFileRoute("/auth")({
   validateSearch: (
@@ -180,7 +180,8 @@ function AuthPage() {
     });
   }
   function redirectTo(next: AuthMode = "signin") {
-    return `${window.location.origin}/auth?${new URLSearchParams({ mode: next, returnTo })}`;
+    const origin = NATIVE ? APP_ORIGIN : window.location.origin;
+    return `${origin}/auth?${new URLSearchParams({ mode: next, returnTo })}`;
   }
   async function sendEmail(kind: "signup" | "recovery") {
     const generation = requestGeneration.current;
