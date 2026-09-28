@@ -27,7 +27,6 @@ import { THEME_BOOT_SCRIPT, applyTheme, readThemeCookie } from "../lib/theme";
 import { SiteHeader, SiteFooter, BottomTabs } from "../components/SiteChrome";
 import { AlertNotifier } from "../components/AlertNotifier";
 import { watchAuthCache } from "@/lib/auth-cache";
-import { startDurableStorage } from "@/lib/durable-storage";
 import { NATIVE, publicUrl, webOnlyPath } from "@/lib/platform";
 
 function NotFoundComponent() {
@@ -101,26 +100,22 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   {
     // Isomorphic: resolves the same locale on the server and on the client, so the
     // SSR markup and the hydrated tree render identical text.
-    beforeLoad: async ({ location }) => {
-      // the SPA shell is prerendered on the server, where there is no device storage
-      if (NATIVE && typeof window !== "undefined") {
-        await startDurableStorage();
-        if (webOnlyPath(location.pathname)) {
-          window.open(publicUrl(location.href));
-          throw redirect({ to: "/", replace: true });
-        }
+    beforeLoad: ({ location }) => {
+      // the SPA shell is prerendered on the server, where there is no window
+      if (
+        NATIVE &&
+        typeof window !== "undefined" &&
+        webOnlyPath(location.pathname)
+      ) {
+        window.open(publicUrl(location.href));
+        throw redirect({ to: "/", replace: true });
       }
       return { locale: initLocale() };
     },
     head: () => ({
       meta: [
         { charSet: "utf-8" },
-        {
-          name: "viewport",
-          content: NATIVE
-            ? "width=device-width, initial-scale=1, viewport-fit=cover"
-            : "width=device-width, initial-scale=1",
-        },
+        { name: "viewport", content: "width=device-width, initial-scale=1" },
         { name: "author", content: "Nadhir" },
         // deepest match wins, so this only titles pages that set none (404 included)
         { title: headTranslator()("meta.defaultTitle") },
@@ -164,11 +159,7 @@ function RootShell({ children }: { children: ReactNode }) {
     <html
       lang={locale}
       dir={RTL_LOCALES.includes(locale) ? "rtl" : "ltr"}
-      className={
-        [theme === "dark" && "dark", NATIVE && "native"]
-          .filter(Boolean)
-          .join(" ") || undefined
-      }
+      className={theme === "dark" ? "dark" : undefined}
       suppressHydrationWarning
     >
       <head>
