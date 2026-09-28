@@ -517,7 +517,7 @@ export async function textSourceRunner(
       _job: job.id,
       _attempt: job.attempt_count,
       ...(contractKey === "dgpc_telegram"
-        ? { _parser_version: "dgpc-extract-v4" }
+        ? { _parser_version: "dgpc-extract-v5" }
         : {}),
     });
     if (recovery.error)

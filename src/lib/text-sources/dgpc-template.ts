@@ -6,6 +6,8 @@ export type DgpcBulletin = {
   asOf: string | null;
   totals: { total: number; extinguished: number; ongoing: number } | null;
   wilayaCounts: { wilaya: string; count: number; raw: string }[];
+  distributed: boolean;
+  namedCommunes: number;
 };
 
 const ALGIERS_OFFSET_MS = 60 * 60_000;
@@ -58,6 +60,24 @@ function dgpcAsOf(text: string, postedAt: string): string | null {
   return new Date(day + hour * 3_600_000 - ALGIERS_OFFSET_MS).toISOString();
 }
 
+function namedCommunes(text: string): number {
+  const section = text.search(/أهم الحرائق/);
+  if (section < 0) return 0;
+  const names = new Set<string>();
+  for (const m of text
+    .slice(section)
+    .matchAll(/(?<!\p{L})[بل]?بلدي(ة|تي)\s+([^:؛،,.\n]+)/gu)) {
+    const phrase = m[2]!.replace(/\s+/g, " ").trim();
+    const and = phrase.lastIndexOf(" و");
+    const pair = m[1] === "تي" && and > 0;
+    for (const name of pair
+      ? [phrase.slice(0, and), phrase.slice(and + 2)]
+      : [phrase])
+      names.add(name.trim());
+  }
+  return names.size;
+}
+
 export function parseDgpcBulletin(
   text: string,
   postedAt: string,
@@ -68,6 +88,8 @@ export function parseDgpcBulletin(
     asOf: null,
     totals: null,
     wilayaCounts: [],
+    distributed: false,
+    namedCommunes: 0,
   };
   if (kind !== "bulletin" && kind !== "incident") return empty;
 
@@ -110,5 +132,12 @@ export function parseDgpcBulletin(
         });
   }
 
-  return { kind, asOf: dgpcAsOf(text, postedAt), totals, wilayaCounts };
+  return {
+    kind,
+    asOf: dgpcAsOf(text, postedAt),
+    totals,
+    wilayaCounts,
+    distributed: /موزعة/.test(text) || wilayaCounts.length > 0,
+    namedCommunes: namedCommunes(text),
+  };
 }

@@ -623,17 +623,23 @@ export async function runTextSourceWith(
       (!parsed.totals ||
         parsed.totals.total !==
           parsed.totals.extinguished + parsed.totals.ongoing ||
-        parsed.wilayaCounts.reduce((sum, row) => sum + row.count, 0) !==
-          parsed.totals.ongoing ||
         drafts.some(
           (d) =>
             d.extractor === "template" &&
             !interpretedAggregates.has(d.wilaya_id),
         ) ||
-        (parsed.totals?.ongoing != null &&
-          drafts
-            .filter((d) => d.status !== "extinguished")
-            .reduce((n, d) => n + d.fire_count, 0) !== parsed.totals.ongoing) ||
+        (parsed.distributed
+          ? parsed.wilayaCounts.reduce((sum, row) => sum + row.count, 0) !==
+              parsed.totals.ongoing ||
+            drafts
+              .filter((d) => d.status !== "extinguished")
+              .reduce((n, d) => n + d.fire_count, 0) !== parsed.totals.ongoing
+          : // without a distribution the bulletin names only its notable fires
+            new Set(drafts.flatMap((d) => (d.commune_id ? [d.commune_id] : [])))
+              .size < parsed.namedCommunes ||
+            drafts
+              .filter((d) => d.status !== "extinguished")
+              .reduce((n, d) => n + d.fire_count, 0) > parsed.totals.ongoing) ||
         parsed.wilayaCounts.some(
           (c) => resolveWilaya(c.wilaya, gazetteer.wilayas) === null,
         ));
@@ -653,6 +659,7 @@ export async function runTextSourceWith(
       !gated &&
       !incompleteBulletin &&
       parsed?.totals?.ongoing != null &&
+      (parsed.distributed || parsed.totals.ongoing === 0) &&
       drafts.every((d) => d.commune_id !== null) &&
       drafts
         .filter((d) => d.status !== "extinguished")

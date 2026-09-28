@@ -87,6 +87,7 @@ describe("parseDgpcBulletin", () => {
         raw: "✅إجمالي الحرائق الجارية: 02 حريقين على مستوى ولايتي #سطيف (01) و #سوق_أهراس (01).",
       },
     ]);
+    expect(b.distributed).toBe(true);
   });
 
   it("classifies a standalone incident post", () => {
@@ -106,5 +107,40 @@ describe("parseDgpcBulletin", () => {
     );
     expect(b.asOf).toBe("2026-09-01T06:00:00.000Z");
     expect(b.totals).toEqual({ total: 37, extinguished: 36, ongoing: 1 });
+  });
+
+  it("counts the communes a bulletin names when it publishes no distribution", () => {
+    const b = parseDgpcBulletin(
+      fixture("bulletin-7158.txt"),
+      "2026-09-28T19:53:07Z",
+    );
+    expect(b).toMatchObject({
+      totals: { total: 17, extinguished: 12, ongoing: 5 },
+      wilayaCounts: [],
+      distributed: false,
+      namedCommunes: 2,
+    });
+  });
+
+  it("counts a dual as two communes and ignores prose and trailing clauses", () => {
+    const text = [
+      "🔴 الحالة العامة لحرائق الغطاء النباتي ليوم 28 سبتمبر 2026 إلى غاية الساعة 17سا00د",
+      "🔴 أهم الحرائق:",
+      "- حريق ببلديتي عين وسارة وبيرين.",
+      "- بلدية بوطالب؛ تدخل الرتل المتنقل.",
+      "- بلدية بوطالب: متابعة.",
+      "- تدخل مصالح البلدية والغابات.",
+    ].join("\n");
+    expect(parseDgpcBulletin(text, "2026-09-28T19:53:07Z").namedCommunes).toBe(
+      3,
+    );
+  });
+
+  it("counts both communes of a dual-form line in a distributed bulletin", () => {
+    const b = parseDgpcBulletin(
+      fixture("bulletin-6865.txt"),
+      "2026-08-28T20:42:10Z",
+    );
+    expect(b).toMatchObject({ distributed: true, namedCommunes: 3 });
   });
 });

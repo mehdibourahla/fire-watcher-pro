@@ -117,22 +117,22 @@ insert into source_documents(id,text_source_id,external_id,url,published_at,cont
 select '18000000-0000-4000-8000-000000000040',id,'parser-version-guard','https://example.invalid/dgpc-version',now(),'fixture','private source text'
 from text_sources where key='dgpc_telegram';
 insert into document_extractions(document_id,attempts,last_error,recovery_version)
-values('18000000-0000-4000-8000-000000000040',4,'parser interpretation error','dgpc-extract-v3')
-on conflict(document_id) do update set attempts=4,recovery_version='dgpc-extract-v3';
+values('18000000-0000-4000-8000-000000000040',4,'parser interpretation error','dgpc-extract-v4')
+on conflict(document_id) do update set attempts=4,recovery_version='dgpc-extract-v4';
 insert into source_jobs(id,contract_key,contract_version,trigger_kind,idempotency_key,scheduled_for,data_from,data_through,execution_target,state,attempt_count,max_attempts,retry_base_seconds,retry_until)
 values('18000000-0000-4000-8000-000000000041','dgpc_telegram',1,'manual','dgpc-parser-version-test',now(),now()-interval '1 hour',now(),'cloudflare','running',2,3,60,now()+interval '1 hour');
 delete from source_job_leases where contract_key='dgpc_telegram';
 insert into source_job_leases(contract_key,job_id,worker_id,attempt,leased_at,lease_expires_at)
 values('dgpc_telegram','18000000-0000-4000-8000-000000000041','test',2,now(),now()+interval '1 hour');
 set local role service_role;
-select throws_ok($$select prepare_source_recovery('dgpc_telegram','18000000-0000-4000-8000-000000000041',2)$$,'P0001','source_recovery_version_mismatch','legacy DGPC worker cannot spend v4 budget');
-select throws_ok($$select prepare_source_recovery('dgpc_telegram','18000000-0000-4000-8000-000000000041',2,'dgpc-extract-v3')$$,'P0001','source_recovery_version_mismatch','rolled-back DGPC worker fails closed');
+select throws_ok($$select prepare_source_recovery('dgpc_telegram','18000000-0000-4000-8000-000000000041',2)$$,'P0001','source_recovery_version_mismatch','legacy DGPC worker cannot spend v5 budget');
+select throws_ok($$select prepare_source_recovery('dgpc_telegram','18000000-0000-4000-8000-000000000041',2,'dgpc-extract-v4')$$,'P0001','source_recovery_version_mismatch','rolled-back DGPC worker fails closed');
 select is((select attempts from document_extractions where document_id='18000000-0000-4000-8000-000000000040'),4,'version mismatch preserves DGPC quarantine');
-select lives_ok($$select prepare_source_recovery('dgpc_telegram','18000000-0000-4000-8000-000000000041',2,'dgpc-extract-v4')$$,'deployed DGPC v4 worker can recover');
+select lives_ok($$select prepare_source_recovery('dgpc_telegram','18000000-0000-4000-8000-000000000041',2,'dgpc-extract-v5')$$,'deployed DGPC v5 worker can recover');
 select is((select attempts from document_extractions where document_id='18000000-0000-4000-8000-000000000040'),0,'deployed parser receives its new budget');
 update document_extractions set attempts=4 where document_id='18000000-0000-4000-8000-000000000040';
-select is(prepare_source_recovery('dgpc_telegram','18000000-0000-4000-8000-000000000041',2,'dgpc-extract-v4'),0,'same deployed parser never replenishes DGPC budget twice');
-select is((select count(*) from source_recovery_events where subject_id='18000000-0000-4000-8000-000000000040'),1::bigint,'DGPC recovery records exactly one v4 audit');
+select is(prepare_source_recovery('dgpc_telegram','18000000-0000-4000-8000-000000000041',2,'dgpc-extract-v5'),0,'same deployed parser never replenishes DGPC budget twice');
+select is((select count(*) from source_recovery_events where subject_id='18000000-0000-4000-8000-000000000040'),1::bigint,'DGPC recovery records exactly one v5 audit');
 reset role;
 select * from finish();
 rollback;
