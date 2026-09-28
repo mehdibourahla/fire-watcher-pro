@@ -23,6 +23,7 @@ export const deviceStorage = {
   getItem: (key: string) => window.localStorage.getItem(key),
   setItem: (key: string, value: string) =>
     window.localStorage.setItem(key, value),
+  removeItem: (key: string) => window.localStorage.removeItem(key),
 };
 
 export function shouldAutoPreparePack(
@@ -54,16 +55,25 @@ export function savePack(storage: PackStorage, pack: SurvivalPack) {
 }
 
 export async function preparePack(
-  storage: PackStorage,
+  storage: PackStorage & Pick<Storage, "removeItem">,
   build: () => Promise<SurvivalPack>,
   prepareShell: () => Promise<void>,
+  afterSave?: () => Promise<void>,
 ) {
   const pack = await build();
   if (!pack.area_map || !loadPack({ getItem: () => JSON.stringify(pack) }))
     throw new Error("survival.packFailed");
   await prepareShell();
   const ready = { ...pack, shell_ready: true };
+  const previous = storage.getItem(KEY);
   savePack(storage, ready);
+  try {
+    await afterSave?.();
+  } catch (error) {
+    if (previous === null) storage.removeItem(KEY);
+    else storage.setItem(KEY, previous);
+    throw error;
+  }
   return ready;
 }
 

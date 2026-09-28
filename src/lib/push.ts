@@ -1,5 +1,5 @@
 import { fcmTopic } from "@/lib/fcm";
-import { apiUrl } from "@/lib/platform";
+import { NATIVE, apiUrl } from "@/lib/platform";
 
 /* Public web-app config for the nadhir-dz Firebase project (not secrets). The
  * config is duplicated in public/firebase-messaging-sw.js; the VAPID key is the
@@ -28,6 +28,7 @@ export function pushConfigured(): boolean {
 
 export function pushSupported(): boolean {
   return (
+    !NATIVE &&
     typeof window !== "undefined" &&
     "Notification" in window &&
     "serviceWorker" in navigator

@@ -10,6 +10,8 @@ import {
 } from "@/lib/nadhir";
 import { openAreasQuery } from "@/lib/open-areas";
 import { nearestThreat, positionCard } from "@/lib/survival";
+import { flushDurableStorage } from "@/lib/durable-storage";
+import { NATIVE } from "@/lib/platform";
 import { deviceStorage, preparePack } from "@/lib/survival-pack";
 
 export type PackZone = {
@@ -21,6 +23,7 @@ export type PackZone = {
 };
 
 async function prepareSurvivalShell(): Promise<void> {
+  if (NATIVE) return;
   if (!navigator.onLine || !("serviceWorker" in navigator))
     throw new Error("survival.packUnavailable");
   const requested = await navigator.serviceWorker.register("/sw.js");
@@ -161,5 +164,6 @@ export async function prepareZonePack(
       };
     },
     prepareSurvivalShell,
+    NATIVE ? flushDurableStorage : undefined,
   );
 }
