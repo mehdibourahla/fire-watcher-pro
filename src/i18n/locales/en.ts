@@ -35,6 +35,7 @@ export const en = {
     backSignin: "Back to sign in",
     requestNewLink: "Request a new reset link",
     google: "Continue with Google",
+    apple: "Continue with Apple",
     googleUnavailable:
       "Google sign-in is unavailable right now. Please use email or try again later.",
     emailDivider: "or continue with email",

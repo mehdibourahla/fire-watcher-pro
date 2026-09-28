@@ -17,13 +17,17 @@
 		504EC30F1FED79650016851F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30E1FED79650016851F /* Assets.xcassets */; };
 		504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC3101FED79650016851F /* LaunchScreen.storyboard */; };
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
+		72B51354414010A52F041B2D /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 194CDFCAB79EAE93E127EDCD /* InfoPlist.strings */; };
 		80D5B4743B547B61C260CD86 /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E656686667E2BBDF6C88C14D /* MainViewController.swift */; };
+		A1B2C3D4E5F60718293A4B5C /* NativeAuthPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B5D /* NativeAuthPlugin.swift */; };
 		9582B6832FE993A70072D4E8 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9582B6822FE993A50072D4E8 /* SceneDelegate.swift */; };
 		F04CB7ACB4ADE803F4653D0A /* CommuneResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA7C88CC65B1B02051994A58 /* CommuneResolver.swift */; };
 		F41B2DEAA7AE2D449CE5F059 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 5106C8B7FB73A51AF597D53D /* GoogleService-Info.plist */; };
+		F65831BA4F71E7D39070CD98 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 2B90C1B142399B3EA20E4173 /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		2B90C1B142399B3EA20E4173 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		2C1E037459A853A928D85253 /* App.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
 		2FAD9762203C412B000D30F8 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = config.xml; sourceTree = "<group>"; };
 		50379B222058CBB4000EE86E /* capacitor.config.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = capacitor.config.json; sourceTree = "<group>"; };
@@ -35,11 +39,15 @@
 		504EC3131FED79650016851F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		50B271D01FEDC1A000F3C39B /* public */ = {isa = PBXFileReference; lastKnownFileType = folder; path = public; sourceTree = "<group>"; };
 		5106C8B7FB73A51AF597D53D /* GoogleService-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		8447654ADB241633E7F97823 /* en */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		8A511BB1CC2A94793FC0890C /* ar */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = ar; path = ar.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		9582B6822FE993A50072D4E8 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		958DCC722DB07C7200EA8C5F /* debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = debug.xcconfig; path = ../debug.xcconfig; sourceTree = SOURCE_ROOT; };
 		972317B93ACC9780D94E1FCF /* CurrentCommunePlugin.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CurrentCommunePlugin.swift; sourceTree = "<group>"; };
 		CA7C88CC65B1B02051994A58 /* CommuneResolver.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CommuneResolver.swift; sourceTree = "<group>"; };
+		CA9511CF7B9DCD66C2EF52D0 /* fr */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		E656686667E2BBDF6C88C14D /* MainViewController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B5D /* NativeAuthPlugin.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NativeAuthPlugin.swift; sourceTree = "<group>"; };
 		EB32ECF86F903ADAF1F91DC0 /* CommuneTracker.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CommuneTracker.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -99,6 +107,9 @@
 				2C1E037459A853A928D85253 /* App.entitlements */,
 				2D7E939B1176B6C787DF2701 /* Commune */,
 				E656686667E2BBDF6C88C14D /* MainViewController.swift */,
+				A1B2C3D4E5F60718293A4B5D /* NativeAuthPlugin.swift */,
+				194CDFCAB79EAE93E127EDCD /* InfoPlist.strings */,
+				2B90C1B142399B3EA20E4173 /* PrivacyInfo.xcprivacy */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -149,6 +160,8 @@
 			knownRegions = (
 				en,
 				Base,
+				ar,
+				fr,
 			);
 			mainGroup = 504EC2FB1FED79650016851F;
 			packageReferences = (
@@ -175,6 +188,8 @@
 				504EC30D1FED79650016851F /* Main.storyboard in Resources */,
 				2FAD9763203C412B000D30F8 /* config.xml in Resources */,
 				F41B2DEAA7AE2D449CE5F059 /* GoogleService-Info.plist in Resources */,
+				72B51354414010A52F041B2D /* InfoPlist.strings in Resources */,
+				F65831BA4F71E7D39070CD98 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -191,12 +206,23 @@
 				4665DA3DEA3BC7F2FF2E78DC /* CommuneTracker.swift in Sources */,
 				31B89B81006D9316C07B5AC6 /* CurrentCommunePlugin.swift in Sources */,
 				80D5B4743B547B61C260CD86 /* MainViewController.swift in Sources */,
+				A1B2C3D4E5F60718293A4B5C /* NativeAuthPlugin.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXVariantGroup section */
+		194CDFCAB79EAE93E127EDCD /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				8A511BB1CC2A94793FC0890C /* ar */,
+				CA9511CF7B9DCD66C2EF52D0 /* fr */,
+				8447654ADB241633E7F97823 /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
 		504EC30B1FED79650016851F /* Main.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -332,7 +358,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
+				DEVELOPMENT_TEAM = K97QDFB3L5;
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -355,7 +382,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
+				DEVELOPMENT_TEAM = K97QDFB3L5;
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (

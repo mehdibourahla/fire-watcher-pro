@@ -11,6 +11,7 @@ const config: CapacitorConfig = {
   ios: { contentInset: "always" },
   plugins: {
     FirebaseMessaging: { presentationOptions: ["alert", "sound"] },
+    Keyboard: { resize: "native" },
   },
   experimental: {
     ios: {

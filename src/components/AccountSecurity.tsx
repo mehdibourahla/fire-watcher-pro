@@ -84,9 +84,11 @@ export function AccountSecurity() {
                 >
                   {provider === "google"
                     ? "Google"
-                    : provider === "email"
-                      ? t("authKit.emailMethod")
-                      : provider}
+                    : provider === "apple"
+                      ? "Apple"
+                      : provider === "email"
+                        ? t("authKit.emailMethod")
+                        : provider}
                 </li>
               ))}
             </ul>

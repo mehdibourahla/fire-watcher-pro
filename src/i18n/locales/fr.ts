@@ -38,6 +38,7 @@ export const fr: Translation = {
     backSignin: "Retour à la connexion",
     requestNewLink: "Demander un nouveau lien",
     google: "Continuer avec Google",
+    apple: "Continuer avec Apple",
     googleUnavailable:
       "La connexion Google est indisponible. Utilisez votre e-mail ou réessayez plus tard.",
     emailDivider: "ou continuer avec un e-mail",

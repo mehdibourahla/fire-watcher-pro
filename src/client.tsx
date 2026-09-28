@@ -3,6 +3,7 @@ import { hydrateRoot } from "react-dom/client";
 import { StartClient } from "@tanstack/react-start/client";
 
 import { startDurableStorage } from "@/lib/durable-storage";
+import { installNativeGeolocation } from "@/lib/native-geolocation";
 import { NATIVE } from "@/lib/platform";
 
 function hydrate() {
@@ -18,6 +19,7 @@ function hydrate() {
 
 // the first render reads the Survival Pack synchronously, so restore it before React starts
 if (NATIVE) {
+  installNativeGeolocation();
   void startDurableStorage()
     .catch((error: unknown) =>
       console.error("durable storage unavailable", error),

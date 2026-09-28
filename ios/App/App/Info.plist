@@ -22,6 +22,8 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIApplicationSceneManifest</key>
@@ -67,7 +69,7 @@
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>Nadhir follows the commune you are in, on this phone only, so that commune's alerts reach you. Your location is never sent anywhere.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Nadhir uses your location to show hazards near you and to prepare your Survival Pack.</string>
+	<string>Nadhir uses your location to show hazards near you and to prepare your offline pack.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>
