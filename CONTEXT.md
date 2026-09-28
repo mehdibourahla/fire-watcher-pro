@@ -51,7 +51,7 @@ delivery deadline never becomes an authority-declared expiry or all-clear.
 **Survival Mode**:
 The app state for a person facing immediate fire danger: one primary card, minimal chrome. Entered
 by user self-activation (always available), a Detected or Confirmed Fire near the user's
-zone, or a relayed official declaration — never by the FWI danger level. Must be fully useful
+zone or Current Commune, or a relayed official declaration — never by the FWI danger level. Must be fully useful
 with zero fresh data: no screen in it may assume a recent observation exists.
 Its standing guidance is fire-specific and must never be presented as flood guidance.
 _Avoid_: emergency mode, Guardian (internal/docs name for the survival layer — never
@@ -138,6 +138,12 @@ Distinct from a Zone, which belongs to an authenticated user and carries
 personal rules (radius, quiet hours, thresholds). A Subscription has no owner
 to notify about anything else and must never accrete personal data.
 _Avoid_: anonymous zone, device registration
+
+**Current Commune**:
+The commune the phone is in right now, resolved on the device from its own location and
+followed by the app's Subscription. Opt-in. The location and the commune never leave the
+device: Nadhir learns nothing about where a person is, only the push network sees a topic.
+_Avoid_: tracking, live location, "near me" (implies a radius Nadhir does not compute)
 
 ### Reporting
 
