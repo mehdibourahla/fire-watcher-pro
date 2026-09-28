@@ -100,11 +100,17 @@ native build time fails the build, not the app at runtime.
   with the native SDK — Nadhir's server never learns a native subscriber's communes (ADR-0006).
 - The user topic (`v1.user.<id>`) keeps going through `/api/private/user-push`, which checks the
   bearer token: a client-side subscribe would let anyone join another user's topic.
-- Server messages gain `android` (priority high, channel `fire_alerts`) and `apns`
-  (`apns-priority: 10`, `interruption-level: time-sensitive`) blocks and a `data.link` path;
-  the app creates the channels at startup and routes a tap to `data.link`.
-- `/.well-known/assetlinks.json` and `apple-app-site-association` make nadhir.app links (push,
-  share, auth emails) open the app. Google sign-in returns through them via the system browser.
+- Server messages gain `android` (priority high, channel `alerts`, replace-tag) and `apns`
+  (`apns-priority: 10`, `interruption-level: time-sensitive`, collapse-id) blocks and a
+  `data.link` path; the app creates the one `alerts` channel (translated name) at startup and
+  routes a tap to `data.link`, same-app paths only.
+- Android raises only a JS event for a push that arrives while the app is open, so the app
+  re-posts it through `@capacitor/local-notifications` with `isExactNotification: false` — the
+  plugin's exact default opens the "Alarms & reminders" settings screen instead of notifying
+  (reproduced on the emulator 2026-09-28).
+- Deferred to a follow-up: `/.well-known/assetlinks.json` and `apple-app-site-association` (need
+  the release signing certificate and the Apple Team ID), and with them Google sign-in and email
+  links returning to the app.
 - Excluded: native delivery receipts (web-only diagnostics today); iOS Critical Alerts
   (needs an Apple entitlement request — owner decision later).
 

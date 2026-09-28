@@ -66,6 +66,10 @@
 	</array>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Nadhir uses your location to show hazards near you and to prepare your Survival Pack.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
 </dict>
