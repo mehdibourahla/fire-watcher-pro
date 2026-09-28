@@ -35,6 +35,7 @@ dependencies {
     implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
     implementation "androidx.coordinatorlayout:coordinatorlayout:$androidxCoordinatorLayoutVersion"
     implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"
+    implementation "androidx.browser:browser:1.8.0"
     implementation project(':capacitor-android')
     implementation "com.google.android.gms:play-services-location:21.3.0"
     implementation "com.google.firebase:firebase-messaging:25.0.1"

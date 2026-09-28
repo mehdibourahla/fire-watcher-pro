@@ -36,6 +36,7 @@ export const ar: Translation = {
     backSignin: "العودة إلى تسجيل الدخول",
     requestNewLink: "طلب رابط استعادة جديد",
     google: "المتابعة باستخدام Google",
+    apple: "المتابعة باستخدام Apple",
     googleUnavailable:
       "تسجيل الدخول عبر Google غير متاح حاليًا. استخدم البريد الإلكتروني أو حاول لاحقًا.",
     emailDivider: "أو المتابعة بالبريد الإلكتروني",

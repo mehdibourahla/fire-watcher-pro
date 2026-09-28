@@ -19,6 +19,7 @@
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
 		72B51354414010A52F041B2D /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 194CDFCAB79EAE93E127EDCD /* InfoPlist.strings */; };
 		80D5B4743B547B61C260CD86 /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E656686667E2BBDF6C88C14D /* MainViewController.swift */; };
+		A1B2C3D4E5F60718293A4B5C /* NativeAuthPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B5D /* NativeAuthPlugin.swift */; };
 		9582B6832FE993A70072D4E8 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9582B6822FE993A50072D4E8 /* SceneDelegate.swift */; };
 		F04CB7ACB4ADE803F4653D0A /* CommuneResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA7C88CC65B1B02051994A58 /* CommuneResolver.swift */; };
 		F41B2DEAA7AE2D449CE5F059 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 5106C8B7FB73A51AF597D53D /* GoogleService-Info.plist */; };
@@ -46,6 +47,7 @@
 		CA7C88CC65B1B02051994A58 /* CommuneResolver.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CommuneResolver.swift; sourceTree = "<group>"; };
 		CA9511CF7B9DCD66C2EF52D0 /* fr */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		E656686667E2BBDF6C88C14D /* MainViewController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B5D /* NativeAuthPlugin.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NativeAuthPlugin.swift; sourceTree = "<group>"; };
 		EB32ECF86F903ADAF1F91DC0 /* CommuneTracker.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CommuneTracker.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -105,6 +107,7 @@
 				2C1E037459A853A928D85253 /* App.entitlements */,
 				2D7E939B1176B6C787DF2701 /* Commune */,
 				E656686667E2BBDF6C88C14D /* MainViewController.swift */,
+				A1B2C3D4E5F60718293A4B5D /* NativeAuthPlugin.swift */,
 				194CDFCAB79EAE93E127EDCD /* InfoPlist.strings */,
 				2B90C1B142399B3EA20E4173 /* PrivacyInfo.xcprivacy */,
 			);
@@ -203,6 +206,7 @@
 				4665DA3DEA3BC7F2FF2E78DC /* CommuneTracker.swift in Sources */,
 				31B89B81006D9316C07B5AC6 /* CurrentCommunePlugin.swift in Sources */,
 				80D5B4743B547B61C260CD86 /* MainViewController.swift in Sources */,
+				A1B2C3D4E5F60718293A4B5C /* NativeAuthPlugin.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
