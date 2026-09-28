@@ -29,7 +29,7 @@ import {
 } from "@/lib/auth-flow";
 import { PasswordField, authInputClass } from "@/components/auth/PasswordField";
 import { titledMeta } from "@/lib/page-meta";
-import { APP_ORIGIN, NATIVE, publicUrl } from "@/lib/platform";
+import { APP_ORIGIN, NATIVE, openOnWeb } from "@/lib/platform";
 
 export const Route = createFileRoute("/auth")({
   validateSearch: (
@@ -164,7 +164,7 @@ function AuthPage() {
     if (busy) return;
     // email links complete in the browser, which cannot see the app's PKCE verifier
     if (NATIVE && next !== "signin") {
-      window.open(publicUrl(`/auth?${new URLSearchParams({ mode: next })}`));
+      openOnWeb(`/auth?${new URLSearchParams({ mode: next })}`);
       return;
     }
     setMode(next);

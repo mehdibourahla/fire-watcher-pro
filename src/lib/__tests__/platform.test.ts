@@ -1,5 +1,5 @@
-import { expect, it } from "vitest";
-import { apiUrl, publicUrl, webOnlyPath } from "@/lib/platform";
+import { expect, it, vi } from "vitest";
+import { apiUrl, openOnWeb, publicUrl, webOnlyPath } from "@/lib/platform";
 
 it("keeps API paths relative on the web", () => {
   expect(apiUrl("/api/private/account", false)).toBe("/api/private/account");
@@ -36,4 +36,12 @@ it("marks admin, contribute, developers, webhooks and share cards as web-only", 
     "/administration",
   ])
     expect(webOnlyPath(path)).toBe(false);
+});
+
+it("hands a website page to the system browser by navigating to it", () => {
+  const assign = vi.fn();
+  vi.stubGlobal("window", { location: { assign } });
+  openOnWeb("/contribute?x=1");
+  expect(assign).toHaveBeenCalledWith("https://nadhir.app/contribute?x=1");
+  vi.unstubAllGlobals();
 });

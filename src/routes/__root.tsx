@@ -27,7 +27,7 @@ import { THEME_BOOT_SCRIPT, applyTheme, readThemeCookie } from "../lib/theme";
 import { SiteHeader, SiteFooter, BottomTabs } from "../components/SiteChrome";
 import { AlertNotifier } from "../components/AlertNotifier";
 import { watchAuthCache } from "@/lib/auth-cache";
-import { NATIVE, publicUrl, webOnlyPath } from "@/lib/platform";
+import { NATIVE, openOnWeb, webOnlyPath } from "@/lib/platform";
 
 function NotFoundComponent() {
   const { t } = useTranslation();
@@ -107,7 +107,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         typeof window !== "undefined" &&
         webOnlyPath(location.pathname)
       ) {
-        window.open(publicUrl(location.href));
+        openOnWeb(location.href);
         throw redirect({ to: "/", replace: true });
       }
       return { locale: initLocale() };
