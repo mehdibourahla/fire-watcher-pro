@@ -19,6 +19,7 @@
     "seed:geo": "bun run scripts/seed-geo.ts",
     "seed:open-areas": "bun run scripts/seed-open-areas.ts",
     "seed:polygons": "bun run scripts/seed-commune-polygons.ts",
+    "export:outlines": "bun run scripts/export-commune-outlines.ts",
     "audit:loi": "bun run scripts/audit-loi-26-06.ts",
     "enrich:zonal": "bun run scripts/enrich-zonal.ts",
     "build:sources": "bun run scripts/build-persistent-sources.ts",
