@@ -17,5 +17,12 @@ function hydrate() {
 }
 
 // the first render reads the Survival Pack synchronously, so restore it before React starts
-if (NATIVE) void startDurableStorage().finally(hydrate);
-else hydrate();
+if (NATIVE) {
+  void startDurableStorage().finally(hydrate);
+  void import("@capacitor/app").then(({ App }) =>
+    App.addListener("backButton", ({ canGoBack }) => {
+      if (canGoBack) window.history.back();
+      else void App.minimizeApp();
+    }),
+  );
+} else hydrate();
