@@ -21,6 +21,7 @@ function PrivacyPage() {
     "use",
     "retention",
     "sharing",
+    "app",
     "rights",
     "contact",
   ] as const;
