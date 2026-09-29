@@ -16,8 +16,20 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        release {
+            def store = System.getenv("NADHIR_UPLOAD_STORE")
+            if (store) {
+                storeFile file(store)
+                storePassword System.getenv("NADHIR_UPLOAD_PASSWORD")
+                keyAlias "upload"
+                keyPassword System.getenv("NADHIR_UPLOAD_PASSWORD")
+            }
+        }
+    }
     buildTypes {
         release {
+            if (System.getenv("NADHIR_UPLOAD_STORE")) signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
