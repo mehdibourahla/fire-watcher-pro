@@ -1556,7 +1556,7 @@ export const kab: Translation = {
     followCurrent: "Taɣiwant yettwaḍefren: {{name}}",
     followWaiting: "Ad nerǧu adig-ik…",
     followForeground:
-      "Mi ara yili Nadhir yeldi kan. Akken ad tettwaḍefreḍ deg ugilal, sireg adig yal tikkelt.",
+      "Nadhir utilise votre position pour garder à jour les alertes de votre commune, même quand l'application est fermée ou inutilisée. Pour l'instant, le suivi ne fonctionne que quand Nadhir est ouvert.",
     followAllowBackground: "Sireg deg ugilal",
     followDenied:
       "Tasiregt n wadig tensa. Rmed-itt deg yiɣewwaṛen n tiliɣri akken ad teḍfreḍ taɣiwant-ik.",

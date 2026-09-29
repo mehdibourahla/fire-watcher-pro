@@ -1552,7 +1552,7 @@ export const en = {
     followCurrent: "Following: {{name}}",
     followWaiting: "Waiting for your position…",
     followForeground:
-      "Only while Nadhir is open. To be followed in the background, allow location all the time.",
+      "Nadhir uses your location to keep your commune's alerts current, even when the app is closed or not in use. For now, following only works while Nadhir is open.",
     followAllowBackground: "Allow in the background",
     followDenied:
       "Location permission is off. Turn it on in the phone's settings to follow your commune.",

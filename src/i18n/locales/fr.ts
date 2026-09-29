@@ -1584,7 +1584,7 @@ export const fr: Translation = {
     followCurrent: "Commune suivie : {{name}}",
     followWaiting: "En attente de votre position…",
     followForeground:
-      "Uniquement quand Nadhir est ouvert. Pour être suivi en arrière-plan, autorisez la localisation en permanence.",
+      "Nadhir utilise votre position pour garder à jour les alertes de votre commune, même quand l'application est fermée ou inutilisée. Pour l'instant, le suivi ne fonctionne que quand Nadhir est ouvert.",
     followAllowBackground: "Autoriser en arrière-plan",
     followDenied:
       "La localisation est désactivée. Activez-la dans les réglages du téléphone pour suivre votre commune.",
