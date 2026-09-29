@@ -1449,7 +1449,7 @@ export const kab: Translation = {
       "Des prestataires traitent les données nécessaires au fonctionnement de Nadhir : Cloudflare héberge le site, Supabase gère les comptes et les données, Resend envoie les e-mails du compte, Google gère la connexion si vous choisissez cette méthode et envoie les notifications push via Firebase, et OpenRouter transmet le texte d'un signalement citoyen au modèle Gemini de Google, qui le vérifie avant publication. Cette vérification reçoit la catégorie, la commune et vos mots, jamais votre compte ni votre position exacte. L'API publique et la carte n'exposent ni vos zones, ni vos alertes, ni votre identité. Un signalement citoyen publié montre sa catégorie, un court résumé neutre, le point où il a été placé, son heure et le nombre de personnes qui l'ont confirmé ; jamais votre nom, vos mots tels quels ni votre photo. Apple gère la connexion avec Apple et délivre les notifications sur iPhone. Les fonds de carte viennent de CARTO et les données météo d'Open-Meteo ; comme tout site web, ils voient votre adresse IP et la zone affichée, jamais votre compte.",
     privacy_app_title: "Application mobile",
     privacy_app_body:
-      "Les applications Android et iOS gardent votre langue, vos préférences et votre pack Survie sur le téléphone. Votre position sert, sur le téléphone, à centrer la carte et à préparer le pack hors ligne. Si vous activez « Suivre aussi l'endroit où je suis », le téléphone détermine sa commune et s'abonne aux alertes de cette commune via Firebase : votre position exacte ne quitte jamais le téléphone, mais le service de notifications de Google voit de quelle commune le téléphone reçoit les alertes. Les notifications utilisent un identifiant d'appareil ; nous n'en gardons qu'une empreinte à sens unique pour joindre vos appareils. La connexion avec Apple ou Google est facultative.",
+      "Les applications Android et iOS gardent votre langue, vos préférences et votre pack Survie sur le téléphone. Votre position sert, sur le téléphone, à centrer la carte et à préparer le pack hors ligne. Si vous activez « Suivre aussi l'endroit où je suis », le téléphone détermine sa commune et s'abonne aux alertes de cette commune via Firebase : le suivi n'envoie jamais votre position exacte, mais le service de notifications de Google voit de quelle commune le téléphone reçoit les alertes. Les notifications utilisent un identifiant d'appareil ; nous n'en gardons qu'une empreinte à sens unique pour joindre vos appareils. La connexion avec Apple ou Google est facultative.",
     privacy_rights_title: "Izerfan-ik",
     privacy_rights_body:
       "Tzemreḍ ad twaliḍ, ad tseggmeḍ, ad tekkseḍ isefka-k seg usebter n yiɣewwaren.",
@@ -1552,7 +1552,7 @@ export const kab: Translation = {
     channelName: "Ilɣa n Nadhir",
     followTitle: "Ḍfer daɣen anda i lliɣ",
     followBody:
-      "Votre téléphone détermine la commune où il se trouve et reçoit ses alertes. Votre position exacte ne quitte jamais le téléphone ; seul votre abonnement aux alertes change.",
+      "Votre téléphone détermine la commune où il se trouve et reçoit ses alertes. Le suivi n'envoie jamais votre position exacte ; seul votre abonnement aux alertes change.",
     followCurrent: "Taɣiwant yettwaḍefren: {{name}}",
     followWaiting: "Ad nerǧu adig-ik…",
     followForeground:

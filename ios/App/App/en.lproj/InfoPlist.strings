@@ -1,3 +1,3 @@
 "CFBundleDisplayName" = "Nadhir";
-"NSLocationWhenInUseUsageDescription" = "Nadhir uses your location to show hazards near you and to prepare your offline pack.";
-"NSLocationAlwaysAndWhenInUseUsageDescription" = "Nadhir works out on this phone which commune you are in and subscribes you to that commune's alerts. Your exact position never leaves the phone.";
+"NSLocationWhenInUseUsageDescription" = "Nadhir uses your location to show hazards near you, to place your reports and to prepare your offline pack.";
+"NSLocationAlwaysAndWhenInUseUsageDescription" = "Nadhir works out on this phone which commune you are in and subscribes you to that commune's alerts. Following your commune never sends your exact position.";

@@ -1442,7 +1442,7 @@ export const en = {
       "Service providers process the data needed to operate Nadhir: Cloudflare hosts the site, Supabase handles accounts and data, Resend delivers account emails, Google handles sign-in when you choose that method and delivers push notifications through Firebase, and OpenRouter passes the text of a citizen report to Google's Gemini model, which checks it before it is published. That check receives the category, the commune and your words, never your account or exact position. The public API and map do not expose your zones, alerts or identity. A published citizen report shows its category, a short neutral summary, the point where it was placed, its time and how many people confirmed it; never your name, your words as written or your photo. Apple handles Sign in with Apple and delivers notifications to iPhones. Map tiles come from CARTO and weather data from Open-Meteo; like any website they see your IP address and the area being viewed, never your account.",
     privacy_app_title: "Mobile app",
     privacy_app_body:
-      "The Android and iOS apps keep your language, preferences and Survival pack on the phone. Your position is used on the phone to centre the map and prepare the offline pack. If you turn on \"Also follow where I am\", the phone works out which commune it is in and subscribes to that commune's alerts through Firebase: your exact position never leaves the phone, but Google's push service sees which commune's alerts the phone receives. Notifications use a device token; we keep only a one-way hash of it to reach your devices. Signing in with Apple or Google is optional.",
+      "The Android and iOS apps keep your language, preferences and Survival pack on the phone. Your position is used on the phone to centre the map and prepare the offline pack. If you turn on \"Also follow where I am\", the phone works out which commune it is in and subscribes to that commune's alerts through Firebase: following never sends your exact position, but Google's push service sees which commune's alerts the phone receives. Notifications use a device token; we keep only a one-way hash of it to reach your devices. Signing in with Apple or Google is optional.",
     privacy_rights_title: "Your rights",
     privacy_rights_body:
       "You can view, correct and delete your data from your settings page at any time.",
@@ -1548,7 +1548,7 @@ export const en = {
     channelName: "Nadhir alerts",
     followTitle: "Also follow where I am",
     followBody:
-      "Your phone works out which commune it is in and receives that commune's alerts. Your exact position never leaves the phone; only your alert subscription changes.",
+      "Your phone works out which commune it is in and receives that commune's alerts. Following never sends your exact position; only your alert subscription changes.",
     followCurrent: "Following: {{name}}",
     followWaiting: "Waiting for your position…",
     followForeground:

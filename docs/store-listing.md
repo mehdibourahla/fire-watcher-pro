@@ -26,7 +26,7 @@ Description:
 
 التنبيهات:
 • اختر بلدية أو أكثر لتلقي تنبيهاتها، دون الحاجة إلى حساب.
-• فعّل «تابع أيضًا مكان وجودي» ليحدّد الهاتف بلديته ويشترك في تنبيهاتها. موقعك الدقيق لا يغادر الهاتف.
+• فعّل «تابع أيضًا مكان وجودي» ليحدّد الهاتف بلديته ويشترك في تنبيهاتها. المتابعة لا ترسل موقعك الدقيق.
 • مع حساب، أنشئ مناطق مراقبة حول بيتك أو عملك.
 
 وضع النجاة:
@@ -57,7 +57,7 @@ What Nadhir shows:
 
 Alerts:
 • Pick one or more communes to get their alerts, no account needed.
-• Turn on "Also follow where I am" and the phone works out its commune and subscribes to its alerts. Your exact position never leaves the phone.
+• Turn on "Also follow where I am" and the phone works out its commune and subscribes to its alerts. Following never sends your exact position.
 • With an account, create watch zones around your home or work.
 
 Survival mode:
@@ -88,7 +88,7 @@ Ce que montre Nadhir :
 
 Alertes :
 • Choisissez une ou plusieurs communes pour recevoir leurs alertes, sans compte.
-• Activez « Suivre aussi l'endroit où je suis » : le téléphone détermine sa commune et s'abonne à ses alertes. Votre position exacte ne quitte jamais le téléphone.
+• Activez « Suivre aussi l'endroit où je suis » : le téléphone détermine sa commune et s'abonne à ses alertes. Le suivi n'envoie jamais votre position exacte.
 • Avec un compte, créez des zones de surveillance autour de chez vous ou de votre travail.
 
 Mode Survie :
@@ -103,6 +103,6 @@ Nadhir est indépendant et n'est pas une application gouvernementale. Il affiche
 
 Nadhir works without an account: the map, forecasts, Survival mode and commune alerts need no sign-in. Accounts (Sign in with Apple, Google or email) add watch zones and citizen reports; reviewers can create one in the app.
 
-Background location is opt-in: the "Also follow where I am" switch in the alerts sheet (bell button on the map). The phone resolves its commune from its position against commune outlines shipped in the app, and subscribes to that commune's push topic. Significant-change monitoring keeps it current. The exact position never leaves the device.
+Background location is opt-in: the "Also follow where I am" switch in the alerts sheet (bell button on the map). The phone resolves its commune from its position against commune outlines shipped in the app, and subscribes to that commune's push topic. Significant-change monitoring keeps it current. Following never sends the exact position; reports and report confirmations do send one, as the privacy policy explains.
 
 Time-sensitive notifications carry hazard alerts (active wildfire near the commune, severe weather warning).
