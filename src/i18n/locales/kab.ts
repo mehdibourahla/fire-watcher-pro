@@ -1446,13 +1446,16 @@ export const kab: Translation = {
       "Vous pouvez supprimer des alertes de votre fil et supprimer votre compte dans les Paramètres. La suppression du compte efface les données personnelles, les zones, les alertes, les points de terminaison webhook, vos signalements citoyens avec leurs photos et vos confirmations. Les journaux d'audit opérationnels sont conservés sans identifiants personnels. Un signalement citoyen quitte la carte publique 6 heures après son envoi, ou jusqu'à 24 heures quand des personnes sur place le confirment.",
     privacy_sharing_title: "Beṭṭu",
     privacy_sharing_body:
-      "Des prestataires traitent les données nécessaires au fonctionnement de Nadhir : Cloudflare héberge le site, Supabase gère les comptes et les données, Resend envoie les e-mails du compte, Google gère la connexion si vous choisissez cette méthode et envoie les notifications push via Firebase, et OpenRouter transmet le texte d'un signalement citoyen au modèle Gemini de Google, qui le vérifie avant publication. Cette vérification reçoit la catégorie, la commune et vos mots, jamais votre compte ni votre position exacte. L'API publique et la carte n'exposent ni vos zones, ni vos alertes, ni votre identité. Un signalement citoyen publié montre sa catégorie, un court résumé neutre, le point où il a été placé, son heure et le nombre de personnes qui l'ont confirmé ; jamais votre nom, vos mots tels quels ni votre photo.",
+      "Des prestataires traitent les données nécessaires au fonctionnement de Nadhir : Cloudflare héberge le site, Supabase gère les comptes et les données, Resend envoie les e-mails du compte, Google gère la connexion si vous choisissez cette méthode et envoie les notifications push via Firebase, et OpenRouter transmet le texte d'un signalement citoyen au modèle Gemini de Google, qui le vérifie avant publication. Cette vérification reçoit la catégorie, la commune et vos mots, jamais votre compte ni votre position exacte. L'API publique et la carte n'exposent ni vos zones, ni vos alertes, ni votre identité. Un signalement citoyen publié montre sa catégorie, un court résumé neutre, le point où il a été placé, son heure et le nombre de personnes qui l'ont confirmé ; jamais votre nom, vos mots tels quels ni votre photo. Apple gère la connexion avec Apple et délivre les notifications sur iPhone. Les fonds de carte viennent de CARTO et les données météo d'Open-Meteo ; comme tout site web, ils voient votre adresse IP et la zone affichée, jamais votre compte.",
+    privacy_app_title: "Application mobile",
+    privacy_app_body:
+      "Les applications Android et iOS gardent votre langue, vos préférences et votre pack Survie sur le téléphone. Votre position sert, sur le téléphone, à centrer la carte et à préparer le pack hors ligne. Si vous activez « Suivre aussi l'endroit où je suis », le téléphone détermine sa commune et s'abonne aux alertes de cette commune via Firebase : le suivi n'envoie jamais votre position exacte, mais le service de notifications de Google voit de quelle commune le téléphone reçoit les alertes. Les notifications utilisent un identifiant d'appareil ; nous n'en gardons qu'une empreinte à sens unique pour joindre vos appareils. La connexion avec Apple ou Google est facultative.",
     privacy_rights_title: "Izerfan-ik",
     privacy_rights_body:
       "Tzemreḍ ad twaliḍ, ad tseggmeḍ, ad tekkseḍ isefka-k seg usebter n yiɣewwaren.",
     privacy_contact_title: "Anermis",
     privacy_contact_body:
-      "I yal asteqsi, seqdec anermis yellan deg usebter « Ɣef ».",
+      "Pour toute question sur vos données ou demande de suppression, écrivez à mehdibrhl4@gmail.com.",
   },
   broadcastAdmin: {
     stopTitle: "Couper toutes les alertes publiques ?",
@@ -1549,11 +1552,11 @@ export const kab: Translation = {
     channelName: "Ilɣa n Nadhir",
     followTitle: "Ḍfer daɣen anda i lliɣ",
     followBody:
-      "Tiliɣri-k tettaf taɣiwant anda tella, tremmes ilɣa-s. Adig-ik ur yetteffeɣ ara seg tiliɣri.",
+      "Votre téléphone détermine la commune où il se trouve et reçoit ses alertes. Le suivi n'envoie jamais votre position exacte ; seul votre abonnement aux alertes change.",
     followCurrent: "Taɣiwant yettwaḍefren: {{name}}",
     followWaiting: "Ad nerǧu adig-ik…",
     followForeground:
-      "Mi ara yili Nadhir yeldi kan. Akken ad tettwaḍefreḍ deg ugilal, sireg adig yal tikkelt.",
+      "Nadhir utilise votre position pour garder à jour les alertes de votre commune, même quand l'application est fermée ou inutilisée. Pour l'instant, le suivi ne fonctionne que quand Nadhir est ouvert.",
     followAllowBackground: "Sireg deg ugilal",
     followDenied:
       "Tasiregt n wadig tensa. Rmed-itt deg yiɣewwaṛen n tiliɣri akken ad teḍfreḍ taɣiwant-ik.",

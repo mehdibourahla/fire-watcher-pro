@@ -1,3 +1,3 @@
 "CFBundleDisplayName" = "نذير";
-"NSLocationWhenInUseUsageDescription" = "يستخدم نذير موقعك لعرض المخاطر القريبة منك وتحضير حزمتك دون اتصال.";
-"NSLocationAlwaysAndWhenInUseUsageDescription" = "يتابع نذير البلدية التي توجد فيها، على هذا الهاتف فقط، لتصلك تنبيهاتها. لا يُرسَل موقعك إلى أي جهة.";
+"NSLocationWhenInUseUsageDescription" = "يستخدم نذير موقعك لعرض المخاطر القريبة منك وتحديد مكان بلاغاتك وتحضير حزمتك دون اتصال.";
+"NSLocationAlwaysAndWhenInUseUsageDescription" = "يحدّد نذير على هذا الهاتف البلدية التي توجد فيها ويشترك لك في تنبيهاتها. متابعة بلديتك لا ترسل موقعك الدقيق أبدًا.";
