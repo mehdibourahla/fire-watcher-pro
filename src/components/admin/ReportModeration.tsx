@@ -9,6 +9,7 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
+import { ConfirmDialog } from "@/components/admin/kit/ConfirmDialog";
 import { QueryState } from "@/components/admin/kit/QueryState";
 import { SplitView } from "@/components/admin/kit/SplitView";
 import { StatusBadge, type Tone } from "@/components/admin/kit/StatusBadge";
@@ -24,7 +25,9 @@ import {
   type FireCluster,
 } from "@/lib/nadhir";
 import {
+  blockReporter,
   moderateReport,
+  reportFlagsQuery,
   type CitizenReport,
   type ReportStatus,
   ReportMutationError,
@@ -112,6 +115,7 @@ function Detail({
         .slice(0, 8),
     [fires, report],
   );
+  const flags = useQuery(reportFlagsQuery(report.id));
   const moderate = useMutation({
     mutationFn: (status: ReportStatus) =>
       moderateReport({
@@ -167,6 +171,23 @@ function Detail({
         <dt className="text-muted-foreground">{t("reportsPage.summary")}</dt>
         <dd dir="auto">{report.summary ?? t("reportsPage.noSummary")}</dd>
       </dl>
+      {flags.isError ? (
+        <p role="alert" className="text-destructive">
+          {t("reportsPage.flagsFailed")}
+        </p>
+      ) : flags.data?.length ? (
+        <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
+          <dt className="col-span-2 font-medium">{t("reportsPage.flags")}</dt>
+          {flags.data.map(({ reason, flags: count }) => (
+            <div key={reason} className="contents">
+              <dt className="text-muted-foreground">
+                {t(`reportsPage.flagReason.${reason}`)}
+              </dt>
+              <dd className="tabular-nums">{count}</dd>
+            </div>
+          ))}
+        </dl>
+      ) : null}
       {report.note ? (
         <figure className="space-y-1">
           <figcaption className="font-medium">
@@ -257,6 +278,36 @@ function Detail({
             {t("queues.reopen")}
           </Button>
         ) : null}
+        <ConfirmDialog
+          trigger={
+            <Button variant="destructive" disabled={moderate.isPending}>
+              {t("reportsPage.block")}
+            </Button>
+          }
+          title={t("reportsPage.blockTitle")}
+          description={t("reportsPage.blockDescription")}
+          confirmLabel={t("reportsPage.blockConfirm")}
+          destructive
+          reason="optional"
+          onConfirm={async (reason) => {
+            try {
+              await blockReporter(report.id, reason);
+            } catch (failure) {
+              throw new Error(
+                t(
+                  failure instanceof ReportMutationError
+                    ? failure.message
+                    : "reportsPage.blockFailed",
+                ),
+                { cause: failure },
+              );
+            }
+            toast.success(t("reportsPage.blocked"));
+            await qc.invalidateQueries({ queryKey: ["reports"] });
+            await qc.invalidateQueries({ queryKey: ["admin", "attention"] });
+            onDone();
+          }}
+        />
       </div>
     </div>
   );

@@ -1141,6 +1141,26 @@ export const kab: Translation = {
     witnessFailed: "Votre réponse n’a pas pu être enregistrée. Réessayez.",
     witnessLocate: "Autorisez votre position pour répondre.",
     witnessSignIn: "Connectez-vous pour confirmer ce que vous voyez",
+    flag: "Signaler un problème",
+    hide: "Masquer les signalements de cette personne",
+    flagQuestion: "Quel est le problème avec ce signalement ?",
+    flagReason: {
+      false: "C’est faux ou trompeur",
+      offensive: "C’est offensant ou abusif",
+      other: "Autre chose",
+    },
+    flagThanks: "Merci, un modérateur va l’examiner.",
+    flagSignIn: "Connectez-vous pour signaler ou masquer",
+    flagOwn: "C’est votre propre signalement.",
+    flagClosed: "Ce signalement n’est plus affiché.",
+    flagRateLimited:
+      "Trop de signalements pour le moment. Réessayez plus tard.",
+    flagFailed: "Votre signalement n’a pas pu être envoyé. Réessayez.",
+    hideConfirm:
+      "Vous ne verrez plus les signalements de cette personne. Elle n’en est pas informée.",
+    hideAction: "Masquer ses signalements",
+    hideOwn: "C’est votre propre signalement.",
+    hideFailed: "Impossible de masquer cette personne. Réessayez.",
     citizenLabel: "Signalement citoyen, non vérifié par les autorités",
     reportButton: "Signaler",
   },
@@ -1439,7 +1459,7 @@ export const kab: Translation = {
     privacyTitle: "Tasertit n tbaḍnit",
     privacy_collect_title: "Ayen nḥerrez",
     privacy_collect_body:
-      "Un compte contient votre adresse e-mail, un nom d'affichage et un numéro de téléphone facultatifs, votre langue, vos préférences d'alerte et les zones de veille que vous créez. Un signalement citoyen enregistre la catégorie choisie, le point placé, ce que vous avez écrit et une photo facultative. Quand vous confirmez le signalement d'une autre personne, nous enregistrons votre vote ; votre position est comparée à celle du signalement puis n'est pas conservée.",
+      "Un compte contient votre adresse e-mail, un nom d'affichage et un numéro de téléphone facultatifs, votre langue, vos préférences d'alerte et les zones de veille que vous créez. Un signalement citoyen enregistre la catégorie choisie, le point placé, ce que vous avez écrit et une photo facultative. Quand vous confirmez le signalement d'une autre personne, nous enregistrons votre vote ; votre position est comparée à celle du signalement puis n'est pas conservée. Quand vous signalez un problème sur un signalement publié, nous enregistrons le motif et votre compte pour la modération.",
     privacy_use_title: "Amek ttuseqdacen",
     privacy_use_body:
       "Uniquement pour décider quelles alertes vous envoyer, les transmettre sur les canaux que vous avez activés et publier les signalements citoyens. Ni publicité, ni profilage, ni mesure d'audience.",

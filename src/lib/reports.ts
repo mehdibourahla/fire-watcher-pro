@@ -439,6 +439,77 @@ export async function witnessReport(
   return data;
 }
 
+export type FlagReason = "false" | "offensive" | "other";
+export const FLAG_REASONS: FlagReason[] = ["false", "offensive", "other"];
+
+const FLAG_ERRORS: Record<string, string> = {
+  own_report: "reports.flagOwn",
+  report_not_open: "reports.flagClosed",
+  flag_rate_limited: "reports.flagRateLimited",
+};
+
+export async function flagReport(id: string, reason: FlagReason) {
+  const { error } = await supabase.rpc("flag_citizen_report", {
+    _report: id,
+    _reason: reason,
+  });
+  if (error)
+    throw new ReportMutationError(
+      FLAG_ERRORS[error.message] ?? "reports.flagFailed",
+    );
+}
+
+export async function blockReportAuthor(id: string) {
+  const { error } = await supabase.rpc("block_report_author", { _report: id });
+  if (error)
+    throw new ReportMutationError(
+      error.message === "own_report" ? "reports.hideOwn" : "reports.hideFailed",
+    );
+}
+
+export async function isOwnReport(id: string): Promise<boolean> {
+  const { data: auth } = await supabase.auth.getSession();
+  if (!auth.session) return false;
+  const { data, error } = await supabase
+    .from("citizen_reports")
+    .select("id")
+    .eq("id", id)
+    .eq("user_id", auth.session.user.id)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return !!data;
+}
+
+export async function blockReporter(reportId: string, reason: string | null) {
+  const { error } = await supabase.rpc("block_reporter", {
+    _report: reportId,
+    _reason: reason?.trim() || null,
+  });
+  if (error)
+    throw new ReportMutationError(
+      error.message === "report_moderator_role_required"
+        ? "reportsPage.moderateForbidden"
+        : error.message === "report_not_found"
+          ? "reportsPage.moderateGone"
+          : "reportsPage.blockFailed",
+    );
+}
+
+export type FlagSummary = { reason: FlagReason; flags: number };
+
+export const reportFlagsQuery = (id: string) =>
+  queryOptions({
+    queryKey: ["reports", "flags", id],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc(
+        "citizen_report_flag_summary",
+        { _report: id },
+      );
+      if (error) throw new Error(error.message);
+      return (data ?? []) as FlagSummary[];
+    },
+  });
+
 export type Contribution = {
   published: number;
   corroborated: number;
