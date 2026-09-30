@@ -755,6 +755,8 @@ export const en = {
     },
   },
   about: {
+    independent:
+      "Nadhir is an independent app. It does not represent any government entity; official information is shown with a link to its source below.",
     contributeTitle: "Nadhir is built by people who do not all write code",
     contributeBody:
       "Verified places, a language reviewed by someone who speaks it, one introduction to a wilaya directorate. Here is what is missing.",

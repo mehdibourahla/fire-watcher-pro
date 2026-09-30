@@ -771,6 +771,8 @@ export const fr: Translation = {
     },
   },
   about: {
+    independent:
+      "Nadhir est une application indépendante. Elle ne représente aucune entité gouvernementale ; les informations officielles sont affichées avec un lien vers leur source ci-dessous.",
     contributeTitle:
       "Nadhir est construit par des gens qui n’écrivent pas tous du code",
     contributeBody:

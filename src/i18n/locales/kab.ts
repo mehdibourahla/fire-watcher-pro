@@ -761,6 +761,8 @@ export const kab: Translation = {
     },
   },
   about: {
+    independent:
+      "Nadhir est une application indépendante. Elle ne représente aucune entité gouvernementale ; les informations officielles sont affichées avec un lien vers leur source ci-dessous.",
     contributeTitle: "Nadhir bnan-t yimdanen ur nettaru akk tangalt",
     contributeBody:
       "Imukan yettwasenqden, tutlayt teɣra-tt tin i tt-yessnen, yiwen umyagar d tenmehla n twilayt. Atan wayen ixuṣṣen.",

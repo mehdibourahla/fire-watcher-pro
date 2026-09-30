@@ -15,7 +15,7 @@ const SOURCES = [
   {
     name: "NASA FIRMS (VIIRS / MODIS)",
     licence: "Public domain",
-    url: "https://firms.modaps.eosdis.nasa.gov/",
+    url: "https://www.earthdata.nasa.gov/data/tools/firms",
   },
   {
     name: "EUMETSAT Meteosat MTG FCI",
@@ -33,7 +33,7 @@ const SOURCES = [
   },
   {
     name: "Copernicus EFFIS / GWIS",
-    url: "https://effis.emergency.copernicus.eu/",
+    url: "https://forest-fire.emergency.copernicus.eu/",
   },
   {
     name: "ONM — الديوان الوطني للأرصاد الجوية",
@@ -41,7 +41,11 @@ const SOURCES = [
   },
   {
     name: "Protection Civile (DGPC) — الحماية المدنية",
-    url: "https://t.me/s/DGPCDZ",
+    url: "https://t.me/DGPCDZ",
+  },
+  {
+    name: "EMSC — earthquakes",
+    url: "https://www.emsc-csem.org/",
   },
   {
     name: "OpenStreetMap",
@@ -66,6 +70,7 @@ function AboutPage() {
   return (
     <div className="mx-auto max-w-[820px] px-4 py-8">
       <h1 className="text-2xl">{t("about.title")}</h1>
+      <p className="mt-2 text-sm font-medium">{t("about.independent")}</p>
       <Section title={t("about.missionTitle")} body={t("about.mission")} />
       <Section title={t("about.howTitle")} body={t("about.how")} />
       <Section title={t("about.dangerTitle")} body={t("about.danger")} />
