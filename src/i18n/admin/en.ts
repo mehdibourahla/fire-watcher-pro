@@ -146,7 +146,8 @@ export const adminEn = {
     nearbyFires: "Link to a fire within 50 km",
     noNearby: "No satellite fire within 50 km in the last three days.",
     km: "{{km}} km",
-    flagged: "Flagged for review",
+    flagged: "Witnesses say it is gone",
+    userFlagged: "Reported by a user",
     flags: "Flagged by users",
     flagReason: {
       false: "False or misleading",

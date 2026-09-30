@@ -1,5 +1,35 @@
 alter table public.citizen_reports add column user_flagged_at timestamptz;
 
+create or replace function public.prepare_citizen_report()
+returns trigger
+language plpgsql
+set search_path = ''
+as $$
+declare
+  has_text boolean := nullif(btrim(coalesce(new.note, '')), '') is not null;
+begin
+  new.summary := null;
+  new.classified_at := null;
+  new.classifier := null;
+  new.flagged_at := null;
+  new.user_flagged_at := null;
+  new.hazard := case new.kind when 'sighting' then 'fire' when 'other' then null else new.kind end;
+  new.publish_state := case
+    when new.kind = 'person_trapped' then 'private'
+    when new.kind = 'other' or has_text then 'classifying'
+    else 'published' end;
+  new.expires_at := now() + interval '6 hours';
+  -- the place is shown publicly, so it comes from the pin, never from the client
+  new.commune_id := (
+    select u.id from public.admin_units u
+    where u.level = 'commune' and u.lat is not null and u.lon is not null
+      and 111.32 * sqrt((u.lat - new.lat) ^ 2 + ((u.lon - new.lon) * cos(radians(new.lat))) ^ 2) <= 50
+    order by (u.lat - new.lat) ^ 2 + ((u.lon - new.lon) * cos(radians(new.lat))) ^ 2, u.id
+    limit 1);
+  return new;
+end;
+$$;
+
 create table public.citizen_report_flags (
   report_id uuid not null references public.citizen_reports(id) on delete cascade,
   user_id uuid not null references auth.users(id) on delete cascade,
@@ -47,7 +77,7 @@ begin
   update public.citizen_reports set user_flagged_at = coalesce(user_flagged_at, now()) where id = _report;
 end;
 $$;
-revoke all on function public.flag_citizen_report(uuid, text) from public, anon;
+revoke all on function public.flag_citizen_report(uuid, text) from public, anon, service_role;
 grant execute on function public.flag_citizen_report(uuid, text) to authenticated;
 
 create function public.citizen_report_flag_summary(_report uuid)
@@ -91,6 +121,7 @@ declare
   actor uuid := (select auth.uid());
   target public.citizen_reports;
   clean_reason text := nullif(btrim(_reason), '');
+  rejected integer;
 begin
   if actor is null or not public.has_any_role(actor, array['report_moderator','admin']::public.app_role[]) then
     raise insufficient_privilege using message = 'report_moderator_role_required';
@@ -102,14 +133,13 @@ begin
 
   insert into public.reporter_blocks (user_id, blocked_by, reason) values (target.user_id, actor, clean_reason)
   on conflict (user_id) do update set blocked_by = excluded.blocked_by, reason = excluded.reason;
-  if target.status <> 'rejected' then
-    update public.citizen_reports
-    set status = 'rejected', reviewed_by = actor, reviewed_at = now(), user_flagged_at = null
-    where id = _report;
-  end if;
+  update public.citizen_reports
+  set status = 'rejected', reviewed_by = actor, reviewed_at = now(), user_flagged_at = null
+  where user_id = target.user_id and status <> 'rejected';
+  get diagnostics rejected = row_count;
   perform public.record_admin_audit('queues', 'reporter.block', 'reporter_blocks', target.user_id::text,
     jsonb_build_object('report_id', _report, 'status', target.status),
-    jsonb_build_object('report_id', _report, 'status', 'rejected'), clean_reason, null);
+    jsonb_build_object('report_id', _report, 'status', 'rejected', 'rejected_reports', rejected), clean_reason, null);
 end;
 $$;
 revoke all on function public.block_reporter(uuid, text) from public, anon, service_role;
@@ -169,7 +199,7 @@ begin
   on conflict (blocker, author) do nothing;
 end;
 $$;
-revoke all on function public.block_report_author(uuid) from public, anon;
+revoke all on function public.block_report_author(uuid) from public, anon, service_role;
 grant execute on function public.block_report_author(uuid) to authenticated;
 
 create or replace view public.hazard_reports

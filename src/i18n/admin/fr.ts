@@ -148,7 +148,8 @@ export const adminFr: AdminTranslation = {
     nearbyFires: "Rattacher à un feu à moins de 50 km",
     noNearby: "Aucun feu satellite à moins de 50 km ces trois derniers jours.",
     km: "{{km}} km",
-    flagged: "Signalé pour vérification",
+    flagged: "Des témoins disent que c'est terminé",
+    userFlagged: "Signalé par un utilisateur",
     flags: "Problèmes signalés par des utilisateurs",
     flagReason: {
       false: "Faux ou trompeur",

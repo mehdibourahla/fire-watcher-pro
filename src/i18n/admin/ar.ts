@@ -267,7 +267,8 @@ export const adminAr: AdminTranslation = {
     noNearby:
       "لا يوجد حريق مرصود بالأقمار الصناعية على بعد أقل من 50 كم خلال الأيام الثلاثة الأخيرة.",
     km: "{{km}} كم",
-    flagged: "مُبلَّغ عنه للمراجعة",
+    flagged: "يقول الشهود إنه انتهى",
+    userFlagged: "أبلغ عنه مستخدم",
     flags: "إبلاغات المستخدمين",
     flagReason: {
       false: "خاطئ أو مضلِّل",

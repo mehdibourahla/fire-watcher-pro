@@ -1,6 +1,6 @@
 begin;
 set local search_path = public, extensions;
-select plan(38);
+select plan(40);
 
 insert into auth.users (id, email) values
   ('9f5a0000-0000-4000-8000-000000000001', 'author@example.invalid'),
@@ -30,7 +30,13 @@ insert into citizen_reports (id, user_id, lat, lon, kind, status, note) values
    'held by the checker');
 select set_config('request.jwt.claim.sub', '9f5a0000-0000-4000-8000-000000000009', true);
 select moderate_citizen_report('9f5a1000-0000-4000-8000-000000000005', 'approved', null, null);
+select set_config('request.jwt.claim.sub', '9f5a0000-0000-4000-8000-000000000004', true);
+insert into citizen_reports (id, user_id, lat, lon, kind, status, user_flagged_at) values
+  ('9f5a1000-0000-4000-8000-000000000006', '9f5a0000-0000-4000-8000-000000000004', 36.70, 4.05, 'road_blocked', 'pending',
+   now());
 reset role;
+select is((select user_flagged_at from citizen_reports where id = '9f5a1000-0000-4000-8000-000000000006'), null,
+  'a reporter cannot send their own report to the moderators as user-flagged');
 select set_config('request.jwt.claim.sub', '9f5a0000-0000-4000-8000-000000000009', true);
 create temp table attention_baseline as
   select count as n from admin_attention_counts() where item = 'citizen_reports';
@@ -164,12 +170,14 @@ select is((select status || '/' || coalesce(user_flagged_at::text, 'cleared') fr
 select is((select blocked_by::text || '/' || reason from reporter_blocks
            where user_id = '9f5a0000-0000-4000-8000-000000000001'),
   '9f5a0000-0000-4000-8000-000000000009/repeated false fires', 'the block records who decided it and why');
-select is((select count(*) from admin_audit
-           where action = 'reporter.block' and target_id = '9f5a0000-0000-4000-8000-000000000001'), 1::bigint,
-  'the block is in the admin audit');
+select is((select string_agg(after ->> 'rejected_reports', ',') from admin_audit
+           where action = 'reporter.block' and target_id = '9f5a0000-0000-4000-8000-000000000001'), '2',
+  'the block is audited once, with how many reports it rejected');
 set local role anon;
 select is((select count(*) from hazard_reports where id = '9f5a1000-0000-4000-8000-000000000001'), 0::bigint,
   'the offending report leaves the map');
+select is((select count(*) from hazard_reports where id = '9f5a1000-0000-4000-8000-000000000002'), 0::bigint,
+  'every other live report by the blocked reporter leaves the map too');
 reset role;
 
 set local role authenticated;
