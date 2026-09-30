@@ -1228,6 +1228,7 @@ export type Database = {
           created_at: string;
           expires_at: string | null;
           flagged_at: string | null;
+          user_flagged_at: string | null;
           hazard: string | null;
           id: string;
           kind: string;
@@ -1255,6 +1256,7 @@ export type Database = {
           created_at?: string;
           expires_at?: string | null;
           flagged_at?: string | null;
+          user_flagged_at?: string | null;
           hazard?: string | null;
           id?: string;
           kind?: string;
@@ -1282,6 +1284,7 @@ export type Database = {
           created_at?: string;
           expires_at?: string | null;
           flagged_at?: string | null;
+          user_flagged_at?: string | null;
           hazard?: string | null;
           id?: string;
           kind?: string;
@@ -4387,6 +4390,25 @@ export type Database = {
           _vote: string;
         };
         Returns: number;
+      };
+      flag_citizen_report: {
+        Args: { _reason: string; _report: string };
+        Returns: undefined;
+      };
+      block_report_author: {
+        Args: { _report: string };
+        Returns: undefined;
+      };
+      block_reporter: {
+        Args: { _reason: string | null; _report: string };
+        Returns: undefined;
+      };
+      citizen_report_flag_summary: {
+        Args: { _report: string };
+        Returns: {
+          flags: number;
+          reason: string;
+        }[];
       };
       moderate_citizen_report: {
         Args: {

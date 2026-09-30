@@ -16,6 +16,8 @@ marketing https://nadhir.app.
 
 Description:
 
+نذير تطبيق مستقل ولا يمثل أي جهة حكومية.
+
 نذير يجمع المخاطر في الجزائر على خريطة واحدة ويرسل لك التنبيهات التي تخص بلديتك.
 
 ما يعرضه نذير:
@@ -35,7 +37,15 @@ Description:
 بلاغات المواطنين:
 • أبلغ عن حريق أو طريق مقطوعة. يُنشر البلاغ بعد التحقق منه، دون اسمك أو صورتك.
 
-نذير تطبيق مستقل وليس تطبيقًا حكوميًا. يعرض معلومات رسمية مع ذكر مصدرها. في حالة الخطر، اتصل بالحماية المدنية على 14.
+المصادر الرسمية:
+• تحذيرات الطقس: الديوان الوطني للأرصاد الجوية (ONM) – https://www.meteo.dz
+• بلاغات الحرائق والإسعاف: الحماية المدنية (DGPC)، القناة الرسمية – https://t.me/DGPCDZ
+• رصد الحرائق بالأقمار الصناعية: NASA FIRMS – https://www.earthdata.nasa.gov/data/tools/firms
+• خطر الحرائق: Copernicus EFFIS – https://forest-fire.emergency.copernicus.eu
+• البرق وبيانات الأقمار الصناعية: EUMETSAT – https://www.eumetsat.int
+• الزلازل: EMSC – https://www.emsc-csem.org
+
+كل عنصر في التطبيق يحيل إلى مصدره أو يذكره. نذير غير تابع لأي من هذه الجهات. في حالة الخطر، اتصل بالحماية المدنية على 14.
 
 ## English (en)
 
@@ -46,6 +56,8 @@ Description:
 - App Store promotional text: Know what is happening around your commune: wildfires, weather warnings, closed roads and earthquakes on one map, with instant alerts.
 
 Description:
+
+Nadhir is an independent app. It does not represent any government entity.
 
 Nadhir brings Algeria's hazards onto one map and alerts you about your commune.
 
@@ -66,7 +78,15 @@ Survival mode:
 Citizen reports:
 • Report a fire or a closed road. A report is published after it is checked, without your name or photo.
 
-Nadhir is independent and is not a government app. It shows official information with its source. In danger, call Civil Protection on 14.
+Official sources:
+• Weather warnings: Office National de la Météorologie (ONM) – https://www.meteo.dz
+• Fire and emergency bulletins: Protection Civile (DGPC), official channel – https://t.me/DGPCDZ
+• Satellite fire detections: NASA FIRMS – https://www.earthdata.nasa.gov/data/tools/firms
+• Fire danger: Copernicus EFFIS – https://forest-fire.emergency.copernicus.eu
+• Lightning and satellite data: EUMETSAT – https://www.eumetsat.int
+• Earthquakes: EMSC – https://www.emsc-csem.org
+
+Each item in the app links to or names its source. Nadhir is not affiliated with these organisations. In danger, call Civil Protection on 14.
 
 ## French (fr)
 
@@ -77,6 +97,8 @@ Nadhir is independent and is not a government app. It shows official information
 - App Store promotional text: Sachez ce qui se passe autour de votre commune : feux de forêt, vigilances météo, routes coupées et séismes sur une seule carte, avec des alertes immédiates.
 
 Description:
+
+Nadhir est une application indépendante. Elle ne représente aucune entité gouvernementale.
 
 Nadhir réunit les risques en Algérie sur une seule carte et vous alerte pour votre commune.
 
@@ -97,7 +119,15 @@ Mode Survie :
 Signalements citoyens :
 • Signalez un feu ou une route coupée. Le signalement est publié après vérification, sans votre nom ni votre photo.
 
-Nadhir est indépendant et n'est pas une application gouvernementale. Il affiche les informations officielles avec leur source. En cas de danger, appelez la Protection civile au 14.
+Sources officielles :
+• Vigilances météo : Office National de la Météorologie (ONM) – https://www.meteo.dz
+• Bulletins feux et secours : Protection civile (DGPC), canal officiel – https://t.me/DGPCDZ
+• Détections satellite de feux : NASA FIRMS – https://www.earthdata.nasa.gov/data/tools/firms
+• Danger d'incendie : Copernicus EFFIS – https://forest-fire.emergency.copernicus.eu
+• Foudre et données satellite : EUMETSAT – https://www.eumetsat.int
+• Séismes : EMSC – https://www.emsc-csem.org
+
+Chaque élément de l'application renvoie à sa source ou la nomme. Nadhir n'est affilié à aucun de ces organismes. En cas de danger, appelez la Protection civile au 14.
 
 ## App Review notes (App Store)
 

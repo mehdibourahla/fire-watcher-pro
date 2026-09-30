@@ -3,23 +3,28 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const {
   createSignedUrlMock,
   fromMock,
+  getSessionMock,
   getUserMock,
   removeMock,
+  rpcMock,
   storageFromMock,
   uploadMock,
 } = vi.hoisted(() => ({
   createSignedUrlMock: vi.fn(),
   fromMock: vi.fn(),
+  getSessionMock: vi.fn(),
   getUserMock: vi.fn(),
   removeMock: vi.fn(),
+  rpcMock: vi.fn(),
   storageFromMock: vi.fn(),
   uploadMock: vi.fn(),
 }));
 
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
-    auth: { getUser: getUserMock },
+    auth: { getSession: getSessionMock, getUser: getUserMock },
     from: fromMock,
+    rpc: rpcMock,
     storage: { from: storageFromMock },
   },
 }));
@@ -413,5 +418,139 @@ describe("report deletion photo cleanup", () => {
       message: "reports.deletePhotoCleanupFailed",
     });
     expect(table.delete).not.toHaveBeenCalled();
+  });
+});
+
+describe("flagging and blocking", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+  });
+
+  it("flags a report with the chosen reason", async () => {
+    rpcMock.mockResolvedValue({ data: null, error: null });
+    await reports.flagReport(reportId, "offensive");
+    expect(rpcMock).toHaveBeenCalledWith("flag_citizen_report", {
+      _report: reportId,
+      _reason: "offensive",
+    });
+  });
+
+  it.each([
+    ["own_report", "reports.flagOwn"],
+    ["report_not_open", "reports.flagClosed"],
+    ["flag_rate_limited", "reports.flagRateLimited"],
+    ["private database detail", "reports.flagFailed"],
+  ])("maps a flag refusal %s to %s", async (message, key) => {
+    rpcMock.mockResolvedValue({ data: null, error: { message } });
+    await expect(reports.flagReport(reportId, "false")).rejects.toMatchObject({
+      name: "ReportMutationError",
+      message: key,
+    });
+  });
+
+  it("hides an author through the report, never by user id", async () => {
+    rpcMock.mockResolvedValue({ data: null, error: null });
+    await reports.blockReportAuthor(reportId);
+    expect(rpcMock).toHaveBeenCalledWith("block_report_author", {
+      _report: reportId,
+    });
+  });
+
+  it.each([
+    ["own_report", "reports.hideOwn"],
+    ["private database detail", "reports.hideFailed"],
+  ])("maps a hide refusal %s to %s", async (message, key) => {
+    rpcMock.mockResolvedValue({ data: null, error: { message } });
+    await expect(reports.blockReportAuthor(reportId)).rejects.toMatchObject({
+      message: key,
+    });
+  });
+
+  it("blocks the reporter behind a report with the moderator's reason", async () => {
+    rpcMock.mockResolvedValue({ data: null, error: null });
+    await reports.blockReporter(reportId, "  repeated false fires ");
+    await reports.blockReporter(reportId, null);
+    expect(rpcMock).toHaveBeenNthCalledWith(1, "block_reporter", {
+      _report: reportId,
+      _reason: "repeated false fires",
+    });
+    expect(rpcMock).toHaveBeenNthCalledWith(2, "block_reporter", {
+      _report: reportId,
+      _reason: null,
+    });
+  });
+
+  it.each([
+    ["report_moderator_role_required", "reportsPage.moderateForbidden"],
+    ["report_not_found", "reportsPage.moderateGone"],
+    ["private database detail", "reportsPage.blockFailed"],
+  ])("maps a block refusal %s to %s", async (message, key) => {
+    rpcMock.mockResolvedValue({ data: null, error: { message } });
+    await expect(reports.blockReporter(reportId, null)).rejects.toMatchObject({
+      message: key,
+    });
+  });
+
+  it("reads flag reasons for moderators and surfaces a refusal", async () => {
+    const run = reports.reportFlagsQuery(reportId)
+      .queryFn as () => Promise<unknown>;
+    rpcMock.mockResolvedValueOnce({
+      data: [{ reason: "false", flags: 2 }],
+      error: null,
+    });
+    await expect(run()).resolves.toEqual([{ reason: "false", flags: 2 }]);
+    expect(rpcMock).toHaveBeenCalledWith("citizen_report_flag_summary", {
+      _report: reportId,
+    });
+    rpcMock.mockResolvedValueOnce({
+      data: null,
+      error: { message: "report_moderator_role_required" },
+    });
+    await expect(run()).rejects.toThrow("report_moderator_role_required");
+  });
+
+  it("treats a visitor as not the author without querying reports", async () => {
+    getSessionMock.mockResolvedValue({ data: { session: null }, error: null });
+    await expect(reports.isOwnReport(reportId)).resolves.toBe(false);
+    expect(fromMock).not.toHaveBeenCalled();
+  });
+
+  it("recognises the signed-in author through their own row only", async () => {
+    getSessionMock.mockResolvedValue({
+      data: { session: { user: { id: ownerId } } },
+      error: null,
+    });
+    const filter = thenableFilter({ data: { id: reportId }, error: null });
+    fromMock.mockReturnValue({ select: vi.fn(() => filter) });
+    await expect(reports.isOwnReport(reportId)).resolves.toBe(true);
+    expect(fromMock).toHaveBeenCalledWith("citizen_reports");
+    expect(filter["eq"]).toHaveBeenCalledWith("id", reportId);
+    expect(filter["eq"]).toHaveBeenCalledWith("user_id", ownerId);
+  });
+});
+
+describe("moderation attention queue", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+  });
+
+  it("includes user-flagged reports of any open status, not only pending ones", async () => {
+    const builder: Record<string, ReturnType<typeof vi.fn> | unknown> = {};
+    for (const method of ["select", "order", "range", "eq", "neq", "gt", "or"])
+      builder[method] = vi.fn(() => builder);
+    builder["then"] = (resolve: (value: QueryResult) => unknown) =>
+      Promise.resolve({ data: [], error: null }).then(resolve);
+    fromMock.mockReturnValue(builder);
+    const run = reports.moderationQueueQuery("attention").queryFn as (context: {
+      pageParam: number;
+    }) => Promise<unknown>;
+
+    await run({ pageParam: 0 });
+
+    expect(builder["neq"]).toHaveBeenCalledWith("status", "rejected");
+    expect(builder["eq"]).not.toHaveBeenCalled();
+    expect(builder["or"]).toHaveBeenCalledWith(
+      "and(status.eq.pending,publish_state.neq.published),and(status.eq.pending,flagged_at.not.is.null),user_flagged_at.not.is.null",
+    );
   });
 });
