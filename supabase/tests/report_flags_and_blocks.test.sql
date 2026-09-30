@@ -1,6 +1,6 @@
 begin;
 set local search_path = public, extensions;
-select plan(40);
+select plan(42);
 
 insert into auth.users (id, email) values
   ('9f5a0000-0000-4000-8000-000000000001', 'author@example.invalid'),
@@ -156,6 +156,13 @@ select is((select count(*) from hazard_reports
   'visitors still see that author''s reports');
 reset role;
 
+set local session_replication_role = replica;
+insert into citizen_reports (id, user_id, lat, lon, kind, status, expires_at) values
+  ('9f5a1000-0000-4000-8000-000000000007', '9f5a0000-0000-4000-8000-000000000001', 36.70, 4.05, 'flooding', 'approved',
+   now() - interval '1 day'),
+  ('9f5a1000-0000-4000-8000-000000000008', '9f5a0000-0000-4000-8000-000000000001', 36.70, 4.05, 'person_trapped', 'pending',
+   now() + interval '1 day');
+set local session_replication_role = origin;
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '9f5a0000-0000-4000-8000-000000000009', true);
 select throws_ok($$select block_reporter('9f5a1000-0000-4000-8000-0000000000ff', 'spam')$$,
@@ -170,6 +177,10 @@ select is((select status || '/' || coalesce(user_flagged_at::text, 'cleared') fr
 select is((select blocked_by::text || '/' || reason from reporter_blocks
            where user_id = '9f5a0000-0000-4000-8000-000000000001'),
   '9f5a0000-0000-4000-8000-000000000009/repeated false fires', 'the block records who decided it and why');
+select is((select status from citizen_reports where id = '9f5a1000-0000-4000-8000-000000000007'), 'approved',
+  'the block leaves the reporter''s expired history untouched');
+select is((select status from citizen_reports where id = '9f5a1000-0000-4000-8000-000000000008'), 'pending',
+  'the block never cancels a trapped-person report');
 select is((select string_agg(after ->> 'rejected_reports', ',') from admin_audit
            where action = 'reporter.block' and target_id = '9f5a0000-0000-4000-8000-000000000001'), '2',
   'the block is audited once, with how many reports it rejected');

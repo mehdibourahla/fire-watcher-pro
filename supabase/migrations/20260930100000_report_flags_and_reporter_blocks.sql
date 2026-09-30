@@ -135,7 +135,8 @@ begin
   on conflict (user_id) do update set blocked_by = excluded.blocked_by, reason = excluded.reason;
   update public.citizen_reports
   set status = 'rejected', reviewed_by = actor, reviewed_at = now(), user_flagged_at = null
-  where user_id = target.user_id and status <> 'rejected';
+  where user_id = target.user_id and status <> 'rejected'
+    and (id = _report or (expires_at > now() and kind <> 'person_trapped'));
   get diagnostics rejected = row_count;
   perform public.record_admin_audit('queues', 'reporter.block', 'reporter_blocks', target.user_id::text,
     jsonb_build_object('report_id', _report, 'status', target.status),
