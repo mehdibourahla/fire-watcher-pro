@@ -43,6 +43,7 @@ export type CitizenReport = {
   classified_at: string | null;
   expires_at: string | null;
   flagged_at: string | null;
+  user_flagged_at: string | null;
   witnesses?: number;
 };
 
@@ -126,6 +127,7 @@ export type ReportQueueFilter = (typeof REPORT_QUEUE_FILTERS)[number];
 function queueFilter<
   Q extends {
     eq: (column: string, value: string) => Q;
+    neq: (column: string, value: string) => Q;
     gt: (column: string, value: string) => Q;
     or: (filters: string) => Q;
   },
@@ -133,9 +135,11 @@ function queueFilter<
   if (filter === "all") return query;
   if (filter !== "attention") return query.eq("status", filter);
   return query
-    .eq("status", "pending")
+    .neq("status", "rejected")
     .gt("expires_at", new Date().toISOString())
-    .or("publish_state.neq.published,flagged_at.not.is.null");
+    .or(
+      "and(status.eq.pending,publish_state.neq.published),and(status.eq.pending,flagged_at.not.is.null),user_flagged_at.not.is.null",
+    );
 }
 
 export const moderationQueueQuery = (filter: ReportQueueFilter) =>

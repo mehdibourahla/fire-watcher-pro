@@ -1,12 +1,13 @@
 begin;
 set local search_path = public, extensions;
-select plan(32);
+select plan(38);
 
 insert into auth.users (id, email) values
   ('9f5a0000-0000-4000-8000-000000000001', 'author@example.invalid'),
   ('9f5a0000-0000-4000-8000-000000000002', 'flagger@example.invalid'),
   ('9f5a0000-0000-4000-8000-000000000003', 'other@example.invalid'),
   ('9f5a0000-0000-4000-8000-000000000004', 'blocker@example.invalid'),
+  ('9f5a0000-0000-4000-8000-000000000005', 'held@example.invalid'),
   ('9f5a0000-0000-4000-8000-000000000009', 'moderator@example.invalid');
 insert into user_roles (user_id, role) values ('9f5a0000-0000-4000-8000-000000000009', 'report_moderator');
 insert into admin_units (id, level, code, name_ar, name_fr, name_en, lat, lon) values
@@ -23,10 +24,17 @@ insert into citizen_reports (id, user_id, lat, lon, kind, status, note) values
    'still being checked');
 insert into citizen_reports (id, user_id, lat, lon, kind, status) values
   ('9f5a1000-0000-4000-8000-000000000004', '9f5a0000-0000-4000-8000-000000000003', 36.70, 4.05, 'road_blocked', 'pending');
+select set_config('request.jwt.claim.sub', '9f5a0000-0000-4000-8000-000000000005', true);
+insert into citizen_reports (id, user_id, lat, lon, kind, status, note) values
+  ('9f5a1000-0000-4000-8000-000000000005', '9f5a0000-0000-4000-8000-000000000005', 36.70, 4.05, 'flooding', 'pending',
+   'held by the checker');
+select set_config('request.jwt.claim.sub', '9f5a0000-0000-4000-8000-000000000009', true);
+select moderate_citizen_report('9f5a1000-0000-4000-8000-000000000005', 'approved', null, null);
 reset role;
 select set_config('request.jwt.claim.sub', '9f5a0000-0000-4000-8000-000000000009', true);
 create temp table attention_baseline as
   select count as n from admin_attention_counts() where item = 'citizen_reports';
+grant select on attention_baseline to authenticated;
 
 select ok(
   not has_table_privilege('anon', 'public.citizen_report_flags', 'select')
@@ -74,8 +82,10 @@ select set_config('request.jwt.claim.sub', '9f5a0000-0000-4000-8000-000000000003
 select flag_citizen_report('9f5a1000-0000-4000-8000-000000000001', 'false');
 reset role;
 
-select isnt((select flagged_at from citizen_reports where id = '9f5a1000-0000-4000-8000-000000000001'), null,
+select isnt((select user_flagged_at from citizen_reports where id = '9f5a1000-0000-4000-8000-000000000001'), null,
   'a flag sends the report to the moderators');
+select is((select flagged_at from citizen_reports where id = '9f5a1000-0000-4000-8000-000000000001'), null,
+  'a user flag never touches the witness flag that silences alerts');
 select is((select count(*) from citizen_report_flags
            where report_id = '9f5a1000-0000-4000-8000-000000000001'
              and user_id = '9f5a0000-0000-4000-8000-000000000002'), 1::bigint,
@@ -83,6 +93,23 @@ select is((select count(*) from citizen_report_flags
 select set_config('request.jwt.claim.sub', '9f5a0000-0000-4000-8000-000000000009', true);
 select is((select count from admin_attention_counts() where item = 'citizen_reports'), (select n + 1 from attention_baseline),
   'a flagged published report joins the moderators'' queue');
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '9f5a0000-0000-4000-8000-000000000003', true);
+select lives_ok($$select flag_citizen_report('9f5a1000-0000-4000-8000-000000000005', 'offensive')$$,
+  'an approved report the checker held is public, so it can be flagged');
+select set_config('request.jwt.claim.sub', '9f5a0000-0000-4000-8000-000000000009', true);
+select is((select count from admin_attention_counts() where item = 'citizen_reports'), (select n + 2 from attention_baseline),
+  'a flag brings an approved report back to the moderators');
+select moderate_citizen_report('9f5a1000-0000-4000-8000-000000000005', 'approved', null, null);
+select is((select count from admin_attention_counts() where item = 'citizen_reports'), (select n + 1 from attention_baseline),
+  'a moderator decision clears the user flag');
+select set_config('request.jwt.claim.sub', '9f5a0000-0000-4000-8000-000000000004', true);
+select lives_ok($$select flag_citizen_report('9f5a1000-0000-4000-8000-000000000005', 'false')$$,
+  'the report can be flagged again after the decision');
+select set_config('request.jwt.claim.sub', '9f5a0000-0000-4000-8000-000000000009', true);
+select is((select count from admin_attention_counts() where item = 'citizen_reports'), (select n + 2 from attention_baseline),
+  'a new flag after a decision queues the report again');
+reset role;
 set local role anon;
 select is((select count(*) from hazard_reports where id = '9f5a1000-0000-4000-8000-000000000001'), 1::bigint,
   'a flag never hides a hazard: one person cannot take a danger report off the map');
@@ -109,7 +136,8 @@ select lives_ok($$select block_report_author('9f5a1000-0000-4000-8000-0000000000
   'a signed-in user hides an author through one of their reports');
 select lives_ok($$select block_report_author('9f5a1000-0000-4000-8000-000000000002')$$,
   'hiding the same author again is accepted');
-select is((select count(*) from hazard_reports where id::text like '9f5a1000%'), 1::bigint,
+select is((select count(*) from hazard_reports where id in ('9f5a1000-0000-4000-8000-000000000001',
+           '9f5a1000-0000-4000-8000-000000000002', '9f5a1000-0000-4000-8000-000000000004')), 1::bigint,
   'the blocker no longer sees any report from that author, only other people''s');
 select set_config('request.jwt.claim.sub', '9f5a0000-0000-4000-8000-000000000002', true);
 select is((select count(*) from hazard_reports
@@ -130,8 +158,9 @@ select lives_ok($$select block_reporter('9f5a1000-0000-4000-8000-000000000001', 
   'a moderator blocks the reporter behind a report');
 reset role;
 
-select is((select status from citizen_reports where id = '9f5a1000-0000-4000-8000-000000000001'), 'rejected',
-  'blocking rejects the offending report');
+select is((select status || '/' || coalesce(user_flagged_at::text, 'cleared') from citizen_reports
+           where id = '9f5a1000-0000-4000-8000-000000000001'), 'rejected/cleared',
+  'blocking rejects the offending report and closes its user flag');
 select is((select blocked_by::text || '/' || reason from reporter_blocks
            where user_id = '9f5a0000-0000-4000-8000-000000000001'),
   '9f5a0000-0000-4000-8000-000000000009/repeated false fires', 'the block records who decided it and why');

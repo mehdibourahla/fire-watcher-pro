@@ -528,3 +528,29 @@ describe("flagging and blocking", () => {
     expect(filter["eq"]).toHaveBeenCalledWith("user_id", ownerId);
   });
 });
+
+describe("moderation attention queue", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+  });
+
+  it("includes user-flagged reports of any open status, not only pending ones", async () => {
+    const builder: Record<string, ReturnType<typeof vi.fn> | unknown> = {};
+    for (const method of ["select", "order", "range", "eq", "neq", "gt", "or"])
+      builder[method] = vi.fn(() => builder);
+    builder["then"] = (resolve: (value: QueryResult) => unknown) =>
+      Promise.resolve({ data: [], error: null }).then(resolve);
+    fromMock.mockReturnValue(builder);
+    const run = reports.moderationQueueQuery("attention").queryFn as (context: {
+      pageParam: number;
+    }) => Promise<unknown>;
+
+    await run({ pageParam: 0 });
+
+    expect(builder["neq"]).toHaveBeenCalledWith("status", "rejected");
+    expect(builder["eq"]).not.toHaveBeenCalled();
+    expect(builder["or"]).toHaveBeenCalledWith(
+      "and(status.eq.pending,publish_state.neq.published),and(status.eq.pending,flagged_at.not.is.null),user_flagged_at.not.is.null",
+    );
+  });
+});

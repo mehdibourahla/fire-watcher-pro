@@ -47,6 +47,13 @@ const STATUS_TONE: Record<ReportStatus, Tone> = {
 function Verdict({ report }: { report: CitizenReport }) {
   const { t } = useTranslation("admin");
   const { t: tApp } = useTranslation();
+  if (
+    report.user_flagged_at &&
+    report.status !== "rejected" &&
+    report.expires_at &&
+    Date.parse(report.expires_at) > Date.now()
+  )
+    return <StatusBadge tone="bad">{t("reportsPage.flagged")}</StatusBadge>;
   if (report.status !== "pending")
     return (
       <StatusBadge tone={STATUS_TONE[report.status]}>

@@ -1228,6 +1228,7 @@ export type Database = {
           created_at: string;
           expires_at: string | null;
           flagged_at: string | null;
+          user_flagged_at: string | null;
           hazard: string | null;
           id: string;
           kind: string;
@@ -1255,6 +1256,7 @@ export type Database = {
           created_at?: string;
           expires_at?: string | null;
           flagged_at?: string | null;
+          user_flagged_at?: string | null;
           hazard?: string | null;
           id?: string;
           kind?: string;
@@ -1282,6 +1284,7 @@ export type Database = {
           created_at?: string;
           expires_at?: string | null;
           flagged_at?: string | null;
+          user_flagged_at?: string | null;
           hazard?: string | null;
           id?: string;
           kind?: string;

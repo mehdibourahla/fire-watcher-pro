@@ -1,3 +1,5 @@
+alter table public.citizen_reports add column user_flagged_at timestamptz;
+
 create table public.citizen_report_flags (
   report_id uuid not null references public.citizen_reports(id) on delete cascade,
   user_id uuid not null references auth.users(id) on delete cascade,
@@ -30,8 +32,9 @@ begin
     raise exception using errcode = '54000', message = 'flag_rate_limited';
   end if;
   select * into target from public.citizen_reports where id = _report for update;
-  if not found or target.publish_state <> 'published' or target.status = 'rejected'
-     or target.expires_at <= now() then
+  -- open means exactly what hazard_reports shows
+  if not found or not (target.publish_state = 'published' or target.status = 'approved')
+     or target.status = 'rejected' or target.kind = 'person_trapped' or target.expires_at <= now() then
     raise no_data_found using message = 'report_not_open';
   end if;
   if target.user_id = actor then
@@ -40,8 +43,8 @@ begin
 
   insert into public.citizen_report_flags (report_id, user_id, reason) values (_report, actor, _reason)
   on conflict (report_id, user_id) do update set reason = excluded.reason;
-  -- Hazard asymmetry (CONTEXT.md): a flag queues the report for a moderator, it never hides it
-  update public.citizen_reports set flagged_at = coalesce(flagged_at, now()) where id = _report;
+  -- Hazard asymmetry (CONTEXT.md): flagged_at silences alerts, so a single user only queues the report
+  update public.citizen_reports set user_flagged_at = coalesce(user_flagged_at, now()) where id = _report;
 end;
 $$;
 revoke all on function public.flag_citizen_report(uuid, text) from public, anon;
@@ -100,7 +103,8 @@ begin
   insert into public.reporter_blocks (user_id, blocked_by, reason) values (target.user_id, actor, clean_reason)
   on conflict (user_id) do update set blocked_by = excluded.blocked_by, reason = excluded.reason;
   if target.status <> 'rejected' then
-    update public.citizen_reports set status = 'rejected', reviewed_by = actor, reviewed_at = now()
+    update public.citizen_reports
+    set status = 'rejected', reviewed_by = actor, reviewed_at = now(), user_flagged_at = null
     where id = _report;
   end if;
   perform public.record_admin_audit('queues', 'reporter.block', 'reporter_blocks', target.user_id::text,
@@ -181,3 +185,75 @@ create or replace view public.hazard_reports
     and r.expires_at > now()
     and not exists (select 1 from public.user_report_blocks b
                     where b.blocker = (select auth.uid()) and b.author = r.user_id);
+
+create or replace function public.moderate_citizen_report(_id uuid,_status text,_cluster uuid,_note text default null)
+returns void language plpgsql security definer set search_path='' as $$
+declare
+  actor uuid := (select auth.uid());
+  previous public.citizen_reports;
+  clean_note text := nullif(btrim(_note),'');
+begin
+  if actor is null or not public.has_any_role(actor,array['report_moderator','admin']::public.app_role[]) then
+    raise insufficient_privilege using message='report_moderator_role_required';
+  end if;
+  if _status not in ('pending','approved','rejected') then
+    raise invalid_parameter_value using message='invalid_report_status';
+  end if;
+  select * into previous from public.citizen_reports where id=_id for update;
+  if not found then
+    raise no_data_found using message='report_not_found';
+  end if;
+  update public.citizen_reports set
+    status=_status,moderation_note=clean_note,cluster_id=_cluster,
+    reviewed_by=case when _status='pending' then null else actor end,
+    reviewed_at=case when _status='pending' then null else now() end,
+    user_flagged_at=case when _status='pending' then user_flagged_at else null end
+  where id=_id;
+  perform public.record_admin_audit('queues','report.moderate','citizen_reports',_id::text,
+    jsonb_build_object('status',previous.status,'cluster_id',previous.cluster_id),
+    jsonb_build_object('status',_status,'cluster_id',_cluster),clean_note,null);
+end;
+$$;
+
+create or replace function public.admin_attention_counts()
+returns table(item text,count bigint,oldest timestamptz)
+language plpgsql stable security definer set search_path='' as $$
+declare
+  actor uuid := (select auth.uid());
+  ops boolean;
+  mods boolean;
+  translators boolean;
+begin
+  if actor is null or not public.has_any_role(actor,array['admin','operator','report_moderator','translator','incident_editor']::public.app_role[]) then
+    raise insufficient_privilege using message='panel_role_required';
+  end if;
+  ops := public.has_any_role(actor,array['operator','admin']::public.app_role[]);
+  mods := public.has_any_role(actor,array['report_moderator','admin']::public.app_role[]);
+  translators := public.has_any_role(actor,array['translator','admin']::public.app_role[]);
+  if ops then
+    return query select 'ita_review',count(*),min(w.updated_at) from public.civil_investigations w where w.state='review';
+    return query select 'ita_failed',count(*),min(w.updated_at) from public.civil_investigations w where w.state='failed';
+    return query select 'fires',count(*),min(c.first_detected_at) from public.fire_clusters c
+      where c.resolved_at is null and c.confidence>=0.6 and c.state in ('unconfirmed','active','contained_guess');
+    return query select 'operational_incidents',count(*),min(i.first_seen_at) from public.operational_incidents i
+      where i.acknowledged_at is null and i.resolved_at is null;
+    return query select 'source_gaps',count(*),min(g.detected_at) from public.source_gaps g where g.state='open';
+    return query select 'sources_unhealthy',count(*),null::timestamptz from public.source_health h
+      where h.state in ('delayed','degraded','stale');
+    return query select 'delivery_backlog',coalesce(sum(d.pending_count),0)::bigint,min(d.oldest_pending_at) from public.delivery_queue_health d;
+    return query select 'risk_pending',count(*),min(r.finished_at) from public.risk_forecast_snapshot_runs r
+      where r.status='active' and r.finished_at is not null;
+    return query select 'broadcasting_off',count(*),max(s.updated_at) from public.broadcast_settings s where not s.enabled;
+  end if;
+  if mods then
+    return query select 'citizen_reports',count(*),min(r.created_at) from public.citizen_reports r
+      where r.status<>'rejected' and r.expires_at>now()
+        and ((r.status='pending' and (r.publish_state<>'published' or r.flagged_at is not null))
+             or r.user_flagged_at is not null);
+    return query select 'ideas',count(*),min(i.created_at) from public.contribution_ideas i where i.status='pending';
+  end if;
+  if translators then
+    return query select 'translations',count(distinct (t.locale,t.key_path)),min(t.created_at) from public.translation_suggestions t where t.status='pending';
+  end if;
+end;
+$$;
